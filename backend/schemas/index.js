@@ -3,12 +3,14 @@ const { gql } = require("apollo-server-express");
 const typeDefs = gql`
   type SacredYes {
     id: ID!
+    userId: String!        # 🔥 Associate entry with authenticated user
     text: String!
     date: String!
   }
 
   type MoodEntry {
     id: ID!
+    userId: String!        # 🔥 Associate entry with authenticated user
     mood: Int!
     note: String
     date: String!
@@ -16,6 +18,7 @@ const typeDefs = gql`
 
   type PracticeQuest {
     id: ID!
+    userId: String!        # 🔥 Associate entry with authenticated user
     name: String!
     description: String
     repetitions: Int!
