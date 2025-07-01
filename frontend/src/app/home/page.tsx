@@ -3,24 +3,19 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useQuery, useMutation } from "@apollo/client";
-import { GET_MOON_PHASE } from "@/graphql/moon";
+import { getTodayMoonPhase } from "@/utils/moonPhases";
 import { GET_SACRED_YES, ADD_SACRED_YES, UPDATE_SACRED_YES } from "@/graphql/sacredYes";
-import dayjs from "dayjs";
 import { GET_MOOD_ENTRY, ADD_MOOD_ENTRY, UPDATE_MOOD_ENTRY } from "@/graphql/mood";
 import { GET_DAILY_QUESTS, UPDATE_PRACTICE_QUEST_PROGRESS } from "@/graphql/practiceQuest";
+import dayjs from "dayjs";
 
 export default function Home() {
   const { data: session, status } = useSession();
   const today = dayjs().format("YYYY-MM-DD");
 
-  // ✅ Log the JWT access token in console for testing
   useEffect(() => {
-    if (session?.accessToken) {
-      console.log("🔑 Access Token:", session.accessToken);
-    }
+    if (session?.accessToken) console.log("🔑 Access Token:", session.accessToken);
   }, [session]);
-
-  const { data: moonData, loading: moonLoading, error: moonError } = useQuery(GET_MOON_PHASE);
 
   const { data: sacredData, loading: sacredLoading, error: sacredError, refetch } = useQuery(
     GET_SACRED_YES,
@@ -46,11 +41,8 @@ export default function Home() {
   const [updateQuestProgress] = useMutation(UPDATE_PRACTICE_QUEST_PROGRESS);
 
   useEffect(() => {
-    if (sacredData?.getSacredYes) {
-      setSacredYesText(sacredData.getSacredYes.text);
-    } else {
-      setSacredYesText("");
-    }
+    if (sacredData?.getSacredYes) setSacredYesText(sacredData.getSacredYes.text);
+    else setSacredYesText("");
   }, [sacredData]);
 
   useEffect(() => {
@@ -81,13 +73,9 @@ export default function Home() {
     try {
       const existing = moodData?.getMoodEntry;
       if (existing?.id) {
-        await updateMoodEntry({
-          variables: { id: existing.id, mood: moodValue, note: moodNote },
-        });
+        await updateMoodEntry({ variables: { id: existing.id, mood: moodValue, note: moodNote } });
       } else {
-        await addMoodEntry({
-          variables: { mood: moodValue, note: moodNote, date: today },
-        });
+        await addMoodEntry({ variables: { mood: moodValue, note: moodNote, date: today } });
       }
       refetchMood();
     } catch (e) {
@@ -117,26 +105,51 @@ export default function Home() {
     return (
       <main className="flex flex-col items-center justify-center min-h-screen p-8 text-center">
         <h1 className="text-2xl font-bold mb-4">🔒 Please Sign In</h1>
-        <p className="text-gray-500 max-w-md">
-          You need to be logged in to access this feature. Sign in using the button above!
-        </p>
+        <p className="text-gray-500 max-w-md">You need to be logged in to access this feature.</p>
       </main>
     );
   }
 
+  const todayMoon = getTodayMoonPhase();
+  let dynamicTitle = "🌘 Moon Phase — Align with the Cosmos";
+
+  if (todayMoon) {
+    switch (todayMoon.phase) {
+      case "New Moon":
+        dynamicTitle = "🌑 New Moon — Fresh Beginnings";
+        break;
+      case "First Quarter":
+        dynamicTitle = "🌓 First Quarter — Building Momentum";
+        break;
+      case "Full Moon":
+        dynamicTitle = "🌕 Full Moon — Peak Illumination";
+        break;
+      case "Third Quarter":
+        dynamicTitle = "🌗 Third Quarter — Reflect & Release";
+        break;
+      default:
+        dynamicTitle = `🌘 ${todayMoon.phase} — Embrace the Transition`;
+    }
+  }
+
   return (
     <main className="min-h-screen px-6 py-10 flex flex-col items-center justify-center text-center">
-      <h1 className="text-3xl sm:text-4xl font-bold mb-4">🌌 Welcome to Cosmic Tracker</h1>
+      <h1 className="text-3xl sm:text-4xl font-bold mb-4">🌙 Today's Cosmic Flow</h1>
 
-      {/* 🌙 Moon Phase */}
+      {/* 🌙 Dynamic Moon Phase */}
       <div className="mb-8 p-4 rounded-lg border border-indigo-200 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-200 max-w-xl w-full">
-        {moonLoading && <p>Loading today's moon phase...</p>}
-        {moonError && <p className="text-red-600">Error: {moonError.message}</p>}
-        {moonData && (
+        {todayMoon ? (
           <>
-            <h2 className="text-xl font-semibold mb-1">Today's Moon Phase:</h2>
-            <p className="text-lg">{moonData.todayMoonPhase}</p>
+            <h2 className="text-xl font-semibold mb-3">{dynamicTitle}</h2>
+            <div className="flex items-center gap-4">
+              <span className="text-6xl">{todayMoon.icon}</span>
+              <div className="text-left">
+                <p className="text-sm text-gray-600 dark:text-gray-300">{todayMoon.readableDate}</p>
+              </div>
+            </div>
           </>
+        ) : (
+          <p>Unable to load today's moon phase.</p>
         )}
       </div>
 
@@ -204,9 +217,7 @@ export default function Home() {
         {questsData?.getDailyQuests?.map((quest) => (
           <div key={quest.id} className="border rounded p-4 mb-4">
             <h3 className="text-lg font-bold">{quest.name}</h3>
-            {quest.description && (
-              <p className="text-sm text-gray-500 mb-2">{quest.description}</p>
-            )}
+            {quest.description && <p className="text-sm text-gray-500 mb-2">{quest.description}</p>}
             <div className="flex items-center gap-4 mb-2">
               <button
                 className="px-2 py-1 rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"

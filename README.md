@@ -62,7 +62,7 @@ The Cosmic Tracker is a personalized companion app that fuses ancient practices 
 - Frontend: Next.js 15, Tailwind CSS, Apollo Client
 - Backend: Node.js, Express, Apollo Server (GraphQL), MongoDB (Mongoose)
 - Hosting: Vercel (frontend), Render/Railway (backend)
-- Auth: Auth0 or NextAuth (TBD)
+- Auth: NextAuth
 
 ---
 
