@@ -29,3 +29,22 @@ export const UPDATE_SACRED_YES = gql`
     }
   }
 `;
+
+export const ALL_SACRED_YES = gql`
+  query AllSacredYes {
+    allSacredYes {
+      id
+      userId
+      text
+      date
+    }
+  }
+`;
+
+export const DELETE_SACRED_YES = gql`
+  mutation DeleteSacredYes($id: ID!) {
+    deleteSacredYes(id: $id) {
+      id
+    }
+  }
+`;

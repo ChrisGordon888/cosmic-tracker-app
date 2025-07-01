@@ -12,25 +12,32 @@ export default NextAuth({
   secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
+    maxAge: 24 * 60 * 60,       // 24 hours for the session itself
+  },
+  jwt: {
+    maxAge: 24 * 60 * 60,       // 24 hours for the token lifetime
   },
   callbacks: {
     async jwt({ token }) {
-      // ✅ Create a signed JWT string yourself:
-      const customJwt = jwt.sign(
-        {
-          sub: token.sub,
-          email: token.email,
-        },
-        process.env.NEXTAUTH_SECRET,
-        { expiresIn: "1h" }
-      );
-      return { ...token, accessToken: customJwt };
+      // ✅ Only sign if we're issuing a new token (first login or refresh)
+      if (!token.accessToken) {
+        const customJwt = jwt.sign(
+          {
+            sub: token.sub,
+            email: token.email,
+          },
+          process.env.NEXTAUTH_SECRET,
+          { expiresIn: "24h" }
+        );
+        token.accessToken = customJwt;
+      }
+      return token;
     },
     async session({ session, token }) {
       if (session?.user) {
         session.user.id = token.sub;
       }
-      session.accessToken = token.accessToken; // ✅ Use your custom signed JWT
+      session.accessToken = token.accessToken; // ✅ Use our custom signed JWT
       return session;
     },
   },

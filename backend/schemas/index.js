@@ -1,24 +1,27 @@
 const { gql } = require("apollo-server-express");
 
 const typeDefs = gql`
+  # 🌟 Sacred Yes
   type SacredYes {
     id: ID!
-    userId: String!        # 🔥 Associate entry with authenticated user
+    userId: String!
     text: String!
     date: String!
   }
 
+  # 🪷 Mood Entry
   type MoodEntry {
     id: ID!
-    userId: String!        # 🔥 Associate entry with authenticated user
+    userId: String!
     mood: Int!
     note: String
     date: String!
   }
 
+  # 🧘 Practice Quest
   type PracticeQuest {
     id: ID!
-    userId: String!        # 🔥 Associate entry with authenticated user
+    userId: String!
     name: String!
     description: String
     repetitions: Int!
@@ -27,6 +30,17 @@ const typeDefs = gql`
     date: String!
   }
 
+  # 🔮 Ritual
+  type Ritual {
+    id: ID!
+    userId: String!
+    title: String!
+    description: String!    # 🔥 Made required
+    createdAt: String
+    updatedAt: String
+  }
+
+  # 📖 Queries
   type Query {
     hello: String
     todayMoonPhase: String
@@ -41,8 +55,14 @@ const typeDefs = gql`
 
     # Practice Quests
     getDailyQuests(date: String!): [PracticeQuest!]!
+    allPracticeQuests: [PracticeQuest!]!
+
+    # Rituals
+    allRituals: [Ritual!]!
+    getRitual(id: ID!): Ritual      # ✅ Added single ritual query
   }
 
+  # 🛠️ Mutations
   type Mutation {
     # Sacred Yes
     addSacredYes(text: String!, date: String!): SacredYes
@@ -59,6 +79,11 @@ const typeDefs = gql`
     updatePracticeQuestProgress(id: ID!, completedReps: Int!): PracticeQuest
     markPracticeQuestComplete(id: ID!): PracticeQuest
     deletePracticeQuest(id: ID!): PracticeQuest
+
+    # Rituals
+    addRitual(title: String!, description: String!): Ritual      # 🔥 Made description required
+    updateRitual(id: ID!, title: String!, description: String!): Ritual
+    deleteRitual(id: ID!): Ritual
   }
 `;
 

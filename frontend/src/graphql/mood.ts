@@ -32,3 +32,23 @@ export const UPDATE_MOOD_ENTRY = gql`
     }
   }
 `;
+
+export const ALL_MOOD_ENTRIES = gql`
+  query AllMoodEntries {
+    allMoodEntries {
+      id
+      userId
+      mood
+      note
+      date
+    }
+  }
+`;
+
+export const DELETE_MOOD_ENTRY = gql`
+  mutation DeleteMoodEntry($id: ID!) {
+    deleteMoodEntry(id: $id) {
+      id
+    }
+  }
+`;

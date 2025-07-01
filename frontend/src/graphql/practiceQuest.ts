@@ -24,3 +24,26 @@ export const UPDATE_PRACTICE_QUEST_PROGRESS = gql`
     }
   }
 `;
+
+export const ALL_PRACTICE_QUESTS = gql`
+  query AllPracticeQuests {
+    allPracticeQuests {
+      id
+      userId
+      name
+      description
+      repetitions
+      completedReps
+      completed
+      date
+    }
+  }
+`;
+
+export const DELETE_PRACTICE_QUEST = gql`
+  mutation DeletePracticeQuest($id: ID!) {
+    deletePracticeQuest(id: $id) {
+      id
+    }
+  }
+`;

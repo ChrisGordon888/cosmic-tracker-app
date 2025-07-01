@@ -12,7 +12,7 @@ const express = require("express");
 const { ApolloServer } = require("apollo-server-express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const jwt = require("jsonwebtoken"); // ✅ JWT verification
+const jwt = require("jsonwebtoken");
 
 const typeDefs = require("./schemas");
 const resolvers = require("./resolvers");
@@ -26,18 +26,20 @@ async function startServer() {
     resolvers,
     context: async ({ req }) => {
       const authHeader = req.headers.authorization || "";
+      console.log("🚀 [Context] Authorization header received:", authHeader);
+
       const token = authHeader.startsWith("Bearer ")
         ? authHeader.slice(7).trim()
         : null;
 
       if (!token) {
-        console.log("🚫 No JWT token received in Authorization header");
+        console.log("🚫 No JWT token received or malformed Authorization header");
         return { user: null };
       }
 
       try {
         const decoded = jwt.verify(token, process.env.NEXTAUTH_SECRET);
-        console.log("✅ JWT verified:", decoded);
+        console.log("✅ JWT verified successfully in context:", decoded);
 
         return {
           user: {
@@ -46,7 +48,7 @@ async function startServer() {
           },
         };
       } catch (error) {
-        console.error("❌ JWT verification failed:", error.message);
+        console.error("❌ JWT verification failed in context:", error.message);
         return { user: null };
       }
     },
