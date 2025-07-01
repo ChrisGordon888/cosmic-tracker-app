@@ -69,13 +69,18 @@ The Cosmic Tracker is a personalized companion app that fuses ancient practices 
 ## 🚀 How to Run
 
 **Backend**
-cd backend
-npm install
-node index.js
+- cd backend
+-
+- npm install
+-
+- node index.js
 
 **Frontend**
-npm install
-npm run dev
-Frontend: http://localhost:3000
-Backend: http://localhost:4000/graphql
+- npm install
+-
+- npm run dev
+-
+- Frontend: http://localhost:3000
+-
+- Backend: http://localhost:4000/graphql
 
