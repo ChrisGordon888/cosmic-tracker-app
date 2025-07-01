@@ -14,10 +14,16 @@ A living plan to track the next steps as we expand the Cosmic Tracker app with r
 - Use this in Tracker, Calendar, and Home pages for accurate offline moon phase info.
 
 ✅ **2) Build Enhanced Tracker Page**
-- Show today’s moon phase at the top.
-- List today’s practice quests with progress buttons (e.g., check off reps).
-- Mark quests as ✅ when completed.
-- Add mood entry & sacred yes fields for daily tracking.
+📊 [Trends Dashboard]
+- Line/bar chart: mood scores over past 14 days
+- Quest streak summary (e.g., 5 days in a row!)
+
+🌘 [Upcoming Moon Phases]
+- Timeline of next 7 moon events with icons & dates
+
+🌟 [Sacred Yes Highlights]
+- Last 5 sacred yes entries with dates
+- Longest streak of consecutive entries
 
 ✅ **3) Upgrade Practice Quest CRUD Page**
 - Add ability to link quests to specific rituals.
