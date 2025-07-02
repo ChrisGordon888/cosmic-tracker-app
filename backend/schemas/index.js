@@ -28,6 +28,8 @@ const typeDefs = gql`
     completedReps: Int!
     completed: Boolean!
     date: String!
+    ritualId: ID                # stores linked ritual's ID
+    ritual: Ritual              # dynamically resolved ritual object
   }
 
   # 🔮 Ritual
@@ -35,7 +37,7 @@ const typeDefs = gql`
     id: ID!
     userId: String!
     title: String!
-    description: String!    # 🔥 Made required
+    description: String!
     createdAt: String
     updatedAt: String
   }
@@ -59,7 +61,7 @@ const typeDefs = gql`
 
     # Rituals
     allRituals: [Ritual!]!
-    getRitual(id: ID!): Ritual      # ✅ Added single ritual query
+    getRitual(id: ID!): Ritual
   }
 
   # 🛠️ Mutations
@@ -75,13 +77,28 @@ const typeDefs = gql`
     deleteMoodEntry(id: ID!): MoodEntry
 
     # Practice Quests
-    addPracticeQuest(name: String!, description: String, repetitions: Int!, date: String!): PracticeQuest
+    addPracticeQuest(
+      name: String!,
+      description: String,
+      repetitions: Int!,
+      date: String!,
+      ritualId: ID
+    ): PracticeQuest
+
+    updatePracticeQuest(
+      id: ID!,
+      name: String,
+      description: String,
+      repetitions: Int,
+      ritualId: ID
+    ): PracticeQuest
+
     updatePracticeQuestProgress(id: ID!, completedReps: Int!): PracticeQuest
     markPracticeQuestComplete(id: ID!): PracticeQuest
     deletePracticeQuest(id: ID!): PracticeQuest
 
     # Rituals
-    addRitual(title: String!, description: String!): Ritual      # 🔥 Made description required
+    addRitual(title: String!, description: String!): Ritual
     updateRitual(id: ID!, title: String!, description: String!): Ritual
     deleteRitual(id: ID!): Ritual
   }

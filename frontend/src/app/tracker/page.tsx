@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import MoonPhaseCard from "@/components/MoonPhaseCard";
+import AddPracticeQuestForm from "@/components/AddPracticeQuestForm";
 import RitualPracticeSection from "@/components/RitualPracticeSection";
 
 export default function TrackerPage() {
@@ -31,6 +32,10 @@ export default function TrackerPage() {
 
       <div className="w-full max-w-3xl mb-8">
         <MoonPhaseCard />
+      </div>
+
+      <div className="w-full max-w-3xl mb-8">
+        <AddPracticeQuestForm />
       </div>
 
       <div className="w-full max-w-3xl mb-8">

@@ -10,6 +10,7 @@ export const GET_DAILY_QUESTS = gql`
       completedReps
       completed
       date
+      ritualId
     }
   }
 `;
@@ -36,6 +37,7 @@ export const ALL_PRACTICE_QUESTS = gql`
       completedReps
       completed
       date
+      ritualId
     }
   }
 `;
@@ -44,6 +46,33 @@ export const DELETE_PRACTICE_QUEST = gql`
   mutation DeletePracticeQuest($id: ID!) {
     deletePracticeQuest(id: $id) {
       id
+    }
+  }
+`;
+
+export const ADD_PRACTICE_QUEST = gql`
+  mutation AddPracticeQuest(
+    $name: String!,
+    $description: String,
+    $repetitions: Int!,
+    $date: String!,
+    $ritualId: ID
+  ) {
+    addPracticeQuest(
+      name: $name,
+      description: $description,
+      repetitions: $repetitions,
+      date: $date,
+      ritualId: $ritualId
+    ) {
+      id
+      name
+      description
+      repetitions
+      completedReps
+      completed
+      date
+      ritualId
     }
   }
 `;

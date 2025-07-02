@@ -1,67 +1,85 @@
-# 🌌 COSMIC TRACKER: DEV ROADMAP & WIREFRAMES
+# 🌌 Cosmic Tracker — Roadmap & Future Evolution
 
-A living plan to track the next steps as we expand the Cosmic Tracker app with rituals, quests, moon cycles, and more.
+A living plan for the continued development of the **Cosmic Tracker** app, empowering users to align daily rituals, mood, and cosmic cycles.
 
 ---
 
-## 🚀 NEXT STEPS
+## ✅ MVP Features Complete
 
-✅ **1) Integrate Accurate Moon Phases**
-- Create a JSON or JS object with your 2025 moon calendar.
-- Build `utils/moonPhases.js` to:
-  - Accept a date input.
-  - Return the nearest moon phase from your dataset.
-- Use this in Tracker, Calendar, and Home pages for accurate offline moon phase info.
+The following features are implemented and functional:
 
-✅ **2) Build Enhanced Tracker Page**
-📊 [Trends Dashboard]
-- Line/bar chart: mood scores over past 14 days
-- Quest streak summary (e.g., 5 days in a row!)
+- 🌑 **Moon Phases**
+  - Integrated local 2025 dataset with accurate phase icons and readable dates.
+  - Moon phases displayed across Tracker, Home, and Calendar pages.
 
-🌘 [Upcoming Moon Phases]
-- Timeline of next 7 moon events with icons & dates
+- 📿 **Practice Quests**
+  - Create, edit, delete practice quests.
+  - Link quests to specific rituals.
 
-🌟 [Sacred Yes Highlights]
-- Last 5 sacred yes entries with dates
-- Longest streak of consecutive entries
+- 🌕 **Moon Phase Calendar**
+  - Visual calendar combining mood entries and moon phase events.
 
-✅ **3) Upgrade Practice Quest CRUD Page**
-- Add ability to link quests to specific rituals.
-- Provide dropdowns/autocomplete for selecting rituals when creating quests.
-- Allow editing quests: update reps, switch rituals, etc.
+- 🌟 **Sacred Yes & Mood Tracking**
+  - Daily inputs with history display.
 
-✅ **4) Refine Calendar Page**
-- Display a heatmap calendar:
-  - Color-code by mood intensity or quests completed each day.
-  - Add moon icons on new/full/quarter moon dates.
-- Consider using `react-calendar` or `react-heatmap-calendar` for visual polish.
+- ⚙️ **Profile Page**
+  - Manage and delete Sacred Yes, Mood, and Practice Quest entries.
 
-✅ **5) Polish Profile Page**
-- Add personal progress summaries:
+- 🔒 **Authentication**
+  - NextAuth-based sign-in with per-user data isolation.
+
+---
+
+## 🚀 Next Steps: Post-MVP Improvements
+
+### 🎨 1) UI & UX Polishing
+- Incorporate design feedback from Juliet and early testers.
+- Refine colors, typography, and component layouts.
+- Reference modern successful apps for UI inspiration.
+
+---
+
+### 📁 2) Archive System for Practice Quests
+- Implement an **archive** for incomplete quests older than a configurable period (e.g., 30 days).
+- Provide a review page for archived quests with options to reactivate or permanently delete.
+
+---
+
+### 📈 3) Profile & Progress Insights *(Deferred until after data accumulation)*
+- Add personal summaries, such as:
   - “Quests completed this week”
   - “Moods logged this month”
-  - “Current streak of daily Sacred Yes entries”
+  - “Longest Sacred Yes streak”
 
 ---
 
-## ✨ WIREFRAME IDEAS
-
-- Tracker Page:  
-[🌕 Today's Moon Phase]
-[📝 Sacred Yes input]
-[📈 Mood input]
-[🧘 Practice Quests list with checkboxes]
-
-- Calendar Page:
-[Month View with heatmap squares]
-[Moon phase icons on special dates]
-[Click day → see moods, quests, sacred yes]
-
-- Profile Page:
-[Profile info + stats]
-[List of Sacred Yes, Moods, Quests history]
-[Delete/edit buttons]
+### 🛠️ 4) Optional Future Features (V2+)
+- Mood heatmap calendar enhancements.
+- Quest streaks and optional reminders.
+- Family or private group sharing.
+- Offline-ready PWA experience.
 
 ---
 
-🚨 **Note:** Keep this file updated as tasks are completed or plans evolve!
+## ✨ Wireframe Snapshot
+
+**Tracker Page**  
+- 🌕 Moon Phase Banner  
+- 📝 Sacred Yes input  
+- 📈 Mood input  
+- 🧘 Practice Quests list with reps controls
+
+**Calendar Page**  
+- Monthly calendar view with:
+  - Mood heatmap overlays
+  - Moon phase icons on new/full/quarter moon dates
+
+**Profile Page**  
+- User profile information
+- Lists of Sacred Yes, Mood, and Practice Quest history
+- Delete buttons for each entry type
+- Future: Archived quests tab
+
+---
+
+🚨 **Note:** Keep this roadmap updated as you gather feedback and complete major iterations. Your Cosmic Tracker MVP is ready for real-world use and family testing 🚀
