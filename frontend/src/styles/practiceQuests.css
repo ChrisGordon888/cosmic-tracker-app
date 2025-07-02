@@ -1,0 +1,121 @@
+/* 🧘 PracticeQuestsSection Cosmic Styling */
+.practice-quests-card {
+    background: rgba(0, 255, 255, 0.05);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    color: #e0e0e0;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
+    margin: 0 auto 2rem auto; /* 🌟 center the whole card horizontally */
+    max-width: 600px;
+    width: 100%;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-align: center; /* 🌟 center text inside the card */
+  }
+  
+  .practice-quests-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 40px rgba(0, 255, 255, 0.4);
+  }
+  
+  .practice-quests-title {
+    color: #ff00ff; /* Pink cosmic header */
+    text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .practice-quests-item {
+    position: relative;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    padding: 1rem;
+    margin: 0 auto 1.5rem auto; /* 🌟 center each inner quest card */
+    max-width: 500px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-align: left; /* 🌟 keep content readable */
+  }
+  
+  .practice-quests-item:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.3);
+  }
+  
+  .practice-quests-item-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #00ffff;
+    margin-bottom: 0.5rem;
+  }
+  
+  .practice-quests-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .delete-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.75rem;
+    color: #ff4d4d;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1.25rem;
+    transition: transform 0.2s ease;
+  }
+  
+  .delete-btn:hover {
+    transform: scale(1.2);
+  }
+  
+  .practice-quests-ritual,
+  .practice-quests-description {
+    color: #a5f3fc;
+    margin-bottom: 0.5rem;
+  }
+  
+  .practice-quests-controls {
+    display: flex;
+    justify-content: center; /* 🌟 center controls horizontally */
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.75rem;
+  }
+  
+  .minus-btn,
+  .plus-btn {
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 1.25rem;
+    border: none;
+    cursor: pointer;
+    background: #ff00ff;
+    color: white;
+    transition: transform 0.2s ease;
+  }
+  
+  .minus-btn:hover,
+  .plus-btn:hover {
+    transform: scale(1.1);
+  }
+  
+  .practice-quests-progress {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #00ffff;
+  }
+  
+  .practice-quests-complete {
+    color: #00ff00;
+    font-weight: 700;
+    margin-top: 0.75rem;
+  }
+  
+  .practice-quests-progress-note {
+    color: #facc15;
+    font-weight: 700;
+    margin-top: 0.75rem;
+  }

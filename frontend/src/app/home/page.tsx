@@ -1,6 +1,8 @@
 "use client";
 
 import { useSession } from "next-auth/react";
+import "@/styles/homePage.css";
+import CosmicClock from "@/components/CosmicClock";
 import MoonPhaseCard from "@/components/MoonPhaseCard"; // new modular moon phase
 import SacredYesSection from "@/components/SacredYesSection";
 import MoodSection from "@/components/MoodSection";
@@ -28,20 +30,32 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen px-6 py-10 flex flex-col items-center justify-center text-center">
-      <h1 className="text-3xl sm:text-4xl font-bold mb-4">🌙 Today's Cosmic Flow</h1>
-
+    <main className="home-page min-h-screen flex flex-col items-center justify-center text-center">
+    <h1 className="home-page-title text-3xl sm:text-4xl font-bold mb-6">
+      🌙 Today's Cosmic Flow
+    </h1>
+  
+    <CosmicClock className="cosmic-clock" />
+  
+    <section className="w-full max-w-3xl">
       <MoonPhaseCard />
-
+    </section>
+  
+    <section className="w-full max-w-3xl">
       <SacredYesSection />
-
+    </section>
+  
+    <section className="w-full max-w-3xl">
       <MoodSection />
-
+    </section>
+  
+    <section className="w-full max-w-3xl">
       <PracticeQuestsSection />
-
-      <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 max-w-xl mb-8">
-        Align with your rituals, your rhythm, and the moon. Choose a path to begin:
-      </p>
-    </main>
+    </section>
+  
+    <p className="text-base sm:text-lg max-w-xl mb-8">
+      Align with your rituals, your rhythm, and the moon. Choose a path to begin:
+    </p>
+  </main>
   );
 }

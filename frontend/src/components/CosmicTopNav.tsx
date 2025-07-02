@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BellIcon, UserCircleIcon } from "@heroicons/react/24/outline";
+import { UserCircleIcon } from "@heroicons/react/24/outline";
 
 export default function CosmicTopNav({ title }: { title?: string }) {
   return (
@@ -19,12 +19,8 @@ export default function CosmicTopNav({ title }: { title?: string }) {
           </h1>
         )}
 
-        {/* Right: Notification + Profile Icons */}
-        <div className="flex items-center gap-4">
-          <button className="relative hover:text-indigo-600 dark:hover:text-indigo-400 transition">
-            <BellIcon className="w-6 h-6 text-gray-700 dark:text-gray-300" />
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1">!</span>
-          </button>
+        {/* Right: Profile Icon Only */}
+        <div className="flex items-center">
           <Link href="/profile" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition">
             <UserCircleIcon className="w-7 h-7 text-gray-700 dark:text-gray-300" />
           </Link>

@@ -1,0 +1,43 @@
+.home-page {
+    background: radial-gradient(circle at center, #0d0024 0%, #1a0033 100%);
+    color: #67e8ff; /* fallback text color for general content */
+    font-family: 'Orbitron', Arial, sans-serif;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  /* Title - only affects Home page's top heading now */
+  .home-page-title {
+    color: #f4f4f4;
+    text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
+  }
+  
+  /* General paragraphs */
+  .home-page p {
+    color: #a5f3fc;
+  }
+  
+  /* Sections & Cards */
+  .home-page section {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .home-page section:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.4);
+  }
+  
+  /* Cosmic Clock */
+  .home-page .cosmic-clock {
+    font-size: 1.5rem;
+    color: #ff00ff;
+    text-shadow: 0 0 8px #ff00ff;
+    margin-bottom: 1.5rem;
+  }
