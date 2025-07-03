@@ -1,0 +1,47 @@
+/* 📖 Rituals Page Cosmic Styling */
+
+.rituals-page {
+    background: radial-gradient(circle at center, #0d0024 0%, #1a0033 100%);
+    color: #a5f3fc;
+    font-family: 'Orbitron', Arial, sans-serif;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  
+  /* Headings */
+  .rituals-page h1,
+  .rituals-page h2 {
+    color: #ff66cc;
+    text-shadow: 0 0 10px #ff66cc, 0 0 20px #ff66cc;
+  }
+  
+  /* Description paragraph */
+  .rituals-page p {
+    color: #a5f3fc;
+  }
+  
+  /* Section spacing */
+  .rituals-page .rituals-section {
+    margin-bottom: 2rem;
+  }
+  
+  /* End note / instructions */
+  .rituals-page .rituals-note {
+    color: #a5f3fc;
+    font-style: italic;
+    margin-top: 2rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  /* Ensure list items and forms maintain consistent width */
+  .rituals-page ul,
+  .rituals-page .add-ritual-form {
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
+  }

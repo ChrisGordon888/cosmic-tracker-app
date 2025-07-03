@@ -1,0 +1,102 @@
+/* 🌌 Profile Page Cosmic Styling */
+
+.profile-page {
+    background: radial-gradient(circle at center, #0d0024 0%, #1a0033 100%);
+    color: #a5f3fc;
+    font-family: 'Orbitron', Arial, sans-serif;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  
+  .profile-page h1 {
+    font-size: 2.25rem; /* bigger main title */
+    color: #00ffff;
+    text-shadow: 0 0 15px #00ffff, 0 0 30px #00ffff;
+    margin-bottom: 1.5rem;
+  }
+  
+  .profile-page h2 {
+    font-size: 1.75rem; /* bigger section titles */
+    color: #ff66cc;
+    text-shadow: 0 0 12px #ff66cc, 0 0 24px #ff66cc;
+    margin-bottom: 1rem;
+  }
+
+  /* Make Mood History header match mood component style */
+.profile-page h2.mood-header {
+    color: #00ffff;
+    text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
+  }
+  
+  .profile-page p {
+    color: #a5f3fc;
+    margin-bottom: 1rem;
+  }
+  
+  .profile-page .highlight {
+    color: #ff00ff;
+    text-shadow: 0 0 8px #ff00ff;
+  }
+  
+  .profile-page .error-text {
+    color: #ff4d4d;
+    font-weight: bold;
+  }
+  
+  /* Sacred Yes Entries - cosmic pink */
+  .sacred-entry {
+    background: rgba(64, 0, 64, 0.6);
+    border: 2px solid rgba(255, 0, 255, 0.4);
+    border-radius: 1rem;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .sacred-entry:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 30px rgba(255, 0, 255, 0.4);
+  }
+  
+  /* Mood Entries - cosmic aqua */
+  .mood-entry {
+    background: rgba(0, 32, 64, 0.6);
+    border: 2px solid rgba(0, 255, 255, 0.4);
+    border-radius: 1rem;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .mood-entry:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.4);
+  }
+  
+  /* Practice Quest Entries - cosmic red */
+  .quest-entry {
+    background: rgba(64, 0, 0, 0.6);
+    border: 2px solid rgba(255, 64, 64, 0.4);
+    border-radius: 1rem;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 0 20px rgba(255, 64, 64, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .quest-entry:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 30px rgba(255, 64, 64, 0.4);
+  }
+  
+  /* Entry Buttons */
+  .profile-page button {
+    background: rgba(255, 0, 0, 0.15);
+    color: #ff4d4d;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: bold;
+    transition: transform 0.2s ease, background 0.2s ease;
+  }
+  .profile-page button:hover {
+    transform: scale(1.05);
+    background: rgba(255, 0, 0, 0.3);
+  }

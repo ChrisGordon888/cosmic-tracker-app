@@ -1,0 +1,32 @@
+/* 🪐 CosmicClock Styling */
+
+.cosmic-clock-card {
+    background: rgba(0, 0, 64, 0.6);
+    border: 2px solid rgba(255, 0, 255, 0.4);
+    border-radius: 1rem;
+    padding: 1rem;
+    margin: 0 auto 2rem auto;
+    max-width: 600px;
+    width: 100%;
+    text-align: center;
+    color: #e0e0e0;
+    box-shadow: 0 0 30px rgba(255, 0, 255, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .cosmic-clock-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 40px rgba(255, 0, 255, 0.4);
+  }
+  
+  .cosmic-clock-time {
+    font-size: 1.25rem;
+    color: #ff00ff;
+    text-shadow: 0 0 8px #ff00ff, 0 0 16px #ff00ff;
+    margin-bottom: 0.5rem;
+  }
+  
+  .cosmic-clock-date {
+    font-size: 1rem;
+    color: #a5f3fc;
+  }

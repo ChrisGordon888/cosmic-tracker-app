@@ -1,0 +1,39 @@
+/* 🌟 Tracker Page Cosmic Styling */
+
+.tracker-page {
+    background: radial-gradient(circle at center, #0d0024 0%, #1a0033 100%);
+    color: #a5f3fc;
+    font-family: 'Orbitron', Arial, sans-serif;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  
+  /* Title / Headings */
+  .tracker-page h1,
+  .tracker-page h2,
+  .tracker-page h3 {
+    color: #ff66cc;
+    text-shadow: 0 0 10px #ff66cc, 0 0 20px #ff66cc;
+  }
+  
+  /* Description paragraph */
+  .tracker-page p {
+    color: #a5f3fc;
+  }
+  
+  /* General sections/cards spacing */
+  .tracker-page section {
+    margin-bottom: 2rem;
+  }
+  
+  /* Page end note */
+  .tracker-page .tracker-note {
+    color: #a5f3fc;
+    font-style: italic;
+    margin-top: 2rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }

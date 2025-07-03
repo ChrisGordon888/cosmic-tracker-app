@@ -8,6 +8,8 @@ import { ALL_MOOD_ENTRIES } from "@/graphql/mood";
 import { ALL_PRACTICE_QUESTS } from "@/graphql/practiceQuest";
 import moonData from "@/data/moonPhases2025.json";
 import dayjs from "dayjs";
+import "@/styles/calendarPage.css";
+
 
 export default function CalendarPage() {
     const { data: moodData, loading: moodLoading, error: moodError } = useQuery(ALL_MOOD_ENTRIES);
@@ -57,7 +59,7 @@ export default function CalendarPage() {
     };
 
     return (
-        <main className="min-h-screen flex flex-col items-center justify-start p-6">
+        <main className="calendar-page min-h-screen flex flex-col items-center justify-start p-6">
             <h1 className="text-3xl font-bold mb-4">📅 Cosmic Calendar</h1>
             <p className="mb-6 text-gray-600 dark:text-gray-300">
                 Track your moods, completed quests, and real moon phases — all in one cosmic view ✨
@@ -73,7 +75,7 @@ export default function CalendarPage() {
             />
 
             <div className="mt-6 text-left">
-                <h2 className="text-xl font-semibold mb-2">🌈 Legend</h2>
+                <h2 className="text-xl font-semibold mb-2">🗓️ Legend</h2>
                 <div className="flex items-center gap-4 flex-wrap">
                     <div className="flex items-center gap-1">
                         <div className="w-4 h-4 bg-red-500 rounded-full" />

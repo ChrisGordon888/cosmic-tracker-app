@@ -1,8 +1,8 @@
-// src/components/BottomNav.tsx
 "use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import "@/styles/bottomNav.css";
 
 const navItems = [
   { href: "/home", label: "🏠" },
@@ -13,21 +13,17 @@ const navItems = [
 ];
 
 export default function BottomNav() {
-  const pathname = usePathname();
-
-  return (
-    <nav className="fixed bottom-0 w-full bg-white border-t flex justify-around py-2">
-      {navItems.map(({ href, label }) => (
-        <Link key={href} href={href}>
-          <span
-            className={`text-xl ${
-              pathname === href ? "text-indigo-600" : "text-gray-500"
-            }`}
-          >
-            {label}
-          </span>
-        </Link>
-      ))}
-    </nav>
-  );
-}
+    const pathname = usePathname();
+  
+    return (
+      <nav className="bottom-nav">
+        {navItems.map(({ href, label }) => (
+          <Link key={href} href={href} legacyBehavior>
+            <a className={`nav-icon ${pathname === href ? "active" : ""}`}>
+              {label}
+            </a>
+          </Link>
+        ))}
+      </nav>
+    );
+  }

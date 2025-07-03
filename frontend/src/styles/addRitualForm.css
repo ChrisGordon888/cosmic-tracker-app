@@ -1,0 +1,33 @@
+/* 🌠 Add Ritual Form Styling */
+
+.add-ritual-form input,
+.add-ritual-form textarea {
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 0, 255, 0.4);
+  color: #e0e0e0;
+  width: 100%;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  font-family: 'Orbitron', Arial, sans-serif;
+}
+
+.add-ritual-form input::placeholder,
+.add-ritual-form textarea::placeholder {
+  color: #a5f3fc;
+}
+
+.add-ritual-form button {
+  background: linear-gradient(90deg, #ff00ff, #00ffff);
+  color: #000;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.add-ritual-form button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+}

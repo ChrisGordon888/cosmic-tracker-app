@@ -1,0 +1,30 @@
+/* 🌌 BottomNav Cosmic Styling */
+
+nav.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: rgba(0, 0, 64, 0.7);
+    border-top: 2px solid rgba(0, 255, 255, 0.4);
+    display: flex;
+    justify-content: space-around;
+    padding: 0.75rem 0;
+    backdrop-filter: blur(10px);
+    z-index: 50;
+  }
+  
+  nav.bottom-nav a.nav-icon {
+    color: #a5f3fc !important;
+    font-size: 1.5rem;
+    transition: transform 0.2s ease, color 0.2s ease;
+  }
+  
+  nav.bottom-nav a.nav-icon:hover {
+    color: #00ffff !important;
+    transform: scale(1.2);
+  }
+  
+  nav.bottom-nav a.nav-icon.active {
+    color: #ff00ff !important;
+    text-shadow: 0 0 12px #ff00ff;
+  }

@@ -1,0 +1,64 @@
+/* 🌟 AddPracticeQuestForm Styling */
+
+.add-practice-quest-card {
+    background: rgba(0, 64, 0, 0.6);
+    border: 2px solid rgba(0, 255, 128, 0.4);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin: 0 auto 2rem auto; /* centers the card horizontally */
+    color: #e0e0e0;
+    box-shadow: 0 0 30px rgba(0, 255, 128, 0.2);
+    max-width: 600px;
+    width: 100%;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-align: center;
+  }
+  
+  .add-practice-quest-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 40px rgba(0, 255, 128, 0.4);
+  }
+  
+  .add-practice-quest-card h2 {
+    font-size: 1.5rem;
+    color: #00ff80;
+    text-shadow: 0 0 10px #00ff80, 0 0 20px #00ff80;
+    margin-bottom: 1rem;
+  }
+  
+  .add-practice-quest-card input,
+  .add-practice-quest-card textarea,
+  .add-practice-quest-card select {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(0, 255, 128, 0.4);
+    color: #e0e0e0;
+    width: 100%;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    font-family: 'Orbitron', Arial, sans-serif;
+  }
+  
+  .add-practice-quest-card input::placeholder,
+  .add-practice-quest-card textarea::placeholder {
+    color: #a5f3fc;
+  }
+  
+  .add-practice-quest-card button {
+    background: linear-gradient(90deg, #00ff80, #00ffff);
+    color: #000;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .add-practice-quest-card button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(0, 255, 128, 0.4);
+  }
+  
+  .add-practice-quest-card .text-sm {
+    font-weight: 600;
+  }

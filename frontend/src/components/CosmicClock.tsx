@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import dayjs from "dayjs";
+import "@/styles/cosmicClock.css";
 
 export default function CosmicClock() {
   const [time, setTime] = useState(new Date());
@@ -10,9 +12,12 @@ export default function CosmicClock() {
     return () => clearInterval(interval);
   }, []);
 
+  const today = dayjs(time).format("dddd, MMMM D, YYYY");
+
   return (
-    <div className="text-sm text-indigo-600 dark:text-indigo-400 mb-4">
-      ⏰ Current Time: {time.toLocaleTimeString()}
+    <div className="cosmic-clock-card">
+      <p className="cosmic-clock-time">⏰ Current Time: {time.toLocaleTimeString()}</p>
+      <p className="cosmic-clock-date">📅 Today: {today}</p>
     </div>
   );
 }
