@@ -1,7 +1,7 @@
 /* 🪷 MoodSection Styling */
 
 .mood-card {
-    background: rgba(0, 32, 64, 0.6);
+    background: rgba(0, 32, 64, 0.6) !important; /* match mood-card background */
     border: 2px solid rgba(0, 255, 255, 0.4);
     border-radius: 1rem;
     padding: 1.5rem;

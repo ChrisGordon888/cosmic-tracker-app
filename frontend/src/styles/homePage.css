@@ -1,5 +1,5 @@
 .home-page {
-    background: radial-gradient(circle at center, #0d0024 0%, #1a0033 100%);
+    /* background: rgba(13, 0, 36, 0.5); 50% opacity, adjust to taste */
     color: #67e8ff; /* fallback text color for general content */
     font-family: 'Orbitron', Arial, sans-serif;
     padding: 2rem;
@@ -20,7 +20,7 @@
   
   /* Sections & Cards */
   .home-page section {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.6); /* dark, semi-opaque */
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 1rem;
     padding: 1.5rem;

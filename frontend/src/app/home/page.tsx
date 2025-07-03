@@ -7,6 +7,8 @@ import MoonPhaseCard from "@/components/MoonPhaseCard"; // new modular moon phas
 import SacredYesSection from "@/components/SacredYesSection";
 import MoodSection from "@/components/MoodSection";
 import PracticeQuestsSection from "@/components/PracticeQuestsSection";
+import CosmicBackground from "@/components/CosmicBackground"; // ✅ add this
+
 
 export default function Home() {
   const { data: session, status } = useSession();
@@ -30,7 +32,9 @@ export default function Home() {
   }
 
   return (
-    <main className="home-page min-h-screen flex flex-col items-center justify-center text-center">
+    <main className="home-page min-h-screen flex flex-col items-center justify-center text-center relative overflow-hidden">
+  <CosmicBackground /> {/* 🔮 background at the back */}
+
     <h1 className="home-page-title text-3xl sm:text-4xl font-bold mb-6">
       🌙 Today's Cosmic Flow
     </h1>
