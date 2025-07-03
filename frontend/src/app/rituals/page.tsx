@@ -6,6 +6,8 @@ import { ALL_RITUALS, ADD_RITUAL, UPDATE_RITUAL, DELETE_RITUAL } from "@/graphql
 import RitualList from "@/components/RitualList";
 import AddRitualForm from "@/components/AddRitualForm";
 import "@/styles/ritualsPage.css";
+import CosmicBackground from "@/components/CosmicBackground"; // ✅ add this
+
 
 export default function RitualsPage() {
     const { data, loading, error, refetch } = useQuery(ALL_RITUALS);
@@ -55,7 +57,9 @@ export default function RitualsPage() {
     };
 
     return (
-        <main className="rituals-page p-6 max-w-3xl mx-auto">
+        <main className="rituals-page min-h-screen flex flex-col items-center justify-start p-6 relative overflow-hidden">
+            <CosmicBackground /> {/* 🔮 background at the back */}
+
             <h1 className="text-3xl font-bold mb-4">📖 My Ritual Library</h1>
             <p className="mb-8 text-gray-600 dark:text-gray-300">
                 Create, edit, and manage your daily rituals below.

@@ -1,7 +1,7 @@
 /* 🌌 Profile Page Cosmic Styling */
 
 .profile-page {
-    background: radial-gradient(circle at center, #0d0024 0%, #1a0033 100%);
+    /* background: radial-gradient(circle at center, #0d0024 0%, #1a0033 100%); */
     color: #a5f3fc;
     font-family: 'Orbitron', Arial, sans-serif;
     padding: 2rem;
@@ -75,11 +75,11 @@
   
   /* Practice Quest Entries - cosmic red */
   .quest-entry {
-    background: rgba(64, 0, 0, 0.6);
-    border: 2px solid rgba(255, 64, 64, 0.4);
+    background: rgba(64, 0, 64, 0.6);
+    border: 2px solid rgba(255, 0, 255, 0.4);
     border-radius: 1rem;
     padding: 1rem 1.5rem;
-    box-shadow: 0 0 20px rgba(255, 64, 64, 0.2);
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.2);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
   .quest-entry:hover {

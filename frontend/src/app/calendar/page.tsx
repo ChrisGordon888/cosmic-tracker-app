@@ -9,6 +9,8 @@ import { ALL_PRACTICE_QUESTS } from "@/graphql/practiceQuest";
 import moonData from "@/data/moonPhases2025.json";
 import dayjs from "dayjs";
 import "@/styles/calendarPage.css";
+import CosmicBackground from "@/components/CosmicBackground"; // ✅ add this
+
 
 
 export default function CalendarPage() {
@@ -59,7 +61,9 @@ export default function CalendarPage() {
     };
 
     return (
-        <main className="calendar-page min-h-screen flex flex-col items-center justify-start p-6">
+        <main className="calendar-page min-h-screen flex flex-col items-center justify-start p-6 relative overflow-hidden">
+        <CosmicBackground /> {/* 🔮 background at the back */}    
+
             <h1 className="text-3xl font-bold mb-4">📅 Cosmic Calendar</h1>
             <p className="mb-6 text-gray-600 dark:text-gray-300">
                 Track your moods, completed quests, and real moon phases — all in one cosmic view ✨

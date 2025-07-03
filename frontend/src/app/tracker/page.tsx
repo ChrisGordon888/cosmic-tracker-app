@@ -5,6 +5,8 @@ import MoonPhaseCard from "@/components/MoonPhaseCard";
 import AddPracticeQuestForm from "@/components/AddPracticeQuestForm";
 import RitualPracticeSection from "@/components/RitualPracticeSection";
 import "@/styles/trackerPage.css";
+import CosmicBackground from "@/components/CosmicBackground"; // ✅ moving cosmic background
+
 
 
 export default function TrackerPage() {
@@ -29,7 +31,9 @@ export default function TrackerPage() {
     }
 
     return (
-        <main className="tracker-page min-h-screen flex flex-col items-center justify-start p-6">
+        <main className="tracker-page min-h-screen flex flex-col items-center justify-start p-6 relative overflow-hidden">
+            <CosmicBackground /> {/* 🔮 background at the back */}
+
             <h1 className="text-3xl sm:text-4xl font-bold mb-8">📿 Ritual Discipline Tracker</h1>
 
             <div className="flex justify-center w-full max-w-3xl mb-10">

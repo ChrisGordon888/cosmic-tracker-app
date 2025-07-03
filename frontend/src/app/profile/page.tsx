@@ -6,6 +6,8 @@ import { ALL_SACRED_YES, DELETE_SACRED_YES } from "@/graphql/sacredYes";
 import { ALL_MOOD_ENTRIES, DELETE_MOOD_ENTRY } from "@/graphql/mood";
 import { ALL_PRACTICE_QUESTS, DELETE_PRACTICE_QUEST } from "@/graphql/practiceQuest";
 import "@/styles/profilePage.css";
+import CosmicBackground from "@/components/CosmicBackground"; // ✅ moving cosmic background
+
 
 export default function ProfilePage() {
     const { data: session, status } = useSession();
@@ -43,7 +45,9 @@ export default function ProfilePage() {
     }
 
     return (
-        <main className="profile-page p-6 max-w-3xl mx-auto">
+        <main className="profile-page min-h-screen flex flex-col items-center justify-start p-6 relative overflow-hidden">
+            <CosmicBackground /> {/* 🔮 background at the back */}
+            
             <h1>⚙️ Profile & Cosmic History</h1>
             <p>Welcome, <span className="highlight">{session.user?.email}</span>! Review or manage your entries below:</p>
 

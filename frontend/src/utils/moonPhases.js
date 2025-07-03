@@ -1,25 +1,27 @@
 import moonData from "@/data/moonPhases2025.json";
 import dayjs from "dayjs";
 
-
 /**
  * 📅 parseDate
- * Parses YYYY-MM-DD into Date object.
- * Safely handles invalid or missing date strings.
+ * Parses full ISO datetime string into Date object.
+ * Handles timestamps like "2025-07-02T13:30:00" correctly.
  */
 function parseDate(dateStr) {
     if (!dateStr || typeof dateStr !== "string") {
         console.error("🚨 parseDate received invalid dateStr:", dateStr);
-        return new Date(NaN); // Return invalid Date
+        return new Date(NaN);
     }
-    const [year, month, day] = dateStr.split("-");
-    return new Date(Number(year), Number(month) - 1, Number(day));
+    const parsed = new Date(dateStr); // Let Date handle the ISO string
+    if (isNaN(parsed)) {
+        console.error("🚨 parseDate could not parse:", dateStr);
+    }
+    return parsed;
 }
 
 /**
  * 🌕 getMoonPhaseForDate
- * Finds the closest moon phase entry from your moon dataset.
- * Returns phase info for use in UI, or null if none found.
+ * Finds the most recent past moon phase relative to targetDate.
+ * Returns phase info for UI, or null if none found.
  */
 export function getMoonPhaseForDate(targetDate) {
     if (!targetDate || !(targetDate instanceof Date)) {
@@ -27,38 +29,43 @@ export function getMoonPhaseForDate(targetDate) {
         throw new Error("getMoonPhaseForDate requires a valid Date object.");
     }
 
-    let closest = null;
-    let minDiff = Infinity;
+    let latestPastPhase = null;
+
+    console.log("🔎 Target date:", targetDate.toISOString());
 
     for (const entry of moonData) {
-        if (!entry || !entry.date || !entry.phase) continue;
+        if (!entry?.date || !entry.phase) continue;
 
         const entryDate = parseDate(entry.date);
         if (isNaN(entryDate)) continue;
 
-        const diff = Math.abs(targetDate - entryDate);
+        console.log(`📅 Checking phase: ${entry.phase} at ${entryDate.toISOString()} → entryDate <= targetDate:`, entryDate <= targetDate);
 
-        if (diff < minDiff) {
-            minDiff = diff;
-            closest = entry;
+        if (entryDate <= targetDate) {
+            // This entry happened before or at target date → candidate for latest phase
+            latestPastPhase = entry;
+        } else {
+            // As soon as we hit a future entry (assuming data is sorted), stop searching
+            break;
         }
     }
 
-    // 🔥 New addition: fallback to first entry if targetDate is before the first moon date
-    if (!closest && moonData.length > 0) {
-        console.warn("🚨 Date before first moon phase entry; using first available phase.");
-        closest = moonData[0];
+    if (!latestPastPhase && moonData.length > 0) {
+        console.warn("🚨 Target date is before first moon phase entry; using first available phase.");
+        latestPastPhase = moonData[0];
     }
 
-    if (!closest) {
-        console.error("🚨 No closest moon phase found for date:", targetDate);
+    if (!latestPastPhase) {
+        console.error("🚨 No valid moon phase found for date:", targetDate);
         return null;
     }
 
+    console.log("✅ Closest past phase selected:", latestPastPhase);
+
     return {
-        ...closest,
-        icon: getPhaseIcon(closest.phase),
-        readableDate: dayjs(closest.date).format("dddd, MMMM D, YYYY [at] h:mm A"),
+        ...latestPastPhase,
+        icon: getPhaseIcon(latestPastPhase.phase),
+        readableDate: dayjs(latestPastPhase.date).format("dddd, MMMM D, YYYY [at] h:mm A"),
     };
 }
 
@@ -72,13 +79,13 @@ function getPhaseIcon(phase) {
         case "First Quarter": return "🌓";
         case "Full Moon": return "🌕";
         case "Third Quarter": return "🌗";
-        default: return "🌘"; // Waxing/waning phases fallback
+        default: return "🌘"; // fallback for waxing/waning phases
     }
 }
 
 /**
  * 🌌 getTodayMoonPhase
- * Shortcut to get moon phase info for the current day.
+ * Shortcut to get moon phase info for current date.
  */
 export function getTodayMoonPhase() {
     try {
