@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+// import { useState } from "react";
 import { useQuery, useMutation } from "@apollo/client";
 import { ALL_RITUALS, ADD_RITUAL, UPDATE_RITUAL, DELETE_RITUAL } from "@/graphql/rituals";
 import RitualList from "@/components/RitualList";
