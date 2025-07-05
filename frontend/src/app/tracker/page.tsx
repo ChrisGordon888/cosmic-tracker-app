@@ -45,7 +45,7 @@ export default function TrackerPage() {
             </div>
 
             <div className="flex flex-col items-center w-full max-w-3xl mb-10">
-                <h2 className="text-2xl font-bold mb-4">🧘 Today's Ritual Practices</h2>
+            <h2 className="text-2xl font-bold mb-4">🧘 Today&apos;s Ritual Practices</h2>
                 <RitualPracticeSection />
             </div>
 

@@ -49,7 +49,7 @@ export default function PracticeQuestsSection() {
 
   return (
     <section className="practice-quests-card">
-      <h2 className="practice-quests-title">🧘 Today's Spiritual Quests</h2>
+     <h2 className="practice-quests-title">🧘 Today&apos;s Spiritual Quests</h2>
 
       {(questsLoading || ritualsLoading) && <p>Loading your quests and rituals...</p>}
       {questsError && <p className="text-red-600">Error: {questsError.message}</p>}
@@ -103,7 +103,7 @@ export default function PracticeQuestsSection() {
               <p className="practice-quests-complete">✅ Completed! Cosmic mastery unlocked.</p>
             ) : (
               quest.completedReps > 0 && (
-                <p className="practice-quests-progress-note">⚡ Keep going! You're making progress.</p>
+                <p className="practice-quests-progress-note">⚡ Keep going! You&apos;re making progress.</p>
               )
             )}
           </div>

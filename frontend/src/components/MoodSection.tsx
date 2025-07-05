@@ -46,7 +46,7 @@ export default function MoodSection() {
 
   return (
     <section className="mood-card">
-    <h2>🪷 Today's Mood</h2>
+   <h2>🪷 Today&apos;s Mood</h2>
     {loading && <p>Loading your mood entry...</p>}
     {error && <p className="text-red-600">Error: {error.message}</p>}
     <div className="flex items-center gap-4 mb-2">

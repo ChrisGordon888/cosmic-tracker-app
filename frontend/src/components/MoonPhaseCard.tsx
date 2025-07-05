@@ -37,7 +37,7 @@ export default function MoonPhaseCard() {
                     </div>
                 </>
             ) : (
-                <p>Unable to load today's moon phase.</p>
+                <p>Unable to load today&apos;s moon phase.</p>
             )}
         </div>
     );

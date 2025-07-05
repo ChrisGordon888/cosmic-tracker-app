@@ -40,7 +40,7 @@ export default function SacredYesSection() {
 
     return (
         <section className="sacred-yes-card">
-            <h2>🌟 Today's Sacred Yes</h2>
+           <h2>🌟 Today&apos;s Sacred Yes</h2>
             {loading && <p>Loading your sacred intention...</p>}
             {error && <p className="text-red-600">Error: {error.message}</p>}
             <textarea
