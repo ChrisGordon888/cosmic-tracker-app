@@ -30,7 +30,7 @@ export default function CalendarPage() {
         if (view !== "month") return null;
 
         const dateStr = dayjs(date).format("YYYY-MM-DD");
-        const moodEntry = moodData?.allMoodEntries?.find((m) => m.date === dateStr);
+        const moodEntry = moodData?.allMoodEntries?.find((m: { date: string }) => m.date === dateStr);
         const completedQuests = questsData?.allPracticeQuests?.filter(
             (q) => q.date === dateStr && q.completed
         );
@@ -62,7 +62,7 @@ export default function CalendarPage() {
 
     return (
         <main className="calendar-page min-h-screen flex flex-col items-center justify-start p-6 relative overflow-hidden">
-        <CosmicBackground /> {/* 🔮 background at the back */}    
+            <CosmicBackground /> {/* 🔮 background at the back */}
 
             <h1 className="text-3xl font-bold mb-4">📅 Cosmic Calendar</h1>
             <p className="mb-6 text-gray-600 dark:text-gray-300">
