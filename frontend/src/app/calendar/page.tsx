@@ -32,7 +32,7 @@ export default function CalendarPage() {
         const dateStr = dayjs(date).format("YYYY-MM-DD");
         const moodEntry = moodData?.allMoodEntries?.find((m: { date: string }) => m.date === dateStr);
         const completedQuests = questsData?.allPracticeQuests?.filter(
-            (q) => q.date === dateStr && q.completed
+            (q: { date: string; completed: boolean }) => q.date === dateStr && q.completed
         );
         const moonEvent = moonMap[dateStr];
 
