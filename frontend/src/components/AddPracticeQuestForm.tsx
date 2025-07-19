@@ -63,7 +63,8 @@ export default function AddPracticeQuestForm() {
             setRitualId("");
         } catch (e) {
             console.error("❌ Failed to add quest:", e);
-            const duplicate = e?.message?.includes("duplicate key");
+            const error = e as { message?: string };
+            const duplicate = error.message?.includes("duplicate key");
             setMessage(
                 duplicate
                     ? "⚠️ A quest with this name already exists today!"
@@ -83,8 +84,8 @@ export default function AddPracticeQuestForm() {
             {message && (
                 <p
                     className={`text-sm font-semibold mb-2 animate-pulse ${message.startsWith("🎉")
-                            ? "text-green-600 dark:text-green-400"
-                            : "text-red-600 dark:text-red-400"
+                        ? "text-green-600 dark:text-green-400"
+                        : "text-red-600 dark:text-red-400"
                         }`}
                 >
                     {message}
@@ -122,7 +123,7 @@ export default function AddPracticeQuestForm() {
                 onChange={(e) => setRitualId(e.target.value)}
             >
                 <option value="">No Ritual Linked (recommended to link one!)</option>
-                {ritualsData?.allRituals?.map((ritual) => (
+                {ritualsData?.allRituals?.map((ritual: Ritual) => (
                     <option key={ritual.id} value={ritual.id}>
                         🔮 {ritual.title}
                     </option>

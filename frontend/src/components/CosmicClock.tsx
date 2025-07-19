@@ -4,7 +4,12 @@ import { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import "@/styles/cosmicClock.css";
 
-export default function CosmicClock() {
+// ✅ Add prop types
+type CosmicClockProps = {
+  className?: string;
+};
+
+export default function CosmicClock({ className = "" }: CosmicClockProps) {
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
@@ -15,7 +20,7 @@ export default function CosmicClock() {
   const today = dayjs(time).format("dddd, MMMM D, YYYY");
 
   return (
-    <div className="cosmic-clock-card">
+    <div className={`cosmic-clock-card ${className}`}>
       <p className="cosmic-clock-time">⏰ Current Time: {time.toLocaleTimeString()}</p>
       <p className="cosmic-clock-date">📅 Today: {today}</p>
     </div>
