@@ -11,11 +11,11 @@ export default function LandingPage() {
 
             <div className="relative z-10 p-6 max-w-2xl">
                 <h1 className="landing-title text-4xl sm:text-5xl font-bold mb-6">
-                    🌌 Welcome to Cosmic Tracker
+                    🌌 Welcome to The Cosmic Universe
                 </h1>
 
                 <p className="landing-description text-lg sm:text-xl text-gray-200 mb-8">
-                    Align your energy, rituals, and intentions with the rhythm of the moon.
+                    Align your energy, rituals, and intentions with the rhythm of the moon and cosmos.
                     Begin your sacred journey today.
                 </p>
 
