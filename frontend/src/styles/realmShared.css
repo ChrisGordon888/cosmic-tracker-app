@@ -1,0 +1,263 @@
+/* ===================================
+   🌌 SHARED REALM COMPONENTS
+   Used across all realm pages
+   =================================== */
+
+/* === GLASS MORPHISM CARDS === */
+.glass-card {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.05)
+  );
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  border-radius: 16px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  border-color: rgba(0, 212, 255, 0.5);
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+}
+
+/* === NEON GLOW TEXT === */
+.neon-glow {
+  text-shadow: 
+    0 0 10px rgba(0, 212, 255, 0.8),
+    0 0 20px rgba(0, 212, 255, 0.6),
+    0 0 30px rgba(0, 212, 255, 0.4);
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    text-shadow: 
+      0 0 10px rgba(0, 212, 255, 0.8),
+      0 0 20px rgba(0, 212, 255, 0.6);
+  }
+  50% {
+    text-shadow: 
+      0 0 20px rgba(0, 212, 255, 1),
+      0 0 30px rgba(0, 212, 255, 0.8),
+      0 0 40px rgba(0, 212, 255, 0.6);
+  }
+}
+
+/* === LEVEL BADGE === */
+.level-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #FF006E, #9D4EDD);
+  border-radius: 50%;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+  box-shadow: 0 0 30px rgba(157, 78, 221, 0.6);
+  animation: rotate-ring 8s linear infinite;
+}
+
+@keyframes rotate-ring {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* === STAT BARS === */
+.stat-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.stat-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00D4FF, #9D4EDD);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* === BUTTONS === */
+.btn-primary {
+  background: linear-gradient(135deg, #FF006E, #9D4EDD);
+  color: white;
+  padding: 0.75rem 2rem;
+  border-radius: 9999px;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(157, 78, 221, 0.4);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(157, 78, 221, 0.6);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: #00D4FF;
+  padding: 0.75rem 2rem;
+  border-radius: 9999px;
+  border: 2px solid #00D4FF;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background: #00D4FF;
+  color: #0A0A0F;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
+}
+
+/* === REALM PORTAL CARDS === */
+.realm-portal {
+  position: relative;
+  background: linear-gradient(135deg, rgba(30, 30, 50, 0.9), rgba(15, 15, 30, 0.8));
+  border: 2px solid transparent;
+  border-radius: 16px;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.realm-portal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, #FF006E, #00D4FF);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.realm-portal:hover::before {
+  transform: scaleX(1);
+}
+
+.realm-portal:hover {
+  border-color: #00D4FF;
+  transform: translateY(-4px);
+  box-shadow: 0 10px 40px rgba(0, 212, 255, 0.3);
+}
+
+.realm-portal.locked {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.realm-portal.unlocked {
+  cursor: pointer;
+}
+
+/* === QUEST CARDS === */
+.quest-card {
+  background: linear-gradient(135deg, rgba(40, 40, 60, 0.8), rgba(20, 20, 40, 0.8));
+  border-left: 4px solid #FF006E;
+  border-radius: 12px;
+  padding: 1.25rem;
+  transition: all 0.3s ease;
+}
+
+.quest-card:hover {
+  border-left-color: #00D4FF;
+  transform: translateX(8px);
+  box-shadow: 0 4px 20px rgba(0, 212, 255, 0.2);
+}
+
+.quest-card.completed {
+  opacity: 0.6;
+  border-left-color: #FFD60A;
+}
+
+/* === TEXT UTILITIES === */
+.text-primary { color: #FFFFFF; }
+.text-secondary { color: #A0A0B0; }
+.text-muted { color: #6B6B7B; }
+.text-glow { color: #00D4FF; }
+.text-stats { font-family: 'Space Grotesk', sans-serif; }
+.font-display { font-family: 'Orbitron', sans-serif; }
+
+/* === ANIMATIONS === */
+.fade-in {
+  animation: fadeIn 0.6s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.slide-in-left {
+  animation: slideInLeft 0.5s ease-out;
+}
+
+@keyframes slideInLeft {
+  from { 
+    opacity: 0; 
+    transform: translateX(-50px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateX(0); 
+  }
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  .level-badge {
+    width: 60px;
+    height: 60px;
+    font-size: 1.2rem;
+  }
+  
+  .btn-primary,
+  .btn-secondary {
+    padding: 0.6rem 1.5rem;
+    font-size: 0.9rem;
+  }
+}

@@ -1,0 +1,51 @@
+/* ===================================
+   🕯️ REALM 202 - THE VEIL
+   Custom styling for this realm
+   =================================== */
+
+/* Realm 202 specific colors */
+:root {
+  --realm-202-primary: #9D84B7;
+  --realm-202-secondary: #4A90E2;
+  --realm-202-accent: #C0C0C0;
+}
+
+.realm-202-title {
+  color: var(--realm-202-primary);
+}
+
+.realm-202-glow {
+  color: var(--realm-202-primary);
+}
+
+.realm-202-bar {
+  background: linear-gradient(90deg, var(--realm-202-secondary), var(--realm-202-primary));
+}
+
+/* Dream mist effect */
+.dream-mist {
+  position: relative;
+}
+
+.dream-mist::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(157, 132, 183, 0.2) 0%, transparent 70%);
+  animation: mist-flow 8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes mist-flow {
+  0%, 100% { 
+    opacity: 0.3;
+    transform: scale(1) translateY(0);
+  }
+  50% { 
+    opacity: 0.6;
+    transform: scale(1.1) translateY(-10px);
+  }
+}

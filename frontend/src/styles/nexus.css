@@ -1,0 +1,31 @@
+/* ===================================
+   🌌 THE COSMIC NEXUS - STYLES
+   =================================== */
+
+/* Page-specific overrides and additions */
+.nexus-container {
+  position: relative;
+  z-index: 1;
+}
+
+/* Realm portal grid specific to nexus */
+.nexus-realm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Daily rituals placeholder styling */
+.rituals-placeholder {
+  opacity: 0.5;
+}
+
+/* Quick actions hover effect */
+.quick-action-card {
+  transition: all 0.3s ease;
+}
+
+.quick-action-card:hover {
+  transform: translateY(-4px);
+  border-color: #00D4FF;
+}

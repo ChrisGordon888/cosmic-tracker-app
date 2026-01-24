@@ -1,0 +1,66 @@
+/* ===================================
+   🌙 REALM 101 - MOONLIT ROADS
+   Custom styling for this realm
+   =================================== */
+
+/* Realm 101 specific colors */
+:root {
+  --realm-101-primary: #3D1E6D;
+  --realm-101-secondary: #00D4FF;
+  --realm-101-accent: #FF006E;
+}
+
+.realm-101-title {
+  color: var(--realm-101-secondary);
+}
+
+.realm-101-glow {
+  color: var(--realm-101-secondary);
+}
+
+.realm-101-bar {
+  background: linear-gradient(90deg, var(--realm-101-primary), var(--realm-101-secondary));
+}
+
+/* Neon rain effect */
+.neon-rain {
+  position: relative;
+  overflow: hidden;
+}
+
+.neon-rain::before {
+  content: '';
+  position: absolute;
+  top: -100%;
+  left: 0;
+  width: 100%;
+  height: 200%;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(0, 212, 255, 0.1) 50%,
+    transparent 100%
+  );
+  animation: rain-fall 3s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes rain-fall {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+/* Shadow pulse effect */
+.shadow-pulse {
+  animation: shadow-pulse 4s ease-in-out infinite;
+}
+
+@keyframes shadow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(61, 30, 109, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(61, 30, 109, 0.8),
+                0 0 60px rgba(0, 212, 255, 0.4);
+  }
+}

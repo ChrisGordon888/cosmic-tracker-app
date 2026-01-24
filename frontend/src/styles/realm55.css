@@ -1,0 +1,108 @@
+/* ===================================
+   ⛰️ REALM 55 - SKYBOUND CITY
+   Custom styling for this realm
+   =================================== */
+
+/* Realm 55 specific colors */
+:root {
+  --realm-55-primary: #FFD700;
+  --realm-55-secondary: #FCD34D;
+  --realm-55-accent: #1E40AF;
+}
+
+.realm-55-title {
+  color: var(--realm-55-primary);
+  text-shadow: 
+    0 0 20px rgba(255, 215, 0, 0.8),
+    0 0 40px rgba(255, 215, 0, 0.4);
+}
+
+.realm-55-glow {
+  color: var(--realm-55-primary);
+}
+
+.realm-55-bar {
+  background: linear-gradient(90deg, var(--realm-55-secondary), var(--realm-55-primary));
+}
+
+/* Divine light rays */
+.divine-rays {
+  position: relative;
+}
+
+.divine-rays::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: 50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(255, 215, 0, 0.1) 30deg,
+    transparent 60deg,
+    rgba(255, 215, 0, 0.1) 90deg,
+    transparent 120deg,
+    rgba(255, 215, 0, 0.1) 150deg,
+    transparent 180deg,
+    rgba(255, 215, 0, 0.1) 210deg,
+    transparent 240deg,
+    rgba(255, 215, 0, 0.1) 270deg,
+    transparent 300deg,
+    rgba(255, 215, 0, 0.1) 330deg,
+    transparent 360deg
+  );
+  animation: divine-rotate 20s linear infinite;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes divine-rotate {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Power pulse effect */
+.power-pulse {
+  animation: power-pulse 3s ease-in-out infinite;
+}
+
+@keyframes power-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(255, 215, 0, 0.8),
+                0 0 60px rgba(252, 211, 77, 0.6);
+    transform: scale(1.02);
+  }
+}
+
+/* Gold shimmer effect */
+.gold-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.gold-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 215, 0, 0.4),
+    transparent
+  );
+  animation: shimmer-sweep 3s infinite;
+}
+
+@keyframes shimmer-sweep {
+  0% { left: -100%; }
+  100% { left: 200%; }
+}

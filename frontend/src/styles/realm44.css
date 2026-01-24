@@ -1,0 +1,94 @@
+/* ===================================
+   🛍️ REALM 44 - ASTRAL BAZAAR
+   Custom styling for this realm
+   =================================== */
+
+/* Realm 44 specific colors */
+:root {
+  --realm-44-primary: #DC2626;
+  --realm-44-secondary: #F87171;
+  --realm-44-accent: #FCD34D;
+}
+
+.realm-44-title {
+  color: var(--realm-44-accent);
+  text-shadow: 
+    0 0 20px rgba(252, 211, 77, 0.8),
+    0 0 40px rgba(248, 113, 113, 0.4);
+}
+
+.realm-44-glow {
+  color: var(--realm-44-accent);
+}
+
+.realm-44-bar {
+  background: linear-gradient(90deg, var(--realm-44-primary), var(--realm-44-accent));
+}
+
+/* Marketplace flicker effect */
+.market-flicker {
+  animation: market-flicker 4s ease-in-out infinite;
+}
+
+@keyframes market-flicker {
+  0%, 100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+  25% {
+    opacity: 0.9;
+    filter: brightness(1.1);
+  }
+  50% {
+    opacity: 1;
+    filter: brightness(0.95);
+  }
+  75% {
+    opacity: 0.95;
+    filter: brightness(1.05);
+  }
+}
+
+/* Cosmic trade shimmer */
+.trade-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.trade-shimmer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(252, 211, 77, 0.3),
+    rgba(220, 38, 38, 0.3),
+    transparent
+  );
+  animation: trade-sweep 3s infinite;
+}
+
+@keyframes trade-sweep {
+  0% { left: -100%; }
+  100% { left: 200%; }
+}
+
+/* Temporal distortion effect */
+.temporal-distortion {
+  animation: temporal-wave 5s ease-in-out infinite;
+}
+
+@keyframes temporal-wave {
+  0%, 100% {
+    transform: perspective(1000px) rotateY(0deg);
+    filter: hue-rotate(0deg);
+  }
+  50% {
+    transform: perspective(1000px) rotateY(5deg);
+    filter: hue-rotate(10deg);
+  }
+}

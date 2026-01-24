@@ -1,0 +1,70 @@
+/* ===================================
+   🌪️ REALM 303 - FRACTURED FRONTIER
+   Custom styling for this realm
+   =================================== */
+
+/* Realm 303 specific color overrides */
+:root {
+  --realm-303-primary: #FF0040;
+  --realm-303-secondary: #00FFFF;
+  --realm-303-accent: #9D00FF;
+}
+
+/* Realm 303 heading colors */
+.realm-303-title {
+  color: var(--realm-303-primary);
+}
+
+/* Glitch effect for realm 303 */
+.glitch-effect {
+  position: relative;
+}
+
+.glitch-effect::before,
+.glitch-effect::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.8;
+}
+
+.glitch-effect::before {
+  animation: glitch-1 2s infinite;
+  color: #FF0040;
+  z-index: -1;
+}
+
+.glitch-effect::after {
+  animation: glitch-2 2s infinite;
+  color: #00FFFF;
+  z-index: -2;
+}
+
+@keyframes glitch-1 {
+  0%, 100% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(-2px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  80% { transform: translate(2px, -2px); }
+}
+
+@keyframes glitch-2 {
+  0%, 100% { transform: translate(0); }
+  20% { transform: translate(2px, -2px); }
+  40% { transform: translate(2px, 2px); }
+  60% { transform: translate(-2px, -2px); }
+  80% { transform: translate(-2px, 2px); }
+}
+
+/* Trial cards specific styling */
+.trial-card-303 {
+  border-left-color: var(--realm-303-primary);
+}
+
+.trial-card-303:hover {
+  border-left-color: var(--realm-303-secondary);
+  box-shadow: 0 4px 20px rgba(255, 0, 64, 0.3);
+}
