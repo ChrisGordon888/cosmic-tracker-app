@@ -212,11 +212,12 @@ export default function Realm101() {
                     </div>
 
                     {/* Music Section - NightLight */}
-                    <div className="mb-8 fade-in" style={{ animationDelay: '0.7s' }}>
-                        <h2 className="text-2xl font-display mb-4">🎵 REALM SOUNDTRACK</h2>
+                    <div className="glass-card p-8 mb-8 fade-in" style={{ animationDelay: '0.7s' }}>
+                        <h2 className="text-2xl font-display mb-4">
+                            🎵 REALM SOUNDTRACK
+                        </h2>
                         <p className="text-secondary mb-4">
                             Moonlit Roads pulses with moody, atmospheric beats that echo through rain-soaked streets.
-                            This is the soundtrack to survival in darkness—your NightLight through the noir.
                         </p>
                         <RealmMusicPlayer
                             trackUrl="/music/realms/101/nightLight.mp3"
@@ -224,6 +225,7 @@ export default function Realm101() {
                             artist="Cosmic 888"
                             realmName="Moonlit Roads"
                             realmColor="#00D4FF"
+                            realmId={101}
                         />
                     </div>
 

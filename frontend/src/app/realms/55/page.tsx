@@ -211,11 +211,12 @@ export default function Realm55() {
                     </div>
 
                     {/* Music Section - Mula */}
-                    <div className="mb-8 fade-in" style={{ animationDelay: '0.7s' }}>
-                        <h2 className="text-2xl font-display mb-4">🎵 REALM SOUNDTRACK</h2>
+                    <div className="glass-card p-8 mb-8 fade-in" style={{ animationDelay: '0.7s' }}>
+                        <h2 className="text-2xl font-display mb-4">
+                            🎵 REALM SOUNDTRACK
+                        </h2>
                         <p className="text-secondary mb-4">
                             Skybound City thunders with triumphant anthems of power and glory.
-                            This is the sound of divine authority—where manifestation becomes reality.
                         </p>
                         <RealmMusicPlayer
                             trackUrl="/music/realms/55/mula.mp3"
@@ -223,6 +224,7 @@ export default function Realm55() {
                             artist="Cosmic 888"
                             realmName="Skybound City"
                             realmColor="#FFD700"
+                            realmId={55}
                         />
                     </div>
 

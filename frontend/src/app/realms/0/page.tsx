@@ -211,12 +211,12 @@ export default function Realm0() {
                     </div>
 
                     {/* Music Section - Walking Forward */}
-                    <div className="mb-8 fade-in" style={{ animationDelay: '0.7s' }}>
-                        <h2 className="text-2xl font-display mb-4">🎵 REALM SOUNDTRACK</h2>
+                    <div className="glass-card p-8 mb-8 fade-in" style={{ animationDelay: '0.7s' }}>
+                        <h2 className="text-2xl font-display mb-4">
+                            🎵 REALM SOUNDTRACK
+                        </h2>
                         <p className="text-secondary mb-4">
-                            InterSiddhi resonates with the frequency of mastery—the sound of a soul
-                            that has walked through every realm and emerged sovereign. This is the anthem
-                            of those who master all their oceans.
+                            InterSiddhi resonates with transcendent frequencies of cosmic mastery and unity.
                         </p>
                         <RealmMusicPlayer
                             trackUrl="/music/realms/0/walkingForward.mp3"
@@ -224,6 +224,7 @@ export default function Realm0() {
                             artist="Cosmic 888"
                             realmName="InterSiddhi"
                             realmColor="#E0E0E0"
+                            realmId={0}
                         />
                     </div>
 

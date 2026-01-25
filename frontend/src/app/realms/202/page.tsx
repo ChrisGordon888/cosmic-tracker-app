@@ -211,11 +211,12 @@ export default function Realm202() {
                     </div>
 
                     {/* Music Section - Mysterious Way */}
-                    <div className="mb-8 fade-in" style={{ animationDelay: '0.7s' }}>
-                        <h2 className="text-2xl font-display mb-4">🎵 REALM SOUNDTRACK</h2>
+                    <div className="glass-card p-8 mb-8 fade-in" style={{ animationDelay: '0.7s' }}>
+                        <h2 className="text-2xl font-display mb-4">
+                            🎵 REALM SOUNDTRACK
+                        </h2>
                         <p className="text-secondary mb-4">
-                            The Veil pulses with ethereal melodies that drift between dreams and memory.
-                            Music here is mysterious—heard clearest in the dark.
+                            The Veil pulses with dreamy, ethereal beats that drift between worlds.
                         </p>
                         <RealmMusicPlayer
                             trackUrl="/music/realms/202/mysteriousWay.mp3"
@@ -223,6 +224,7 @@ export default function Realm202() {
                             artist="Cosmic 888"
                             realmName="The Veil"
                             realmColor="#9D84B7"
+                            realmId={202}
                         />
                     </div>
 

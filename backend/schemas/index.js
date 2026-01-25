@@ -42,7 +42,98 @@ const typeDefs = gql`
     updatedAt: String
   }
 
-  # 📖 Queries
+   # 👤 USER (NEW!)
+  type User {
+    id: ID!
+    email: String!
+    name: String
+    image: String
+    
+    # Gamification
+    level: Int!
+    xp: Int!
+    xpToNextLevel: Int!
+    
+    # Realm Progress
+    currentRealm: Int!
+    unlockedRealms: [Int!]!
+    completedTrials: [CompletedTrial!]!
+    visitedLocations: [VisitedLocation!]!
+    
+    # Music Stats
+    musicStats: MusicStats!
+    
+    # Streaks
+    streaks: Streaks!
+    
+    createdAt: String
+    updatedAt: String
+  }
+  
+  # 🎯 TRIAL (NEW!)
+  type CompletedTrial {
+    realmId: Int!
+    trialId: String!
+    trialName: String
+    stepsCompleted: Int!
+    totalSteps: Int!
+    isComplete: Boolean!
+    completedAt: String
+    xpEarned: Int!
+  }
+  
+  # 📍 LOCATION (NEW!)
+  type VisitedLocation {
+    realmId: Int!
+    locationId: String!
+    locationName: String
+    visitedAt: String!
+    xpEarned: Int!
+  }
+  
+  # 🎵 MUSIC STATS (NEW!)
+  type MusicStats {
+    tracksListened: [TrackListen!]!
+    totalListeningTime: Int!
+    favoriteRealm: Int
+    totalTracksUnlocked: Int!
+  }
+  
+  type TrackListen {
+    realmId: Int!
+    trackTitle: String!
+    artist: String!
+    listenCount: Int!
+    totalListenTime: Int!
+    firstListenedAt: String
+    lastListenedAt: String!
+    xpEarned: Int!
+  }
+  
+  # 🔥 STREAKS (NEW!)
+  type Streaks {
+    currentStreak: Int!
+    longestStreak: Int!
+    lastLoginDate: String
+    totalLogins: Int!
+  }
+  
+  # 🏆 LEADERBOARD (NEW!)
+  type LeaderboardEntry {
+    rank: Int!
+    user: User!
+  }
+  
+  # ⚡ XP RESPONSE (NEW!)
+  type XPGainResponse {
+    user: User!
+    xpGained: Int!
+    leveledUp: Boolean!
+    newLevel: Int!
+    message: String!
+  }
+
+   # 📖 Queries
   type Query {
     hello: String
     todayMoonPhase: String
@@ -62,6 +153,14 @@ const typeDefs = gql`
     # Rituals
     allRituals: [Ritual!]!
     getRitual(id: ID!): Ritual
+    
+    # ========================================
+    # 🆕 MUSIC MULTIVERSE QUERIES (ADD THESE!)
+    # ========================================
+    me: User
+    getUserProgress: User
+    getLeaderboard(limit: Int): [LeaderboardEntry!]!
+    checkRealmUnlock(realmId: Int!): Boolean!
   }
 
   # 🛠️ Mutations
@@ -101,6 +200,27 @@ const typeDefs = gql`
     addRitual(title: String!, description: String!): Ritual
     updateRitual(id: ID!, title: String!, description: String!): Ritual
     deleteRitual(id: ID!): Ritual
+    
+    # ========================================
+    # 🆕 MUSIC MULTIVERSE MUTATIONS (NEW!)
+    # ========================================
+    
+    # Trial System
+    startTrial(realmId: Int!, trialId: String!, trialName: String!): User!
+    completeTrialStep(realmId: Int!, trialId: String!): XPGainResponse!
+    
+    # Location Exploration
+    visitLocation(realmId: Int!, locationId: String!, locationName: String!): XPGainResponse!
+    
+    # Music Tracking
+    logMusicListen(realmId: Int!, trackTitle: String!, duration: Int!): XPGainResponse!
+    
+    # Realm Management
+    unlockRealm(realmId: Int!): User!
+    setCurrentRealm(realmId: Int!): User!
+    
+    # Streaks
+    logDailyLogin: XPGainResponse!
   }
 `;
 

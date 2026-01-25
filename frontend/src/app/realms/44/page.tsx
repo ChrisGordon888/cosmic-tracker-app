@@ -211,11 +211,12 @@ export default function Realm44() {
                     </div>
 
                     {/* Music Section - Dog Watch */}
-                    <div className="mb-8 fade-in" style={{ animationDelay: '0.7s' }}>
-                        <h2 className="text-2xl font-display mb-4">🎵 REALM SOUNDTRACK</h2>
+                    <div className="glass-card p-8 mb-8 fade-in" style={{ animationDelay: '0.7s' }}>
+                        <h2 className="text-2xl font-display mb-4">
+                            🎵 REALM SOUNDTRACK
+                        </h2>
                         <p className="text-secondary mb-4">
-                            The Astral Bazaar pulses with the rhythm of cosmic commerce and ancient wisdom.
-                            Vigilant energy guards the exchange of ideas, power, and transformation.
+                            The Astral Bazaar hums with mystic rhythms of ancient wisdom and cosmic commerce.
                         </p>
                         <RealmMusicPlayer
                             trackUrl="/music/realms/44/dogWatch.mp3"
@@ -223,8 +224,10 @@ export default function Realm44() {
                             artist="Cosmic 888"
                             realmName="Astral Bazaar"
                             realmColor="#9B59B6"
+                            realmId={44}
                         />
                     </div>
+
                     {/* Navigation */}
                     <div className="flex justify-between items-center fade-in" style={{ animationDelay: '0.8s' }}>
                         <Link href="/nexus">
