@@ -8,8 +8,7 @@ import '@/styles/realmShared.css';
 import '@/styles/realm303.css';
 import RealmMusicPlayer from '@/components/realm/RealmMusicPlayer';
 import { useQuery, useMutation } from '@apollo/client';
-import { GET_ME, COMPLETE_TRIAL_STEP, START_TRIAL } from '@/graphql/realms';
-
+import { GET_ME, COMPLETE_TRIAL_STEP, START_TRIAL, VISIT_LOCATION } from '@/graphql/realms';
 /**
  * 🌪️ REALM 303: FRACTURED FRONTIER
  * Theme: Chaos & Creation
@@ -24,12 +23,15 @@ export default function Realm303() {
     const { data: userData, loading: userLoading, refetch } = useQuery(GET_ME);
     const [completeTrialStep] = useMutation(COMPLETE_TRIAL_STEP);
     const [startTrial] = useMutation(START_TRIAL);
+    const [visitLocation] = useMutation(VISIT_LOCATION);
 
     // 🆕 GET REAL USER DATA
     const user = userData?.me;
     const userLevel = user?.level || 1;
     const userXP = user?.xp || 0;
     const xpToNext = user?.xpToNextLevel || 100;
+    const safeXpToNext = Math.max(xpToNext || 100, 1);
+    const xpPercent = Math.min((userXP / safeXpToNext) * 100, 100);
 
     // Calculate realm-specific progress
     const realm303Trials = user?.completedTrials?.filter((t: any) => t.realmId === 303) || [];
@@ -39,6 +41,13 @@ export default function Realm303() {
     // Get specific trial progress
     const getTrial = (trialId: string) => {
         return realm303Trials.find((t: any) => t.trialId === trialId);
+    };
+
+    // Check if User Visited specific Location and log location ID
+    const realm303Locations = user?.visitedLocations?.filter((l: any) => l.realmId === 303) || [];
+
+    const hasVisited = (locationId: string) => {
+        return realm303Locations.some((l: any) => l.locationId === locationId);
     };
 
     // 🆕 HANDLE TRIAL CLICK
@@ -64,6 +73,21 @@ export default function Realm303() {
         } catch (error: any) {
             console.error('Trial error:', error);
             alert('Error: ' + (error.message || 'Something went wrong'));
+        }
+    };
+
+    // 🆕 HANDLE LOCATION VISIT
+    const handleLocationVisit = async (locationId: string, locationName: string) => {
+        try {
+            const result = await visitLocation({
+                variables: { realmId: 303, locationId, locationName },
+            });
+
+            alert(result.data.visitLocation.message);
+            refetch();
+        } catch (error: any) {
+            console.error("Location visit error:", error);
+            alert("Error: " + (error.message || "Something went wrong"));
         }
     };
 
@@ -132,18 +156,21 @@ export default function Realm303() {
                             <div className="level-badge">
                                 LVL {userLevel}
                             </div>
+
                             <div className="flex-1 max-w-xs">
                                 <div className="stat-bar">
                                     <div
                                         className="stat-bar-fill"
-                                        style={{ width: `${(userXP / xpToNext) * 100}%` }}
+                                        style={{ width: `${xpPercent}%` }}
                                     />
                                 </div>
+
                                 <p className="text-sm text-secondary mt-1">
-                                    {userXP} / {xpToNext} XP
+                                    {userXP} / {safeXpToNext} XP
                                 </p>
                             </div>
                         </div>
+
                     </header>
 
                     {/* Realm Description Card */}
@@ -334,8 +361,12 @@ export default function Realm303() {
                                         <p className="text-sm text-secondary mb-3">
                                             Reality fragments here. Neon streets flicker between dimensions.
                                         </p>
-                                        <button className="btn-secondary w-full">
-                                            EXPLORE →
+                                        <button
+                                            className="btn-secondary w-full"
+                                            onClick={() => handleLocationVisit("glitch-district", "The Glitch District")}
+                                            disabled={hasVisited("glitch-district")}
+                                        >
+                                            {hasVisited("glitch-district") ? "✅ EXPLORED" : "EXPLORE →"}
                                         </button>
                                     </div>
                                 </div>
@@ -349,8 +380,12 @@ export default function Realm303() {
                                         <p className="text-sm text-secondary mb-3">
                                             Where artists and hackers reshape reality itself.
                                         </p>
-                                        <button className="btn-secondary w-full">
-                                            EXPLORE →
+                                        <button
+                                            className="btn-secondary w-full"
+                                            onClick={() => handleLocationVisit("creation-forge", "The Creation Forge")}
+                                            disabled={hasVisited("creation-forge")}
+                                        >
+                                            {hasVisited("creation-forge") ? "✅ EXPLORED" : "EXPLORE →"}
                                         </button>
                                     </div>
                                 </div>

@@ -232,7 +232,7 @@ module.exports = {
                 message = `🎉 Trial complete! +${xpGained} XP!`;
             }
             
-            trial.xpEarned += xpGained;
+            trial.xpEarned = (trial.xpEarned || 0) + xpGained;
             const { leveledUp, newLevel } = userData.awardXP(xpGained);
             
             await userData.save();

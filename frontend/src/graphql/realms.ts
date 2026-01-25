@@ -112,3 +112,26 @@ export const GET_LEADERBOARD = gql`
     }
   }
 `;
+
+export const VISIT_LOCATION = gql`
+  mutation VisitLocation($realmId: Int!, $locationId: String!, $locationName: String!) {
+    visitLocation(realmId: $realmId, locationId: $locationId, locationName: $locationName) {
+      user {
+        level
+        xp
+        xpToNextLevel
+        visitedLocations {
+          realmId
+          locationId
+          locationName
+          visitedAt
+          xpEarned
+        }
+      }
+      xpGained
+      leveledUp
+      newLevel
+      message
+    }
+  }
+`;
