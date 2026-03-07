@@ -3,10 +3,12 @@
 import { useSession } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useQuery, useMutation } from '@apollo/client';
 import { getTodayMoonPhase, getRealmMoonAlignment } from '@/lib/moonPhases';
 import RealmBackground from '@/components/realm/RealmBackground';
-import '@/styles/realmShared.css';  // ← ADD THIS
-import '@/styles/nexus.css';        // ← ADD THIS
+import { GET_ME, LOG_DAILY_LOGIN } from '@/graphql/realms';
+import '@/styles/realmShared.css';
+import '@/styles/nexus.css';
 
 /**
  * 🌌 THE COSMIC NEXUS - HUB
@@ -25,13 +27,77 @@ interface RealmPortalData {
     unlockRequirement?: string;
 }
 
+// Static metadata — status/progress are computed dynamically below
+const REALM_META = [
+    {
+        id: '303',
+        name: 'FRACTURED FRONTIER',
+        number: '303',
+        icon: '🌪️',
+        description: 'Realm of Chaos & Creation',
+        unlockRequirement: undefined,
+    },
+    {
+        id: '202',
+        name: 'THE VEIL',
+        number: '202',
+        icon: '🕯️',
+        description: 'Realm of Dreams & Longing',
+        unlockRequirement: 'Complete Trial in Fractured Frontier',
+    },
+    {
+        id: '101',
+        name: 'MOONLIT ROADS',
+        number: '101',
+        icon: '🌙',
+        description: 'Realm of Reflection & Shadows',
+        unlockRequirement: 'Complete Trial in The Veil',
+    },
+    {
+        id: '55',
+        name: 'SKYBOUND CITY',
+        number: '55',
+        icon: '⛰️',
+        description: 'Realm of Power & Manifestation',
+        unlockRequirement: 'Complete Trial in Moonlit Roads',
+    },
+    {
+        id: '44',
+        name: 'ASTRAL BAZAAR',
+        number: '44',
+        icon: '🛍️',
+        description: 'Realm of Hustle & Wisdom',
+        unlockRequirement: 'Complete Trial in Skybound City',
+    },
+    {
+        id: '0',
+        name: 'COSMIC NEXUS',
+        number: '0',
+        icon: '🌌',
+        description: 'Realm of Source & Transcendence',
+        unlockRequirement: 'Master All Realms',
+    },
+];
+
 export default function CosmicNexusHub() {
     const { data: session, status } = useSession();
     const [moonPhase, setMoonPhase] = useState<any>(null);
     const [realmAlignment, setRealmAlignment] = useState<any>(null);
-    const [userLevel, setUserLevel] = useState(1);
-    const [currentXP, setCurrentXP] = useState(0);
-    const [xpToNext, setXPToNext] = useState(100);
+
+    // ✅ REAL USER DATA FROM BACKEND
+    const { data: userData, loading: userLoading } = useQuery(GET_ME, {
+        skip: !session, // don't query until session is confirmed
+    });
+
+    // ✅ DAILY LOGIN — fire once per session
+    const [logDailyLogin] = useMutation(LOG_DAILY_LOGIN);
+    useEffect(() => {
+        if (session) {
+            logDailyLogin().catch((err) =>
+                console.warn('Daily login mutation skipped:', err.message)
+            );
+        }
+    }, [session]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Initialize moon phase data
     useEffect(() => {
@@ -41,69 +107,49 @@ export default function CosmicNexusHub() {
         setRealmAlignment(alignment);
     }, []);
 
-    // Realm data
-    const realms: RealmPortalData[] = [
-        {
-            id: '303',
-            name: 'FRACTURED FRONTIER',
-            number: '303',
-            icon: '🌪️',
-            status: 'unlocked',
-            progress: 0,
-            description: 'Realm of Chaos & Creation',
-        },
-        {
-            id: '202',
-            name: 'THE VEIL',
-            number: '202',
-            icon: '🕯️',
-            status: 'unlocked',
-            progress: 0,
-            description: 'Realm of Dreams & Longing',
-        },
-        {
-            id: '101',
-            name: 'MOONLIT ROADS',
-            number: '101',
-            icon: '🌙',
-            status: 'locked',
-            progress: 0,
-            description: 'Realm of Reflection & Shadows',
-            unlockRequirement: 'Complete Trial in The Veil',
-        },
-        {
-            id: '55',
-            name: 'SKYBOUND CITY',
-            number: '55',
-            icon: '⛰️',
-            status: 'locked',
-            progress: 0,
-            description: 'Realm of Power & Manifestation',
-            unlockRequirement: 'Complete Trial in Moonlit Roads',
-        },
-        {
-            id: '44',
-            name: 'ASTRAL BAZAAR',
-            number: '44',
-            icon: '🛍️',
-            status: 'locked',
-            progress: 0,
-            description: 'Realm of Hustle & Wisdom',
-            unlockRequirement: 'Complete Trial in Skybound City',
-        },
-        {
-            id: '0',
-            name: 'COSMIC NEXUS',
-            number: '0',
-            icon: '🌌',
-            status: 'locked',
-            progress: 0,
-            description: 'Realm of Source & Transcendence',
-            unlockRequirement: 'Master All Realms',
-        },
-    ];
+    // ─── Derived user stats ────────────────────────────────────────────────
+    const user = userData?.me;
+    const userLevel     = user?.level          ?? 1;
+    const userXP        = user?.xp             ?? 0;
+    const xpToNext      = user?.xpToNextLevel  ?? 100;
+    const safeXpToNext  = Math.max(xpToNext, 1);
+    const xpPercent     = Math.min((userXP / safeXpToNext) * 100, 100);
+    const currentStreak = user?.streaks?.currentStreak ?? 0;
+    const unlockedRealms: number[] = user?.unlockedRealms ?? [303]; // default: 303 unlocked
 
-    if (status === 'loading') {
+    // Total completed trials across all realms (siddhis proxy)
+    const totalCompletedTrials =
+        user?.completedTrials?.filter((t: any) => t.isComplete).length ?? 0;
+
+    // Current realm name for display
+    const currentRealmName = (() => {
+        const meta = REALM_META.find((r) => parseInt(r.id) === user?.currentRealm);
+        return meta?.name ?? 'None';
+    })();
+
+    // ─── Per-realm helpers ─────────────────────────────────────────────────
+    const getRealmProgress = (realmId: number): number => {
+        const trials =
+            user?.completedTrials?.filter((t: any) => t.realmId === realmId) ?? [];
+        const completed = trials.filter((t: any) => t.isComplete).length;
+        return Math.floor((completed / 3) * 100);
+    };
+
+    const isRealmUnlocked = (realmId: number): boolean =>
+        unlockedRealms.includes(realmId);
+
+    // Build dynamic realms array
+    const realms: RealmPortalData[] = REALM_META.map((meta) => {
+        const realmId = parseInt(meta.id);
+        return {
+            ...meta,
+            status: isRealmUnlocked(realmId) ? 'unlocked' : 'locked',
+            progress: getRealmProgress(realmId),
+        };
+    });
+
+    // ─── Guards ────────────────────────────────────────────────────────────
+    if (status === 'loading' || userLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
@@ -154,7 +200,7 @@ export default function CosmicNexusHub() {
                         </p>
                     </header>
 
-                    {/* User Stats Card */}
+                    {/* ✅ User Stats Card — now uses real data */}
                     <div className="glass-card p-8 mb-8 fade-in" style={{ animationDelay: '0.1s' }}>
                         <div className="flex flex-col md:flex-row items-center gap-6">
 
@@ -179,30 +225,36 @@ export default function CosmicNexusHub() {
                                 <div className="mb-2">
                                     <div className="flex justify-between text-sm mb-1">
                                         <span>Experience</span>
-                                        <span className="text-stats">{currentXP} / {xpToNext} XP</span>
+                                        <span className="text-stats">{userXP} / {safeXpToNext} XP</span>
                                     </div>
                                     <div className="stat-bar">
                                         <div
                                             className="stat-bar-fill"
-                                            style={{ width: `${(currentXP / xpToNext) * 100}%` }}
+                                            style={{ width: `${xpPercent}%` }}
                                         />
                                     </div>
                                 </div>
 
                                 <p className="text-sm text-muted">
-                                    Current Realm: <span className="text-primary">None</span> •
-                                    Consciousness Level: <span className="text-glow">Awakening</span>
+                                    Current Realm:{' '}
+                                    <span className="text-primary">{currentRealmName}</span> •
+                                    Consciousness Level:{' '}
+                                    <span className="text-glow">Awakening</span>
                                 </p>
                             </div>
 
-                            {/* Quick Stats */}
+                            {/* Quick Stats — real streak + siddhis */}
                             <div className="grid grid-cols-2 gap-4 text-center">
                                 <div className="glass-card p-4">
-                                    <div className="text-2xl font-display text-glow">0</div>
+                                    <div className="text-2xl font-display text-glow">
+                                        {currentStreak}
+                                    </div>
                                     <div className="text-xs text-muted">Streak</div>
                                 </div>
                                 <div className="glass-card p-4">
-                                    <div className="text-2xl font-display text-glow">0</div>
+                                    <div className="text-2xl font-display text-glow">
+                                        {totalCompletedTrials}
+                                    </div>
                                     <div className="text-xs text-muted">Siddhis</div>
                                 </div>
                             </div>
@@ -233,7 +285,7 @@ export default function CosmicNexusHub() {
                         </div>
                     )}
 
-                    {/* Realm Portals */}
+                    {/* ✅ Realm Portals — dynamic status/progress */}
                     <div className="mb-8">
                         <h2 className="text-3xl font-display mb-6 flex items-center gap-3">
                             <span className="text-glow">⚡</span>
@@ -347,7 +399,9 @@ export default function CosmicNexusHub() {
                             WELCOME TO THE COSMIC MULTIVERSE
                         </h3>
                         <p className="text-secondary mb-4 max-w-2xl mx-auto">
-                            You stand at the threshold of six interconnected realms, each representing a different aspect of consciousness and reality. Your journey is unique—where you begin depends on who you are right now.
+                            You stand at the threshold of six interconnected realms, each representing
+                            a different aspect of consciousness and reality. Your journey is unique—where
+                            you begin depends on who you are right now.
                         </p>
                         <p className="text-sm text-muted mb-6">
                             Choose a realm above to begin your ascension, or let the moon guide your path.

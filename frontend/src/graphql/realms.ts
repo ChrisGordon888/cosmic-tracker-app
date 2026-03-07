@@ -144,3 +144,23 @@ export const UNLOCK_REALM = gql`
     }
   }
 `;
+
+// ✅ NEW — triggers daily-login XP + streak update on app load
+export const LOG_DAILY_LOGIN = gql`
+  mutation LogDailyLogin {
+    logDailyLogin {
+      user {
+        level
+        xp
+        streaks {
+          currentStreak
+          longestStreak
+          lastLoginDate
+          totalLogins
+        }
+      }
+      xpGained
+      message
+    }
+  }
+`;
