@@ -7,6 +7,7 @@ export const GET_ME = gql`
       id
       email
       name
+      image
       level
       xp
       xpToNextLevel
@@ -145,7 +146,6 @@ export const UNLOCK_REALM = gql`
   }
 `;
 
-// ✅ NEW — triggers daily-login XP + streak update on app load
 export const LOG_DAILY_LOGIN = gql`
   mutation LogDailyLogin {
     logDailyLogin {
