@@ -8,38 +8,45 @@ import SessionWrapper from "@/components/SessionWrapper"; // ✅ Use wrapper
 import Link from "next/link";
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+    variable: "--font-geist-sans",
+    subsets: ["latin"],
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+    variable: "--font-geist-mono",
+    subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Cosmic Tracker",
-  description: "A personalized tracker and ritual planner",
+export const metadata: Metadata = { title: "Cosmic Multiverse",
+     description: "A gamified music exploration platform. Six realms. Six trials. One cosmic journey.",
 };
 
 export default function RootLayout({
-  children,
+    children,
 }: Readonly<{
-  children: React.ReactNode;
+    children: React.ReactNode;
 }>) {
-  return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
-      >
-        <SessionWrapper> {/* ✅ Now inside a Client Component */}
-          <ApolloWrapper>
-            <CosmicTopNav />
-            <div className="p-4 flex justify-end items-center border-b border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900">
-              <AuthButton />
-            </div>
-            <div className="flex-grow">{children}</div>
-            <footer className="border-t border-gray-200 bg-white dark:bg-gray-900 p-2">
+    return (
+        <html lang="en">
+            <body
+                className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
+            >
+                <SessionWrapper> {/* ✅ Now inside a Client Component */}
+                    <ApolloWrapper>
+                        <CosmicTopNav />
+                        <div className="p-4 flex justify-end items-center border-b border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900">
+                            <AuthButton />
+                        </div>
+                        <div className="flex-grow">{children}</div>
+                        <footer className="border-t border-gray-200 bg-white dark:bg-gray-900 p-2">
+                            <nav className="flex justify-around text-center text-sm font-medium">
+                                <Link href="/" className="hover:text-indigo-600"> 🌌 Home </Link>
+                                <Link href="/nexus" className="hover:text-indigo-600"> 🗺️ Nexus </Link>
+                                <Link href="/leaderboard" className="hover:text-indigo-600"> 🏆 Rankings </Link>
+                                <Link href="/profile" className="hover:text-indigo-600"> 👤 Profile </Link>
+                            </nav>
+                        </footer>
+                        {/* <footer className="border-t border-gray-200 bg-white dark:bg-gray-900 p-2">
               <nav className="flex justify-around text-center text-sm font-medium">
                 <Link href="/home" className="hover:text-indigo-600">
                   🏠 Home
@@ -57,10 +64,10 @@ export default function RootLayout({
                   ⚙️ Profile
                 </Link>
               </nav>
-            </footer>
-          </ApolloWrapper>
-        </SessionWrapper>
-      </body>
-    </html>
-  );
+            </footer> */}
+                    </ApolloWrapper>
+                </SessionWrapper>
+            </body>
+        </html>
+    );
 }

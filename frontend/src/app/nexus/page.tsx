@@ -384,13 +384,21 @@ export default function CosmicNexusHub() {
                             </div>
                         </Link>
 
-                        <Link href="/mysteries">
+
+                        {/* <Link href="/mysteries">
                             <div className="glass-card p-6 text-center cursor-pointer hover:border-color-electric-blue transition-all">
                                 <div className="text-4xl mb-2">🧩</div>
                                 <h3 className="font-display">MYSTERIES</h3>
                                 <p className="text-sm text-muted">Solve Puzzles & Unlock Secrets</p>
                             </div>
-                        </Link>
+                        </Link> */}
+                        <div className="glass-card p-6 text-center opacity-70 cursor-not-allowed"> 
+                            <div className="text-4xl mb-2">🌙</div> 
+                            <h3 className="font-display">MOON CALENDAR</h3> 
+                            <p className="text-sm text-muted">Lunar Cycle Alignment</p> 
+                            <p className="text-xs text-glow mt-1">— COMING SOON —</p> 
+                        </div>
+
                     </div>
 
                     {/* Welcome Message for New Users */}
@@ -407,9 +415,10 @@ export default function CosmicNexusHub() {
                             Choose a realm above to begin your ascension, or let the moon guide your path.
                         </p>
                         <Link href="/onboarding">
-                            <button className="btn-primary">
+                            {/* <button className="btn-primary">
                                 TAKE THE REALM ALIGNMENT QUESTIONNAIRE →
-                            </button>
+                            </button> */}
+                            <p className="text-sm text-glow"> 🔒 Realm Alignment Questionnaire — Coming Soon </p>
                         </Link>
                     </div>
 

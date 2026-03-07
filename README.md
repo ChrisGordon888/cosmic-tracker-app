@@ -1,88 +1,228 @@
-# 🌌 Cosmic Tracker App
+# 🌌 Cosmic Multiverse
 
-A Ritual Gamification & Lifestyle Integration Platform — helping users align their daily life with intention, ritual, and cosmic rhythm.
+A gamified music exploration platform built around six interconnected realms.
 
----
+Sign in. Enter the Nexus. Explore sonic worlds. Complete trials. Earn XP. Unlock new realms. Rise through the multiverse.
 
-## ✨ Purpose
+--------------------------------------------------
 
-The Cosmic Tracker is a personalized companion app that fuses ancient practices with modern UI, empowering users to:
-✅ Align with daily intentions ("Sacred Yes")  
-✅ Track mood and energy cycles  
-✅ Create & log personal rituals (breathwork, elixirs, mantras, movement)  
-✅ Sync their practices with lunar phases and cosmic cycles  
-✅ Gamify consistency with streaks, badges, and cosmic levels  
+WHAT IS THIS?
 
----
+Cosmic Multiverse is an RPG-style music experience where users journey through six symbolic realms.
 
-## 📱 App Wireframe & Features
+Each realm contains:
 
-### 1️⃣ Home Dashboard
-- Dynamic moon phase & daily cosmic insight
-- Sacred Yes entry
-- Quick ritual actions (breath, journal, elixir, mantra)
-- Mood slider
-- Visual progress (streaks)
+- an original music track
+- locations to explore
+- trials to complete
+- XP rewards
+- progression unlocks
 
-### 2️⃣ Moon Calendar
-- Full lunar cycle view
-- Ritual suggestions per phase
-- Dream and energy logs per moon event
+Core Loop:
 
-### 3️⃣ Daily Ritual Pages
-- Morning & evening flows
-- Alternate rituals (travel, reset, menstrual cycle support)
+Sign in
+→ Enter Nexus
+→ Explore Realm
+→ Visit Locations
+→ Complete Trials
+→ Listen to Music
+→ Earn XP
+→ Unlock Next Realm
+→ View Profile
+→ Climb Leaderboard
 
-### 4️⃣ Sacred Practice Builder
-- Create custom rituals with breath, mantras, journal prompts
-- Save, schedule, and link rituals to moon phases or weekdays
+--------------------------------------------------
 
-### 5️⃣ Cosmic Journal
-- Secure entries for dreams, reflections, or energy notes
-- Templates for faster journaling
-- Calendar-linked entries
+REALM PROGRESSION
 
-### 6️⃣ Elixir & Infusion Log
-- Record herbal blends, elixirs, teas, or tinctures
-- Track intentions, effects, ingredients
+The progression chain:
 
-### 7️⃣ Achievements & Gamification
-- Streaks, badges, elemental levels
-- Leaderboard for Cosmic Collective members
+303  →  Fractured Frontier
+202  →  The Veil
+101  →  Moonlit Roads
+55   →  Skybound City
+44   →  Astral Bazaar
+0    →  InterSiddhi
 
-### 8️⃣ Settings & Personalization
-- Theme customization
-- Reminder settings
-- Sync with personal calendars (Google/iCal)
+Unlock order:
 
----
+303 → 202 → 101 → 55 → 44 → 0
 
-## 🔧 Tech Stack
+Each realm unlocks after completing all trials in the previous realm.
 
-- Frontend: Next.js 15, Tailwind CSS, Apollo Client
-- Backend: Node.js, Express, Apollo Server (GraphQL), MongoDB (Mongoose)
-- Hosting: Vercel (frontend), Render/Railway (backend)
-- Auth: NextAuth
+--------------------------------------------------
 
----
+CURRENT MVP FEATURES
 
-## 🚀 How to Run
+Gameplay
+- 6 interactive realm pages
+- trial progression system
+- location exploration XP
+- music listening XP
+- automatic realm unlocks
+- XP + level progression
+- login streak tracking
 
-**Backend**
-1) cd backend
+Hub
+- Cosmic Nexus dashboard
+- realm portal system
+- moon phase display
+- dynamic XP display
 
-2) npm install
+Identity
+- player profile page
+- leaderboard rankings
+- streak tracking
+- trial completion history
 
-3) node index.js
+--------------------------------------------------
 
-**Frontend**
-1) cd frontend
+BROADER VISION
 
-2) npm install
+This project began as a broader "Cosmic Tracker" concept focused on:
 
-3) npm run dev
+- daily intentions
+- rituals
+- moon alignment
+- mood tracking
+- journaling
 
-- Frontend: http://localhost:3000
+Those systems still exist in the backend and may be activated in future phases.
 
-- Backend: http://localhost:4000/graphql
+The current MVP focuses first on the **music exploration gameplay loop**.
 
+--------------------------------------------------
+
+FUTURE MODULES
+
+The backend already includes models for:
+
+SacredYes
+MoodEntry
+PracticeQuest
+Rituals
+
+These power future systems such as:
+
+Daily Rituals
+Cosmic Journal
+Mood Tracking
+Custom Ritual Builder
+Moon Calendar
+
+They remain dormant until the core realm loop is fully stable.
+
+--------------------------------------------------
+
+TECH STACK
+
+Frontend
+Next.js 15
+TypeScript
+Tailwind CSS
+Apollo Client
+
+Backend
+Node.js
+Express
+Apollo Server (GraphQL)
+MongoDB (Mongoose)
+
+Auth
+NextAuth
+GitHub OAuth
+
+--------------------------------------------------
+
+HOW TO RUN
+
+Backend
+
+cd backend
+npm install
+node index.js
+
+Runs at:
+http://localhost:4000/graphql
+
+Frontend
+
+cd frontend
+npm install
+npm run dev
+
+Runs at:
+http://localhost:3000
+
+--------------------------------------------------
+
+ENVIRONMENT VARIABLES
+
+Backend (.env)
+
+MONGODB_URI=your_mongodb_uri
+NEXTAUTH_SECRET=your_secret
+PORT=4000
+
+Frontend (.env.local)
+
+NEXTAUTH_SECRET=your_secret
+NEXTAUTH_URL=http://localhost:3000
+GITHUB_ID=your_github_id
+GITHUB_SECRET=your_github_secret
+NEXT_PUBLIC_GRAPHQL_URL=http://localhost:4000/graphql
+
+Never commit real secrets.
+
+--------------------------------------------------
+
+PROJECT STRUCTURE
+
+cosmic-tracker-app
+
+backend
+  index.js
+  models
+  resolvers
+  schemas
+
+frontend
+  src
+    app
+      page.tsx
+      nexus
+      profile
+      leaderboard
+      realms
+    components
+    graphql
+    lib
+    styles
+
+shared
+
+--------------------------------------------------
+
+ROADMAP
+
+Phase 2
+- realm alignment questionnaire
+- player badges
+- improved Nexus UI
+
+Phase 3
+- daily ritual quests
+- moon calendar
+- cosmic journal
+- sacred yes system
+
+Phase 4
+- artist music submissions
+- creator realms
+- collaborative world building
+
+--------------------------------------------------
+
+License
+
+MIT
