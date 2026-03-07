@@ -135,3 +135,12 @@ export const VISIT_LOCATION = gql`
     }
   }
 `;
+
+export const UNLOCK_REALM = gql`
+  mutation UnlockRealm($realmId: Int!) {
+    unlockRealm(realmId: $realmId) {
+      id
+      unlockedRealms
+    }
+  }
+`;

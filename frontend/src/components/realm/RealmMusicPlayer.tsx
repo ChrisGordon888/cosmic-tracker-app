@@ -19,44 +19,92 @@ export default function RealmMusicPlayer({
   artist = 'Cosmic 888',
   realmName,
   realmColor = '#00D4FF',
-  realmId
+  realmId,
 }: RealmMusicPlayerProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // UI playback
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.7);
 
-  // ========================================
-  // XP TRACKING WITH ANTI-EXPLOIT + PERSISTENCE
-  // ========================================
-  const [totalListenedTime, setTotalListenedTime] = useState(0);
-  const [hasLoggedListen, setHasLoggedListen] = useState(false);
-  const [xpAwarded, setXpAwarded] = useState(false);
-  const [isFirstListen, setIsFirstListen] = useState(true);
+  // XP tracking (session-local)
+  const [totalListenedTime, setTotalListenedTime] = useState(0); // seconds listened this session
+  const [hasLoggedListen, setHasLoggedListen] = useState(false); // prevents duplicate mutation this session
+  const [xpAwarded, setXpAwarded] = useState(false); // UI state: earned during this session
+
   const listeningIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const [logMusicListen] = useMutation(LOG_MUSIC_LISTEN);
-  const { data: userData, refetch } = useQuery(GET_ME);
+  // ✅ Always get the truth from backend (helps hard refresh)
+  const { data: userData, loading: meLoading, refetch } = useQuery(GET_ME, {
+    fetchPolicy: 'network-only',
+  });
 
-  // Check if user already listened to this track
+  const [logMusicListen] = useMutation(LOG_MUSIC_LISTEN, {
+    refetchQueries: [{ query: GET_ME }],
+  });
+
+  // ----------------------------------------
+  // Backend-derived truth: have they EVER listened?
+  // (This fixes "refresh shows first time again")
+  // ----------------------------------------
+  const tracks = userData?.me?.musicStats?.tracksListened || [];
+  const existingTrack = tracks.find(
+    (t: any) => Number(t.realmId) === Number(realmId) && t.trackTitle === trackTitle
+  );
+  const hasEverListened = !!existingTrack;
+
+  const rewardLabel = hasEverListened ? '+30 XP' : '+50 XP';
+
+  // ----------------------------------------
+  // Helpers
+  // ----------------------------------------
+  const requiredTime = duration * 0.8; // seconds needed to earn XP (80%)
+  const safeRequiredTime = Math.max(requiredTime, 1);
+
+  // Progress toward reward (0–100 means “0–100% of the 80% requirement”)
+  const progressToReward =
+    duration > 0 ? Math.min((totalListenedTime / safeRequiredTime) * 100, 100) : 0;
+
+  // Actual percent-of-track listened (0–100 of the whole track)
+  const listenedPercentOfTrack =
+    duration > 0 ? Math.min((totalListenedTime / duration) * 100, 100) : 0;
+
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  // ----------------------------------------
+  // Reset session state when track changes
+  // ----------------------------------------
   useEffect(() => {
-    if (userData?.me?.musicStats?.tracksListened) {
-      const existingTrack = userData.me.musicStats.tracksListened.find(
-        (track: any) => track.realmId === realmId && track.trackTitle === trackTitle
-      );
+    setIsPlaying(false);
+    setCurrentTime(0);
+    setDuration(0);
+    setTotalListenedTime(0);
+    setHasLoggedListen(false);
+    setXpAwarded(false);
 
-      if (existingTrack) {
-        setIsFirstListen(false);
-      } else {
-        setIsFirstListen(true);
-      }
+    if (listeningIntervalRef.current) {
+      clearInterval(listeningIntervalRef.current);
+      listeningIntervalRef.current = null;
     }
-  }, [userData, realmId, trackTitle]);
 
-  // Track actual listening time (1-second intervals)
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+  }, [trackUrl, trackTitle, realmId]);
+
+  // ----------------------------------------
+  // Track listening time (1-second ticks)
+  // Only counts while playing and until we log XP this session
+  // ----------------------------------------
   useEffect(() => {
-    if (isPlaying && !xpAwarded) {
+    if (isPlaying && !hasLoggedListen) {
       listeningIntervalRef.current = setInterval(() => {
         setTotalListenedTime((prev) => prev + 1);
       }, 1000);
@@ -70,46 +118,58 @@ export default function RealmMusicPlayer({
     return () => {
       if (listeningIntervalRef.current) {
         clearInterval(listeningIntervalRef.current);
+        listeningIntervalRef.current = null;
       }
     };
-  }, [isPlaying, xpAwarded]);
+  }, [isPlaying, hasLoggedListen]);
 
-  // Award XP when 80% listened
+  // ----------------------------------------
+  // Award XP once threshold hit (80%)
+  // ----------------------------------------
   useEffect(() => {
-    if (duration > 0 && !xpAwarded && !hasLoggedListen) {
-      const requiredTime = duration * 0.8;
+    if (duration <= 0) return;
+    if (hasLoggedListen) return;
+    if (totalListenedTime < requiredTime) return;
 
-      if (totalListenedTime >= requiredTime) {
-        logMusicListen({
-          variables: {
-            realmId,
-            trackTitle,
-            duration: Math.floor(duration),
-          },
-        })
-          .then((response) => {
-            alert(response.data.logMusicListen.message);
-            setXpAwarded(true);
-            setHasLoggedListen(true);
-            refetch();
-          })
-          .catch((err) => console.error('Music listen logging failed:', err));
-      }
-    }
-  }, [totalListenedTime, duration, xpAwarded, hasLoggedListen, realmId, trackTitle, logMusicListen, isFirstListen, refetch]);
+    // mark immediately to prevent double-fire
+    setHasLoggedListen(true);
 
+    logMusicListen({
+      variables: {
+        realmId,
+        trackTitle,
+        duration: Math.floor(duration),
+      },
+    })
+      .then((response) => {
+        alert(response.data.logMusicListen.message);
+        setXpAwarded(true);
+        refetch();
+      })
+      .catch((err) => {
+        console.error('Music listen logging failed:', err);
+        // allow retry if mutation failed
+        setHasLoggedListen(false);
+      });
+  }, [totalListenedTime, requiredTime, duration, hasLoggedListen, logMusicListen, realmId, trackTitle, refetch]);
+
+  // ----------------------------------------
   // Audio event listeners
+  // ----------------------------------------
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
+    audio.volume = volume;
+
     const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
     const handleLoadedMetadata = () => setDuration(audio.duration);
-    
+
     const handleEnded = () => {
       setIsPlaying(false);
       audio.pause();
       audio.currentTime = 0;
+
       if (listeningIntervalRef.current) {
         clearInterval(listeningIntervalRef.current);
         listeningIntervalRef.current = null;
@@ -125,21 +185,27 @@ export default function RealmMusicPlayer({
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('ended', handleEnded);
     };
-  }, []);
+  }, [volume]);
 
-  // ========================================
-  // PLAYBACK CONTROLS
-  // ========================================
-  const togglePlayPause = () => {
+  // ----------------------------------------
+  // Playback controls
+  // ----------------------------------------
+  const togglePlayPause = async () => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    if (isPlaying) {
-      audio.pause();
-    } else {
-      audio.play();
+    try {
+      if (isPlaying) {
+        audio.pause();
+        setIsPlaying(false);
+      } else {
+        await audio.play();
+        setIsPlaying(true);
+      }
+    } catch (e) {
+      console.error('Audio play failed:', e);
+      setIsPlaying(false);
     }
-    setIsPlaying(!isPlaying);
   };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -152,7 +218,7 @@ export default function RealmMusicPlayer({
 
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const audio = audioRef.current;
-    if (!audio) return;
+    if (!audio || duration <= 0) return;
 
     const rect = e.currentTarget.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
@@ -160,14 +226,7 @@ export default function RealmMusicPlayer({
     audio.currentTime = percentage * duration;
   };
 
-  const formatTime = (time: number) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
-
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
-  const listenProgress = duration > 0 ? Math.min((totalListenedTime / (duration * 0.8)) * 100, 100) : 0;
 
   return (
     <div className="glass-card p-6">
@@ -177,13 +236,14 @@ export default function RealmMusicPlayer({
       <div className="flex items-center gap-4 mb-6">
         <div
           className="w-16 h-16 rounded-lg flex items-center justify-center text-3xl shadow-lg"
-          style={{ 
+          style={{
             background: `linear-gradient(135deg, ${realmColor}33, ${realmColor}66)`,
-            boxShadow: `0 4px 20px ${realmColor}44`
+            boxShadow: `0 4px 20px ${realmColor}44`,
           }}
         >
           🎵
         </div>
+
         <div className="flex-1">
           <h3 className="text-xl font-display mb-1" style={{ color: realmColor }}>
             {trackTitle}
@@ -194,7 +254,7 @@ export default function RealmMusicPlayer({
         </div>
       </div>
 
-      {/* Play/Pause Button (Large & Centered) */}
+      {/* Play/Pause Button */}
       <div className="flex justify-center mb-6">
         <button
           onClick={togglePlayPause}
@@ -208,7 +268,7 @@ export default function RealmMusicPlayer({
         </button>
       </div>
 
-      {/* Progress Bar (Interactive) */}
+      {/* Progress Bar */}
       <div
         className="h-3 bg-black/40 rounded-full mb-3 cursor-pointer overflow-hidden relative group"
         onClick={handleProgressClick}
@@ -218,10 +278,9 @@ export default function RealmMusicPlayer({
           style={{
             width: `${progress}%`,
             background: `linear-gradient(90deg, ${realmColor}, ${realmColor}cc)`,
-            boxShadow: `0 0 10px ${realmColor}88`
+            boxShadow: `0 0 10px ${realmColor}88`,
           }}
         />
-        {/* Hover effect */}
         <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
       </div>
 
@@ -243,7 +302,9 @@ export default function RealmMusicPlayer({
           onChange={handleVolumeChange}
           className="flex-1 h-2 bg-black/40 rounded-full appearance-none cursor-pointer"
           style={{
-            background: `linear-gradient(to right, ${realmColor} 0%, ${realmColor} ${volume * 100}%, rgba(255,255,255,0.1) ${volume * 100}%, rgba(255,255,255,0.1) 100%)`
+            background: `linear-gradient(to right, ${realmColor} 0%, ${realmColor} ${
+              volume * 100
+            }%, rgba(255,255,255,0.1) ${volume * 100}%, rgba(255,255,255,0.1) 100%)`,
           }}
         />
         <span className="text-sm text-muted font-mono w-10 text-right">
@@ -252,38 +313,50 @@ export default function RealmMusicPlayer({
       </div>
 
       {/* XP Progress & Message */}
-      <div 
+      <div
         className="mt-4 p-4 rounded-lg border transition-all"
         style={{
           background: 'rgba(0,0,0,0.3)',
           borderColor: `${realmColor}33`,
-          boxShadow: xpAwarded ? `0 0 20px ${realmColor}44` : 'none'
+          boxShadow: xpAwarded ? `0 0 20px ${realmColor}44` : 'none',
         }}
       >
         {!xpAwarded ? (
           <>
             <div className="flex justify-between text-sm mb-2 font-medium">
-              <span>Listen Progress</span>
+              <span>Progress to Reward</span>
               <span style={{ color: realmColor }}>
-                {Math.floor(listenProgress)}% / 80%
+                {Math.floor(progressToReward)}%
               </span>
             </div>
+
             <div className="h-2 bg-black/40 rounded-full overflow-hidden mb-3">
               <div
                 className="h-full rounded-full transition-all duration-300"
                 style={{
-                  width: `${listenProgress}%`,
+                  width: `${progressToReward}%`,
                   background: `linear-gradient(90deg, ${realmColor}, ${realmColor}aa)`,
-                  boxShadow: listenProgress > 50 ? `0 0 10px ${realmColor}` : 'none'
+                  boxShadow: progressToReward > 50 ? `0 0 10px ${realmColor}` : 'none',
                 }}
               />
             </div>
+
             <p className="text-xs text-center text-muted">
-              ✨ Listen to 80% to earn{' '}
+              ✨ Earn XP after listening to{' '}
+              <span style={{ color: realmColor, fontWeight: 'bold' }}>80%</span> of the track •
+              You’ve listened to{' '}
               <span style={{ color: realmColor, fontWeight: 'bold' }}>
-                {isFirstListen ? '+50 XP' : '+30 XP'}
+                {Math.floor(listenedPercentOfTrack)}%
               </span>
-              {' '}• {isFirstListen ? 'First listen bonus!' : 'Replay reward'}
+              {' '}so far • Reward:{' '}
+              {meLoading ? (
+                <span className="text-muted">Syncing…</span>
+              ) : (
+                <span style={{ color: realmColor, fontWeight: 'bold' }}>
+                  {rewardLabel}
+                </span>
+              )}
+              {' '}• {hasEverListened ? 'Replay reward' : 'First listen bonus!'}
             </p>
           </>
         ) : (
