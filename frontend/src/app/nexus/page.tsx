@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useSession, signIn } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useQuery, useMutation } from '@apollo/client';
@@ -109,11 +109,11 @@ export default function CosmicNexusHub() {
 
     // ─── Derived user stats ────────────────────────────────────────────────
     const user = userData?.me;
-    const userLevel     = user?.level          ?? 1;
-    const userXP        = user?.xp             ?? 0;
-    const xpToNext      = user?.xpToNextLevel  ?? 100;
-    const safeXpToNext  = Math.max(xpToNext, 1);
-    const xpPercent     = Math.min((userXP / safeXpToNext) * 100, 100);
+    const userLevel = user?.level ?? 1;
+    const userXP = user?.xp ?? 0;
+    const xpToNext = user?.xpToNextLevel ?? 100;
+    const safeXpToNext = Math.max(xpToNext, 1);
+    const xpPercent = Math.min((userXP / safeXpToNext) * 100, 100);
     const currentStreak = user?.streaks?.currentStreak ?? 0;
     const unlockedRealms: number[] = user?.unlockedRealms ?? [303]; // default: 303 unlocked
 
@@ -170,9 +170,12 @@ export default function CosmicNexusHub() {
                     <p className="text-lg text-secondary mb-8">
                         You must sign in to enter the multiverse.
                     </p>
-                    <Link href="/auth" className="btn-primary">
+                    <button
+                        onClick={() => signIn('github')}
+                        className="btn-primary"
+                    >
                         ENTER THE NEXUS
-                    </Link>
+                    </button>
                 </div>
             </div>
         );
@@ -345,25 +348,44 @@ export default function CosmicNexusHub() {
                         </div>
                     </div>
 
-                    {/* Daily Rituals Section */}
+                    {/* Ritual Layer Preview */}
                     <div className="glass-card p-6 mb-8 fade-in" style={{ animationDelay: '0.9s' }}>
                         <h2 className="text-2xl font-display mb-4">
-                            📿 DAILY RITUALS
+                            📿 RITUAL LAYER
                         </h2>
                         <p className="text-secondary mb-4">
-                            No rituals available yet. Complete your first realm to unlock daily quests.
+                            Sacred tracking, daily quests, and moon-aligned ritual systems are planned as the next layer of the platform.
                         </p>
+
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {[1, 2, 3].map((i) => (
-                                <div key={i} className="quest-card opacity-50">
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <span className="text-2xl">⬜</span>
-                                        <span className="text-sm">Locked Ritual {i}</span>
-                                    </div>
-                                    <p className="text-xs text-muted">Complete realm trials to unlock</p>
+                            <div className="quest-card opacity-70">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <span className="text-2xl">🌙</span>
+                                    <span className="text-sm">Moon Calendar</span>
                                 </div>
-                            ))}
+                                <p className="text-xs text-muted">Lunar cycle alignment and ritual timing</p>
+                            </div>
+
+                            <div className="quest-card opacity-70">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <span className="text-2xl">✍️</span>
+                                    <span className="text-sm">Sacred Journal</span>
+                                </div>
+                                <p className="text-xs text-muted">Intentions, mood, and reflection tracking</p>
+                            </div>
+
+                            <div className="quest-card opacity-70">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <span className="text-2xl">🧘</span>
+                                    <span className="text-sm">Daily Quests</span>
+                                </div>
+                                <p className="text-xs text-muted">Ritual consistency, streaks, and future progression</p>
+                            </div>
                         </div>
+
+                        <p className="text-xs text-glow mt-4">
+                            — COMING SOON —
+                        </p>
                     </div>
 
                     {/* Quick Actions */}
@@ -392,11 +414,11 @@ export default function CosmicNexusHub() {
                                 <p className="text-sm text-muted">Solve Puzzles & Unlock Secrets</p>
                             </div>
                         </Link> */}
-                        <div className="glass-card p-6 text-center opacity-70 cursor-not-allowed"> 
-                            <div className="text-4xl mb-2">🌙</div> 
-                            <h3 className="font-display">MOON CALENDAR</h3> 
-                            <p className="text-sm text-muted">Lunar Cycle Alignment</p> 
-                            <p className="text-xs text-glow mt-1">— COMING SOON —</p> 
+                        <div className="glass-card p-6 text-center opacity-70 cursor-not-allowed">
+                            <div className="text-4xl mb-2">🌙</div>
+                            <h3 className="font-display">MOON CALENDAR</h3>
+                            <p className="text-sm text-muted">Lunar Cycle Alignment</p>
+                            <p className="text-xs text-glow mt-1">— COMING SOON —</p>
                         </div>
 
                     </div>
@@ -414,12 +436,9 @@ export default function CosmicNexusHub() {
                         <p className="text-sm text-muted mb-6">
                             Choose a realm above to begin your ascension, or let the moon guide your path.
                         </p>
-                        <Link href="/onboarding">
-                            {/* <button className="btn-primary">
-                                TAKE THE REALM ALIGNMENT QUESTIONNAIRE →
-                            </button> */}
-                            <p className="text-sm text-glow"> 🔒 Realm Alignment Questionnaire — Coming Soon </p>
-                        </Link>
+                        <p className="text-sm text-glow">
+                            🔒 Realm Alignment Questionnaire — Coming Soon
+                        </p>
                     </div>
 
                 </div>

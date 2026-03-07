@@ -1,14 +1,18 @@
 // src/app/page.tsx
 "use client";
 
-import CosmicBackground from "@/components/CosmicBackground";
 import "@/styles/landingPage.css";
 import Link from "next/link";
+import { useSession, signIn } from "next-auth/react";
 
 export default function LandingPage() {
+    const { data: session } = useSession();
+
+    const isAuthenticated = !!session?.user;
+
     return (
         <main className="landing-page min-h-screen flex flex-col items-center justify-center text-center relative overflow-hidden">
-            {/* NEW: Custom Cinematic Background Video */}
+            {/* Cinematic Background Video */}
             <div className="fixed inset-0 w-full h-full -z-10 overflow-hidden">
                 <video
                     autoPlay
@@ -32,51 +36,79 @@ export default function LandingPage() {
                 </p>
 
                 <p className="text-md text-gray-300 mb-8 drop-shadow-lg">
-                    Explore sonic landscapes, unlock Siddhis, and align your consciousness with the cosmos.
+                    Explore sonic landscapes, complete trials, earn XP, and unlock your path through the realms.
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-                    <Link
-                        href="/nexus"
-                        className="landing-button-primary px-10 py-4 rounded-full font-bold text-lg transition transform hover:scale-105 inline-block shadow-2xl"
-                    >
-                        🌀 ENTER THE NEXUS
-                    </Link>
-
-                    <Link
-                        href="/auth"
-                        className="landing-button-secondary px-10 py-4 rounded-full font-bold text-lg transition transform hover:scale-105 inline-block shadow-2xl"
-                    >
-                        🪐 SIGN IN
-                    </Link>
+                    {isAuthenticated ? (
+                        <Link
+                            href="/nexus"
+                            className="landing-button-primary px-10 py-4 rounded-full font-bold text-lg transition transform hover:scale-105 inline-block shadow-2xl"
+                        >
+                            🌀 ENTER THE NEXUS
+                        </Link>
+                    ) : (
+                        <button
+                            onClick={() => signIn("github")}
+                            className="landing-button-primary px-10 py-4 rounded-full font-bold text-lg transition transform hover:scale-105 inline-block shadow-2xl"
+                        >
+                            🪐 SIGN IN WITH GITHUB
+                        </button>
+                    )}
                 </div>
 
                 {/* Realm Preview Icons */}
                 <div className="mt-12 grid grid-cols-3 md:grid-cols-6 gap-4 text-4xl opacity-70">
-                    <div className="hover:scale-125 transition cursor-pointer drop-shadow-lg" title="Realm 303 - Fractured Frontier">🌪️</div>
-                    <div className="hover:scale-125 transition cursor-pointer drop-shadow-lg" title="Realm 202 - The Veil">🕯️</div>
-                    <div className="hover:scale-125 transition cursor-pointer drop-shadow-lg" title="Realm 101 - Moonlit Roads">🌙</div>
-                    <div className="hover:scale-125 transition cursor-pointer drop-shadow-lg" title="Realm 55 - Skybound City">⛰️</div>
-                    <div className="hover:scale-125 transition cursor-pointer drop-shadow-lg" title="Realm 44 - Astral Bazaar">🛍️</div>
-                    <div className="hover:scale-125 transition cursor-pointer drop-shadow-lg" title="Realm 0 - InterSiddhi">🌌</div>
+                    <div
+                        className="hover:scale-125 transition cursor-default drop-shadow-lg"
+                        title="Realm 303 - Fractured Frontier"
+                    >
+                        🌪️
+                    </div>
+                    <div
+                        className="hover:scale-125 transition cursor-default drop-shadow-lg"
+                        title="Realm 202 - The Veil"
+                    >
+                        🕯️
+                    </div>
+                    <div
+                        className="hover:scale-125 transition cursor-default drop-shadow-lg"
+                        title="Realm 101 - Moonlit Roads"
+                    >
+                        🌙
+                    </div>
+                    <div
+                        className="hover:scale-125 transition cursor-default drop-shadow-lg"
+                        title="Realm 55 - Skybound City"
+                    >
+                        ⛰️
+                    </div>
+                    <div
+                        className="hover:scale-125 transition cursor-default drop-shadow-lg"
+                        title="Realm 44 - Astral Bazaar"
+                    >
+                        🛍️
+                    </div>
+                    <div
+                        className="hover:scale-125 transition cursor-default drop-shadow-lg"
+                        title="Realm 0 - InterSiddhi"
+                    >
+                        🌌
+                    </div>
                 </div>
 
-                {/* Locked Ritual Dashboard Notice */}
+                {/* Future Ritual Layer */}
                 <div className="mt-12 glass-card p-6 border border-gray-700/50 rounded-xl backdrop-blur-sm bg-black/30">
                     <div className="flex items-center justify-center gap-3 mb-2">
-                        <span className="text-3xl">🔒</span>
-                        <h3 className="text-xl font-bold text-gray-300">Ritual Dashboard</h3>
+                        <span className="text-3xl">📿</span>
+                        <h3 className="text-xl font-bold text-gray-300">Ritual Layer</h3>
                     </div>
                     <p className="text-sm text-gray-400">
-                        Sacred tracking & gamification coming soon.
+                        Daily rituals, sacred tracking, and lunar alignment are planned as future modules.
                         <br />
-                        <span className="text-xs text-gray-500">Currently in development</span>
+                        <span className="text-xs text-gray-500">Core realm journey live now</span>
                     </p>
                 </div>
-
-                <p className="mt-8 text-sm text-gray-400">
-                    First time here? <Link href="/auth" className="text-blue-400 hover:text-blue-300 underline">Create your account</Link>
-                </p>
             </div>
         </main>
     );
