@@ -16,6 +16,7 @@ export interface TrialPuzzleSet {
   steps: PuzzleConfig[];
 }
 
+// ─── REALM 303 ─────────────────────────────────────────────────────────────
 export const REALM_303_PUZZLES: Record<string, TrialPuzzleSet> = {
   'trial-creation': {
     trialId: 'trial-creation',
@@ -24,8 +25,7 @@ export const REALM_303_PUZZLES: Record<string, TrialPuzzleSet> = {
         id: 'creation-step-1',
         trialId: 'trial-creation',
         type: 'text-clue',
-        prompt:
-          'When broken pieces stop fighting and start fitting, what begins to appear?',
+        prompt: 'When broken pieces stop fighting and start fitting, what begins to appear?',
         acceptedAnswers: ['pattern', 'a pattern'],
         hint: 'Chaos becomes this before it becomes creation.',
       },
@@ -44,7 +44,6 @@ export const REALM_303_PUZZLES: Record<string, TrialPuzzleSet> = {
       },
     ],
   },
-
   'trial-transformation': {
     trialId: 'trial-transformation',
     steps: [
@@ -52,13 +51,8 @@ export const REALM_303_PUZZLES: Record<string, TrialPuzzleSet> = {
         id: 'transformation-step-1',
         trialId: 'trial-transformation',
         type: 'text-clue',
-        prompt:
-          'Creative Alchemy turns chaos into what, and destruction into what?',
-        acceptedAnswers: [
-          'order and creation',
-          'order, creation',
-          'order creation',
-        ],
+        prompt: 'Creative Alchemy turns chaos into what, and destruction into what?',
+        acceptedAnswers: ['order and creation', 'order, creation', 'order creation'],
         hint: 'The answer is written in the realm description above.',
       },
       {
@@ -72,7 +66,6 @@ export const REALM_303_PUZZLES: Record<string, TrialPuzzleSet> = {
       },
     ],
   },
-
   'trial-chaos-mastery': {
     trialId: 'trial-chaos-mastery',
     steps: [
@@ -97,7 +90,7 @@ export const REALM_303_PUZZLES: Record<string, TrialPuzzleSet> = {
   },
 };
 
-
+// ─── REALM 202 ─────────────────────────────────────────────────────────────
 export const REALM_202_PUZZLES: Record<string, TrialPuzzleSet> = {
   'trial-dreamwalking': {
     trialId: 'trial-dreamwalking',
@@ -106,8 +99,7 @@ export const REALM_202_PUZZLES: Record<string, TrialPuzzleSet> = {
         id: 'dreamwalking-step-1',
         trialId: 'trial-dreamwalking',
         type: 'text-clue',
-        prompt:
-          'In The Veil, memories do not vanish. They bloom into what?',
+        prompt: 'In The Veil, memories do not vanish. They bloom into what?',
         acceptedAnswers: ['flowers', 'flower', 'memories as flowers'],
         hint: 'Read the Mist Gardens description carefully.',
       },
@@ -122,7 +114,6 @@ export const REALM_202_PUZZLES: Record<string, TrialPuzzleSet> = {
       },
     ],
   },
-
   'trial-clairvoyance': {
     trialId: 'trial-clairvoyance',
     steps: [
@@ -130,8 +121,7 @@ export const REALM_202_PUZZLES: Record<string, TrialPuzzleSet> = {
         id: 'clairvoyance-step-1',
         trialId: 'trial-clairvoyance',
         type: 'text-clue',
-        prompt:
-          'Clairvoyance is the ability to see beyond what kind of world?',
+        prompt: 'Clairvoyance is the ability to see beyond what kind of world?',
         acceptedAnswers: ['material', 'the material', 'the material world'],
         hint: 'The answer is in the realm description above.',
       },
@@ -150,7 +140,6 @@ export const REALM_202_PUZZLES: Record<string, TrialPuzzleSet> = {
       },
     ],
   },
-
   'trial-longings-end': {
     trialId: 'trial-longings-end',
     steps: [
@@ -158,8 +147,7 @@ export const REALM_202_PUZZLES: Record<string, TrialPuzzleSet> = {
         id: 'longings-end-step-1',
         trialId: 'trial-longings-end',
         type: 'text-clue',
-        prompt:
-          'This trial asks you to release what you long for and find peace in what?',
+        prompt: 'This trial asks you to release what you long for and find peace in what?',
         acceptedAnswers: ['the infinite now', 'infinite now', 'now'],
         hint: 'Read the trial description carefully.',
       },
@@ -167,8 +155,7 @@ export const REALM_202_PUZZLES: Record<string, TrialPuzzleSet> = {
         id: 'longings-end-step-2',
         trialId: 'trial-longings-end',
         type: 'riddle',
-        prompt:
-          'I cannot be held by craving, but I arrive when grasping stops. What am I?',
+        prompt: 'I cannot be held by craving, but I arrive when grasping stops. What am I?',
         acceptedAnswers: ['peace', 'inner peace', 'stillness'],
         hint: 'This is what longing gives way to.',
       },
@@ -176,6 +163,7 @@ export const REALM_202_PUZZLES: Record<string, TrialPuzzleSet> = {
   },
 };
 
+// ─── REALM 101 ─────────────────────────────────────────────────────────────
 export const REALM_101_PUZZLES: Record<string, TrialPuzzleSet> = {
   'trial-shadow-integration': {
     trialId: 'trial-shadow-integration',
@@ -184,8 +172,7 @@ export const REALM_101_PUZZLES: Record<string, TrialPuzzleSet> = {
         id: 'shadow-integration-step-1',
         trialId: 'trial-shadow-integration',
         type: 'text-clue',
-        prompt:
-          'This trial asks you to accept what you have what?',
+        prompt: 'This trial asks you to accept what you have what?',
         acceptedAnswers: ['denied', 'denied in yourself', 'denied within yourself'],
         hint: 'Read the trial description closely.',
       },
@@ -200,7 +187,6 @@ export const REALM_101_PUZZLES: Record<string, TrialPuzzleSet> = {
       },
     ],
   },
-
   'trial-midnight-clarity': {
     trialId: 'trial-midnight-clarity',
     steps: [
@@ -208,8 +194,7 @@ export const REALM_101_PUZZLES: Record<string, TrialPuzzleSet> = {
         id: 'midnight-clarity-step-1',
         trialId: 'trial-midnight-clarity',
         type: 'text-clue',
-        prompt:
-          'The trial says truth shines brightest at what time?',
+        prompt: 'The trial says truth shines brightest at what time?',
         acceptedAnswers: ['midnight', 'at midnight'],
         hint: 'The answer is in the trial description.',
       },
@@ -228,7 +213,6 @@ export const REALM_101_PUZZLES: Record<string, TrialPuzzleSet> = {
       },
     ],
   },
-
   'trial-illuminated-darkness': {
     trialId: 'trial-illuminated-darkness',
     steps: [
@@ -236,8 +220,7 @@ export const REALM_101_PUZZLES: Record<string, TrialPuzzleSet> = {
         id: 'illuminated-darkness-step-1',
         trialId: 'trial-illuminated-darkness',
         type: 'text-clue',
-        prompt:
-          'This trial asks you to become the what that walks through shadow?',
+        prompt: 'This trial asks you to become the what that walks through shadow?',
         acceptedAnswers: ['light', 'the light'],
         hint: 'The answer is directly in the trial description.',
       },
@@ -245,8 +228,7 @@ export const REALM_101_PUZZLES: Record<string, TrialPuzzleSet> = {
         id: 'illuminated-darkness-step-2',
         trialId: 'trial-illuminated-darkness',
         type: 'riddle',
-        prompt:
-          'I do not erase the dark, but reveal what it hides. What am I?',
+        prompt: 'I do not erase the dark, but reveal what it hides. What am I?',
         acceptedAnswers: ['light', 'illumination', 'awareness'],
         hint: 'Think revelation, not destruction.',
       },
@@ -254,66 +236,113 @@ export const REALM_101_PUZZLES: Record<string, TrialPuzzleSet> = {
   },
 };
 
-export const REALM_55_PUZZLES: Record<string, TrialPuzzleSet> = {
-  'trial-ascent': {
-    trialId: 'trial-ascent',
+// ─── REALM 55 — Skybound City ────────────────────────────────────────────────
+// Trials 1 & 2 each have a location step (step 0) then 2 puzzles (steps 1 & 2).
+// Trial 3 is pure puzzle: 2 puzzles here + 1 inline final puzzle in the page.
+export const REALM_55_PUZZLES: Record<string, { steps: PuzzleConfig[] }> = {
+  'trial-sovereignty': {
     steps: [
       {
-        id: 'ascent-step-2',
-        trialId: 'trial-ascent',
-        type: 'riddle',
-        prompt:
-          'I rise when vision is steady, collapse when fear takes hold, and grow stronger the higher I am tested. What am I?',
-        acceptedAnswers: ['ascent', 'rise', 'elevation'],
-        hint: 'This first trial is about upward movement and earned height.',
-      },
-    ],
-  },
-
-  'trial-command': {
-    trialId: 'trial-command',
-    steps: [
-      {
-        id: 'command-step-2',
-        trialId: 'trial-command',
+        id: 'sovereignty-step-2',
+        trialId: 'trial-sovereignty',
         type: 'multiple-choice',
-        prompt: 'What best reflects command in Skybound City?',
+        prompt: 'The Tower has been climbed. Now answer: true sovereignty comes from…',
         options: [
-          'Waiting for power to arrive on its own',
-          'Directing power with clarity and intention',
-          'Avoiding responsibility for what is created',
+          'Physical domination and outward force',
+          'External validation and the approval of others',
+          'Complete mastery of self — ruling the inner world first',
+          'The size of your empire',
         ],
-        correctOption: 'Directing power with clarity and intention',
-        hint: 'True power here is disciplined, not passive.',
+        correctOption: 'Complete mastery of self — ruling the inner world first',
+        hint: 'The king who cannot rule himself cannot rule a kingdom.',
+      },
+      {
+        id: 'sovereignty-step-3',
+        trialId: 'trial-sovereignty',
+        type: 'multiple-choice',
+        prompt: 'A sovereign\'s word is law because it is backed by…',
+        options: [
+          'An army large enough to enforce it',
+          'Absolute certainty, integrity, and follow-through',
+          'Wealth and material power',
+          'Fear and punishment',
+        ],
+        correctOption: 'Absolute certainty, integrity, and follow-through',
+        hint: 'Power without integrity collapses. Integrity without power merely waits.',
       },
     ],
   },
-
-  'trial-summit-will': {
-    trialId: 'trial-summit-will',
+  'trial-power-manifestation': {
     steps: [
       {
-        id: 'summit-will-step-1',
-        trialId: 'trial-summit-will',
-        type: 'text-clue',
-        prompt:
-          'What quality must remain steady when the climb becomes difficult?',
-        acceptedAnswers: ['will', 'your will', 'steady will'],
-        hint: 'The trial title points directly to it.',
+        id: 'manifestation-step-2',
+        trialId: 'trial-power-manifestation',
+        type: 'multiple-choice',
+        prompt: 'The Arena proved your strength. Manifestation requires aligned thought, emotion, and…',
+        options: [
+          'Perfect timing and ideal circumstances',
+          'Consistent, aligned action taken daily',
+          'Permission from those above you',
+          'Waiting until everything is ready',
+        ],
+        correctOption: 'Consistent, aligned action taken daily',
+        hint: 'Vision without action is daydreaming. Action without vision is chaos.',
       },
       {
-        id: 'summit-will-step-2',
-        trialId: 'trial-summit-will',
-        type: 'riddle',
-        prompt:
-          'I am not height, yet I determine whether height can be held. What am I?',
-        acceptedAnswers: ['will', 'discipline', 'resolve'],
-        hint: 'Summits are reached by more than ambition.',
+        id: 'manifestation-step-3',
+        trialId: 'trial-power-manifestation',
+        type: 'multiple-choice',
+        prompt: 'Which statement best describes true power manifestation?',
+        options: [
+          'Forcing outcomes through sheer willpower alone',
+          'Aligning inner state with outer action until reality shifts',
+          'Waiting for the right moment to act',
+          'Accumulating enough resources before beginning',
+        ],
+        correctOption: 'Aligning inner state with outer action until reality shifts',
+        hint: 'The manifest world is always a reflection of the internal world first.',
+      },
+    ],
+  },
+  'trial-divine-authority': {
+    steps: [
+      {
+        id: 'authority-step-1',
+        trialId: 'trial-divine-authority',
+        type: 'multiple-choice',
+        prompt: 'Divine authority is most powerfully expressed through…',
+        options: [
+          'Raising your voice and displaying force',
+          'Calm, commanding presence and absolute clarity of purpose',
+          'Accumulating titles, symbols, and status',
+          'Eliminating all who oppose you',
+        ],
+        correctOption: 'Calm, commanding presence and absolute clarity of purpose',
+        hint: 'The most powerful rulers in history spoke softly — and were heard across centuries.',
+      },
+      {
+        id: 'authority-step-2',
+        trialId: 'trial-divine-authority',
+        type: 'multiple-choice',
+        prompt: 'What is the hidden foundation beneath all lasting power?',
+        options: [
+          'Wealth and resource accumulation',
+          'A loyal network of allies',
+          'Discipline — the invisible law that structures all authority',
+          'The right bloodline or birthright',
+        ],
+        correctOption: 'Discipline — the invisible law that structures all authority',
+        hint: 'No empire rose without it. No throne held without it. It is the first quality of every great ruler.',
       },
     ],
   },
 };
 
+// ─── REALM 44 ──────────────────────────────────────────────────────────────
+// Step model:
+//   trial-barter-of-truth : location (0→1) + step-1 (1→2) + step-2 (2→3)
+//   trial-discernment     : location (0→1) + step-1 (1→2) + step-2 (2→3)
+//   trial-sacred-exchange : step-1 (0→1) + step-2 (1→2) + step-3 (2→3)
 export const REALM_44_PUZZLES: Record<string, TrialPuzzleSet> = {
   'trial-barter-of-truth': {
     trialId: 'trial-barter-of-truth',
@@ -322,8 +351,7 @@ export const REALM_44_PUZZLES: Record<string, TrialPuzzleSet> = {
         id: 'barter-truth-step-1',
         trialId: 'trial-barter-of-truth',
         type: 'text-clue',
-        prompt:
-          'Astral Bazaar is a realm of hustle and what?',
+        prompt: 'Astral Bazaar is a realm of hustle and what?',
         acceptedAnswers: ['wisdom', 'hustle and wisdom'],
         hint: 'Check the realm subtitle.',
       },
@@ -346,8 +374,7 @@ export const REALM_44_PUZZLES: Record<string, TrialPuzzleSet> = {
         id: 'discernment-step-1',
         trialId: 'trial-discernment',
         type: 'text-clue',
-        prompt:
-          'What allows you to tell glitter from genuine worth?',
+        prompt: 'What allows you to tell glitter from genuine worth?',
         acceptedAnswers: ['discernment', 'wisdom', 'clear discernment'],
         hint: 'This is the core skill of the second trial.',
       },
@@ -374,8 +401,7 @@ export const REALM_44_PUZZLES: Record<string, TrialPuzzleSet> = {
         id: 'sacred-exchange-step-1',
         trialId: 'trial-sacred-exchange',
         type: 'text-clue',
-        prompt:
-          'A sacred exchange requires value, presence, and what else?',
+        prompt: 'A sacred exchange requires value, presence, and what else?',
         acceptedAnswers: ['integrity', 'truth', 'honesty'],
         hint: 'Think about what keeps exchange clean.',
       },
@@ -383,15 +409,33 @@ export const REALM_44_PUZZLES: Record<string, TrialPuzzleSet> = {
         id: 'sacred-exchange-step-2',
         trialId: 'trial-sacred-exchange',
         type: 'riddle',
-        prompt:
-          'When both sides leave more whole, I have occurred. What am I?',
+        prompt: 'When both sides leave more whole, I have occurred. What am I?',
         acceptedAnswers: ['exchange', 'sacred exchange', 'fair exchange'],
         hint: 'This final trial is about reciprocity with wisdom.',
+      },
+      // Step 2 → 3 (added for 3-step consistency)
+      {
+        id: 'sacred-exchange-step-3',
+        trialId: 'trial-sacred-exchange',
+        type: 'multiple-choice',
+        prompt: 'Which of these best describes a sacred exchange?',
+        options: [
+          'Extracting the most value from every transaction',
+          'Giving and receiving in alignment with truth and integrity',
+          'Trading only when profit is guaranteed',
+        ],
+        correctOption: 'Giving and receiving in alignment with truth and integrity',
+        hint: 'Sacred exchange is not commerce — it is covenant.',
       },
     ],
   },
 };
 
+// ─── REALM 0 ───────────────────────────────────────────────────────────────
+// Step model:
+//   trial-remembrance      : location (0→1) + step-1 (1→2) + step-2 (2→3)
+//   trial-unity            : location (0→1) + step-1 (1→2) + step-2 (2→3)
+//   trial-return-to-source : step-1 (0→1) + step-2 (1→2) + step-3 (2→3)
 export const REALM_0_PUZZLES: Record<string, TrialPuzzleSet> = {
   'trial-remembrance': {
     trialId: 'trial-remembrance',
@@ -400,8 +444,7 @@ export const REALM_0_PUZZLES: Record<string, TrialPuzzleSet> = {
         id: 'remembrance-step-1',
         trialId: 'trial-remembrance',
         type: 'text-clue',
-        prompt:
-          'At the source, what returns before striving can continue?',
+        prompt: 'At the source, what returns before striving can continue?',
         acceptedAnswers: ['remembrance', 'memory', 'remembering'],
         hint: 'The trial title is the first key.',
       },
@@ -409,8 +452,7 @@ export const REALM_0_PUZZLES: Record<string, TrialPuzzleSet> = {
         id: 'remembrance-step-2',
         trialId: 'trial-remembrance',
         type: 'riddle',
-        prompt:
-          'I am never truly lost, only obscured until recognized. What am I?',
+        prompt: 'I am never truly lost, only obscured until recognized. What am I?',
         acceptedAnswers: ['source', 'self', 'truth'],
         hint: 'Realm 0 is about return, not acquisition.',
       },
@@ -424,8 +466,7 @@ export const REALM_0_PUZZLES: Record<string, TrialPuzzleSet> = {
         id: 'unity-step-1',
         trialId: 'trial-unity',
         type: 'text-clue',
-        prompt:
-          'What must dissolve for unity to be experienced directly?',
+        prompt: 'What must dissolve for unity to be experienced directly?',
         acceptedAnswers: ['separation', 'division', 'the illusion of separation'],
         hint: 'Unity begins where fragmentation ends.',
       },
@@ -452,8 +493,7 @@ export const REALM_0_PUZZLES: Record<string, TrialPuzzleSet> = {
         id: 'return-source-step-1',
         trialId: 'trial-return-to-source',
         type: 'text-clue',
-        prompt:
-          'The final movement is not forward but where?',
+        prompt: 'The final movement is not forward but where?',
         acceptedAnswers: ['back', 'within', 'to source', 'home'],
         hint: 'This realm resolves the whole journey.',
       },
@@ -461,10 +501,23 @@ export const REALM_0_PUZZLES: Record<string, TrialPuzzleSet> = {
         id: 'return-source-step-2',
         trialId: 'trial-return-to-source',
         type: 'riddle',
-        prompt:
-          'I am the beginning hidden inside the end. What am I?',
+        prompt: 'I am the beginning hidden inside the end. What am I?',
         acceptedAnswers: ['source', 'origin', 'home'],
         hint: 'The last trial loops the entire path.',
+      },
+      // Step 2 → 3 (added for 3-step consistency)
+      {
+        id: 'return-source-step-3',
+        trialId: 'trial-return-to-source',
+        type: 'multiple-choice',
+        prompt: 'What does returning to source ultimately reveal?',
+        options: [
+          'That the journey was always leading outward',
+          'That you were the source all along',
+          'That striving must continue without end',
+        ],
+        correctOption: 'That you were the source all along',
+        hint: 'The final realm closes the circle.',
       },
     ],
   },
