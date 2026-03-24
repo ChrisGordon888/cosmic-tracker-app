@@ -43,7 +43,7 @@ const REALM_META = [
         number: '202',
         icon: '🕯️',
         description: 'Realm of Dreams & Longing',
-        unlockRequirement: 'Complete Trial in Fractured Frontier',
+        unlockRequirement: 'Complete Trials in Fractured Frontier',
     },
     {
         id: '101',
@@ -51,7 +51,7 @@ const REALM_META = [
         number: '101',
         icon: '🌙',
         description: 'Realm of Reflection & Shadows',
-        unlockRequirement: 'Complete Trial in The Veil',
+        unlockRequirement: 'Complete Trials in The Veil',
     },
     {
         id: '55',
@@ -59,7 +59,7 @@ const REALM_META = [
         number: '55',
         icon: '⛰️',
         description: 'Realm of Power & Manifestation',
-        unlockRequirement: 'Complete Trial in Moonlit Roads',
+        unlockRequirement: 'Complete Trials in Moonlit Roads',
     },
     {
         id: '44',
@@ -67,15 +67,15 @@ const REALM_META = [
         number: '44',
         icon: '🛍️',
         description: 'Realm of Hustle & Wisdom',
-        unlockRequirement: 'Complete Trial in Skybound City',
+        unlockRequirement: 'Complete Trials in Skybound City',
     },
     {
         id: '0',
-        name: 'COSMIC NEXUS',
+        name: 'INTERSIDDHI',          // ✅ fixed
         number: '0',
         icon: '🌌',
         description: 'Realm of Source & Transcendence',
-        unlockRequirement: 'Master All Realms',
+        unlockRequirement: 'Complete Trials in Astral Bazaar', // ✅ fixed
     },
 ];
 
