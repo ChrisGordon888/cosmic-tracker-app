@@ -7,6 +7,8 @@ import { useQuery, useMutation } from '@apollo/client';
 import { getTodayMoonPhase, getRealmMoonAlignment } from '@/lib/moonPhases';
 import RealmBackground from '@/components/realm/RealmBackground';
 import { GET_ME, LOG_DAILY_LOGIN } from '@/graphql/realms';
+import { useMusicPlayer } from '@/hooks/useMusicPlayer';
+import { MUSIC_REGISTRY } from '@/lib/musicRegistry';
 import '@/styles/realmShared.css';
 import '@/styles/nexus.css';
 
@@ -71,11 +73,11 @@ const REALM_META = [
     },
     {
         id: '0',
-        name: 'INTERSIDDHI',          // ✅ fixed
+        name: 'INTERSIDDHI',
         number: '0',
         icon: '🌌',
         description: 'Realm of Source & Transcendence',
-        unlockRequirement: 'Complete Trials in Astral Bazaar', // ✅ fixed
+        unlockRequirement: 'Complete Trials in Astral Bazaar',
     },
 ];
 
@@ -84,9 +86,11 @@ export default function CosmicNexusHub() {
     const [moonPhase, setMoonPhase] = useState<any>(null);
     const [realmAlignment, setRealmAlignment] = useState<any>(null);
 
+    const { playTrack, currentTrack, isPlaying } = useMusicPlayer();
+
     // ✅ REAL USER DATA FROM BACKEND
     const { data: userData, loading: userLoading } = useQuery(GET_ME, {
-        skip: !session, // don't query until session is confirmed
+        skip: !session,
     });
 
     // ✅ DAILY LOGIN — fire once per session
@@ -115,7 +119,7 @@ export default function CosmicNexusHub() {
     const safeXpToNext = Math.max(xpToNext, 1);
     const xpPercent = Math.min((userXP / safeXpToNext) * 100, 100);
     const currentStreak = user?.streaks?.currentStreak ?? 0;
-    const unlockedRealms: number[] = user?.unlockedRealms ?? [303]; // default: 303 unlocked
+    const unlockedRealms: number[] = user?.unlockedRealms ?? [303];
 
     // Total completed trials across all realms (siddhis proxy)
     const totalCompletedTrials =
@@ -137,6 +141,10 @@ export default function CosmicNexusHub() {
 
     const isRealmUnlocked = (realmId: number): boolean =>
         unlockedRealms.includes(realmId);
+
+    const unlockedTracks = MUSIC_REGISTRY.filter((track) =>
+        unlockedRealms.includes(track.realmId)
+    );
 
     // Build dynamic realms array
     const realms: RealmPortalData[] = REALM_META.map((meta) => {
@@ -348,6 +356,62 @@ export default function CosmicNexusHub() {
                         </div>
                     </div>
 
+                    {/* Unlocked Soundtracks */}
+                    <div className="glass-card p-6 mb-8 fade-in" style={{ animationDelay: '0.95s' }}>
+                        <h2 className="text-2xl font-display mb-4">🎵 UNLOCKED SOUNDTRACKS</h2>
+                        <p className="text-secondary mb-4">
+                            Music discovered across the multiverse. Play any unlocked realm track from the Nexus.
+                        </p>
+
+                        {unlockedTracks.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {unlockedTracks.map((track) => {
+                                    const isCurrent = currentTrack?.id === track.id;
+
+                                    return (
+                                        <div key={track.id} className="quest-card">
+                                            <div className="flex items-center gap-4">
+                                                <div
+                                                    className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl"
+                                                    style={{
+                                                        background: `linear-gradient(135deg, ${track.realmColor}33, ${track.realmColor}66)`,
+                                                    }}
+                                                >
+                                                    🎵
+                                                </div>
+
+                                                <div className="flex-1 min-w-0">
+                                                    <p
+                                                        className="font-display truncate"
+                                                        style={{ color: track.realmColor }}
+                                                    >
+                                                        {track.trackTitle}
+                                                    </p>
+                                                    <p className="text-sm text-secondary truncate">
+                                                        {track.artist} • {track.realmName}
+                                                    </p>
+                                                </div>
+
+                                                <button
+                                                    className="btn-secondary"
+                                                    onClick={() => playTrack(track)}
+                                                >
+                                                    {isCurrent && isPlaying ? 'Playing' : 'Play'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <div className="quest-card opacity-70">
+                                <p className="text-sm text-muted text-center">
+                                    No realm tracks unlocked yet. Enter a realm and begin your journey.
+                                </p>
+                            </div>
+                        )}
+                    </div>
+
                     {/* Ritual Layer Preview */}
                     <div className="glass-card p-6 mb-8 fade-in" style={{ animationDelay: '0.9s' }}>
                         <h2 className="text-2xl font-display mb-4">
@@ -406,7 +470,6 @@ export default function CosmicNexusHub() {
                             </div>
                         </Link>
 
-
                         {/* <Link href="/mysteries">
                             <div className="glass-card p-6 text-center cursor-pointer hover:border-color-electric-blue transition-all">
                                 <div className="text-4xl mb-2">🧩</div>
@@ -420,7 +483,6 @@ export default function CosmicNexusHub() {
                             <p className="text-sm text-muted">Lunar Cycle Alignment</p>
                             <p className="text-xs text-glow mt-1">— COMING SOON —</p>
                         </div>
-
                     </div>
 
                     {/* Welcome Message for New Users */}
