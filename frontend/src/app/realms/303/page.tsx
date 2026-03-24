@@ -1,58 +1,81 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { useQuery, useMutation } from '@apollo/client';
 import RealmBackground from '@/components/realm/RealmBackground';
+import RealmMusicPlayer from '@/components/realm/RealmMusicPlayer';
+import TrialPuzzle from '@/components/realm/TrialPuzzle';
+import { REALM_303_PUZZLES, type PuzzleConfig } from '@/lib/realmPuzzles';
+import {
+  GET_ME,
+  COMPLETE_TRIAL_STEP,
+  START_TRIAL,
+  VISIT_LOCATION,
+  UNLOCK_REALM,
+} from '@/graphql/realms';
 import '@/styles/realmShared.css';
 import '@/styles/realm303.css';
-import RealmMusicPlayer from '@/components/realm/RealmMusicPlayer';
-import { useQuery, useMutation } from '@apollo/client';
-import { GET_ME, COMPLETE_TRIAL_STEP, START_TRIAL, VISIT_LOCATION } from '@/graphql/realms';
 
-/**
- * 🌪️ REALM 303: FRACTURED FRONTIER
- * Theme: Chaos & Creation
- * Color: Red/Purple/Cyan glitch aesthetic
- * Inspiration: JJK's Shibuya, Batman Beyond's Gotham
- */
+const CHAOS_FINAL_PUZZLE: PuzzleConfig = {
+  id: 'chaos-step-3',
+  trialId: 'trial-chaos-mastery',
+  type: 'multiple-choice',
+  prompt: 'Which path reflects mastery in the Fractured Frontier?',
+  options: [
+    'Avoid chaos completely and hide from it',
+    'Control chaos and shape it into form',
+    'Destroy every fragment before it spreads',
+  ],
+  correctOption: 'Control chaos and shape it into form',
+  hint: 'Mastery here is not avoidance. It is disciplined transformation.',
+};
 
 export default function Realm303() {
   const { data: session, status } = useSession();
 
-  // 🆕 FETCH USER DATA FROM BACKEND
   const { data: userData, loading: userLoading, refetch } = useQuery(GET_ME);
   const [completeTrialStep] = useMutation(COMPLETE_TRIAL_STEP);
   const [startTrial] = useMutation(START_TRIAL);
   const [visitLocation] = useMutation(VISIT_LOCATION);
+  const [unlockRealm] = useMutation(UNLOCK_REALM);
 
-  // 🆕 GET REAL USER DATA
+  const hasUnlockedNextRealmRef = useRef(false);
+
+  // local puzzle state
+  const [trial1Puzzle1Solved, setTrial1Puzzle1Solved] = useState(false);
+  const [trial1Puzzle2Solved, setTrial1Puzzle2Solved] = useState(false);
+
+  const [trial2Puzzle1Solved, setTrial2Puzzle1Solved] = useState(false);
+  const [trial2Puzzle2Solved, setTrial2Puzzle2Solved] = useState(false);
+
+  const [trial3Puzzle1Solved, setTrial3Puzzle1Solved] = useState(false);
+  const [trial3Puzzle2Solved, setTrial3Puzzle2Solved] = useState(false);
+  const [trial3Puzzle3Solved, setTrial3Puzzle3Solved] = useState(false);
+
   const user = userData?.me;
   const userLevel = user?.level || 1;
   const userXP = user?.xp || 0;
   const xpToNext = user?.xpToNextLevel || 100;
 
-  // ✅ SAFETY (avoid divide-by-0 and cap at 100%)
   const safeXpToNext = Math.max(xpToNext || 100, 1);
   const xpPercent = Math.min((userXP / safeXpToNext) * 100, 100);
 
-  // Calculate realm-specific progress
   const realm303Trials = user?.completedTrials?.filter((t: any) => t.realmId === 303) || [];
   const completedTrialsCount = realm303Trials.filter((t: any) => t.isComplete).length;
   const realmProgress = Math.floor((completedTrialsCount / 3) * 100);
 
-  // Get specific trial progress
   const getTrial = (trialId: string) => {
     return realm303Trials.find((t: any) => t.trialId === trialId);
   };
 
-  // Check if User Visited specific Location and log location ID
   const realm303Locations = user?.visitedLocations?.filter((l: any) => l.realmId === 303) || [];
 
   const hasVisited = (locationId: string) => {
     return realm303Locations.some((l: any) => l.locationId === locationId);
   };
 
-  // Check if User has listened to specific track
   const hasListenedToTrack = (realmId: number, trackTitle: string) => {
     return (
       user?.musicStats?.tracksListened?.some(
@@ -62,39 +85,98 @@ export default function Realm303() {
   };
 
   const hasListenedNotEnough = hasListenedToTrack(303, 'Not Enough');
+  const isVeilUnlocked = user?.unlockedRealms?.includes(202);
 
-  // ✅ Split “start trial” vs “claim step”
+  const trial1 = getTrial('trial-creation');
+  const trial2 = getTrial('trial-transformation');
+  const trial3 = getTrial('trial-chaos-mastery');
+
+  const trial1Started = !!trial1;
+  const trial2Started = !!trial2;
+  const trial3Started = !!trial3;
+
+  const trial1Steps = trial1?.stepsCompleted || 0;
+  const trial2Steps = trial2?.stepsCompleted || 0;
+  const trial3Steps = trial3?.stepsCompleted || 0;
+
+  const creationPuzzles = REALM_303_PUZZLES['trial-creation'].steps;
+  const transformationPuzzles = REALM_303_PUZZLES['trial-transformation'].steps;
+  const chaosPuzzles = REALM_303_PUZZLES['trial-chaos-mastery'].steps;
+
+  useEffect(() => {
+    const nextRealmId = 202;
+    const alreadyUnlocked = user?.unlockedRealms?.includes(nextRealmId);
+
+    if (
+      completedTrialsCount >= 3 &&
+      user &&
+      !alreadyUnlocked &&
+      !hasUnlockedNextRealmRef.current
+    ) {
+      hasUnlockedNextRealmRef.current = true;
+
+      unlockRealm({
+        variables: { realmId: nextRealmId },
+      })
+        .then(() => {
+          refetch();
+        })
+        .catch((error) => {
+          console.error('Realm unlock error:', error);
+        });
+    }
+  }, [completedTrialsCount, user, unlockRealm, refetch]);
+
   const ensureTrialStarted = async (trialId: string, trialName: string) => {
     await startTrial({
       variables: { realmId: 303, trialId, trialName },
     });
+    await refetch();
   };
 
-  const claimTrialStep = async (trialId: string) => {
+  const advanceTrialStep = async (trialId: string, prefixMessage?: string) => {
     const result = await completeTrialStep({
       variables: { realmId: 303, trialId },
     });
 
-    alert(result.data.completeTrialStep.message);
-    refetch();
+    const trialMessage = result.data.completeTrialStep.message;
+
+    if (prefixMessage) {
+      alert(`${prefixMessage}\n${trialMessage}`);
+    } else {
+      alert(trialMessage);
+    }
+
+    await refetch();
   };
 
-  // 🆕 HANDLE LOCATION VISIT
   const handleLocationVisit = async (locationId: string, locationName: string) => {
     try {
       const result = await visitLocation({
         variables: { realmId: 303, locationId, locationName },
       });
 
-      alert(result.data.visitLocation.message);
-      refetch();
+      const visitMessage = result.data.visitLocation.message;
+
+      // auto-advance trial steps from meaningful location actions
+      if (locationId === 'glitch-district' && trial1Started && trial1Steps === 0) {
+        await advanceTrialStep('trial-creation', visitMessage);
+        return;
+      }
+
+      if (locationId === 'creation-forge' && trial2Started && trial2Steps === 0) {
+        await advanceTrialStep('trial-transformation', visitMessage);
+        return;
+      }
+
+      alert(visitMessage);
+      await refetch();
     } catch (error: any) {
       console.error('Location visit error:', error);
       alert('Error: ' + (error.message || 'Something went wrong'));
     }
   };
 
-  // 🆕 LOADING STATE
   if (status === 'loading' || userLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -120,25 +202,20 @@ export default function Realm303() {
     );
   }
 
-  // Trial data
-  const trial1 = getTrial('trial-creation');
-  const trial1Steps = trial1?.stepsCompleted || 0;
+  // location gating
+  const canExploreGlitchDistrict = trial1Started && trial1Steps === 0;
+  const canExploreCreationForge = trial2Started && trial2Steps === 0;
 
-  // Requirements for Trial 1 steps:
-  // Step 1: Explore Glitch District
-  const trial1NeedsLocation = trial1Steps === 0 && !hasVisited('glitch-district');
-  // Step 2: Listen to 80% of Not Enough (persisted from backend via tracksListened)
-  const trial1NeedsMusic = trial1Steps === 1 && !hasListenedNotEnough;
+  const goToLocations = () => {
+    document.getElementById('locations-section')?.scrollIntoView({ behavior: 'smooth' });
+  };
 
-  // Can claim step only if requirements are met
-  const canClaimTrial1Step = !trial1NeedsLocation && !trial1NeedsMusic;
-
-  const trial2 = getTrial('trial-transformation');
-  const trial3 = getTrial('trial-chaos-mastery');
+  const goToMusic = () => {
+    document.getElementById('music-section')?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   return (
     <>
-      {/* Animated Background Video */}
       <RealmBackground
         videoSrc="/fractured-frontier_CityScape1.mp4"
         realmName="Fractured Frontier"
@@ -147,7 +224,6 @@ export default function Realm303() {
 
       <div className="min-h-screen pb-32">
         <div className="container mx-auto px-4 py-8 max-w-6xl">
-          {/* Header */}
           <header className="text-center mb-12 fade-in">
             <div className="text-6xl mb-4 neon-glow">🌪️</div>
             <h1
@@ -159,7 +235,6 @@ export default function Realm303() {
             <p className="text-xl text-secondary mb-2">[ REALM 303 ]</p>
             <p className="text-lg text-muted">Chaos & Creation • Where Reality Breaks</p>
 
-            {/* 🆕 USER LEVEL DISPLAY */}
             <div className="mt-6 flex justify-center items-center gap-4">
               <div className="level-badge">LVL {userLevel}</div>
 
@@ -175,8 +250,11 @@ export default function Realm303() {
             </div>
           </header>
 
-          {/* Realm Description Card */}
-          <div className="glass-card p-8 mb-8 fade-in" style={{ animationDelay: '0.1s' }}>
+          <div
+            id="realm-description-card"
+            className="glass-card p-8 mb-8 fade-in"
+            style={{ animationDelay: '0.1s' }}
+          >
             <h2 className="text-3xl font-display mb-4">⚡ WELCOME TO THE EDGE ⚡</h2>
             <p className="text-lg text-secondary mb-4">
               The Fractured Frontier is a realm of beautiful chaos—where glitches in reality become
@@ -189,7 +267,6 @@ export default function Realm303() {
               doorway.
             </p>
 
-            {/* 🆕 REAL REALM STATS */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
               <div className="glass-card p-4 text-center">
                 <div
@@ -209,13 +286,14 @@ export default function Realm303() {
                 <div className="text-xs text-muted">Siddhis Unlocked</div>
               </div>
               <div className="glass-card p-4 text-center">
-                <div className="text-2xl font-display text-glow">Locked</div>
+                <div className="text-2xl font-display text-glow">
+                  {isVeilUnlocked ? 'Unlocked' : 'Locked'}
+                </div>
                 <div className="text-xs text-muted">Next Realm</div>
               </div>
             </div>
           </div>
 
-          {/* Trials Section */}
           <div className="mb-8">
             <h2 className="text-3xl font-display mb-6 flex items-center gap-3">
               <span className="text-glow">🎯</span>
@@ -224,14 +302,14 @@ export default function Realm303() {
             </h2>
 
             <div className="space-y-4">
-              {/* 🆕 TRIAL 1 - REAL GATED FLOW */}
+              {/* Trial 1 */}
               <div className="quest-card fade-in" style={{ animationDelay: '0.2s' }}>
                 <div className="flex items-start gap-4">
                   <div className="text-4xl">🔥</div>
                   <div className="flex-1">
                     <h3 className="text-xl font-display mb-2">Trial of Creation</h3>
                     <p className="text-sm text-secondary mb-3">
-                      Create something from nothing. Channel chaos into form.
+                      Begin the trial, explore the district, solve the pattern, then use the soundtrack to unlock the final creation sequence.
                     </p>
 
                     <div className="mb-3">
@@ -247,70 +325,80 @@ export default function Realm303() {
                       </div>
                     </div>
 
-                    {trial1?.isComplete ? (
-                      <div className="text-green-400 font-bold">✓ COMPLETE</div>
-                    ) : (
+                    {!trial1Started && (
                       <>
                         <button
-                          className="btn-primary"
-                          onClick={async () => {
-                            try {
-                              await ensureTrialStarted('trial-creation', 'Trial of Creation');
-
-                              // If requirement not met, guide user (no XP claimed)
-                              if (trial1NeedsLocation) {
-                                document
-                                  .getElementById('locations-section')
-                                  ?.scrollIntoView({ behavior: 'smooth' });
-                                return;
-                              }
-
-                              if (trial1NeedsMusic) {
-                                document
-                                  .getElementById('music-section')
-                                  ?.scrollIntoView({ behavior: 'smooth' });
-                                return;
-                              }
-
-                              // ✅ Claim XP + step progression
-                              await claimTrialStep('trial-creation');
-                            } catch (err: any) {
-                              console.error(err);
-                              alert('Error: ' + (err.message || 'Something went wrong'));
-                            }
-                          }}
-                          title={
-                            trial1NeedsLocation
-                              ? 'Explore The Glitch District first'
-                              : trial1NeedsMusic
-                                ? 'Listen to 80% of "Not Enough" first'
-                                : 'Claim this step (+XP)'
-                          }
+                          className="btn-primary mt-4"
+                          onClick={() => ensureTrialStarted('trial-creation', 'Trial of Creation')}
                         >
-                          {trial1NeedsLocation
-                            ? 'GO TO GLITCH DISTRICT →'
-                            : trial1NeedsMusic
-                              ? 'GO TO MUSIC →'
-                              : trial1
-                                ? 'CLAIM STEP (+XP) →'
-                                : 'BEGIN TRIAL →'}
+                          BEGIN TRIAL OF CREATION →
                         </button>
-
-                        {(trial1NeedsLocation || trial1NeedsMusic) && (
-                          <p className="text-xs text-muted mt-2">
-                            {trial1NeedsLocation &&
-                              '🔒 Step 1: Explore The Glitch District to stabilize the realm.'}
-                            {trial1NeedsMusic &&
-                              ' 🔒 Step 2: Listen to 80% of "Not Enough" to charge the forge.'}
-                          </p>
-                        )}
+                        <p className="text-xs text-muted mt-2">
+                          🔒 Start the trial to unlock the first movement.
+                        </p>
                       </>
                     )}
+
+                    {trial1Started && trial1Steps === 0 && (
+                      <>
+                        <button className="btn-primary mt-4" onClick={goToLocations}>
+                          STEP 1: EXPLORE GLITCH DISTRICT →
+                        </button>
+                        <p className="text-xs text-muted mt-2">
+                          🔒 Visit The Glitch District to auto-complete the first step.
+                        </p>
+                      </>
+                    )}
+
+                    {trial1Started && trial1Steps === 1 && (
+                      <>
+                        <TrialPuzzle
+                          puzzle={creationPuzzles[0]}
+                          onSolved={async () => {
+                            if (trial1Puzzle1Solved) return;
+                            setTrial1Puzzle1Solved(true);
+                            await advanceTrialStep('trial-creation');
+                          }}
+                        />
+                        <p className="text-xs text-muted mt-2">
+                          🔒 Solve the pattern challenge to stabilize creation.
+                        </p>
+                      </>
+                    )}
+
+                    {trial1Started && trial1Steps === 2 && !hasListenedNotEnough && (
+                      <>
+                        <button className="btn-primary mt-4" onClick={goToMusic}>
+                          STEP 3: LISTEN TO THE SOUNDTRACK →
+                        </button>
+                        <p className="text-xs text-muted mt-2">
+                          🔒 Listen to at least 80% of &quot;Not Enough&quot; to unlock the final creation puzzle.
+                        </p>
+                      </>
+                    )}
+
+                    {trial1Started && trial1Steps === 2 && hasListenedNotEnough && (
+                      <>
+                        <TrialPuzzle
+                          puzzle={creationPuzzles[1]}
+                          onSolved={async () => {
+                            if (trial1Puzzle2Solved) return;
+                            setTrial1Puzzle2Solved(true);
+                            await advanceTrialStep('trial-creation');
+                          }}
+                        />
+                        <p className="text-xs text-muted mt-2">
+                          ✅ Soundtrack attuned. Solve the final creation sequence to complete the trial.
+                        </p>
+                      </>
+                    )}
+
+                    {trial1?.isComplete && <div className="text-green-400 font-bold">✓ COMPLETE</div>}
                   </div>
                 </div>
               </div>
 
-              {/* 🆕 TRIAL 2 - UNLOCKS AFTER TRIAL 1 */}
+              {/* Trial 2 */}
               <div
                 className={`quest-card fade-in ${!trial1?.isComplete ? 'opacity-50' : ''}`}
                 style={{ animationDelay: '0.3s' }}
@@ -319,56 +407,97 @@ export default function Realm303() {
                   <div className="text-4xl">⚡</div>
                   <div className="flex-1">
                     <h3 className="text-xl font-display mb-2">Trial of Transformation</h3>
+
                     {trial1?.isComplete ? (
                       <>
                         <p className="text-sm text-secondary mb-3">
-                          Transform chaos into order, destruction into creation.
+                          Enter the forge, decode its laws, then solve the deeper alchemy beneath transformation.
                         </p>
+
                         <div className="mb-3">
                           <div className="flex justify-between text-xs mb-1">
                             <span>Progress</span>
-                            <span>{trial2?.stepsCompleted || 0} / 3 Steps</span>
+                            <span>{trial2Steps} / 3 Steps</span>
                           </div>
                           <div className="stat-bar">
                             <div
                               className="stat-bar-fill"
-                              style={{
-                                width: `${(((trial2?.stepsCompleted || 0) as number) / 3) * 100}%`,
-                              }}
+                              style={{ width: `${(trial2Steps / 3) * 100}%` }}
                             />
                           </div>
                         </div>
 
-                        {trial2?.isComplete ? (
-                          <div className="text-green-400 font-bold">✓ COMPLETE</div>
-                        ) : (
-                          <button
-                            className="btn-primary"
-                            onClick={async () => {
-                              try {
-                                await ensureTrialStarted(
-                                  'trial-transformation',
-                                  'Trial of Transformation'
-                                );
-                                await claimTrialStep('trial-transformation');
-                              } catch (err: any) {
-                                console.error(err);
-                                alert('Error: ' + (err.message || 'Something went wrong'));
+                        {!trial2Started && (
+                          <>
+                            <button
+                              className="btn-primary mt-4"
+                              onClick={() =>
+                                ensureTrialStarted('trial-transformation', 'Trial of Transformation')
                               }
-                            }}
-                          >
-                            {trial2 ? 'CLAIM STEP (+XP) →' : 'BEGIN TRIAL →'}
-                          </button>
+                            >
+                              BEGIN TRIAL OF TRANSFORMATION →
+                            </button>
+                            <p className="text-xs text-muted mt-2">
+                              🔒 Start the trial to unlock the forge path.
+                            </p>
+                          </>
                         )}
+
+                        {trial2Started && trial2Steps === 0 && (
+                          <>
+                            <button className="btn-primary mt-4" onClick={goToLocations}>
+                              STEP 1: VISIT CREATION FORGE →
+                            </button>
+                            <p className="text-xs text-muted mt-2">
+                              🔒 Visit The Creation Forge to auto-complete the first step.
+                            </p>
+                          </>
+                        )}
+
+                        {trial2Started && trial2Steps === 1 && (
+                          <>
+                            <TrialPuzzle
+                              puzzle={transformationPuzzles[0]}
+                              onSolved={async () => {
+                                if (trial2Puzzle1Solved) return;
+                                setTrial2Puzzle1Solved(true);
+                                await advanceTrialStep('trial-transformation');
+                              }}
+                            />
+                            <p className="text-xs text-muted mt-2">
+                              🔒 Solve the first transformation puzzle to continue.
+                            </p>
+                          </>
+                        )}
+
+                        {trial2Started && trial2Steps === 2 && (
+                          <>
+                            <TrialPuzzle
+                              puzzle={transformationPuzzles[1]}
+                              onSolved={async () => {
+                                if (trial2Puzzle2Solved) return;
+                                setTrial2Puzzle2Solved(true);
+                                await advanceTrialStep('trial-transformation');
+                              }}
+                            />
+                            <p className="text-xs text-muted mt-2">
+                              🔒 Complete the final alchemy puzzle to finish the trial.
+                            </p>
+                          </>
+                        )}
+
+                        {trial2?.isComplete && <div className="text-green-400 font-bold">✓ COMPLETE</div>}
                       </>
                     ) : (
-                      <p className="text-sm text-muted italic">🔒 Complete Trial of Creation to unlock</p>
+                      <p className="text-sm text-muted italic">
+                        🔒 Complete Trial of Creation to unlock
+                      </p>
                     )}
                   </div>
                 </div>
               </div>
 
-              {/* 🆕 TRIAL 3 - UNLOCKS AFTER TRIAL 2 */}
+              {/* Trial 3 */}
               <div
                 className={`quest-card fade-in ${!trial2?.isComplete ? 'opacity-50' : ''}`}
                 style={{ animationDelay: '0.4s' }}
@@ -377,47 +506,91 @@ export default function Realm303() {
                   <div className="text-4xl">🌀</div>
                   <div className="flex-1">
                     <h3 className="text-xl font-display mb-2">Trial of Chaos Mastery</h3>
+
                     {trial2?.isComplete ? (
                       <>
                         <p className="text-sm text-secondary mb-3">
-                          Master the art of controlled chaos. Become the glitch.
+                          Read deeply, uncover the hidden clue, face chaos directly, then prove you understand the law of mastery.
                         </p>
+
                         <div className="mb-3">
                           <div className="flex justify-between text-xs mb-1">
                             <span>Progress</span>
-                            <span>{trial3?.stepsCompleted || 0} / 3 Steps</span>
+                            <span>{trial3Steps} / 3 Steps</span>
                           </div>
                           <div className="stat-bar">
                             <div
                               className="stat-bar-fill"
-                              style={{
-                                width: `${(((trial3?.stepsCompleted || 0) as number) / 3) * 100}%`,
-                              }}
+                              style={{ width: `${(trial3Steps / 3) * 100}%` }}
                             />
                           </div>
                         </div>
 
-                        {trial3?.isComplete ? (
-                          <div className="text-green-400 font-bold">✓ COMPLETE</div>
-                        ) : (
-                          <button
-                            className="btn-primary"
-                            onClick={async () => {
-                              try {
-                                await ensureTrialStarted(
-                                  'trial-chaos-mastery',
-                                  'Trial of Chaos Mastery'
-                                );
-                                await claimTrialStep('trial-chaos-mastery');
-                              } catch (err: any) {
-                                console.error(err);
-                                alert('Error: ' + (err.message || 'Something went wrong'));
+                        {!trial3Started && (
+                          <>
+                            <button
+                              className="btn-primary mt-4"
+                              onClick={() =>
+                                ensureTrialStarted('trial-chaos-mastery', 'Trial of Chaos Mastery')
                               }
-                            }}
-                          >
-                            {trial3 ? 'CLAIM STEP (+XP) →' : 'BEGIN TRIAL →'}
-                          </button>
+                            >
+                              BEGIN TRIAL OF CHAOS MASTERY →
+                            </button>
+                            <p className="text-xs text-muted mt-2">
+                              🔒 Start the trial to enter the hidden clue sequence.
+                            </p>
+                          </>
                         )}
+
+                        {trial3Started && trial3Steps === 0 && (
+                          <>
+                            <TrialPuzzle
+                              puzzle={chaosPuzzles[0]}
+                              onSolved={async () => {
+                                if (trial3Puzzle1Solved) return;
+                                setTrial3Puzzle1Solved(true);
+                                await advanceTrialStep('trial-chaos-mastery');
+                              }}
+                            />
+                            <p className="text-xs text-muted mt-2">
+                              🔒 The answer is hidden in the realm description above.
+                            </p>
+                          </>
+                        )}
+
+                        {trial3Started && trial3Steps === 1 && (
+                          <>
+                            <TrialPuzzle
+                              puzzle={chaosPuzzles[1]}
+                              onSolved={async () => {
+                                if (trial3Puzzle2Solved) return;
+                                setTrial3Puzzle2Solved(true);
+                                await advanceTrialStep('trial-chaos-mastery');
+                              }}
+                            />
+                            <p className="text-xs text-muted mt-2">
+                              🔒 Face the deeper riddle of chaos directly.
+                            </p>
+                          </>
+                        )}
+
+                        {trial3Started && trial3Steps === 2 && (
+                          <>
+                            <TrialPuzzle
+                              puzzle={CHAOS_FINAL_PUZZLE}
+                              onSolved={async () => {
+                                if (trial3Puzzle3Solved) return;
+                                setTrial3Puzzle3Solved(true);
+                                await advanceTrialStep('trial-chaos-mastery');
+                              }}
+                            />
+                            <p className="text-xs text-muted mt-2">
+                              🔒 One final choice decides whether you understand mastery.
+                            </p>
+                          </>
+                        )}
+
+                        {trial3?.isComplete && <div className="text-green-400 font-bold">✓ COMPLETE</div>}
                       </>
                     ) : (
                       <p className="text-sm text-muted italic">
@@ -430,7 +603,6 @@ export default function Realm303() {
             </div>
           </div>
 
-          {/* Locations Section */}
           <div id="locations-section" className="mb-8">
             <h2 className="text-3xl font-display mb-6 flex items-center gap-3">
               <span className="text-glow">📍</span>
@@ -439,7 +611,10 @@ export default function Realm303() {
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="realm-portal unlocked fade-in" style={{ animationDelay: '0.5s' }}>
+              <div
+                className={`realm-portal ${canExploreGlitchDistrict || hasVisited('glitch-district') ? 'unlocked' : 'locked'} fade-in`}
+                style={{ animationDelay: '0.5s' }}
+              >
                 <div className="flex items-start gap-4">
                   <div className="text-4xl">🏙️</div>
                   <div className="flex-1">
@@ -450,15 +625,22 @@ export default function Realm303() {
                     <button
                       className="btn-secondary w-full"
                       onClick={() => handleLocationVisit('glitch-district', 'The Glitch District')}
-                      disabled={hasVisited('glitch-district')}
+                      disabled={!canExploreGlitchDistrict || hasVisited('glitch-district')}
                     >
-                      {hasVisited('glitch-district') ? '✅ EXPLORED' : 'EXPLORE →'}
+                      {hasVisited('glitch-district')
+                        ? '✅ EXPLORED'
+                        : canExploreGlitchDistrict
+                          ? 'EXPLORE →'
+                          : 'LOCKED UNTIL TRIAL 1 STARTS'}
                     </button>
                   </div>
                 </div>
               </div>
 
-              <div className="realm-portal unlocked fade-in" style={{ animationDelay: '0.6s' }}>
+              <div
+                className={`realm-portal ${canExploreCreationForge || hasVisited('creation-forge') ? 'unlocked' : 'locked'} fade-in`}
+                style={{ animationDelay: '0.6s' }}
+              >
                 <div className="flex items-start gap-4">
                   <div className="text-4xl">🎨</div>
                   <div className="flex-1">
@@ -469,17 +651,25 @@ export default function Realm303() {
                     <button
                       className="btn-secondary w-full"
                       onClick={() => handleLocationVisit('creation-forge', 'The Creation Forge')}
-                      disabled={hasVisited('creation-forge')}
+                      disabled={!canExploreCreationForge || hasVisited('creation-forge')}
                     >
-                      {hasVisited('creation-forge') ? '✅ EXPLORED' : 'EXPLORE →'}
+                      {hasVisited('creation-forge')
+                        ? '✅ EXPLORED'
+                        : canExploreCreationForge
+                          ? 'EXPLORE →'
+                          : 'LOCKED UNTIL TRIAL 2 LOCATION STEP'}
                     </button>
+                    {!canExploreCreationForge && !hasVisited('creation-forge') && (
+                      <p className="text-xs text-muted mt-2">
+                        🔒 The Creation Forge opens during Trial of Transformation.
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Music Section */}
           <div id="music-section" className="mb-8">
             <h2 className="text-2xl font-display mb-4">🎵 REALM SOUNDTRACK</h2>
             <p className="text-secondary mb-4">
@@ -496,12 +686,21 @@ export default function Realm303() {
             />
           </div>
 
-          {/* Navigation */}
-          <div className="flex justify-between items-center fade-in" style={{ animationDelay: '0.8s' }}>
+          <div
+            className="flex justify-between items-center fade-in"
+            style={{ animationDelay: '0.8s' }}
+          >
             <Link href="/nexus">
               <button className="btn-secondary">← BACK TO NEXUS</button>
             </Link>
-            <div className="text-sm text-muted">Next Realm: 🕯️ The Veil (Locked)</div>
+
+            {isVeilUnlocked ? (
+              <Link href="/realms/202">
+                <button className="btn-primary">ENTER THE VEIL →</button>
+              </Link>
+            ) : (
+              <div className="text-sm text-muted">Next Realm: 🕯️ The Veil (Locked)</div>
+            )}
           </div>
         </div>
       </div>
