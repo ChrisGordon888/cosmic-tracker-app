@@ -572,6 +572,24 @@ export default function Realm101() {
             />
           </div>
 
+          {completedTrialsCount >= 3 && (
+  <div className="glass-card p-8 mb-8 text-center fade-in"
+    style={{ border: '1px solid rgba(180,180,220,0.5)' }}>
+    <h3 className="text-2xl font-display mb-4" style={{ color: '#C8C8FF' }}>
+      🌙 MOONLIT ROADS ILLUMINATED 🌙
+    </h3>
+    <p className="text-secondary mb-6 max-w-2xl mx-auto">
+      Shadow and light are now one within you. Skybound City awaits — where will
+      becomes form and intention commands reality.
+    </p>
+    <Link href="/realms/55">
+      <button className="btn-primary" style={{ fontSize: '1.1rem', padding: '0.75rem 2rem' }}>
+        ENTER SKYBOUND CITY →
+      </button>
+    </Link>
+  </div>
+)}
+
           <div className="flex justify-between items-center fade-in" style={{ animationDelay: '0.8s' }}>
             <Link href="/nexus"><button className="btn-secondary">← BACK TO NEXUS</button></Link>
             {isSkyboundUnlocked ? (

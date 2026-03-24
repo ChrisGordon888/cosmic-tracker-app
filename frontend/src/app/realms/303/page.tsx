@@ -686,6 +686,24 @@ export default function Realm303() {
             />
           </div>
 
+          {completedTrialsCount >= 3 && (
+  <div className="glass-card p-8 mb-8 text-center fade-in"
+    style={{ border: '1px solid rgba(255,0,110,0.5)' }}>
+    <h3 className="text-2xl font-display mb-4" style={{ color: '#FF006E' }}>
+      🌪️ FRACTURED FRONTIER MASTERED 🌪️
+    </h3>
+    <p className="text-secondary mb-6 max-w-2xl mx-auto">
+      Chaos has become your canvas. The Veil awaits — where dreams blur into reality
+      and the unseen world speaks.
+    </p>
+    <Link href="/realms/202">
+      <button className="btn-primary" style={{ fontSize: '1.1rem', padding: '0.75rem 2rem' }}>
+        ENTER THE VEIL →
+      </button>
+    </Link>
+  </div>
+)}
+
           <div
             className="flex justify-between items-center fade-in"
             style={{ animationDelay: '0.8s' }}
