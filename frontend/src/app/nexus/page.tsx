@@ -29,7 +29,6 @@ interface RealmPortalData {
     unlockRequirement?: string;
 }
 
-// Static metadata — status/progress are computed dynamically below
 const REALM_META = [
     {
         id: '303',
@@ -88,13 +87,16 @@ export default function CosmicNexusHub() {
 
     const { playTrack, currentTrack, isPlaying } = useMusicPlayer();
 
-    // ✅ REAL USER DATA FROM BACKEND
+    const [expandedRealms, setExpandedRealms] = useState<Record<number, boolean>>({
+        303: true,
+    });
+
     const { data: userData, loading: userLoading } = useQuery(GET_ME, {
         skip: !session,
     });
 
-    // ✅ DAILY LOGIN — fire once per session
     const [logDailyLogin] = useMutation(LOG_DAILY_LOGIN);
+
     useEffect(() => {
         if (session) {
             logDailyLogin().catch((err) =>
@@ -103,7 +105,6 @@ export default function CosmicNexusHub() {
         }
     }, [session]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Initialize moon phase data
     useEffect(() => {
         const phase = getTodayMoonPhase();
         const alignment = getRealmMoonAlignment(phase.phase);
@@ -111,7 +112,6 @@ export default function CosmicNexusHub() {
         setRealmAlignment(alignment);
     }, []);
 
-    // ─── Derived user stats ────────────────────────────────────────────────
     const user = userData?.me;
     const userLevel = user?.level ?? 1;
     const userXP = user?.xp ?? 0;
@@ -121,17 +121,14 @@ export default function CosmicNexusHub() {
     const currentStreak = user?.streaks?.currentStreak ?? 0;
     const unlockedRealms: number[] = user?.unlockedRealms ?? [303];
 
-    // Total completed trials across all realms (siddhis proxy)
     const totalCompletedTrials =
         user?.completedTrials?.filter((t: any) => t.isComplete).length ?? 0;
 
-    // Current realm name for display
     const currentRealmName = (() => {
         const meta = REALM_META.find((r) => parseInt(r.id) === user?.currentRealm);
         return meta?.name ?? 'None';
     })();
 
-    // ─── Per-realm helpers ─────────────────────────────────────────────────
     const getRealmProgress = (realmId: number): number => {
         const trials =
             user?.completedTrials?.filter((t: any) => t.realmId === realmId) ?? [];
@@ -142,11 +139,6 @@ export default function CosmicNexusHub() {
     const isRealmUnlocked = (realmId: number): boolean =>
         unlockedRealms.includes(realmId);
 
-    const unlockedTracks = MUSIC_REGISTRY.filter((track) =>
-        unlockedRealms.includes(track.realmId)
-    );
-
-    // Build dynamic realms array
     const realms: RealmPortalData[] = REALM_META.map((meta) => {
         const realmId = parseInt(meta.id);
         return {
@@ -156,7 +148,28 @@ export default function CosmicNexusHub() {
         };
     });
 
-    // ─── Guards ────────────────────────────────────────────────────────────
+    const unlockedTracks = MUSIC_REGISTRY.filter((track) =>
+        unlockedRealms.includes(track.realmId)
+    );
+
+    const groupedTracks = realms
+        .filter((realm) => realm.status === 'unlocked')
+        .map((realm) => {
+            const realmId = parseInt(realm.id);
+            return {
+                ...realm,
+                tracks: unlockedTracks.filter((track) => track.realmId === realmId),
+            };
+        })
+        .filter((realmGroup) => realmGroup.tracks.length > 0);
+
+    const toggleRealmExpanded = (realmId: number) => {
+        setExpandedRealms((prev) => ({
+            ...prev,
+            [realmId]: !prev[realmId],
+        }));
+    };
+
     if (status === 'loading' || userLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -191,7 +204,6 @@ export default function CosmicNexusHub() {
 
     return (
         <>
-            {/* Animated Background Video */}
             <RealmBackground
                 videoSrc="/nexus-cockpit.mp4"
                 realmName="The Cosmic Nexus"
@@ -201,7 +213,6 @@ export default function CosmicNexusHub() {
             <div className="min-h-screen pb-32">
                 <div className="container mx-auto px-4 py-8 max-w-6xl">
 
-                    {/* Header */}
                     <header className="text-center mb-12 fade-in">
                         <h1 className="text-5xl md:text-6xl font-display neon-glow mb-4">
                             🌌 THE COSMIC NEXUS 🌌
@@ -211,11 +222,8 @@ export default function CosmicNexusHub() {
                         </p>
                     </header>
 
-                    {/* ✅ User Stats Card — now uses real data */}
                     <div className="glass-card p-8 mb-8 fade-in" style={{ animationDelay: '0.1s' }}>
                         <div className="flex flex-col md:flex-row items-center gap-6">
-
-                            {/* Level Badge */}
                             <div className="level-badge">
                                 <div className="flex flex-col items-center">
                                     <span className="text-xs opacity-70">LVL</span>
@@ -223,7 +231,6 @@ export default function CosmicNexusHub() {
                                 </div>
                             </div>
 
-                            {/* User Info */}
                             <div className="flex-1 text-center md:text-left">
                                 <h2 className="text-2xl font-display mb-2">
                                     TRAVELER: {session.user?.name || 'Unknown'}
@@ -232,7 +239,6 @@ export default function CosmicNexusHub() {
                                     Title: <span className="text-glow">Cosmic Initiate</span>
                                 </p>
 
-                                {/* XP Bar */}
                                 <div className="mb-2">
                                     <div className="flex justify-between text-sm mb-1">
                                         <span>Experience</span>
@@ -254,7 +260,6 @@ export default function CosmicNexusHub() {
                                 </p>
                             </div>
 
-                            {/* Quick Stats — real streak + siddhis */}
                             <div className="grid grid-cols-2 gap-4 text-center">
                                 <div className="glass-card p-4">
                                     <div className="text-2xl font-display text-glow">
@@ -272,7 +277,6 @@ export default function CosmicNexusHub() {
                         </div>
                     </div>
 
-                    {/* Moon Phase Card */}
                     {moonPhase && (
                         <div className="glass-card p-6 mb-8 fade-in" style={{ animationDelay: '0.2s' }}>
                             <div className="flex items-center gap-6">
@@ -296,7 +300,6 @@ export default function CosmicNexusHub() {
                         </div>
                     )}
 
-                    {/* ✅ Realm Portals — dynamic status/progress */}
                     <div className="mb-8">
                         <h2 className="text-3xl font-display mb-6 flex items-center gap-3">
                             <span className="text-glow">⚡</span>
@@ -356,49 +359,115 @@ export default function CosmicNexusHub() {
                         </div>
                     </div>
 
-                    {/* Unlocked Soundtracks */}
+                    {/* Realm Soundtracks */}
                     <div className="glass-card p-6 mb-8 fade-in" style={{ animationDelay: '0.95s' }}>
                         <h2 className="text-2xl font-display mb-4">🎵 UNLOCKED SOUNDTRACKS</h2>
                         <p className="text-secondary mb-4">
-                            Music discovered across the multiverse. Play any unlocked realm track from the Nexus.
+                            Browse each realm’s sonic archive. Expand a realm to explore its unlocked tracks.
                         </p>
 
-                        {unlockedTracks.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {unlockedTracks.map((track) => {
-                                    const isCurrent = currentTrack?.id === track.id;
+                        {groupedTracks.length > 0 ? (
+                            <div className="space-y-4">
+                                {groupedTracks.map((realmGroup) => {
+                                    const realmId = parseInt(realmGroup.id);
+                                    const isExpanded = !!expandedRealms[realmId];
+                                    const realmTracks = realmGroup.tracks;
+                                    const accentColor = realmTracks[0]?.realmColor || '#7FDBFF';
 
                                     return (
-                                        <div key={track.id} className="quest-card">
-                                            <div className="flex items-center gap-4">
-                                                <div
-                                                    className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl"
-                                                    style={{
-                                                        background: `linear-gradient(135deg, ${track.realmColor}33, ${track.realmColor}66)`,
-                                                    }}
-                                                >
-                                                    🎵
-                                                </div>
-
-                                                <div className="flex-1 min-w-0">
-                                                    <p
-                                                        className="font-display truncate"
-                                                        style={{ color: track.realmColor }}
+                                        <div
+                                            key={realmGroup.id}
+                                            className="rounded-2xl border overflow-hidden"
+                                            style={{
+                                                borderColor: `${accentColor}55`,
+                                                background: 'rgba(255,255,255,0.03)',
+                                                boxShadow: `0 6px 24px ${accentColor}15`,
+                                            }}
+                                        >
+                                            <button
+                                                onClick={() => toggleRealmExpanded(realmId)}
+                                                className="w-full text-left px-5 py-4 flex items-center justify-between transition-all hover:bg-white/5"
+                                            >
+                                                <div className="flex items-center gap-4 min-w-0">
+                                                    <div
+                                                        className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0"
+                                                        style={{
+                                                            background: `linear-gradient(135deg, ${accentColor}33, ${accentColor}66)`,
+                                                        }}
                                                     >
-                                                        {track.trackTitle}
-                                                    </p>
-                                                    <p className="text-sm text-secondary truncate">
-                                                        {track.artist} • {track.realmName}
-                                                    </p>
+                                                        {realmGroup.icon}
+                                                    </div>
+
+                                                    <div className="min-w-0">
+                                                        <p
+                                                            className="font-display text-lg truncate"
+                                                            style={{ color: accentColor }}
+                                                        >
+                                                            {realmGroup.name}
+                                                        </p>
+                                                        <p className="text-sm text-secondary truncate">
+                                                            {realmTracks.length} unlocked track{realmTracks.length !== 1 ? 's' : ''}
+                                                        </p>
+                                                    </div>
                                                 </div>
 
-                                                <button
-                                                    className="btn-secondary"
-                                                    onClick={() => playTrack(track)}
-                                                >
-                                                    {isCurrent && isPlaying ? 'Playing' : 'Play'}
-                                                </button>
-                                            </div>
+                                                <div className="text-xl text-white/70">
+                                                    {isExpanded ? '▾' : '▸'}
+                                                </div>
+                                            </button>
+
+                                            {isExpanded && (
+                                                <div className="px-5 pb-5">
+                                                    <div className="space-y-3">
+                                                        {realmTracks.map((track) => {
+                                                            const isCurrent = currentTrack?.id === track.id;
+
+                                                            return (
+                                                                <div
+                                                                    key={track.id}
+                                                                    className="quest-card"
+                                                                    style={{
+                                                                        borderColor: isCurrent ? `${track.realmColor}66` : undefined,
+                                                                        boxShadow: isCurrent
+                                                                            ? `0 0 18px ${track.realmColor}22`
+                                                                            : undefined,
+                                                                    }}
+                                                                >
+                                                                    <div className="flex items-center gap-4">
+                                                                        <div
+                                                                            className="w-12 h-12 rounded-xl flex items-center justify-center text-xl shrink-0"
+                                                                            style={{
+                                                                                background: `linear-gradient(135deg, ${track.realmColor}33, ${track.realmColor}66)`,
+                                                                            }}
+                                                                        >
+                                                                            🎵
+                                                                        </div>
+
+                                                                        <div className="flex-1 min-w-0">
+                                                                            <p
+                                                                                className="font-display truncate"
+                                                                                style={{ color: track.realmColor }}
+                                                                            >
+                                                                                {track.trackTitle}
+                                                                            </p>
+                                                                            <p className="text-sm text-secondary truncate">
+                                                                                {track.artist} • {track.realmName}
+                                                                            </p>
+                                                                        </div>
+
+                                                                        <button
+                                                                            className="btn-secondary"
+                                                                            onClick={() => playTrack(track)}
+                                                                        >
+                                                                            {isCurrent && isPlaying ? 'Playing' : 'Play'}
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     );
                                 })}
@@ -412,7 +481,6 @@ export default function CosmicNexusHub() {
                         )}
                     </div>
 
-                    {/* Ritual Layer Preview */}
                     <div className="glass-card p-6 mb-8 fade-in" style={{ animationDelay: '0.9s' }}>
                         <h2 className="text-2xl font-display mb-4">
                             📿 RITUAL LAYER
@@ -452,7 +520,6 @@ export default function CosmicNexusHub() {
                         </p>
                     </div>
 
-                    {/* Quick Actions */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 fade-in" style={{ animationDelay: '1s' }}>
                         <Link href="/profile">
                             <div className="glass-card p-6 text-center cursor-pointer hover:border-color-electric-blue transition-all">
@@ -485,7 +552,6 @@ export default function CosmicNexusHub() {
                         </div>
                     </div>
 
-                    {/* Welcome Message for New Users */}
                     <div className="glass-card p-8 mt-8 text-center fade-in" style={{ animationDelay: '1.1s' }}>
                         <h3 className="text-2xl font-display mb-4 neon-glow">
                             WELCOME TO THE COSMIC MULTIVERSE

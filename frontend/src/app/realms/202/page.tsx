@@ -590,8 +590,8 @@ export default function Realm202() {
             <h2 className="text-2xl font-display mb-4">🎵 REALM SOUNDTRACK</h2>
             <p className="text-secondary mb-4">The Veil pulses with dreamy, ethereal beats that drift between worlds.</p>
             <RealmMusicPlayer
-              trackUrl="/music/realms/202/mysteriousWay.mp3"
-              trackTitle="Mysterious Way"
+              trackUrl="/music/realms/202/nightLight.mp3"
+              trackTitle="Night Light"
               artist="Cosmic 888"
               realmName="The Veil"
               realmColor="#9D84B7"

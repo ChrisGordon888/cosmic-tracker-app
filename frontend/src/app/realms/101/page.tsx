@@ -563,8 +563,8 @@ export default function Realm101() {
               Moonlit Roads pulses with moody, atmospheric beats that echo through rain-soaked streets.
             </p>
             <RealmMusicPlayer
-              trackUrl="/music/realms/101/nightLight.mp3"
-              trackTitle="NightLight"
+              trackUrl="/music/realms/101/mysteriousWay.mp3"
+              trackTitle="Mysterious Way"
               artist="Cosmic 888"
               realmName="Moonlit Roads"
               realmColor="#00D4FF"
