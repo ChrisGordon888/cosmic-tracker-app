@@ -300,6 +300,14 @@ export default function CosmicNexusHub() {
                         </div>
                     )}
 
+                    <Link href="/find-your-realm">
+                        <div className="glass-card p-6 text-center cursor-pointer hover:border-color-electric-blue transition-all">
+                            <div className="text-4xl mb-2">✨</div>
+                            <h3 className="font-display">FIND YOUR REALM</h3>
+                            <p className="text-sm text-muted">Get a symbolic recommendation based on your current inner state</p>
+                        </div>
+                    </Link>
+
                     <div className="mb-8">
                         <h2 className="text-3xl font-display mb-6 flex items-center gap-3">
                             <span className="text-glow">⚡</span>
