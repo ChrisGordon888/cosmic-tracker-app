@@ -11,6 +11,9 @@ import {
   type RealmId,
 } from '@/lib/realmStateMap';
 import { REALM_ALIGNMENT_QUESTIONS } from '@/lib/realmAlignmentQuestions';
+import { REALM_RESULT_CONTENT } from '@/lib/realmResultContent';
+import { MUSIC_REGISTRY } from '@/lib/musicRegistry';
+import { useMusicPlayer } from '@/hooks/useMusicPlayer';
 
 type SelectedAnswers = Record<string, number>;
 
@@ -57,6 +60,8 @@ export default function FindYourRealmPage() {
   const [experienceMode, setExperienceMode] = useState<ExperienceMode>('move-through');
   const [showResult, setShowResult] = useState(false);
 
+  const { playTrack, currentTrack, isPlaying } = useMusicPlayer();
+
   const currentQuestion = REALM_ALIGNMENT_QUESTIONS[currentQuestionIndex];
   const totalQuestions = REALM_ALIGNMENT_QUESTIONS.length;
 
@@ -69,8 +74,46 @@ export default function FindYourRealmPage() {
     ? REALM_STATE_MAP[recommendedRealmId]
     : null;
 
+  const resultContent = recommendedRealmId
+    ? REALM_RESULT_CONTENT[recommendedRealmId]
+    : null;
+
+  const suggestedTrack = useMemo(() => {
+    if (!recommendedRealmId || !resultContent) return null;
+
+    return (
+      MUSIC_REGISTRY.find(
+        (track) =>
+          track.realmId === recommendedRealmId &&
+          track.trackTitle === resultContent.recommendedTrack
+      ) ?? null
+    );
+  }, [recommendedRealmId, resultContent]);
+
   const allQuestionsAnswered =
     Object.keys(selectedAnswers).length === REALM_ALIGNMENT_QUESTIONS.length;
+
+  const saveRealmAlignment = (
+    realmId: RealmId,
+    mode: ExperienceMode,
+    recommendedTrack: string,
+    reflectionPrompt: string
+  ) => {
+    try {
+      window.localStorage.setItem(
+        'cosmic:lastRealmAlignment',
+        JSON.stringify({
+          realmId,
+          mode,
+          recommendedTrack,
+          reflectionPrompt,
+          savedAt: new Date().toISOString(),
+        })
+      );
+    } catch (error) {
+      console.warn('Failed to save realm alignment:', error);
+    }
+  };
 
   const handleSelectOption = (optionIndex: number) => {
     setSelectedAnswers((prev) => ({
@@ -85,6 +128,17 @@ export default function FindYourRealmPage() {
     if (currentQuestionIndex < totalQuestions - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
       return;
+    }
+
+    if (recommendedRealmId) {
+      const suggestedMode = REALM_RESULT_CONTENT[recommendedRealmId].recommendedMode;
+      setExperienceMode(suggestedMode);
+      saveRealmAlignment(
+        recommendedRealmId,
+        suggestedMode,
+        REALM_RESULT_CONTENT[recommendedRealmId].recommendedTrack,
+        REALM_RESULT_CONTENT[recommendedRealmId].reflectionPrompt
+      );
     }
 
     setShowResult(true);
@@ -108,6 +162,19 @@ export default function FindYourRealmPage() {
     setShowResult(false);
   };
 
+  const handleModeSelect = (mode: ExperienceMode) => {
+    setExperienceMode(mode);
+
+    if (recommendedRealmId && resultContent) {
+      saveRealmAlignment(
+        recommendedRealmId,
+        mode,
+        resultContent.recommendedTrack,
+        resultContent.reflectionPrompt
+      );
+    }
+  };
+
   const getModeDescription = () => {
     if (!recommendedRealm) return '';
 
@@ -125,7 +192,7 @@ export default function FindYourRealmPage() {
       />
 
       <div className="min-h-screen pb-32">
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="container mx-auto px-4 py-8 max-w-5xl">
           <header className="text-center mb-10 fade-in">
             <h1 className="text-5xl md:text-6xl font-display neon-glow mb-4">
               ✨ FIND YOUR REALM ✨
@@ -212,7 +279,7 @@ export default function FindYourRealmPage() {
                 </button>
               </div>
             </div>
-          ) : recommendedRealm ? (
+          ) : recommendedRealm && resultContent ? (
             <div className="glass-card p-8 fade-in">
               <div className="text-center mb-8">
                 <div className="text-6xl mb-4">{recommendedRealm.icon}</div>
@@ -226,33 +293,68 @@ export default function FindYourRealmPage() {
                   {recommendedRealm.realmName}
                 </h2>
                 <p className="text-lg text-secondary max-w-2xl mx-auto">
-                  {recommendedRealm.thisRealmIsFor}
+                  {resultContent.resultStatement}
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div className="quest-card">
-                  <h3 className="text-xl font-display mb-3">What this realm helps with</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {recommendedRealm.helpsWith.map((item) => (
-                      <span
-                        key={item}
-                        className="px-3 py-1 rounded-full text-sm"
-                        style={{
-                          background: `${recommendedRealm.color}22`,
-                          border: `1px solid ${recommendedRealm.color}55`,
-                          color: recommendedRealm.color,
-                        }}
-                      >
-                        {item}
-                      </span>
-                    ))}
-                  </div>
+                  <h3 className="text-xl font-display mb-3">Why this realm fits</h3>
+                  <p className="text-secondary">{resultContent.whyRealmFits}</p>
                 </div>
 
                 <div className="quest-card">
                   <h3 className="text-xl font-display mb-3">Why enter it</h3>
                   <p className="text-secondary">{recommendedRealm.whyEnterIt}</p>
+                </div>
+              </div>
+
+              <div className="quest-card mb-8">
+                <h3 className="text-xl font-display mb-3">What this realm helps with</h3>
+                <div className="flex flex-wrap gap-2">
+                  {recommendedRealm.helpsWith.map((item) => (
+                    <span
+                      key={item}
+                      className="px-3 py-1 rounded-full text-sm"
+                      style={{
+                        background: `${recommendedRealm.color}22`,
+                        border: `1px solid ${recommendedRealm.color}55`,
+                        color: recommendedRealm.color,
+                      }}
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div
+                  className="glass-card p-6"
+                  style={{
+                    border: `1px solid ${recommendedRealm.color}33`,
+                    background: `${recommendedRealm.color}10`,
+                  }}
+                >
+                  <p className="text-sm text-secondary uppercase tracking-[0.18em] mb-2">
+                    Recommended Track
+                  </p>
+                  <h3
+                    className="text-2xl font-display mb-3"
+                    style={{ color: recommendedRealm.color }}
+                  >
+                    {resultContent.recommendedTrack}
+                  </h3>
+                  <p className="text-secondary text-sm">{resultContent.whyMusicFits}</p>
+                </div>
+
+                <div className="quest-card">
+                  <p className="text-sm text-secondary uppercase tracking-[0.18em] mb-2">
+                    Reflection Prompt
+                  </p>
+                  <p className="text-lg text-secondary italic">
+                    “{resultContent.reflectionPrompt}”
+                  </p>
                 </div>
               </div>
 
@@ -277,17 +379,31 @@ export default function FindYourRealmPage() {
                     },
                   ].map((mode) => {
                     const isSelected = experienceMode === mode.value;
+                    const isSuggested = resultContent.recommendedMode === mode.value;
 
                     return (
                       <button
                         key={mode.value}
-                        onClick={() => setExperienceMode(mode.value)}
-                        className={`text-left rounded-2xl border p-5 transition-all ${
+                        onClick={() => handleModeSelect(mode.value)}
+                        className={`text-left rounded-2xl border p-5 transition-all relative ${
                           isSelected
                             ? 'border-white/60 bg-white/10 shadow-lg'
                             : 'border-white/10 bg-white/5 hover:bg-white/8'
                         }`}
                       >
+                        {isSuggested && (
+                          <span
+                            className="absolute top-3 right-3 text-[10px] px-2 py-1 rounded-full"
+                            style={{
+                              background: `${recommendedRealm.color}22`,
+                              border: `1px solid ${recommendedRealm.color}55`,
+                              color: recommendedRealm.color,
+                            }}
+                          >
+                            Suggested
+                          </span>
+                        )}
+
                         <p className="font-display text-lg mb-2">{mode.title}</p>
                         <p className="text-sm text-secondary">{mode.description}</p>
                       </button>
@@ -307,28 +423,42 @@ export default function FindYourRealmPage() {
               </div>
 
               <div className="flex flex-col md:flex-row gap-4 justify-between">
-                <div className="flex gap-3">
+                <div className="flex gap-3 flex-wrap">
                   <button onClick={handleBack} className="btn-secondary">
-                    ← Back to Result
+                    ← Back to Questions
                   </button>
                   <button onClick={handleReset} className="btn-secondary">
                     Retake Quiz
                   </button>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex gap-3 flex-wrap">
                   <Link href="/nexus">
                     <button className="btn-secondary">Back to Nexus</button>
                   </Link>
+
+                  {suggestedTrack && (
+                    <button
+                      onClick={() => playTrack(suggestedTrack)}
+                      className="btn-secondary"
+                    >
+                      {currentTrack?.id === suggestedTrack.id && isPlaying
+                        ? 'Playing Suggested Track'
+                        : '▶ Play Suggested Track'}
+                    </button>
+                  )}
+
                   <Link href={recommendedRealm.route}>
-                    <button className="btn-primary">Enter {recommendedRealm.realmName} →</button>
+                    <button className="btn-primary">
+                      Enter {recommendedRealm.realmName} →
+                    </button>
                   </Link>
                 </div>
               </div>
 
               {allQuestionsAnswered && (
                 <p className="text-xs text-muted mt-6 text-center">
-                  This is a symbolic recommendation based on your current answers.
+                  This recommendation has been saved to your Nexus as Today’s Realm Guidance.
                   You can always choose a different realm if another one feels more true today.
                 </p>
               )}
