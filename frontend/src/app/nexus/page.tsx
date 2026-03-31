@@ -246,9 +246,9 @@ export default function CosmicNexusHub() {
                 overlayOpacity={0.3}
             />
 
-            <div className="min-h-screen pb-32">
-                <div className="container mx-auto px-4 py-6 max-w-5xl">
-                    <header className="text-center mb-8 fade-in">
+            <div className="min-h-screen pb-32 nexus-shell">
+                <div className="container mx-auto px-4 py-6 max-w-5xl nexus-container">
+                    <header className="text-center mb-8 fade-in nexus-hero">
                         <h1 className="text-5xl md:text-6xl font-display neon-glow mb-3">
                             🌌 THE COSMIC NEXUS 🌌
                         </h1>
@@ -258,7 +258,7 @@ export default function CosmicNexusHub() {
                     </header>
 
                     {/* Compact identity */}
-                    <div className="glass-card p-5 mb-4 fade-in" style={{ animationDelay: '0.1s' }}>
+                    <div className="glass-card nexus-panel nexus-identity-card p-5 mb-4 fade-in" style={{ animationDelay: '0.1s' }}>
                         <div className="flex flex-col md:flex-row items-center gap-5">
                             <div className="level-badge">
                                 <div className="flex flex-col items-center">
@@ -306,7 +306,7 @@ export default function CosmicNexusHub() {
                     </div>
 
                     {/* Compact top strip */}
-                    <div className="glass-card p-3 mb-4 fade-in" style={{ animationDelay: '0.15s' }}>
+                    <div className="glass-card nexus-panel nexus-top-strip p-3 mb-4 fade-in" style={{ animationDelay: '0.15s' }}>
                         <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6 text-sm">
                             <div className="flex items-center gap-3">
                                 {moonPhase && (
@@ -344,7 +344,7 @@ export default function CosmicNexusHub() {
                             style={{ animationDelay: '0.2s' }}
                         >
                             <div
-                                className="glass-card p-5 h-full cursor-pointer transition-all hover:scale-[1.01] hover:border-color-electric-blue"
+                                className="glass-card nexus-panel nexus-guided-entry p-5 h-full cursor-pointer transition-all hover:scale-[1.01]"
                                 style={{ boxShadow: '0 8px 28px rgba(120, 180, 255, 0.10)' }}
                             >
                                 <div className="flex items-start gap-4">
@@ -376,7 +376,7 @@ export default function CosmicNexusHub() {
                             </div>
                         </Link>
 
-                        <div className="glass-card p-5 fade-in" style={{ animationDelay: '0.25s' }}>
+                        <div className="glass-card nexus-panel nexus-todays-realm p-5 fade-in" style={{ animationDelay: '0.25s' }}>
                             {guidanceRealm && guidanceContent ? (
                                 <div className="flex items-start gap-4">
                                     <div
@@ -450,7 +450,7 @@ export default function CosmicNexusHub() {
                     </div>
 
                     {/* MUSIC FIRST */}
-                    <div className="glass-card p-6 mb-5 fade-in" style={{ animationDelay: '0.3s' }}>
+                    <div className="glass-card nexus-panel nexus-soundtracks p-6 mb-5 fade-in" style={{ animationDelay: '0.3s' }}>
                         <div className="flex items-center justify-between gap-4 mb-5">
                             <div>
                                 <h2 className="text-3xl font-display">🎵 SOUNDTRACKS</h2>
@@ -484,7 +484,7 @@ export default function CosmicNexusHub() {
                     </div>
 
                     {/* Optional map lower down */}
-                    <div className="glass-card p-5 mb-4 fade-in" style={{ animationDelay: '0.35s' }}>
+                    <div className="glass-card nexus-panel nexus-realm-map p-5 mb-4 fade-in" style={{ animationDelay: '0.35s' }}>
                         <button
                             onClick={() => setShowRealmMap((prev) => !prev)}
                             className="w-full flex items-center justify-between text-left"

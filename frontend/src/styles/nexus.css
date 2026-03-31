@@ -1,31 +1,276 @@
 /* ===================================
-   🌌 THE COSMIC NEXUS - STYLES
+   🌌 THE COSMIC NEXUS - SAFE CHROME PASS
    =================================== */
 
-/* Page-specific overrides and additions */
+:root {
+  --nexus-silver: rgba(232, 238, 246, 0.92);
+  --nexus-silver-soft: rgba(205, 214, 225, 0.72);
+  --nexus-silver-dim: rgba(160, 170, 184, 0.46);
+
+  --nexus-gold: rgba(220, 186, 92, 0.92);
+  --nexus-gold-soft: rgba(220, 186, 92, 0.22);
+
+  --nexus-ice: rgba(188, 224, 255, 0.92);
+  --nexus-ice-soft: rgba(130, 190, 255, 0.18);
+
+  --nexus-border: rgba(214, 224, 235, 0.18);
+  --nexus-border-strong: rgba(228, 236, 244, 0.28);
+
+  --nexus-panel-bg:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.08),
+      rgba(205, 215, 230, 0.035) 42%,
+      rgba(14, 20, 34, 0.52)
+    );
+}
+
+/* shell */
+.nexus-shell {
+  color: var(--nexus-silver);
+}
+
 .nexus-container {
   position: relative;
   z-index: 1;
 }
 
-/* Realm portal grid specific to nexus */
-.nexus-realm-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
+/* safer panel styling only where explicitly added */
+.nexus-panel {
+  background: var(--nexus-panel-bg);
+  border: 1px solid var(--nexus-border);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.10),
+    0 12px 32px rgba(0,0,0,0.22);
+  backdrop-filter: blur(14px) saturate(125%);
+  -webkit-backdrop-filter: blur(14px) saturate(125%);
 }
 
-/* Daily rituals placeholder styling */
-.rituals-placeholder {
-  opacity: 0.5;
+.nexus-panel:hover {
+  border-color: var(--nexus-border-strong);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.14),
+    0 14px 36px rgba(0,0,0,0.24),
+    0 0 18px rgba(130, 190, 255, 0.06);
 }
 
-/* Quick actions hover effect */
-.quick-action-card {
-  transition: all 0.3s ease;
+/* hero */
+.nexus-hero h1 {
+  color: var(--nexus-silver);
+  text-shadow:
+    0 0 8px rgba(255,255,255,0.20),
+    0 0 18px rgba(150, 205, 255, 0.14),
+    0 0 28px rgba(130, 170, 255, 0.08);
 }
 
-.quick-action-card:hover {
-  transform: translateY(-4px);
-  border-color: #00D4FF;
+.nexus-hero p {
+  color: rgba(224, 230, 240, 0.82);
+}
+
+/* cards */
+.nexus-identity-card,
+.nexus-top-strip,
+.nexus-guided-entry,
+.nexus-todays-realm,
+.nexus-soundtracks,
+.nexus-realm-map {
+  border-radius: 1.25rem;
+}
+
+/* small chrome effects */
+.nexus-identity-card .level-badge {
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.28), rgba(255,255,255,0.06) 34%, rgba(14,20,34,0.48) 78%),
+    linear-gradient(145deg, rgba(230,236,245,0.18), rgba(144,156,172,0.10), rgba(18,24,36,0.46));
+  border: 1px solid rgba(226, 232, 240, 0.28);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.18),
+    0 8px 24px rgba(0,0,0,0.22),
+    0 0 12px rgba(160, 210, 255, 0.06);
+  color: var(--nexus-silver);
+}
+
+/* top strip */
+.nexus-top-strip {
+  border-color: rgba(214, 224, 235, 0.16);
+}
+
+.nexus-top-strip .text-glow,
+.nexus-top-strip a {
+  color: var(--nexus-ice);
+}
+
+/* guided entry card */
+.nexus-guided-entry {
+  position: relative;
+  overflow: hidden;
+}
+
+.nexus-guided-entry::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,0.06),
+      transparent 35%,
+      rgba(220,186,92,0.04) 100%
+    );
+  pointer-events: none;
+}
+
+.nexus-guided-entry:hover {
+  transform: translateY(-2px) scale(1.01);
+  border-color: rgba(214, 224, 235, 0.26);
+}
+
+.nexus-guided-entry .text-glow {
+  color: var(--nexus-silver);
+  text-shadow:
+    0 0 8px rgba(255,255,255,0.14),
+    0 0 14px rgba(130,190,255,0.10);
+}
+
+/* tag pills */
+.nexus-guided-entry span[class*='rounded-full'] {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(214,224,235,0.12);
+  color: rgba(228, 235, 244, 0.84);
+}
+
+/* today’s realm card */
+.nexus-todays-realm {
+  position: relative;
+  overflow: hidden;
+}
+
+.nexus-todays-realm::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at top right, rgba(220,186,92,0.06), transparent 28%),
+    radial-gradient(circle at bottom left, rgba(130,190,255,0.08), transparent 30%);
+  pointer-events: none;
+}
+
+/* soundtrack block */
+.nexus-soundtracks {
+  border-color: rgba(224, 232, 240, 0.20);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.10),
+    0 14px 36px rgba(0,0,0,0.24),
+    0 0 18px rgba(130,190,255,0.05);
+}
+
+/* realm map */
+.nexus-realm-map .realm-portal {
+  border: 1px solid rgba(214, 224, 235, 0.14);
+  background:
+    linear-gradient(
+      150deg,
+      rgba(255,255,255,0.05),
+      rgba(190,205,220,0.03) 36%,
+      rgba(12,18,28,0.50)
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 10px 24px rgba(0,0,0,0.18);
+}
+
+.nexus-realm-map .realm-portal:hover {
+  border-color: rgba(224, 232, 240, 0.24);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.12),
+    0 14px 30px rgba(0,0,0,0.22),
+    0 0 12px rgba(130,190,255,0.06);
+}
+
+/* safer text tuning */
+.nexus-shell .text-secondary {
+  color: rgba(224, 231, 240, 0.82);
+}
+
+.nexus-shell .text-muted {
+  color: rgba(186, 194, 206, 0.66);
+}
+
+.nexus-shell .text-primary {
+  color: var(--nexus-silver);
+}
+
+.nexus-shell .text-stats,
+.nexus-shell .font-stats {
+  color: var(--nexus-silver);
+}
+
+/* buttons only inside nexus shell */
+.nexus-shell .btn-primary {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(238, 243, 250, 0.16),
+      rgba(180, 194, 210, 0.10) 36%,
+      rgba(220,186,92,0.15) 100%
+    );
+  border: 1px solid rgba(224, 232, 240, 0.22);
+  color: var(--nexus-silver);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.16),
+    0 8px 22px rgba(0,0,0,0.18);
+}
+
+.nexus-shell .btn-primary:hover {
+  border-color: rgba(220,186,92,0.34);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.22),
+    0 10px 26px rgba(0,0,0,0.22),
+    0 0 14px rgba(220,186,92,0.10);
+}
+
+.nexus-shell .btn-secondary {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,0.06),
+      rgba(205,215,228,0.03) 44%,
+      rgba(14,20,32,0.44)
+    );
+  border: 1px solid rgba(214, 224, 235, 0.14);
+  color: rgba(232, 238, 246, 0.92);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.10),
+    0 8px 18px rgba(0,0,0,0.16);
+}
+
+.nexus-shell .btn-secondary:hover {
+  border-color: rgba(190, 210, 235, 0.24);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.14),
+    0 10px 20px rgba(0,0,0,0.20),
+    0 0 12px rgba(130,190,255,0.08);
+}
+
+/* quest-card only within Nexus */
+.nexus-shell .quest-card {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,0.05),
+      rgba(190,205,220,0.025) 40%,
+      rgba(15,20,32,0.48)
+    );
+  border: 1px solid rgba(214, 224, 235, 0.10);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 8px 18px rgba(0,0,0,0.14);
+}
+
+/* responsive */
+@media (max-width: 768px) {
+  .nexus-identity-card .level-badge {
+    min-width: 76px;
+    min-height: 76px;
+  }
 }
