@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import RealmBackground from '@/components/realm/RealmBackground';
-import RealmMusicPlayer from '@/components/realm/RealmMusicPlayer';
+import RealmGuidanceCard from '@/components/realm/RealmGuidanceCard';
+import RealmSoundstage from '@/components/realm/RealmSoundstage';
 import TrialPuzzle from '@/components/realm/TrialPuzzle';
 import { REALM_202_PUZZLES, type PuzzleConfig } from '@/lib/realmPuzzles';
 import { useQuery, useMutation } from '@apollo/client';
@@ -172,8 +173,12 @@ export default function Realm202() {
       <div className="min-h-screen flex items-center justify-center p-6">
         <div className="glass-card p-12 max-w-md text-center">
           <h1 className="text-4xl font-display neon-glow mb-4">🔒 ACCESS DENIED</h1>
-          <p className="text-lg text-secondary mb-8">You must be logged in to enter this realm.</p>
-          <Link href="/auth" className="btn-primary">SIGN IN</Link>
+          <p className="text-lg text-secondary mb-8">
+            You must be logged in to enter this realm.
+          </p>
+          <Link href="/auth" className="btn-primary">
+            SIGN IN
+          </Link>
         </div>
       </div>
     );
@@ -186,10 +191,6 @@ export default function Realm202() {
     document.getElementById('locations-section')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const goToMusic = () => {
-    document.getElementById('music-section')?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   return (
     <>
       <RealmBackground
@@ -200,7 +201,7 @@ export default function Realm202() {
 
       <div className="min-h-screen pb-32">
         <div className="container mx-auto px-4 py-8 max-w-6xl">
-          <header className="text-center mb-12 fade-in">
+          <header className="text-center mb-10 fade-in">
             <div className="text-6xl mb-4 neon-glow">🕯️</div>
             <h1 className="text-5xl md:text-6xl font-display neon-glow mb-2 realm-202-title">
               THE VEIL
@@ -221,13 +222,22 @@ export default function Realm202() {
             </div>
           </header>
 
-          <div className="glass-card p-8 mb-8 fade-in" style={{ animationDelay: '0.1s' }}>
-            <h2 className="text-3xl font-display mb-4">🌙 THE REALM OF DREAMS 🌙</h2>
-            <p className="text-lg text-secondary mb-4">
-              The Veil is a liminal space between waking and sleeping, where dreams take form and memories become tangible. This is the realm of artists, dreamers, and those who seek what cannot be touched in the waking world.
-            </p>
-            <p className="text-secondary mb-6">
-              Here, you'll develop Clairvoyance: the ability to see beyond the material, to perceive hidden truths, and to navigate the subtle realms of intuition and psychic awareness.
+          <RealmGuidanceCard realmId={202} />
+
+          <RealmSoundstage
+            realmId={202}
+            realmName="The Veil"
+            realmIcon="🕯️"
+            realmColor="#8B5CF6"
+            intro="The Veil is where mystery, longing, projection, and hidden truth blur together. Let the soundtrack tell you whether this realm matches what you are moving through right now."
+            supportText="Start with the music first. If this realm feels true, then go deeper into its trials, locations, and symbols."
+          />
+
+          <div className="glass-card p-6 mb-8 fade-in" style={{ animationDelay: '0.1s' }}>
+            <h2 className="text-2xl font-display mb-3">🌙 Realm Overview</h2>
+            <p className="text-secondary mb-4">
+              The Veil is a liminal space between waking and sleeping, where dreams take form
+              and hidden truths rise through atmosphere, longing, and intuition.
             </p>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
@@ -252,20 +262,21 @@ export default function Realm202() {
             </div>
           </div>
 
+          {/* deeper realm content below the music experience */}
           <div className="mb-8">
             <h2 className="text-3xl font-display mb-6 flex items-center gap-3">
-              <span className="text-glow">🎯</span> REALM TRIALS <span className="text-glow">🎯</span>
+              <span className="text-glow">🎯</span> DEEPER REALM PATHS <span className="text-glow">🎯</span>
             </h2>
 
             <div className="space-y-4">
-              {/* Trial 1 */}
               <div className="quest-card fade-in" style={{ animationDelay: '0.2s' }}>
                 <div className="flex items-start gap-4">
                   <div className="text-4xl">🌫️</div>
                   <div className="flex-1">
                     <h3 className="text-xl font-display mb-2">Trial of Dreamwalking</h3>
                     <p className="text-sm text-secondary mb-3">
-                      Enter the dream path, walk the Mist Gardens, solve the first memory-clue, then use the realm soundtrack to unlock the final dream sequence.
+                      Enter the dream path, walk the Mist Gardens, solve the first memory-clue,
+                      then use the realm soundtrack to unlock the final dream sequence.
                     </p>
 
                     <div className="mb-3">
@@ -274,7 +285,10 @@ export default function Realm202() {
                         <span>{trial1Steps} / 3 Steps</span>
                       </div>
                       <div className="stat-bar">
-                        <div className="stat-bar-fill realm-202-bar" style={{ width: `${(trial1Steps / 3) * 100}%` }} />
+                        <div
+                          className="stat-bar-fill realm-202-bar"
+                          style={{ width: `${(trial1Steps / 3) * 100}%` }}
+                        />
                       </div>
                     </div>
 
@@ -282,7 +296,9 @@ export default function Realm202() {
                       <>
                         <button
                           className="btn-primary mt-4"
-                          onClick={() => ensureTrialStarted('trial-dreamwalking', 'Trial of Dreamwalking')}
+                          onClick={() =>
+                            ensureTrialStarted('trial-dreamwalking', 'Trial of Dreamwalking')
+                          }
                         >
                           BEGIN TRIAL OF DREAMWALKING →
                         </button>
@@ -319,17 +335,8 @@ export default function Realm202() {
                       </>
                     )}
 
-                    {trial1Started && trial1Steps === 2 && !hasVisited('mist-gardens') && (
-                      <p className="text-xs text-muted mt-2">
-                        🔒 The dream path is incomplete.
-                      </p>
-                    )}
-
                     {trial1Started && trial1Steps === 2 && (
                       <>
-                        <button className="btn-primary mt-4" onClick={goToMusic}>
-                          STEP 3: LISTEN TO THE SOUNDTRACK →
-                        </button>
                         <TrialPuzzle
                           puzzle={dreamwalkingPuzzles[1]}
                           onSolved={async () => {
@@ -339,7 +346,7 @@ export default function Realm202() {
                           }}
                         />
                         <p className="text-xs text-muted mt-2">
-                          ✅ Enter the soundtrack and solve the final dream riddle to complete the trial.
+                          ✅ Complete the final dream riddle to finish the trial.
                         </p>
                       </>
                     )}
@@ -349,8 +356,10 @@ export default function Realm202() {
                 </div>
               </div>
 
-              {/* Trial 2 */}
-              <div className={`quest-card fade-in ${!trial1?.isComplete ? 'opacity-50' : ''}`} style={{ animationDelay: '0.3s' }}>
+              <div
+                className={`quest-card fade-in ${!trial1?.isComplete ? 'opacity-50' : ''}`}
+                style={{ animationDelay: '0.3s' }}
+              >
                 <div className="flex items-start gap-4">
                   <div className="text-4xl">👁️</div>
                   <div className="flex-1">
@@ -367,7 +376,10 @@ export default function Realm202() {
                             <span>{trial2Steps} / 3 Steps</span>
                           </div>
                           <div className="stat-bar">
-                            <div className="stat-bar-fill realm-202-bar" style={{ width: `${(trial2Steps / 3) * 100}%` }} />
+                            <div
+                              className="stat-bar-fill realm-202-bar"
+                              style={{ width: `${(trial2Steps / 3) * 100}%` }}
+                            />
                           </div>
                         </div>
 
@@ -375,13 +387,12 @@ export default function Realm202() {
                           <>
                             <button
                               className="btn-primary mt-4"
-                              onClick={() => ensureTrialStarted('trial-clairvoyance', 'Trial of Clairvoyance')}
+                              onClick={() =>
+                                ensureTrialStarted('trial-clairvoyance', 'Trial of Clairvoyance')
+                              }
                             >
                               BEGIN TRIAL OF CLAIRVOYANCE →
                             </button>
-                            <p className="text-xs text-muted mt-2">
-                              🔒 Start the trial to open the archive path.
-                            </p>
                           </>
                         )}
 
@@ -390,55 +401,46 @@ export default function Realm202() {
                             <button className="btn-primary mt-4" onClick={goToLocations}>
                               STEP 1: VISIT LANTERN ARCHIVE →
                             </button>
-                            <p className="text-xs text-muted mt-2">
-                              🔒 Visit The Lantern Archive to auto-complete the first step.
-                            </p>
                           </>
                         )}
 
                         {trial2Started && trial2Steps === 1 && (
-                          <>
-                            <TrialPuzzle
-                              puzzle={clairvoyancePuzzles[0]}
-                              onSolved={async () => {
-                                if (trial2Puzzle1Solved) return;
-                                setTrial2Puzzle1Solved(true);
-                                await advanceTrialStep('trial-clairvoyance');
-                              }}
-                            />
-                            <p className="text-xs text-muted mt-2">
-                              🔒 Solve the first sight puzzle.
-                            </p>
-                          </>
+                          <TrialPuzzle
+                            puzzle={clairvoyancePuzzles[0]}
+                            onSolved={async () => {
+                              if (trial2Puzzle1Solved) return;
+                              setTrial2Puzzle1Solved(true);
+                              await advanceTrialStep('trial-clairvoyance');
+                            }}
+                          />
                         )}
 
                         {trial2Started && trial2Steps === 2 && (
-                          <>
-                            <TrialPuzzle
-                              puzzle={clairvoyancePuzzles[1]}
-                              onSolved={async () => {
-                                if (trial2Puzzle2Solved) return;
-                                setTrial2Puzzle2Solved(true);
-                                await advanceTrialStep('trial-clairvoyance');
-                              }}
-                            />
-                            <p className="text-xs text-muted mt-2">
-                              🔒 Complete the final perception challenge.
-                            </p>
-                          </>
+                          <TrialPuzzle
+                            puzzle={clairvoyancePuzzles[1]}
+                            onSolved={async () => {
+                              if (trial2Puzzle2Solved) return;
+                              setTrial2Puzzle2Solved(true);
+                              await advanceTrialStep('trial-clairvoyance');
+                            }}
+                          />
                         )}
 
                         {trial2?.isComplete && <div className="text-green-400 font-bold">✓ COMPLETE</div>}
                       </>
                     ) : (
-                      <p className="text-sm text-muted italic">🔒 Complete Trial of Dreamwalking to unlock</p>
+                      <p className="text-sm text-muted italic">
+                        🔒 Complete Trial of Dreamwalking to unlock
+                      </p>
                     )}
                   </div>
                 </div>
               </div>
 
-              {/* Trial 3 */}
-              <div className={`quest-card fade-in ${!trial2?.isComplete ? 'opacity-50' : ''}`} style={{ animationDelay: '0.4s' }}>
+              <div
+                className={`quest-card fade-in ${!trial2?.isComplete ? 'opacity-50' : ''}`}
+                style={{ animationDelay: '0.4s' }}
+              >
                 <div className="flex items-start gap-4">
                   <div className="text-4xl">✨</div>
                   <div className="flex-1">
@@ -455,76 +457,63 @@ export default function Realm202() {
                             <span>{trial3Steps} / 3 Steps</span>
                           </div>
                           <div className="stat-bar">
-                            <div className="stat-bar-fill realm-202-bar" style={{ width: `${(trial3Steps / 3) * 100}%` }} />
+                            <div
+                              className="stat-bar-fill realm-202-bar"
+                              style={{ width: `${(trial3Steps / 3) * 100}%` }}
+                            />
                           </div>
                         </div>
 
                         {!trial3Started && (
-                          <>
-                            <button
-                              className="btn-primary mt-4"
-                              onClick={() => ensureTrialStarted('trial-longings-end', "Trial of Longing's End")}
-                            >
-                              BEGIN TRIAL OF LONGING&apos;S END →
-                            </button>
-                            <p className="text-xs text-muted mt-2">
-                              🔒 Start the trial to enter the release sequence.
-                            </p>
-                          </>
+                          <button
+                            className="btn-primary mt-4"
+                            onClick={() =>
+                              ensureTrialStarted('trial-longings-end', "Trial of Longing's End")
+                            }
+                          >
+                            BEGIN TRIAL OF LONGING&apos;S END →
+                          </button>
                         )}
 
                         {trial3Started && trial3Steps === 0 && (
-                          <>
-                            <TrialPuzzle
-                              puzzle={longingsEndPuzzles[0]}
-                              onSolved={async () => {
-                                if (trial3Puzzle1Solved) return;
-                                setTrial3Puzzle1Solved(true);
-                                await advanceTrialStep('trial-longings-end');
-                              }}
-                            />
-                            <p className="text-xs text-muted mt-2">
-                              🔒 Solve the longing-clue.
-                            </p>
-                          </>
+                          <TrialPuzzle
+                            puzzle={longingsEndPuzzles[0]}
+                            onSolved={async () => {
+                              if (trial3Puzzle1Solved) return;
+                              setTrial3Puzzle1Solved(true);
+                              await advanceTrialStep('trial-longings-end');
+                            }}
+                          />
                         )}
 
                         {trial3Started && trial3Steps === 1 && (
-                          <>
-                            <TrialPuzzle
-                              puzzle={longingsEndPuzzles[1]}
-                              onSolved={async () => {
-                                if (trial3Puzzle2Solved) return;
-                                setTrial3Puzzle2Solved(true);
-                                await advanceTrialStep('trial-longings-end');
-                              }}
-                            />
-                            <p className="text-xs text-muted mt-2">
-                              🔒 Solve the stillness riddle.
-                            </p>
-                          </>
+                          <TrialPuzzle
+                            puzzle={longingsEndPuzzles[1]}
+                            onSolved={async () => {
+                              if (trial3Puzzle2Solved) return;
+                              setTrial3Puzzle2Solved(true);
+                              await advanceTrialStep('trial-longings-end');
+                            }}
+                          />
                         )}
 
                         {trial3Started && trial3Steps === 2 && (
-                          <>
-                            <TrialPuzzle
-                              puzzle={LONGINGS_FINAL_PUZZLE}
-                              onSolved={async () => {
-                                if (trial3Puzzle3Solved) return;
-                                setTrial3Puzzle3Solved(true);
-                                await advanceTrialStep('trial-longings-end');
-                              }}
-                            />
-                            <p className="text-xs text-muted mt-2">
-                              🔒 One final choice completes the release.
-                            </p>
-                          </>
+                          <TrialPuzzle
+                            puzzle={LONGINGS_FINAL_PUZZLE}
+                            onSolved={async () => {
+                              if (trial3Puzzle3Solved) return;
+                              setTrial3Puzzle3Solved(true);
+                              await advanceTrialStep('trial-longings-end');
+                            }}
+                          />
                         )}
 
                         {trial3?.isComplete && <div className="text-green-400 font-bold">✓ COMPLETE</div>}
                       </>
                     ) : (
-                      <p className="text-sm text-muted italic">🔒 Complete Trial of Clairvoyance to unlock</p>
+                      <p className="text-sm text-muted italic">
+                        🔒 Complete Trial of Clairvoyance to unlock
+                      </p>
                     )}
                   </div>
                 </div>
@@ -536,13 +525,19 @@ export default function Realm202() {
             <h2 className="text-3xl font-display mb-6 flex items-center gap-3">
               <span className="text-glow">📍</span> LOCATIONS <span className="text-glow">📍</span>
             </h2>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className={`realm-portal ${canExploreMistGardens || hasVisited('mist-gardens') ? 'unlocked' : 'locked'} fade-in`} style={{ animationDelay: '0.5s' }}>
+              <div
+                className={`realm-portal ${canExploreMistGardens || hasVisited('mist-gardens') ? 'unlocked' : 'locked'} fade-in`}
+                style={{ animationDelay: '0.5s' }}
+              >
                 <div className="flex items-start gap-4">
                   <div className="text-4xl">🌌</div>
                   <div className="flex-1">
                     <h3 className="text-lg font-display mb-2">The Mist Gardens</h3>
-                    <p className="text-sm text-secondary mb-3">Ethereal gardens where memories bloom as flowers.</p>
+                    <p className="text-sm text-secondary mb-3">
+                      Ethereal gardens where memories bloom as flowers.
+                    </p>
                     <button
                       className="btn-secondary w-full"
                       onClick={() => handleLocationVisit('mist-gardens', 'The Mist Gardens')}
@@ -558,12 +553,17 @@ export default function Realm202() {
                 </div>
               </div>
 
-              <div className={`realm-portal ${canExploreLanternArchive || hasVisited('lantern-archive') ? 'unlocked' : 'locked'} fade-in`} style={{ animationDelay: '0.6s' }}>
+              <div
+                className={`realm-portal ${canExploreLanternArchive || hasVisited('lantern-archive') ? 'unlocked' : 'locked'} fade-in`}
+                style={{ animationDelay: '0.6s' }}
+              >
                 <div className="flex items-start gap-4">
                   <div className="text-4xl">🕯️</div>
                   <div className="flex-1">
                     <h3 className="text-lg font-display mb-2">The Lantern Archive</h3>
-                    <p className="text-sm text-secondary mb-3">A library of dreams, where lost wishes are kept in glass.</p>
+                    <p className="text-sm text-secondary mb-3">
+                      A library of dreams, where lost wishes are kept in glass.
+                    </p>
                     <button
                       className="btn-secondary w-full"
                       onClick={() => handleLocationVisit('lantern-archive', 'The Lantern Archive')}
@@ -575,50 +575,39 @@ export default function Realm202() {
                           ? 'EXPLORE →'
                           : 'LOCKED UNTIL TRIAL 2 LOCATION STEP'}
                     </button>
-                    {!canExploreLanternArchive && !hasVisited('lantern-archive') && (
-                      <p className="text-xs text-muted mt-2">
-                        🔒 The Lantern Archive opens during Trial of Clairvoyance.
-                      </p>
-                    )}
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div id="music-section" className="glass-card p-8 mb-8 fade-in" style={{ animationDelay: '0.7s' }}>
-            <h2 className="text-2xl font-display mb-4">🎵 REALM SOUNDTRACK</h2>
-            <p className="text-secondary mb-4">The Veil pulses with dreamy, ethereal beats that drift between worlds.</p>
-            <RealmMusicPlayer
-              trackUrl="/music/realms/202/nightLight.mp3"
-              trackTitle="Night Light"
-              artist="Cosmic 888"
-              realmName="The Veil"
-              realmColor="#9D84B7"
-              realmId={202}
-            />
-          </div>
-
           {completedTrialsCount >= 3 && (
-  <div className="glass-card p-8 mb-8 text-center fade-in"
-    style={{ border: '1px solid rgba(147,112,219,0.5)' }}>
-    <h3 className="text-2xl font-display mb-4" style={{ color: '#9370DB' }}>
-      🕯️ THE VEIL TRANSCENDED 🕯️
-    </h3>
-    <p className="text-secondary mb-6 max-w-2xl mx-auto">
-      You have released longing and found clarity. Moonlit Roads awaits — where shadow
-      and light are finally reconciled.
-    </p>
-    <Link href="/realms/101">
-      <button className="btn-primary" style={{ fontSize: '1.1rem', padding: '0.75rem 2rem' }}>
-        ENTER MOONLIT ROADS →
-      </button>
-    </Link>
-  </div>
-)}
+            <div
+              className="glass-card p-8 mb-8 text-center fade-in"
+              style={{ border: '1px solid rgba(147,112,219,0.5)' }}
+            >
+              <h3 className="text-2xl font-display mb-4" style={{ color: '#9370DB' }}>
+                🕯️ THE VEIL TRANSCENDED 🕯️
+              </h3>
+              <p className="text-secondary mb-6 max-w-2xl mx-auto">
+                You have released longing and found clarity. Moonlit Roads awaits — where shadow
+                and light are finally reconciled.
+              </p>
+              <Link href="/realms/101">
+                <button
+                  className="btn-primary"
+                  style={{ fontSize: '1.1rem', padding: '0.75rem 2rem' }}
+                >
+                  ENTER MOONLIT ROADS →
+                </button>
+              </Link>
+            </div>
+          )}
 
           <div className="flex justify-between items-center fade-in" style={{ animationDelay: '0.8s' }}>
-            <Link href="/nexus"><button className="btn-secondary">← BACK TO NEXUS</button></Link>
+            <Link href="/nexus">
+              <button className="btn-secondary">← BACK TO NEXUS</button>
+            </Link>
 
             {isMoonlitRoadsUnlocked ? (
               <Link href="/realms/101">

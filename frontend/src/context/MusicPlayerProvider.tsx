@@ -28,6 +28,7 @@ interface MusicPlayerContextValue {
   volume: number;
   isExpanded: boolean;
   playTrack: (track: MusicTrack) => Promise<void>;
+  playOrToggleTrack: (track: MusicTrack) => Promise<void>;
   togglePlayPause: () => Promise<void>;
   pause: () => void;
   seekTo: (time: number) => void;
@@ -91,29 +92,32 @@ export function MusicPlayerProvider({
     }
   }, [volumeState]);
 
-  const playTrack = useCallback(async (track: MusicTrack) => {
-    const audio = audioRef.current;
-    if (!audio) return;
+  const playTrack = useCallback(
+    async (track: MusicTrack) => {
+      const audio = audioRef.current;
+      if (!audio) return;
 
-    const isSameTrack = currentTrack?.id === track.id;
+      const isSameTrack = currentTrack?.id === track.id;
 
-    try {
-      if (!isSameTrack) {
-        audio.pause();
-        audio.src = track.trackUrl;
-        audio.currentTime = 0;
-        setCurrentTime(0);
-        setDuration(0);
-        setCurrentTrack(track);
+      try {
+        if (!isSameTrack) {
+          audio.pause();
+          audio.src = track.trackUrl;
+          audio.currentTime = 0;
+          setCurrentTime(0);
+          setDuration(0);
+          setCurrentTrack(track);
+        }
+
+        await audio.play();
+        setIsPlaying(true);
+      } catch (error) {
+        console.error('Failed to play track:', error);
+        setIsPlaying(false);
       }
-
-      await audio.play();
-      setIsPlaying(true);
-    } catch (error) {
-      console.error('Failed to play track:', error);
-      setIsPlaying(false);
-    }
-  }, [currentTrack]);
+    },
+    [currentTrack]
+  );
 
   const togglePlayPause = useCallback(async () => {
     const audio = audioRef.current;
@@ -131,6 +135,42 @@ export function MusicPlayerProvider({
       console.error('Failed to toggle playback:', error);
     }
   }, [currentTrack]);
+
+  const playOrToggleTrack = useCallback(
+    async (track: MusicTrack) => {
+      const audio = audioRef.current;
+      if (!audio) return;
+
+      const isSameTrack = currentTrack?.id === track.id;
+
+      try {
+        if (isSameTrack) {
+          if (audio.paused) {
+            await audio.play();
+            setIsPlaying(true);
+          } else {
+            audio.pause();
+            setIsPlaying(false);
+          }
+          return;
+        }
+
+        audio.pause();
+        audio.src = track.trackUrl;
+        audio.currentTime = 0;
+        setCurrentTime(0);
+        setDuration(0);
+        setCurrentTrack(track);
+
+        await audio.play();
+        setIsPlaying(true);
+      } catch (error) {
+        console.error('Failed to play or toggle track:', error);
+        setIsPlaying(false);
+      }
+    },
+    [currentTrack]
+  );
 
   const pause = useCallback(() => {
     const audio = audioRef.current;
@@ -167,6 +207,7 @@ export function MusicPlayerProvider({
       volume: volumeState,
       isExpanded,
       playTrack,
+      playOrToggleTrack,
       togglePlayPause,
       pause,
       seekTo,
@@ -182,6 +223,7 @@ export function MusicPlayerProvider({
       volumeState,
       isExpanded,
       playTrack,
+      playOrToggleTrack,
       togglePlayPause,
       pause,
       seekTo,
