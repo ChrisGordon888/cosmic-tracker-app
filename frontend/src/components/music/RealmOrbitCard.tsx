@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 
 interface OrbitTrack {
   id: string;
@@ -11,6 +12,7 @@ interface OrbitTrack {
 }
 
 interface RealmOrbitCardProps {
+  realmId?: string | number;
   realmName: string;
   realmIcon: string;
   realmColor: string;
@@ -18,6 +20,12 @@ interface RealmOrbitCardProps {
   currentTrackId?: string | null;
   isPlaying?: boolean;
   onPlayTrack: (track: OrbitTrack) => void;
+
+  progress?: number;
+  isUnlocked?: boolean;
+  realmRoute?: string;
+  isCurrentRealm?: boolean;
+  isRecommended?: boolean;
 }
 
 const CARD_SIZE = 360;
@@ -42,24 +50,12 @@ function polarToCartesian(
 function getRealmStateTags(realmName: string): string[] {
   const normalized = realmName.toLowerCase();
 
-  if (normalized.includes('fractured')) {
-    return ['chaos', 'pressure', 'activation'];
-  }
-  if (normalized.includes('veil')) {
-    return ['desire', 'mystery', 'hidden truth'];
-  }
-  if (normalized.includes('moonlit')) {
-    return ['reflection', 'grief', 'integration'];
-  }
-  if (normalized.includes('skybound')) {
-    return ['power', 'discipline', 'manifestation'];
-  }
-  if (normalized.includes('bazaar')) {
-    return ['value', 'discernment', 'exchange'];
-  }
-  if (normalized.includes('intersiddhi')) {
-    return ['alignment', 'blessing', 'source'];
-  }
+  if (normalized.includes('fractured')) return ['chaos', 'pressure', 'activation'];
+  if (normalized.includes('veil')) return ['desire', 'mystery', 'hidden truth'];
+  if (normalized.includes('moonlit')) return ['reflection', 'grief', 'integration'];
+  if (normalized.includes('skybound')) return ['power', 'discipline', 'manifestation'];
+  if (normalized.includes('bazaar')) return ['value', 'discernment', 'exchange'];
+  if (normalized.includes('intersiddhi')) return ['alignment', 'blessing', 'source'];
 
   return ['realm', 'sound', 'navigation'];
 }
@@ -72,6 +68,11 @@ export default function RealmOrbitCard({
   currentTrackId,
   isPlaying = false,
   onPlayTrack,
+  progress = 0,
+  isUnlocked = true,
+  realmRoute,
+  isCurrentRealm = false,
+  isRecommended = false,
 }: RealmOrbitCardProps) {
   const visibleTracks = useMemo(() => tracks.slice(0, 8), [tracks]);
   const [selectedTrackId, setSelectedTrackId] = useState<string | null>(
@@ -111,6 +112,7 @@ export default function RealmOrbitCard({
   const selectedIsCurrent = selectedTrack?.id === currentTrackId;
   const selectedIsAnchor = selectedTrack?.id === visibleTracks[0]?.id;
   const realmTags = getRealmStateTags(realmName);
+  const clampedProgress = Math.max(0, Math.min(progress, 100));
 
   const handleTrackClick = (track: OrbitTrack) => {
     setSelectedTrackId(track.id);
@@ -132,49 +134,41 @@ export default function RealmOrbitCard({
     >
       <style jsx>{`
         @keyframes orbitSpinSlow {
-          from {
-            transform: rotate(0deg);
-          }
-          to {
-            transform: rotate(360deg);
-          }
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
         }
 
         @keyframes orbitSpinReverse {
-          from {
-            transform: rotate(0deg);
-          }
-          to {
-            transform: rotate(-360deg);
-          }
+          from { transform: rotate(0deg); }
+          to { transform: rotate(-360deg); }
         }
 
         @keyframes nodeFloat {
-          0%, 100% {
-            transform: translate(-50%, -50%);
-          }
-          50% {
-            transform: translate(-50%, calc(-50% - 4px));
-          }
+          0%, 100% { transform: translate(-50%, -50%); }
+          50% { transform: translate(-50%, calc(-50% - 4px)); }
         }
 
         @keyframes nodePulse {
           0%, 100% {
             transform: translate(-50%, -50%) scale(1);
-            box-shadow: 0 0 22px ${realmColor}77;
+            box-shadow: 0 0 24px ${realmColor}88;
           }
           50% {
             transform: translate(-50%, -50%) scale(1.08);
-            box-shadow: 0 0 30px ${realmColor}aa;
+            box-shadow: 0 0 34px ${realmColor}cc;
           }
         }
 
         @keyframes corePulse {
           0%, 100% {
-            box-shadow: 0 0 28px ${realmColor}55;
+            box-shadow:
+              0 0 30px ${realmColor}66,
+              0 0 60px ${realmColor}18;
           }
           50% {
-            box-shadow: 0 0 38px ${realmColor}88;
+            box-shadow:
+              0 0 42px ${realmColor}99,
+              0 0 72px ${realmColor}22;
           }
         }
 
@@ -202,16 +196,16 @@ export default function RealmOrbitCard({
       `}</style>
 
       <div
-        className="absolute inset-0 pointer-events-none opacity-40"
+        className="absolute inset-0 pointer-events-none opacity-50"
         style={{
-          background: `radial-gradient(circle at center, ${realmColor}18 0%, transparent 62%)`,
+          background: `radial-gradient(circle at center, ${realmColor}20 0%, transparent 62%)`,
         }}
       />
 
       <div className="relative">
         <div className="mb-4">
           <p className="text-xs uppercase tracking-[0.18em] text-white/60 mb-1">
-            Realm Sound System
+            Realm Music Portal
           </p>
           <h3 className="text-2xl font-display" style={{ color: realmColor }}>
             {realmName}
@@ -233,8 +227,8 @@ export default function RealmOrbitCard({
               height: '220px',
               left: `${CENTER_X - 110}px`,
               top: `${CENTER_Y - 110}px`,
-              border: `1.5px dashed ${realmColor}40`,
-              boxShadow: `0 0 12px ${realmColor}18`,
+              border: `1.5px dashed ${realmColor}48`,
+              boxShadow: `0 0 16px ${realmColor}20`,
             }}
           >
             <div
@@ -244,8 +238,8 @@ export default function RealmOrbitCard({
                 height: '18px',
                 top: '-9px',
                 left: 'calc(50% - 9px)',
-                background: `radial-gradient(circle, ${realmColor}cc, ${realmColor}22)`,
-                boxShadow: `0 0 16px ${realmColor}88`,
+                background: `radial-gradient(circle, ${realmColor}dd, ${realmColor}22)`,
+                boxShadow: `0 0 18px ${realmColor}aa`,
               }}
             />
           </div>
@@ -257,8 +251,8 @@ export default function RealmOrbitCard({
               height: '280px',
               left: `${CENTER_X - 140}px`,
               top: `${CENTER_Y - 140}px`,
-              border: `1px dashed ${realmColor}28`,
-              boxShadow: `0 0 10px ${realmColor}12`,
+              border: `1px dashed ${realmColor}30`,
+              boxShadow: `0 0 12px ${realmColor}14`,
             }}
           >
             <div
@@ -268,8 +262,8 @@ export default function RealmOrbitCard({
                 height: '14px',
                 top: '-7px',
                 left: 'calc(50% - 7px)',
-                background: `radial-gradient(circle, ${realmColor}99, ${realmColor}18)`,
-                boxShadow: `0 0 12px ${realmColor}55`,
+                background: `radial-gradient(circle, ${realmColor}aa, ${realmColor}18)`,
+                boxShadow: `0 0 14px ${realmColor}66`,
               }}
             />
           </div>
@@ -293,14 +287,14 @@ export default function RealmOrbitCard({
                   y2={track.y}
                   stroke={
                     isCurrent
-                      ? `${realmColor}cc`
+                      ? `${realmColor}ee`
                       : isSelected
-                      ? `${realmColor}88`
-                      : `${realmColor}45`
+                      ? `${realmColor}99`
+                      : `${realmColor}4d`
                   }
-                  strokeWidth={isCurrent ? 2.4 : isSelected ? 1.8 : 1.2}
+                  strokeWidth={isCurrent ? 2.6 : isSelected ? 1.9 : 1.2}
                   strokeLinecap="round"
-                  opacity={isCurrent ? 0.95 : isSelected ? 0.8 : 0.55}
+                  opacity={isCurrent ? 1 : isSelected ? 0.82 : 0.58}
                 />
               );
             })}
@@ -314,8 +308,8 @@ export default function RealmOrbitCard({
               left: `${CENTER_X - CENTER_SIZE / 2}px`,
               top: `${CENTER_Y - CENTER_SIZE / 2}px`,
               background: `radial-gradient(circle at 35% 35%, ${realmColor}, ${realmColor}bb 52%, ${realmColor}55 100%)`,
-              boxShadow: `0 0 28px ${realmColor}55`,
-              border: `1px solid ${realmColor}88`,
+              boxShadow: `0 0 30px ${realmColor}66`,
+              border: `1px solid ${realmColor}99`,
             }}
           >
             <div className="text-2xl mb-1">{realmIcon}</div>
@@ -343,21 +337,21 @@ export default function RealmOrbitCard({
                   left: `${track.x}px`,
                   top: `${track.y}px`,
                   background: isCurrent
-                    ? `radial-gradient(circle, ${realmColor}, ${realmColor}cc)`
+                    ? `radial-gradient(circle, ${realmColor}, ${realmColor}dd)`
                     : isSelected
-                    ? `radial-gradient(circle, ${realmColor}88, ${realmColor}40)`
-                    : `radial-gradient(circle, ${realmColor}70, ${realmColor}30)`,
+                    ? `radial-gradient(circle, ${realmColor}99, ${realmColor}44)`
+                    : `radial-gradient(circle, ${realmColor}74, ${realmColor}30)`,
                   border: `1px solid ${
                     isCurrent
-                      ? `${realmColor}dd`
+                      ? `${realmColor}ee`
                       : isSelected
-                      ? `${realmColor}99`
+                      ? `${realmColor}aa`
                       : `${realmColor}55`
                   }`,
                   boxShadow: isCurrent
-                    ? `0 0 22px ${realmColor}77`
+                    ? `0 0 24px ${realmColor}88`
                     : isSelected
-                    ? `0 0 16px ${realmColor}44`
+                    ? `0 0 18px ${realmColor}55`
                     : `0 0 12px ${realmColor}22`,
                   animationDelay: isCurrent ? '0s' : track.driftDelay,
                 }}
@@ -381,73 +375,148 @@ export default function RealmOrbitCard({
           }}
         >
           {selectedTrack ? (
-            <div className="flex flex-col md:flex-row md:items-center gap-4">
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-center gap-2 mb-2">
-                  <p className="text-xs uppercase tracking-[0.18em] text-white/60">
-                    Selected Track
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col md:flex-row md:items-center gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    <p className="text-xs uppercase tracking-[0.18em] text-white/60">
+                      Selected Track
+                    </p>
+
+                    {selectedIsAnchor && (
+                      <span
+                        className="px-2 py-1 rounded-full text-[10px] uppercase tracking-[0.14em]"
+                        style={{
+                          background: `${realmColor}22`,
+                          border: `1px solid ${realmColor}55`,
+                          color: realmColor,
+                        }}
+                      >
+                        Anchor
+                      </span>
+                    )}
+                  </div>
+
+                  <p
+                    className="font-display text-xl truncate"
+                    style={{ color: selectedIsCurrent ? realmColor : 'white' }}
+                  >
+                    {selectedTrack.trackTitle}
+                  </p>
+                  <p className="text-sm text-secondary truncate mb-3">
+                    {selectedTrack.artist} • {selectedTrack.realmName}
                   </p>
 
-                  {selectedIsAnchor && (
-                    <span
-                      className="px-2 py-1 rounded-full text-[10px] uppercase tracking-[0.14em]"
-                      style={{
-                        background: `${realmColor}22`,
-                        border: `1px solid ${realmColor}55`,
-                        color: realmColor,
-                      }}
-                    >
-                      Anchor Track
-                    </span>
-                  )}
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {realmTags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-2.5 py-1 rounded-full text-[11px]"
+                        style={{
+                          background: `${realmColor}18`,
+                          border: `1px solid ${realmColor}33`,
+                          color: realmColor,
+                        }}
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+
+                  <p className="text-xs text-white/60">
+                    {selectedIsCurrent && isPlaying
+                      ? 'Now resonating in this realm.'
+                      : selectedIsCurrent
+                      ? 'Paused in orbit. Resume whenever you are ready.'
+                      : 'Selected in orbit. Play this track to enter through its energy.'}
+                  </p>
                 </div>
 
-                <p
-                  className="font-display text-xl truncate"
-                  style={{ color: selectedIsCurrent ? realmColor : 'white' }}
-                >
-                  {selectedTrack.trackTitle}
-                </p>
-                <p className="text-sm text-secondary truncate mb-3">
-                  {selectedTrack.artist} • {selectedTrack.realmName}
-                </p>
-
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {realmTags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="px-2.5 py-1 rounded-full text-[11px]"
-                      style={{
-                        background: `${realmColor}18`,
-                        border: `1px solid ${realmColor}33`,
-                        color: realmColor,
-                      }}
-                    >
-                      {tag}
-                    </span>
-                  ))}
+                <div className="shrink-0">
+                  <button
+                    onClick={() => handleTrackClick(selectedTrack)}
+                    className="btn-secondary"
+                  >
+                    {selectedIsCurrent && isPlaying
+                      ? 'Pause'
+                      : selectedIsCurrent
+                      ? 'Resume'
+                      : 'Play Selected'}
+                  </button>
                 </div>
-
-                <p className="text-xs text-white/60">
-                  {selectedIsCurrent && isPlaying
-                    ? 'Now resonating in this realm.'
-                    : selectedIsCurrent
-                    ? 'Paused in orbit. Resume whenever you are ready.'
-                    : 'Selected in orbit. Play this track to enter through its energy.'}
-                </p>
               </div>
 
-              <div className="shrink-0">
-                <button
-                  onClick={() => handleTrackClick(selectedTrack)}
-                  className="btn-secondary"
-                >
-                  {selectedIsCurrent && isPlaying
-                    ? 'Pause'
-                    : selectedIsCurrent
-                    ? 'Resume'
-                    : 'Play Selected'}
-                </button>
+              <div
+                className="rounded-2xl border px-4 py-4"
+                style={{
+                  borderColor: `${realmColor}26`,
+                  background: 'rgba(255,255,255,0.03)',
+                }}
+              >
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {isCurrentRealm && (
+                      <span
+                        className="px-2.5 py-1 rounded-full text-[10px] uppercase tracking-[0.14em]"
+                        style={{
+                          background: 'rgba(255,255,255,0.08)',
+                          border: '1px solid rgba(255,255,255,0.18)',
+                          color: 'rgba(245,248,252,0.92)',
+                        }}
+                      >
+                        Current Realm
+                      </span>
+                    )}
+
+                    {isRecommended && (
+                      <span
+                        className="px-2.5 py-1 rounded-full text-[10px] uppercase tracking-[0.14em]"
+                        style={{
+                          background: 'rgba(255,220,120,0.12)',
+                          border: '1px solid rgba(255,220,120,0.28)',
+                          color: 'rgba(255,220,120,0.95)',
+                        }}
+                      >
+                        Recommended
+                      </span>
+                    )}
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.14em] text-white/60 mb-2">
+                      <span>Realm Progress</span>
+                      <span>{clampedProgress}%</span>
+                    </div>
+
+                    <div
+                      className="w-full h-2 rounded-full overflow-hidden"
+                      style={{
+                        background: 'rgba(255,255,255,0.06)',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: `${clampedProgress}%`,
+                          height: '100%',
+                          borderRadius: '9999px',
+                          background: `linear-gradient(90deg, ${realmColor}88, ${realmColor}, rgba(255,220,120,0.88))`,
+                          boxShadow: `0 0 12px ${realmColor}44`,
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {realmRoute && isUnlocked && (
+                    <div className="flex justify-end">
+                      <Link href={realmRoute}>
+                        <button className="btn-primary">
+                          Enter Realm →
+                        </button>
+                      </Link>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           ) : (

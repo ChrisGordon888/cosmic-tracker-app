@@ -12,6 +12,12 @@ interface RealmSoundstageProps {
   realmColor: string;
   intro?: string;
   supportText?: string;
+
+  progress?: number;
+  isUnlocked?: boolean;
+  realmRoute?: string;
+  isCurrentRealm?: boolean;
+  isRecommended?: boolean;
 }
 
 export default function RealmSoundstage({
@@ -21,6 +27,11 @@ export default function RealmSoundstage({
   realmColor,
   intro,
   supportText,
+  progress = 0,
+  isUnlocked = true,
+  realmRoute,
+  isCurrentRealm = false,
+  isRecommended = false,
 }: RealmSoundstageProps) {
   const { playOrToggleTrack, currentTrack, isPlaying } = useMusicPlayer();
 
@@ -53,6 +64,7 @@ export default function RealmSoundstage({
       </div>
 
       <RealmOrbitCard
+        realmId={realmId}
         realmName={realmName}
         realmIcon={realmIcon}
         realmColor={realmColor}
@@ -60,6 +72,11 @@ export default function RealmSoundstage({
         currentTrackId={currentTrack?.id ?? null}
         isPlaying={isPlaying}
         onPlayTrack={playOrToggleTrack}
+        progress={progress}
+        isUnlocked={isUnlocked}
+        realmRoute={realmRoute}
+        isCurrentRealm={isCurrentRealm}
+        isRecommended={isRecommended}
       />
 
       <div
@@ -102,8 +119,9 @@ export default function RealmSoundstage({
             </div>
 
             <p className="text-sm text-secondary max-w-2xl">
-              Start here for the clearest first entry into <span style={{ color: realmColor }}>{realmName}</span>.
-              This is the anchor track for the realm’s emotional atmosphere.
+              Start here for the clearest first entry into{' '}
+              <span style={{ color: realmColor }}>{realmName}</span>.
+              {' '}This is the anchor track for the realm’s emotional atmosphere.
             </p>
           </div>
 

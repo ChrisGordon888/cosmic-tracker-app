@@ -97,12 +97,7 @@ export default function CosmicNexusHub() {
     const [realmAlignment, setRealmAlignment] = useState<any>(null);
     const [storedGuidance, setStoredGuidance] = useState<StoredRealmGuidance | null>(null);
 
-    const { playTrack, playOrToggleTrack, currentTrack, isPlaying } = useMusicPlayer();
-
-    const [expandedRealms, setExpandedRealms] = useState<Record<number, boolean>>({
-        303: true,
-    });
-    const [showRealmMap, setShowRealmMap] = useState(false);
+    const { playOrToggleTrack, currentTrack, isPlaying } = useMusicPlayer();
 
     const { data: userData, loading: userLoading } = useQuery(GET_ME, {
         skip: !session,
@@ -186,28 +181,30 @@ export default function CosmicNexusHub() {
         })
         .filter((realmGroup) => realmGroup.tracks.length > 0);
 
-    const toggleRealmExpanded = (realmId: number) => {
-        setExpandedRealms((prev) => ({
-            ...prev,
-            [realmId]: !prev[realmId],
-        }));
-    };
-
     const guidanceRealmId = storedGuidance?.realmId ?? null;
     const guidanceRealm = guidanceRealmId !== null ? REALM_STATE_MAP[guidanceRealmId] : null;
-    const guidanceContent =
+
+    const guidanceRealmContent =
         guidanceRealmId !== null ? REALM_RESULT_CONTENT[guidanceRealmId] : null;
 
+    const guidanceMode =
+        storedGuidance?.mode ?? guidanceRealmContent?.defaultMode ?? null;
+
+    const guidanceModeContent =
+        guidanceRealmContent && guidanceMode
+            ? guidanceRealmContent.modeVariants[guidanceMode]
+            : null;
+
     const guidanceTrack = useMemo(() => {
-        if (!guidanceRealmId || !guidanceContent) return null;
+        if (!guidanceRealmId || !guidanceModeContent) return null;
         return (
             MUSIC_REGISTRY.find(
                 (track) =>
                     track.realmId === guidanceRealmId &&
-                    track.trackTitle === guidanceContent.recommendedTrack
+                    track.trackTitle === guidanceModeContent.recommendedTrack
             ) ?? null
         );
-    }, [guidanceRealmId, guidanceContent]);
+    }, [guidanceRealmId, guidanceModeContent]);
 
     if (status === 'loading' || userLoading) {
         return (
@@ -257,7 +254,6 @@ export default function CosmicNexusHub() {
                         </p>
                     </header>
 
-                    {/* Compact identity */}
                     <div className="glass-card nexus-panel nexus-identity-card p-5 mb-4 fade-in" style={{ animationDelay: '0.1s' }}>
                         <div className="flex flex-col md:flex-row items-center gap-5">
                             <div className="level-badge">
@@ -305,7 +301,6 @@ export default function CosmicNexusHub() {
                         </div>
                     </div>
 
-                    {/* Compact top strip */}
                     <div className="glass-card nexus-panel nexus-top-strip p-3 mb-4 fade-in" style={{ animationDelay: '0.15s' }}>
                         <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6 text-sm">
                             <div className="flex items-center gap-3">
@@ -336,7 +331,6 @@ export default function CosmicNexusHub() {
                         </div>
                     </div>
 
-                    {/* Guidance + today's realm in one compact row */}
                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-5">
                         <Link
                             href="/find-your-realm"
@@ -377,7 +371,7 @@ export default function CosmicNexusHub() {
                         </Link>
 
                         <div className="glass-card nexus-panel nexus-todays-realm p-5 fade-in" style={{ animationDelay: '0.25s' }}>
-                            {guidanceRealm && guidanceContent ? (
+                            {guidanceRealm && guidanceRealmContent && guidanceModeContent ? (
                                 <div className="flex items-start gap-4">
                                     <div
                                         className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0"
@@ -399,14 +393,19 @@ export default function CosmicNexusHub() {
                                         >
                                             {guidanceRealm.realmName}
                                         </h3>
-                                        <p className="text-sm text-secondary mb-3 line-clamp-3">
-                                            {guidanceContent.whyRealmFits}
+
+                                        <p className="text-sm text-secondary mb-2 line-clamp-3">
+                                            {guidanceRealmContent.whyRealmFits}
+                                        </p>
+
+                                        <p className="text-xs text-muted mb-3 italic line-clamp-2">
+                                            “{guidanceModeContent.reflectionPrompt}”
                                         </p>
 
                                         <div className="text-xs text-muted mb-3">
-                                            Track: <span className="text-secondary">{guidanceContent.recommendedTrack}</span> • Mode:{' '}
+                                            Track: <span className="text-secondary">{guidanceModeContent.recommendedTrack}</span> • Mode:{' '}
                                             <span className="text-secondary">
-                                                {getModeLabel(storedGuidance?.mode || guidanceContent.recommendedMode)}
+                                                {getModeLabel(guidanceMode)}
                                             </span>
                                         </div>
 
@@ -414,10 +413,12 @@ export default function CosmicNexusHub() {
                                             {guidanceTrack && (
                                                 <button
                                                     className="btn-secondary"
-                                                    onClick={() => playTrack(guidanceTrack)}
+                                                    onClick={() => playOrToggleTrack(guidanceTrack)}
                                                 >
-                                                    {currentTrack?.id === guidanceTrack.id && isPlaying
-                                                        ? 'Playing'
+                                                    {currentTrack?.id === guidanceTrack.id
+                                                        ? isPlaying
+                                                            ? 'Pause'
+                                                            : 'Resume'
                                                         : '▶ Play'}
                                                 </button>
                                             )}
@@ -449,7 +450,6 @@ export default function CosmicNexusHub() {
                         </div>
                     </div>
 
-                    {/* MUSIC FIRST */}
                     <div className="glass-card nexus-panel nexus-soundtracks p-6 mb-5 fade-in" style={{ animationDelay: '0.3s' }}>
                         <div className="flex items-center justify-between gap-4 mb-5">
                             <div>
@@ -465,13 +465,20 @@ export default function CosmicNexusHub() {
                                 {groupedTracks.map((realmGroup) => (
                                     <RealmOrbitCard
                                         key={realmGroup.id}
+                                        realmId={realmGroup.id}
                                         realmName={realmGroup.name}
                                         realmIcon={realmGroup.icon}
                                         realmColor={realmGroup.tracks[0]?.realmColor || '#7FDBFF'}
                                         tracks={realmGroup.tracks}
                                         currentTrackId={currentTrack?.id ?? null}
                                         isPlaying={isPlaying}
-                                        onPlayTrack={playOrToggleTrack} />
+                                        onPlayTrack={playOrToggleTrack}
+                                        progress={realmGroup.progress}
+                                        isUnlocked={realmGroup.status === 'unlocked'}
+                                        realmRoute={`/realms/${realmGroup.id}`}
+                                        isCurrentRealm={parseInt(realmGroup.id) === user?.currentRealm}
+                                        isRecommended={guidanceRealmId !== null && parseInt(realmGroup.id) === guidanceRealmId}
+                                    />
                                 ))}
                             </div>
                         ) : (
@@ -479,77 +486,6 @@ export default function CosmicNexusHub() {
                                 <p className="text-sm text-muted text-center">
                                     No realm tracks unlocked yet.
                                 </p>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Optional map lower down */}
-                    <div className="glass-card nexus-panel nexus-realm-map p-5 mb-4 fade-in" style={{ animationDelay: '0.35s' }}>
-                        <button
-                            onClick={() => setShowRealmMap((prev) => !prev)}
-                            className="w-full flex items-center justify-between text-left"
-                        >
-                            <div>
-                                <h2 className="text-2xl font-display">🗺️ EXPLORE THE REALMS</h2>
-                                <p className="text-sm text-muted mt-1">
-                                    Direct realm entry and progression map
-                                </p>
-                            </div>
-                            <div className="text-xl text-white/70">
-                                {showRealmMap ? '▾' : '▸'}
-                            </div>
-                        </button>
-
-                        {showRealmMap && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                                {realms.map((realm, index) => (
-                                    <div
-                                        key={realm.id}
-                                        className={`realm-portal ${realm.status} fade-in`}
-                                        style={{ animationDelay: `${0.36 + index * 0.05}s` }}
-                                    >
-                                        <div className="flex items-start gap-4">
-                                            <div className="text-5xl">{realm.icon}</div>
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    <span className="text-sm font-stats text-glow">
-                                                        [{realm.number}]
-                                                    </span>
-                                                    <h3 className="text-xl font-display">{realm.name}</h3>
-                                                </div>
-                                                <p className="text-sm text-secondary mb-3">
-                                                    {realm.description}
-                                                </p>
-
-                                                {realm.status === 'unlocked' ? (
-                                                    <>
-                                                        <div className="mb-3">
-                                                            <div className="flex justify-between text-xs mb-1">
-                                                                <span>Progress</span>
-                                                                <span>{realm.progress}%</span>
-                                                            </div>
-                                                            <div className="stat-bar">
-                                                                <div
-                                                                    className="stat-bar-fill"
-                                                                    style={{ width: `${realm.progress}%` }}
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                        <Link href={`/realms/${realm.id}`}>
-                                                            <button className="btn-primary w-full">
-                                                                ENTER REALM →
-                                                            </button>
-                                                        </Link>
-                                                    </>
-                                                ) : (
-                                                    <div className="text-sm text-muted italic">
-                                                        🔒 {realm.unlockRequirement}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
                             </div>
                         )}
                     </div>
