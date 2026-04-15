@@ -1,28 +1,279 @@
 /* ===================================
    🕯️ REALM 202 - THE VEIL
-   Custom styling for this realm
+   Premium glass / luminous violet pass
    =================================== */
 
-/* Realm 202 specific colors */
 :root {
-  --realm-202-primary: #9D84B7;
-  --realm-202-secondary: #4A90E2;
-  --realm-202-accent: #C0C0C0;
+  --realm-202-primary: rgba(157, 132, 183, 0.96);
+  --realm-202-primary-soft: rgba(157, 132, 183, 0.22);
+  --realm-202-primary-dim: rgba(157, 132, 183, 0.10);
+
+  --realm-202-secondary: rgba(112, 168, 255, 0.92);
+  --realm-202-secondary-soft: rgba(112, 168, 255, 0.18);
+
+  --realm-202-silver: rgba(230, 236, 244, 0.94);
+  --realm-202-silver-soft: rgba(205, 214, 226, 0.70);
+  --realm-202-silver-dim: rgba(174, 182, 196, 0.52);
+
+  --realm-202-gold-soft: rgba(224, 196, 120, 0.16);
+
+  --realm-202-panel-bg:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.08),
+      rgba(216, 224, 236, 0.035) 38%,
+      rgba(18, 22, 36, 0.56)
+    );
+
+  --realm-202-border: rgba(212, 220, 235, 0.16);
+  --realm-202-border-strong: rgba(228, 235, 244, 0.26);
+}
+
+/* ===================================
+   Page shell
+   =================================== */
+
+.realm-202-shell {
+  color: var(--realm-202-silver);
+}
+
+.realm-202-container {
+  position: relative;
+  z-index: 1;
+}
+
+/* ===================================
+   Hero
+   =================================== */
+
+.realm-202-hero {
+  position: relative;
 }
 
 .realm-202-title {
   color: var(--realm-202-primary);
+  text-shadow:
+    0 0 10px rgba(255, 255, 255, 0.12),
+    0 0 18px rgba(157, 132, 183, 0.18),
+    0 0 28px rgba(112, 168, 255, 0.10);
 }
 
 .realm-202-glow {
   color: var(--realm-202-primary);
+  text-shadow:
+    0 0 10px rgba(157, 132, 183, 0.18),
+    0 0 20px rgba(112, 168, 255, 0.08);
 }
+
+/* ===================================
+   Overview / completion cards
+   =================================== */
+
+.realm-202-overview {
+  background: var(--realm-202-panel-bg);
+  border: 1px solid var(--realm-202-border);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.10),
+    0 12px 34px rgba(0,0,0,0.22),
+    0 0 18px rgba(157, 132, 183, 0.06);
+  backdrop-filter: blur(16px) saturate(125%);
+  -webkit-backdrop-filter: blur(16px) saturate(125%);
+}
+
+.realm-202-overview:hover {
+  border-color: var(--realm-202-border-strong);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.14),
+    0 14px 38px rgba(0,0,0,0.24),
+    0 0 22px rgba(157, 132, 183, 0.08);
+}
+
+.realm-202-complete-card {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(157, 132, 183, 0.10),
+      rgba(255,255,255,0.04) 38%,
+      rgba(19, 24, 36, 0.52)
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.10),
+    0 14px 38px rgba(0,0,0,0.24),
+    0 0 20px rgba(157, 132, 183, 0.08);
+}
+
+/* ===================================
+   Shared card tuning inside realm 202
+   =================================== */
+
+.realm-202-shell .glass-card {
+  background: var(--realm-202-panel-bg);
+  border: 1px solid var(--realm-202-border);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 10px 28px rgba(0,0,0,0.18);
+  backdrop-filter: blur(14px) saturate(120%);
+  -webkit-backdrop-filter: blur(14px) saturate(120%);
+}
+
+.realm-202-shell .glass-card:hover {
+  border-color: var(--realm-202-border-strong);
+}
+
+.realm-202-shell .quest-card {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,0.045),
+      rgba(214, 221, 233, 0.025) 40%,
+      rgba(18, 22, 34, 0.52)
+    );
+  border: 1px solid rgba(220, 226, 238, 0.10);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    0 8px 20px rgba(0,0,0,0.14);
+}
+
+/* ===================================
+   Text tuning
+   =================================== */
+
+.realm-202-shell .text-secondary {
+  color: rgba(226, 232, 241, 0.84);
+}
+
+.realm-202-shell .text-muted {
+  color: rgba(184, 193, 206, 0.66);
+}
+
+.realm-202-shell .text-primary,
+.realm-202-shell .text-stats,
+.realm-202-shell .font-stats {
+  color: var(--realm-202-silver);
+}
+
+.realm-202-shell .text-glow {
+  color: var(--realm-202-silver);
+  text-shadow:
+    0 0 10px rgba(255,255,255,0.10),
+    0 0 18px rgba(157, 132, 183, 0.10);
+}
+
+/* ===================================
+   Bars / stats
+   =================================== */
 
 .realm-202-bar {
-  background: linear-gradient(90deg, var(--realm-202-secondary), var(--realm-202-primary));
+  background:
+    linear-gradient(
+      90deg,
+      rgba(112, 168, 255, 0.92),
+      rgba(157, 132, 183, 0.96),
+      rgba(224, 196, 120, 0.75)
+    );
+  box-shadow:
+    0 0 14px rgba(157, 132, 183, 0.14),
+    0 0 10px rgba(112, 168, 255, 0.08);
 }
 
-/* Dream mist effect */
+.realm-202-shell .stat-bar {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.05), rgba(0,0,0,0.26));
+  border: 1px solid rgba(220, 226, 238, 0.10);
+  box-shadow: inset 0 1px 6px rgba(0,0,0,0.22);
+}
+
+.realm-202-shell .stat-bar-fill {
+  box-shadow:
+    0 0 12px rgba(157, 132, 183, 0.14),
+    0 0 8px rgba(112, 168, 255, 0.08);
+}
+
+/* ===================================
+   Portal / location styling
+   =================================== */
+
+.realm-202-shell .realm-portal {
+  border: 1px solid rgba(212, 220, 235, 0.14);
+  background:
+    linear-gradient(
+      150deg,
+      rgba(255,255,255,0.05),
+      rgba(210, 220, 232, 0.025) 35%,
+      rgba(16, 22, 34, 0.52)
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 10px 24px rgba(0,0,0,0.16);
+}
+
+.realm-202-shell .realm-portal:hover {
+  border-color: rgba(226, 232, 242, 0.22);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.12),
+    0 14px 30px rgba(0,0,0,0.20),
+    0 0 14px rgba(157, 132, 183, 0.06);
+}
+
+.realm-202-shell .realm-portal.locked {
+  opacity: 0.7;
+  filter: saturate(0.76);
+}
+
+/* ===================================
+   Buttons within realm 202
+   =================================== */
+
+.realm-202-shell .btn-primary {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(238, 243, 250, 0.16),
+      rgba(157, 132, 183, 0.14) 42%,
+      rgba(112, 168, 255, 0.10) 100%
+    );
+  border: 1px solid rgba(222, 230, 240, 0.22);
+  color: var(--realm-202-silver);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.16),
+    0 8px 22px rgba(0,0,0,0.18);
+}
+
+.realm-202-shell .btn-primary:hover {
+  border-color: rgba(157, 132, 183, 0.34);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.20),
+    0 10px 26px rgba(0,0,0,0.22),
+    0 0 14px rgba(157, 132, 183, 0.10);
+}
+
+.realm-202-shell .btn-secondary {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,0.05),
+      rgba(212, 220, 232, 0.025) 44%,
+      rgba(16, 22, 34, 0.46)
+    );
+  border: 1px solid rgba(214, 222, 235, 0.14);
+  color: rgba(233, 239, 246, 0.92);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.10),
+    0 8px 18px rgba(0,0,0,0.16);
+}
+
+.realm-202-shell .btn-secondary:hover {
+  border-color: rgba(157, 132, 183, 0.24);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.14),
+    0 10px 20px rgba(0,0,0,0.20),
+    0 0 12px rgba(112, 168, 255, 0.08);
+}
+
+/* ===================================
+   Dream mist effect
+   =================================== */
+
 .dream-mist {
   position: relative;
 }
@@ -30,22 +281,60 @@
 .dream-mist::after {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(circle, rgba(157, 132, 183, 0.2) 0%, transparent 70%);
+  inset: 0;
+  background:
+    radial-gradient(circle, rgba(157, 132, 183, 0.16) 0%, transparent 70%);
   animation: mist-flow 8s ease-in-out infinite;
   pointer-events: none;
 }
 
 @keyframes mist-flow {
-  0%, 100% { 
-    opacity: 0.3;
+  0%, 100% {
+    opacity: 0.26;
     transform: scale(1) translateY(0);
   }
-  50% { 
-    opacity: 0.6;
-    transform: scale(1.1) translateY(-10px);
+  50% {
+    opacity: 0.52;
+    transform: scale(1.08) translateY(-10px);
   }
+}
+
+/* ===================================
+   Responsive
+   =================================== */
+
+@media (max-width: 768px) {
+  .realm-202-shell .level-badge {
+    min-width: 76px;
+    min-height: 76px;
+  }
+
+  .realm-202-overview {
+    padding: 1.1rem;
+  }
+}
+
+/* Veil-specific level badge override */
+.realm-202-shell .level-badge {
+  min-width: 86px;
+  min-height: 86px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.28), rgba(255,255,255,0.06) 34%, rgba(16,22,34,0.52) 78%),
+    linear-gradient(145deg, rgba(230,236,245,0.18), rgba(157,132,183,0.10), rgba(18,24,36,0.48));
+  border: 1px solid rgba(226, 232, 240, 0.28);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.18),
+    0 8px 24px rgba(0,0,0,0.22),
+    0 0 14px rgba(157,132,183,0.10),
+    0 0 10px rgba(112,168,255,0.06);
+  color: rgba(232, 238, 246, 0.94);
+  text-shadow:
+    0 0 8px rgba(255,255,255,0.10),
+    0 0 14px rgba(157,132,183,0.08);
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
 }

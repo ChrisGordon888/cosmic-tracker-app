@@ -132,9 +132,9 @@ export default function RealmSoundstage({
             >
               {isFeaturedSelected
                 ? isPlaying
-                  ? 'Pause Entry Track'
-                  : 'Resume Entry Track'
-                : '▶ Play Entry Track'}
+                  ? 'Pause Track'
+                  : 'Resume Track'
+                : '▶ Play Track'}
             </button>
           </div>
         </div>
