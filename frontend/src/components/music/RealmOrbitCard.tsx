@@ -34,8 +34,10 @@ function getResponsiveOrbitSize() {
 
     const width = window.innerWidth;
 
-    if (width < 380) return 270;
-    if (width < 480) return 300;
+    if (width < 380) return 240;
+    if (width < 480) return 260;
+    if (width < 768) return 300;
+
     return 360;
 }
 
@@ -113,7 +115,7 @@ export default function RealmOrbitCard({
     }, [currentTrackId, visibleTracks, selectedTrackId]);
 
     const centerX = cardSize / 2;
-    const centerY = isMobile ? cardSize * 0.41 : cardSize / 2;
+    const centerY = isMobile ? cardSize * 0.45 : cardSize / 2;
     const centerSize = Math.round(cardSize * 0.255);
     const nodeSize = Math.round(cardSize * 0.145);
     const orbitRadius = Math.round(cardSize * 0.355);
@@ -154,13 +156,14 @@ export default function RealmOrbitCard({
     };
 
     if (compactOnMobile && isMobile) {
-        const miniSize = 96;
+        const miniSize = 108;
         const miniCenter = miniSize / 2;
-        const miniRadius = 34;
+        const miniRadius = 38;
         const miniTracks = visibleTracks.slice(0, 5);
 
         const miniNodes = miniTracks.map((track, index) => {
             const angle = (2 * Math.PI * index) / Math.max(miniTracks.length, 1) - Math.PI / 2;
+
             return {
                 ...track,
                 x: miniCenter + miniRadius * Math.cos(angle),
@@ -178,24 +181,24 @@ export default function RealmOrbitCard({
                 }}
             >
                 <div
-                    className="absolute inset-0 pointer-events-none opacity-40"
+                    className="absolute inset-0 pointer-events-none opacity-35"
                     style={{
-                        background: `radial-gradient(circle at 18% 22%, ${realmColor}20, transparent 38%)`,
+                        background: `radial-gradient(circle at center, ${realmColor}18, transparent 56%)`,
                     }}
                 />
 
-                <div className="relative flex items-start gap-4">
+                <div className="relative flex flex-col items-center text-center">
                     <div
-                        className="relative shrink-0"
+                        className="relative mb-3"
                         style={{ width: `${miniSize}px`, height: `${miniSize}px` }}
                     >
                         <div
                             className="absolute rounded-full"
                             style={{
-                                width: '72px',
-                                height: '72px',
-                                left: `${miniCenter - 36}px`,
-                                top: `${miniCenter - 36}px`,
+                                width: '82px',
+                                height: '82px',
+                                left: `${miniCenter - 41}px`,
+                                top: `${miniCenter - 41}px`,
                                 border: `1px dashed ${realmColor}44`,
                                 boxShadow: `0 0 14px ${realmColor}18`,
                             }}
@@ -204,10 +207,10 @@ export default function RealmOrbitCard({
                         <div
                             className="absolute rounded-full"
                             style={{
-                                width: '46px',
-                                height: '46px',
-                                left: `${miniCenter - 23}px`,
-                                top: `${miniCenter - 23}px`,
+                                width: '54px',
+                                height: '54px',
+                                left: `${miniCenter - 27}px`,
+                                top: `${miniCenter - 27}px`,
                                 background: `radial-gradient(circle at 35% 35%, ${realmColor}88, ${realmColor}33)`,
                                 border: `1px solid ${realmColor}66`,
                                 boxShadow: `0 0 18px ${realmColor}28`,
@@ -218,10 +221,10 @@ export default function RealmOrbitCard({
                             onClick={() => selectedTrack && handleTrackClick(selectedTrack)}
                             className="absolute rounded-full flex items-center justify-center text-xl"
                             style={{
-                                width: '38px',
-                                height: '38px',
-                                left: `${miniCenter - 19}px`,
-                                top: `${miniCenter - 19}px`,
+                                width: '42px',
+                                height: '42px',
+                                left: `${miniCenter - 21}px`,
+                                top: `${miniCenter - 21}px`,
                                 background: `radial-gradient(circle at 35% 35%, ${realmColor}, ${realmColor}88)`,
                                 border: `1px solid ${realmColor}99`,
                                 boxShadow: `0 0 18px ${realmColor}44`,
@@ -241,8 +244,8 @@ export default function RealmOrbitCard({
                                     onClick={() => handleTrackClick(track)}
                                     className="absolute rounded-full flex items-center justify-center text-[10px]"
                                     style={{
-                                        width: '20px',
-                                        height: '20px',
+                                        width: '22px',
+                                        height: '22px',
                                         left: `${track.x}px`,
                                         top: `${track.y}px`,
                                         transform: 'translate(-50%, -50%)',
@@ -263,8 +266,8 @@ export default function RealmOrbitCard({
                         })}
                     </div>
 
-                    <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <div className="w-full min-w-0">
+                        <div className="flex flex-wrap items-center justify-center gap-2 mb-2">
                             <p className="text-[10px] uppercase tracking-[0.18em] text-white/50">
                                 Realm Soundtrack
                             </p>
@@ -283,7 +286,7 @@ export default function RealmOrbitCard({
                         </div>
 
                         <h3
-                            className="font-display text-lg truncate mb-1"
+                            className="font-display text-xl truncate mb-1"
                             style={{ color: realmColor }}
                         >
                             {realmName}
@@ -302,7 +305,7 @@ export default function RealmOrbitCard({
                             <p className="text-xs text-white/55 mb-3">No track selected yet.</p>
                         )}
 
-                        <div className="mb-3">
+                        <div className="mb-4">
                             <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.14em] text-white/50 mb-1.5">
                                 <span>Progress</span>
                                 <span>{clampedProgress}%</span>
@@ -339,35 +342,35 @@ export default function RealmOrbitCard({
                             )}
                         </div>
                     </div>
+
+                    {visibleTracks.length > 1 && (
+                        <div className="relative mt-4 flex gap-2 overflow-x-auto pb-1 w-full">
+                            {visibleTracks.map((track) => {
+                                const isSelected = selectedTrackId === track.id;
+                                const isCurrent = currentTrackId === track.id;
+
+                                return (
+                                    <button
+                                        key={track.id}
+                                        onClick={() => {
+                                            setSelectedTrackId(track.id);
+                                            onPlayTrack(track);
+                                        }}
+                                        className="shrink-0 px-3 py-2 rounded-full text-xs border transition-all"
+                                        style={{
+                                            borderColor: isSelected || isCurrent ? `${realmColor}88` : `${realmColor}22`,
+                                            background: isSelected || isCurrent ? `${realmColor}22` : 'rgba(255,255,255,0.04)',
+                                            color: isSelected || isCurrent ? realmColor : 'rgba(255,255,255,0.68)',
+                                        }}
+                                    >
+                                        {isCurrent && isPlaying ? '⏸ ' : '♪ '}
+                                        {track.trackTitle}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
-
-                {visibleTracks.length > 1 && (
-                    <div className="relative mt-4 flex gap-2 overflow-x-auto pb-1">
-                        {visibleTracks.map((track) => {
-                            const isSelected = selectedTrackId === track.id;
-                            const isCurrent = currentTrackId === track.id;
-
-                            return (
-                                <button
-                                    key={track.id}
-                                    onClick={() => {
-                                        setSelectedTrackId(track.id);
-                                        onPlayTrack(track);
-                                    }}
-                                    className="shrink-0 px-3 py-2 rounded-full text-xs border transition-all"
-                                    style={{
-                                        borderColor: isSelected || isCurrent ? `${realmColor}88` : `${realmColor}22`,
-                                        background: isSelected || isCurrent ? `${realmColor}22` : 'rgba(255,255,255,0.04)',
-                                        color: isSelected || isCurrent ? realmColor : 'rgba(255,255,255,0.68)',
-                                    }}
-                                >
-                                    {isCurrent && isPlaying ? '⏸ ' : '♪ '}
-                                    {track.trackTitle}
-                                </button>
-                            );
-                        })}
-                    </div>
-                )}
             </div>
         );
     }
@@ -473,10 +476,10 @@ export default function RealmOrbitCard({
                 </div>
 
                 <div
-                    className="realm-orbit-stage relative mx-auto"
+                    className="realm-orbit-stage relative mx-auto mb-0"
                     style={{
                         width: `${cardSize}px`,
-                        height: isMobile ? `${Math.round(cardSize * 0.82)}px` : `${cardSize}px`,
+                        height: isMobile ? `${Math.round(cardSize * 0.9)}px` : `${cardSize}px`,
                         maxWidth: '100%',
                     }}
                 >
