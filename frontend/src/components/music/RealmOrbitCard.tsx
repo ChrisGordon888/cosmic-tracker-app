@@ -113,7 +113,7 @@ export default function RealmOrbitCard({
     }, [currentTrackId, visibleTracks, selectedTrackId]);
 
     const centerX = cardSize / 2;
-    const centerY = cardSize / 2;
+    const centerY = isMobile ? cardSize * 0.41 : cardSize / 2;
     const centerSize = Math.round(cardSize * 0.255);
     const nodeSize = Math.round(cardSize * 0.145);
     const orbitRadius = Math.round(cardSize * 0.355);
@@ -374,7 +374,7 @@ export default function RealmOrbitCard({
 
     return (
         <div
-            className="realm-orbit-card rounded-3xl border p-6 relative overflow-hidden"
+            className="realm-orbit-card rounded-3xl border p-4 md:p-6 relative overflow-hidden"
             style={{
                 borderColor: `${realmColor}55`,
                 background: 'rgba(255,255,255,0.03)',
@@ -476,7 +476,7 @@ export default function RealmOrbitCard({
                     className="realm-orbit-stage relative mx-auto"
                     style={{
                         width: `${cardSize}px`,
-                        height: `${cardSize}px`,
+                        height: isMobile ? `${Math.round(cardSize * 0.82)}px` : `${cardSize}px`,
                         maxWidth: '100%',
                     }}
                 >
@@ -601,10 +601,10 @@ export default function RealmOrbitCard({
                                             ? `radial-gradient(circle, ${realmColor}99, ${realmColor}44)`
                                             : `radial-gradient(circle, ${realmColor}74, ${realmColor}30)`,
                                     border: `1px solid ${isCurrent
-                                            ? `${realmColor}ee`
-                                            : isSelected
-                                                ? `${realmColor}aa`
-                                                : `${realmColor}55`
+                                        ? `${realmColor}ee`
+                                        : isSelected
+                                            ? `${realmColor}aa`
+                                            : `${realmColor}55`
                                         }`,
                                     boxShadow: isCurrent
                                         ? `0 0 24px ${realmColor}88`
@@ -625,7 +625,7 @@ export default function RealmOrbitCard({
                 </div>
 
                 <div
-                    className="mt-5 rounded-2xl border p-4 min-w-0"
+                    className="mt-3 md:mt-5 rounded-2xl border p-4 min-w-0"
                     style={{
                         borderColor: `${realmColor}33`,
                         background: `${realmColor}10`,
