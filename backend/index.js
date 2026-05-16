@@ -18,13 +18,15 @@ const jwt = require("jsonwebtoken");
 const typeDefs = require("./schemas");
 const resolvers = require("./resolvers");
 
+const allowedOrigins = [
+    "http://localhost:3000",
+    "https://studio.apollographql.com",
+    "https://studio-ui-deployments.apollographql.com",
+    process.env.FRONTEND_URL,
+].filter(Boolean);
+
 async function startServer() {
     const app = express();
-
-    const allowedOrigins = [
-        "http://localhost:3000",
-        process.env.FRONTEND_URL,
-    ].filter(Boolean);
 
     app.use(
         cors({
@@ -57,7 +59,6 @@ async function startServer() {
 
             try {
                 const decoded = jwt.verify(token, process.env.NEXTAUTH_SECRET);
-
                 const User = require("./models/User");
 
                 let user = await User.findOne({ email: decoded.email });
