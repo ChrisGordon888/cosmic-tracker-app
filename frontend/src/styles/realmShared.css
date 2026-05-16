@@ -322,3 +322,115 @@
 .realm-music-player button:hover {
   animation: music-pulse 1s ease-in-out infinite;
 }
+
+/* === MOBILE LAYOUT STABILITY PASS === */
+
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.realm-303-shell,
+.realm-202-shell,
+.realm-101-shell,
+.realm-55-shell,
+.realm-44-shell,
+.realm-0-shell,
+.nexus-shell {
+  overflow-x: hidden;
+}
+
+.realm-303-container,
+.realm-202-container,
+.realm-101-container,
+.realm-55-container,
+.realm-44-container,
+.realm-0-container,
+.nexus-container {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.realm-orbit-card,
+.realm-orbit-stage {
+  max-width: 100%;
+}
+
+.realm-orbit-card {
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .glass-card {
+    padding: 1rem;
+    border-radius: 14px;
+  }
+
+  .glass-card:hover,
+  .realm-portal:hover,
+  .quest-card:hover,
+  .btn-primary:hover,
+  .btn-secondary:hover {
+    transform: none;
+  }
+
+  .neon-glow {
+    animation: none;
+  }
+
+  .level-badge {
+    animation: none;
+    width: 60px;
+    height: 60px;
+    min-width: 60px;
+    min-height: 60px;
+    font-size: 1rem;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+    max-width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.78rem;
+    line-height: 1.2;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .quest-card,
+  .realm-portal {
+    padding: 1rem;
+    border-radius: 14px;
+  }
+
+  .font-display {
+    word-break: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .stat-bar {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .realm-orbit-card {
+    padding: 1rem;
+    border-radius: 20px;
+  }
+
+  .realm-orbit-card h3 {
+    font-size: 1.35rem;
+  }
+
+  .realm-orbit-stage {
+    margin-top: 0.25rem;
+  }
+
+  .glass-card {
+    padding: 0.95rem;
+  }
+}

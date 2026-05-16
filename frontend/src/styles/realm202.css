@@ -338,3 +338,10 @@
   backdrop-filter: blur(10px) saturate(120%);
   -webkit-backdrop-filter: blur(10px) saturate(120%);
 }
+
+@media (max-width: 768px) {
+  .realm-202-shell .level-badge {
+    min-width: 76px;
+    min-height: 76px;
+  }
+}

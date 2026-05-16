@@ -28,12 +28,15 @@ interface RealmOrbitCardProps {
   isRecommended?: boolean;
 }
 
-const CARD_SIZE = 360;
-const CENTER_X = CARD_SIZE / 2;
-const CENTER_Y = CARD_SIZE / 2;
-const CENTER_SIZE = 92;
-const NODE_SIZE = 52;
-const ORBIT_RADIUS = 128;
+function getResponsiveOrbitSize() {
+  if (typeof window === 'undefined') return 360;
+
+  const width = window.innerWidth;
+
+  if (width < 380) return 270;
+  if (width < 480) return 300;
+  return 360;
+}
 
 function polarToCartesian(
   centerX: number,
@@ -75,9 +78,24 @@ export default function RealmOrbitCard({
   isRecommended = false,
 }: RealmOrbitCardProps) {
   const visibleTracks = useMemo(() => tracks.slice(0, 8), [tracks]);
+
+  const [cardSize, setCardSize] = useState(360);
   const [selectedTrackId, setSelectedTrackId] = useState<string | null>(
     visibleTracks[0]?.id ?? null
   );
+
+  useEffect(() => {
+    const updateSize = () => {
+      setCardSize(getResponsiveOrbitSize());
+    };
+
+    updateSize();
+    window.addEventListener('resize', updateSize);
+
+    return () => {
+      window.removeEventListener('resize', updateSize);
+    };
+  }, []);
 
   useEffect(() => {
     if (currentTrackId && visibleTracks.some((track) => track.id === currentTrackId)) {
@@ -90,12 +108,20 @@ export default function RealmOrbitCard({
     }
   }, [currentTrackId, visibleTracks, selectedTrackId]);
 
+  const centerX = cardSize / 2;
+  const centerY = cardSize / 2;
+  const centerSize = Math.round(cardSize * 0.255);
+  const nodeSize = Math.round(cardSize * 0.145);
+  const orbitRadius = Math.round(cardSize * 0.355);
+  const innerRingSize = Math.round(cardSize * 0.61);
+  const outerRingSize = Math.round(cardSize * 0.78);
+
   const orbitNodes = useMemo(() => {
     const trackCount = Math.max(visibleTracks.length, 1);
 
     return visibleTracks.map((track, index) => {
       const angle = (2 * Math.PI * index) / trackCount - Math.PI / 2;
-      const point = polarToCartesian(CENTER_X, CENTER_Y, ORBIT_RADIUS, angle);
+      const point = polarToCartesian(centerX, centerY, orbitRadius, angle);
 
       return {
         ...track,
@@ -104,7 +130,7 @@ export default function RealmOrbitCard({
         driftDelay: `${index * 0.6}s`,
       };
     });
-  }, [visibleTracks]);
+  }, [visibleTracks, centerX, centerY, orbitRadius]);
 
   const selectedTrack =
     visibleTracks.find((track) => track.id === selectedTrackId) ?? visibleTracks[0] ?? null;
@@ -125,7 +151,7 @@ export default function RealmOrbitCard({
 
   return (
     <div
-      className="rounded-3xl border p-6 relative overflow-hidden"
+      className="realm-orbit-card rounded-3xl border p-6 relative overflow-hidden"
       style={{
         borderColor: `${realmColor}55`,
         background: 'rgba(255,255,255,0.03)',
@@ -193,6 +219,17 @@ export default function RealmOrbitCard({
         .realm-core-pulse {
           animation: corePulse 4s ease-in-out infinite;
         }
+
+        @media (max-width: 480px) {
+          .orbit-node-idle,
+          .orbit-node-active,
+          .realm-core-pulse,
+          .orbit-ring-slow,
+          .orbit-ring-reverse {
+            animation-duration: 0s;
+            animation-name: none;
+          }
+        }
       `}</style>
 
       <div
@@ -202,7 +239,7 @@ export default function RealmOrbitCard({
         }}
       />
 
-      <div className="relative">
+      <div className="relative min-w-0">
         <div className="mb-4">
           <p className="text-xs uppercase tracking-[0.18em] text-white/60 mb-1">
             Realm Music Portal
@@ -213,20 +250,20 @@ export default function RealmOrbitCard({
         </div>
 
         <div
-          className="relative mx-auto"
+          className="realm-orbit-stage relative mx-auto"
           style={{
-            width: `${CARD_SIZE}px`,
-            height: `${CARD_SIZE}px`,
+            width: `${cardSize}px`,
+            height: `${cardSize}px`,
             maxWidth: '100%',
           }}
         >
           <div
             className="absolute orbit-ring-slow rounded-full"
             style={{
-              width: '220px',
-              height: '220px',
-              left: `${CENTER_X - 110}px`,
-              top: `${CENTER_Y - 110}px`,
+              width: `${innerRingSize}px`,
+              height: `${innerRingSize}px`,
+              left: `${centerX - innerRingSize / 2}px`,
+              top: `${centerY - innerRingSize / 2}px`,
               border: `1.5px dashed ${realmColor}48`,
               boxShadow: `0 0 16px ${realmColor}20`,
             }}
@@ -247,10 +284,10 @@ export default function RealmOrbitCard({
           <div
             className="absolute orbit-ring-reverse rounded-full"
             style={{
-              width: '280px',
-              height: '280px',
-              left: `${CENTER_X - 140}px`,
-              top: `${CENTER_Y - 140}px`,
+              width: `${outerRingSize}px`,
+              height: `${outerRingSize}px`,
+              left: `${centerX - outerRingSize / 2}px`,
+              top: `${centerY - outerRingSize / 2}px`,
               border: `1px dashed ${realmColor}30`,
               boxShadow: `0 0 12px ${realmColor}14`,
             }}
@@ -270,9 +307,9 @@ export default function RealmOrbitCard({
 
           <svg
             className="absolute inset-0 pointer-events-none"
-            width={CARD_SIZE}
-            height={CARD_SIZE}
-            viewBox={`0 0 ${CARD_SIZE} ${CARD_SIZE}`}
+            width={cardSize}
+            height={cardSize}
+            viewBox={`0 0 ${cardSize} ${cardSize}`}
           >
             {orbitNodes.map((track) => {
               const isCurrent = currentTrackId === track.id;
@@ -281,8 +318,8 @@ export default function RealmOrbitCard({
               return (
                 <line
                   key={`line-${track.id}`}
-                  x1={CENTER_X}
-                  y1={CENTER_Y}
+                  x1={centerX}
+                  y1={centerY}
                   x2={track.x}
                   y2={track.y}
                   stroke={
@@ -303,10 +340,10 @@ export default function RealmOrbitCard({
           <div
             className="absolute realm-core-pulse rounded-full flex flex-col items-center justify-center text-center px-2"
             style={{
-              width: `${CENTER_SIZE}px`,
-              height: `${CENTER_SIZE}px`,
-              left: `${CENTER_X - CENTER_SIZE / 2}px`,
-              top: `${CENTER_Y - CENTER_SIZE / 2}px`,
+              width: `${centerSize}px`,
+              height: `${centerSize}px`,
+              left: `${centerX - centerSize / 2}px`,
+              top: `${centerY - centerSize / 2}px`,
               background: `radial-gradient(circle at 35% 35%, ${realmColor}, ${realmColor}bb 52%, ${realmColor}55 100%)`,
               boxShadow: `0 0 30px ${realmColor}66`,
               border: `1px solid ${realmColor}99`,
@@ -332,8 +369,8 @@ export default function RealmOrbitCard({
                   isCurrent ? 'orbit-node-active' : 'orbit-node-idle'
                 }`}
                 style={{
-                  width: `${NODE_SIZE}px`,
-                  height: `${NODE_SIZE}px`,
+                  width: `${nodeSize}px`,
+                  height: `${nodeSize}px`,
                   left: `${track.x}px`,
                   top: `${track.y}px`,
                   background: isCurrent
@@ -367,7 +404,7 @@ export default function RealmOrbitCard({
         </div>
 
         <div
-          className="mt-5 rounded-2xl border p-4"
+          className="mt-5 rounded-2xl border p-4 min-w-0"
           style={{
             borderColor: `${realmColor}33`,
             background: `${realmColor}10`,
@@ -375,8 +412,8 @@ export default function RealmOrbitCard({
           }}
         >
           {selectedTrack ? (
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col md:flex-row md:items-center gap-4">
+            <div className="flex flex-col gap-4 min-w-0">
+              <div className="flex flex-col md:flex-row md:items-center gap-4 min-w-0">
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-2">
                     <p className="text-xs uppercase tracking-[0.18em] text-white/60">
@@ -432,10 +469,10 @@ export default function RealmOrbitCard({
                   </p>
                 </div>
 
-                <div className="shrink-0">
+                <div className="shrink-0 w-full md:w-auto">
                   <button
                     onClick={() => handleTrackClick(selectedTrack)}
-                    className="btn-secondary"
+                    className="btn-secondary w-full md:w-auto"
                   >
                     {selectedIsCurrent && isPlaying
                       ? 'Pause'
@@ -509,8 +546,8 @@ export default function RealmOrbitCard({
 
                   {realmRoute && isUnlocked && (
                     <div className="flex justify-end">
-                      <Link href={realmRoute}>
-                        <button className="btn-primary">
+                      <Link href={realmRoute} className="w-full md:w-auto">
+                        <button className="btn-primary w-full md:w-auto">
                           Enter Realm →
                         </button>
                       </Link>
