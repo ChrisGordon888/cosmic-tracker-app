@@ -14,7 +14,7 @@
         "dayjs": "^1.11.13",
         "graphql": "^16.11.0",
         "jsonwebtoken": "^9.0.2",
-        "next": "15.3.4",
+        "next": "^15.5.18",
         "next-auth": "^4.24.11",
         "react": "^19.0.0",
         "react-calendar": "^6.0.0",
