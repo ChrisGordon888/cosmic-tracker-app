@@ -206,6 +206,17 @@ export default function CosmicNexusHub() {
         );
     }, [guidanceRealmId, guidanceModeContent]);
 
+    const handlePlayOrbitTrack = (track: { id: string }) => {
+        const fullTrack = MUSIC_REGISTRY.find((musicTrack) => musicTrack.id === track.id);
+
+        if (!fullTrack) {
+            console.warn('Track not found in music registry:', track.id);
+            return;
+        }
+
+        void playOrToggleTrack(fullTrack);
+    };
+
     if (status === 'loading' || userLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -403,10 +414,15 @@ export default function CosmicNexusHub() {
                                         </p>
 
                                         <div className="text-xs text-muted mb-3">
-                                            Track: <span className="text-secondary">{guidanceModeContent.recommendedTrack}</span> • Mode:{' '}
-                                            <span className="text-secondary">
-                                                {getModeLabel(guidanceMode)}
-                                            </span>
+                                            Track: <span className="text-secondary">{guidanceModeContent.recommendedTrack}</span>
+                                            {guidanceMode && (
+                                                <>
+                                                    {' '}• Mode:{' '}
+                                                    <span className="text-secondary">
+                                                        {getModeLabel(guidanceMode)}
+                                                    </span>
+                                                </>
+                                            )}
                                         </div>
 
                                         <div className="flex flex-wrap gap-2">
@@ -472,7 +488,7 @@ export default function CosmicNexusHub() {
                                         tracks={realmGroup.tracks}
                                         currentTrackId={currentTrack?.id ?? null}
                                         isPlaying={isPlaying}
-                                        onPlayTrack={playOrToggleTrack}
+                                        onPlayTrack={handlePlayOrbitTrack}
                                         progress={realmGroup.progress}
                                         isUnlocked={realmGroup.status === 'unlocked'}
                                         realmRoute={`/realms/${realmGroup.id}`}

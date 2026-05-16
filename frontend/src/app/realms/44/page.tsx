@@ -4,10 +4,12 @@ import { useRef, useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import RealmBackground from '@/components/realm/RealmBackground';
+import RealmGuidanceCard from '@/components/realm/RealmGuidanceCard';
+import RealmSoundstage from '@/components/realm/RealmSoundstage';
+import RealmEntryGuidanceBanner from '@/components/realm/RealmEntryGuidanceBanner';
 import TrialPuzzle from '@/components/realm/TrialPuzzle';
 import '@/styles/realmShared.css';
 import '@/styles/realm44.css';
-import RealmMusicPlayer from '@/components/realm/RealmMusicPlayer';
 import { useQuery, useMutation } from '@apollo/client';
 import {
   GET_ME,
@@ -18,23 +20,18 @@ import {
 } from '@/graphql/realms';
 import { REALM_44_PUZZLES } from '@/lib/realmPuzzles';
 
-/**
- * 🛍️ REALM 44: ASTRAL BAZAAR
- * Theme: Hustle & Wisdom
- * Trial IDs aligned with realmPuzzles.ts:
- *   trial-barter-of-truth — location (merchant-quarter) + 2 puzzles
- *   trial-discernment     — location (gamblers-den)     + 2 puzzles
- *   trial-sacred-exchange — 3 puzzles (no location gate)
- * Unlocks: Realm 0 (InterSiddhi)
- */
-
 const REALM_ID = 44;
 const NEXT_REALM_ID = 0;
 
 export default function Realm44() {
   const { data: session, status } = useSession();
+  const [showProgression, setShowProgression] = useState(false);
 
-  const { data: userData, loading: userLoading, refetch } = useQuery(GET_ME);
+  const { data: userData, loading: userLoading, refetch } = useQuery(GET_ME, {
+    fetchPolicy: 'network-only',
+    nextFetchPolicy: 'cache-first',
+  });
+
   const [completeTrialStep] = useMutation(COMPLETE_TRIAL_STEP);
   const [startTrial] = useMutation(START_TRIAL);
   const [visitLocation] = useMutation(VISIT_LOCATION);
@@ -44,7 +41,6 @@ export default function Realm44() {
   const locationsSectionRef = useRef<HTMLDivElement>(null);
   const [isBusy, setIsBusy] = useState(false);
 
-  // ── Derived data ───────────────────────────────────────────────────────
   const user = userData?.me;
   const userLevel = user?.level ?? 1;
   const userXP = user?.xp ?? 0;
@@ -53,15 +49,17 @@ export default function Realm44() {
   const xpPercent = Math.min((userXP / safeXpToNext) * 100, 100);
 
   const realmTrials =
-    user?.completedTrials?.filter((t: any) => t.realmId === REALM_ID) ?? [];
-  const completedTrialsCount = realmTrials.filter((t: any) => t.isComplete).length;
+    user?.completedTrials?.filter((t: any) => Number(t.realmId) === REALM_ID) ?? [];
+  const completedTrialsCount = realmTrials.filter(
+    (t: any) => t.isComplete || (t.stepsCompleted ?? 0) >= 3
+  ).length;
   const realmProgress = Math.floor((completedTrialsCount / 3) * 100);
 
   const getTrial = (trialId: string) =>
     realmTrials.find((t: any) => t.trialId === trialId);
 
   const realmLocs =
-    user?.visitedLocations?.filter((l: any) => l.realmId === REALM_ID) ?? [];
+    user?.visitedLocations?.filter((l: any) => Number(l.realmId) === REALM_ID) ?? [];
   const hasVisited = (locationId: string) =>
     realmLocs.some((l: any) => l.locationId === locationId);
 
@@ -69,7 +67,8 @@ export default function Realm44() {
   const trial2 = getTrial('trial-discernment');
   const trial3 = getTrial('trial-sacred-exchange');
 
-  // ── Auto-unlock Realm 0 ────────────────────────────────────────────────
+  const isInterSiddhiUnlocked = user?.unlockedRealms?.includes(NEXT_REALM_ID);
+
   useEffect(() => {
     if (completedTrialsCount >= 3 && !hasUnlockedRef.current && user) {
       const alreadyUnlocked = user?.unlockedRealms?.includes(NEXT_REALM_ID);
@@ -78,9 +77,6 @@ export default function Realm44() {
         hasUnlockedRef.current = true;
         unlockNextRealm({ variables: { realmId: NEXT_REALM_ID } })
           .then(() => {
-            alert(
-              '🔓 REALM UNLOCKED! InterSiddhi (Realm 0) — The Final Realm is now accessible!'
-            );
             refetch();
           })
           .catch((err) => {
@@ -93,7 +89,6 @@ export default function Realm44() {
     }
   }, [completedTrialsCount, user, unlockNextRealm, refetch]);
 
-  // ── Handlers ───────────────────────────────────────────────────────────
   const handleStartTrial = async (trialId: string, trialName: string) => {
     if (isBusy) return;
 
@@ -139,7 +134,6 @@ export default function Realm44() {
 
       const visitMessage = result.data.visitLocation.message;
 
-      // Auto-advance Trial 1 location step
       if (
         locationId === 'merchant-quarter' &&
         trial1 &&
@@ -155,7 +149,6 @@ export default function Realm44() {
         return;
       }
 
-      // Auto-advance Trial 2 location step
       if (
         locationId === 'gamblers-den' &&
         trial2 &&
@@ -181,7 +174,6 @@ export default function Realm44() {
     }
   };
 
-  // ── Guards ─────────────────────────────────────────────────────────────
   if (status === 'loading' || userLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -209,11 +201,9 @@ export default function Realm44() {
     );
   }
 
-  // ── Location locks ─────────────────────────────────────────────────────
   const merchantQuarterUnlocked = !!trial1;
   const gamblersDenUnlocked = !!trial2;
 
-  // ── Active puzzles by backend step count ──────────────────────────────
   const trial1Puzzle =
     trial1 && !trial1.isComplete && trial1.stepsCompleted >= 1
       ? REALM_44_PUZZLES['trial-barter-of-truth']?.steps[trial1.stepsCompleted - 1]
@@ -237,9 +227,9 @@ export default function Realm44() {
         overlayOpacity={0.45}
       />
 
-      <div className="min-h-screen pb-32">
-        <div className="container mx-auto px-4 py-8 max-w-6xl">
-          <header className="text-center mb-12 fade-in">
+      <div className="min-h-screen pb-32 realm-44-shell">
+        <div className="container mx-auto px-4 py-8 max-w-6xl realm-44-container">
+          <header className="text-center mb-10 fade-in realm-44-hero">
             <div className="text-6xl mb-4 neon-glow">🛍️</div>
             <h1 className="text-5xl md:text-6xl font-display neon-glow mb-2 realm-44-title">
               ASTRAL BAZAAR
@@ -261,372 +251,402 @@ export default function Realm44() {
             </div>
           </header>
 
-          <div className="glass-card p-8 mb-8 fade-in" style={{ animationDelay: '0.1s' }}>
-            <h2 className="text-3xl font-display mb-4">💰 THE COSMIC MARKETPLACE 💰</h2>
-            <p className="text-lg text-secondary mb-4">
-              The Astral Bazaar is an infinite market outside linear time where souls trade
-              knowledge, memories, and power. This is the domain of merchants, tricksters,
-              and those who understand that everything can be negotiated — but not everything
-              should be.
-            </p>
-            <p className="text-secondary mb-6">
-              Here you develop <strong>Sacred Discernment</strong>: the ability to recognise
-              true value, to exchange with integrity, and to master the art of the sacred deal.
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-              <div className="glass-card p-4 text-center">
-                <div className="text-2xl font-display text-glow realm-44-glow">
-                  {realmProgress}%
+          <RealmEntryGuidanceBanner
+            realmId={44}
+            realmName="Astral Bazaar"
+            realmColor="#F59E0B"
+          />
+
+          <RealmGuidanceCard realmId={44} />
+
+          <RealmSoundstage
+            realmId={44}
+            realmName="Astral Bazaar"
+            realmIcon="🛍️"
+            realmColor="#F59E0B"
+            intro="Astral Bazaar is where discernment, value, temptation, reciprocity, and wise exchange come into focus. Let the soundtrack tell you whether this realm matches what you need to evaluate right now."
+            supportText="Start with the music first. If this realm feels true, then go deeper into its trials, locations, and symbols."
+            progress={realmProgress}
+            isUnlocked={true}
+            isCurrentRealm={true}
+          />
+
+          <div className="glass-card realm-44-overview p-6 mb-8 fade-in" style={{ animationDelay: '0.1s' }}>
+            <div className="flex flex-col lg:flex-row lg:items-start gap-6">
+              <div className="flex-1">
+                <h2 className="text-2xl font-display mb-3">💰 Realm Overview</h2>
+                <p className="text-secondary mb-4">
+                  The Astral Bazaar is the realm of value, boundaries, discernment, and exchange. It is where glitter is tested, motives are revealed, and what is truly worth your energy becomes clear.
+                </p>
+
+                <div className="mb-4">
+                  <div className="flex items-center justify-between text-sm mb-2">
+                    <span className="text-secondary">Realm Progress</span>
+                    <span className="text-stats">{realmProgress}%</span>
+                  </div>
+
+                  <div className="stat-bar">
+                    <div
+                      className="stat-bar-fill realm-44-bar"
+                      style={{ width: `${realmProgress}%` }}
+                    />
+                  </div>
                 </div>
-                <div className="text-xs text-muted">Progress</div>
+
+                <div className="text-sm text-muted">
+                  {completedTrialsCount} of 3 trials complete
+                </div>
               </div>
-              <div className="glass-card p-4 text-center">
-                <div className="text-2xl font-display text-glow">
-                  {completedTrialsCount} / 3
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 min-w-[260px]">
+                <div className="glass-card p-4 text-center">
+                  <div className="text-2xl font-display text-glow realm-44-glow">
+                    {completedTrialsCount} / 3
+                  </div>
+                  <div className="text-xs text-muted">Trials Complete</div>
                 </div>
-                <div className="text-xs text-muted">Trials Complete</div>
-              </div>
-              <div className="glass-card p-4 text-center">
-                <div className="text-2xl font-display text-glow">
-                  {user?.completedTrials?.filter((t: any) => t.isComplete).length ?? 0}
+
+                <div className="glass-card p-4 text-center">
+                  <div className="text-2xl font-display text-glow">
+                    {isInterSiddhiUnlocked ? 'Unlocked' : 'Locked'}
+                  </div>
+                  <div className="text-xs text-muted">Next Realm</div>
                 </div>
-                <div className="text-xs text-muted">Siddhis</div>
-              </div>
-              <div className="glass-card p-4 text-center">
-                <div className="text-2xl font-display text-glow">
-                  {completedTrialsCount >= 3 ? '🔓 Unlocked' : 'Locked'}
-                </div>
-                <div className="text-xs text-muted">Next Realm</div>
               </div>
             </div>
           </div>
 
-          <div className="mb-8">
-            <h2 className="text-3xl font-display mb-6 flex items-center gap-3">
-              <span className="text-glow">🎯</span> REALM TRIALS{' '}
-              <span className="text-glow">🎯</span>
-            </h2>
-            <div className="space-y-6">
-              {/* Trial 1 */}
-              <div className="quest-card fade-in" style={{ animationDelay: '0.2s' }}>
-                <div className="flex items-start gap-4">
-                  <div className="text-4xl">⏳</div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-display mb-2">Trial of the Barter of Truth</h3>
-                    <p className="text-sm text-secondary mb-3">
-                      Learn what truth costs. Know what should never be traded away.
-                    </p>
-                    <div className="mb-4">
-                      <div className="flex justify-between text-xs mb-1">
-                        <span>Progress</span>
-                        <span>{trial1?.stepsCompleted ?? 0} / 3 Steps</span>
-                      </div>
-                      <div className="stat-bar">
-                        <div
-                          className="stat-bar-fill realm-44-bar"
-                          style={{ width: `${((trial1?.stepsCompleted ?? 0) / 3) * 100}%` }}
-                        />
-                      </div>
-                    </div>
-
-                    {trial1?.isComplete ? (
-                      <div className="text-green-400 font-bold">✓ COMPLETE</div>
-                    ) : !trial1 ? (
-                      <button
-                        className="btn-primary"
-                        onClick={() =>
-                          handleStartTrial(
-                            'trial-barter-of-truth',
-                            'Trial of the Barter of Truth'
-                          )
-                        }
-                        disabled={isBusy}
-                      >
-                        BEGIN TRIAL →
-                      </button>
-                    ) : trial1.stepsCompleted === 0 && !hasVisited('merchant-quarter') ? (
-                      <>
-                        <p className="text-sm text-muted italic mb-3">
-                          📍 Visit <strong>The Merchant Quarter</strong> below to unlock Step 1.
-                        </p>
-                        <button
-                          className="btn-secondary"
-                          onClick={() =>
-                            locationsSectionRef.current?.scrollIntoView({ behavior: 'smooth' })
-                          }
-                          disabled={isBusy}
-                        >
-                          GO TO LOCATIONS ↓
-                        </button>
-                      </>
-                    ) : trial1Puzzle ? (
-                      <TrialPuzzle
-                        key={`trial-barter-of-truth-${trial1.stepsCompleted}`}
-                        puzzle={trial1Puzzle}
-                        onSolved={() => advanceTrialStep('trial-barter-of-truth')}
-                      />
-                    ) : null}
-                  </div>
-                </div>
+          <div className="glass-card p-4 mb-8 fade-in realm-44-progression-toggle" style={{ animationDelay: '0.15s' }}>
+            <button
+              onClick={() => setShowProgression((prev) => !prev)}
+              className="w-full flex items-center justify-between text-left"
+            >
+              <div>
+                <p className="text-xs uppercase tracking-[0.18em] text-white/60 mb-1">
+                  Deeper Realm Progression
+                </p>
+                <h2 className="text-xl font-display">
+                  Trials, locations, and interactive systems
+                </h2>
+                <p className="text-sm text-muted mt-1">
+                  This layer is still being refined. The main focus of Astral Bazaar is music and emotional navigation.
+                </p>
               </div>
 
-              {/* Trial 2 */}
-              <div
-                className={`quest-card fade-in ${!trial1?.isComplete ? 'opacity-50' : ''}`}
-                style={{ animationDelay: '0.3s' }}
-              >
-                <div className="flex items-start gap-4">
-                  <div className="text-4xl">🔮</div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-display mb-2">Trial of Discernment</h3>
+              <div className="text-2xl text-white/70 shrink-0 ml-4">
+                {showProgression ? '▾' : '▸'}
+              </div>
+            </button>
+          </div>
 
-                    {!trial1?.isComplete ? (
-                      <p className="text-sm text-muted italic">
-                        🔒 Complete Trial of the Barter of Truth to unlock
-                      </p>
-                    ) : (
-                      <>
+          {showProgression && (
+            <>
+              <div className="mb-8 fade-in">
+                <h2 className="text-3xl font-display mb-6 flex items-center gap-3">
+                  <span className="text-glow">🎯</span> DEEPER REALM PATHS <span className="text-glow">🎯</span>
+                </h2>
+
+                <div className="space-y-6">
+                  <div className="quest-card fade-in" style={{ animationDelay: '0.2s' }}>
+                    <div className="flex items-start gap-4">
+                      <div className="text-4xl">⏳</div>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-display mb-2">Trial of the Barter of Truth</h3>
                         <p className="text-sm text-secondary mb-3">
-                          Glitter and gold look the same to the untrained eye. Learn to see
-                          the difference.
+                          Learn what truth costs. Know what should never be traded away.
                         </p>
+
                         <div className="mb-4">
                           <div className="flex justify-between text-xs mb-1">
                             <span>Progress</span>
-                            <span>{trial2?.stepsCompleted ?? 0} / 3 Steps</span>
+                            <span>{trial1?.stepsCompleted ?? 0} / 3 Steps</span>
                           </div>
                           <div className="stat-bar">
                             <div
                               className="stat-bar-fill realm-44-bar"
-                              style={{ width: `${((trial2?.stepsCompleted ?? 0) / 3) * 100}%` }}
+                              style={{ width: `${((trial1?.stepsCompleted ?? 0) / 3) * 100}%` }}
                             />
                           </div>
                         </div>
 
-                        {trial2?.isComplete ? (
+                        {trial1?.isComplete ? (
                           <div className="text-green-400 font-bold">✓ COMPLETE</div>
-                        ) : !trial2 ? (
-                          <button
-                            className="btn-primary"
-                            onClick={() =>
-                              handleStartTrial('trial-discernment', 'Trial of Discernment')
-                            }
-                            disabled={isBusy}
-                          >
-                            BEGIN TRIAL →
-                          </button>
-                        ) : trial2.stepsCompleted === 0 && !hasVisited('gamblers-den') ? (
-                          <>
-                            <p className="text-sm text-muted italic mb-3">
-                              📍 Visit <strong>The Gambler&apos;s Den</strong> below to unlock
-                              Step 1.
-                            </p>
-                            <button
-                              className="btn-secondary"
-                              onClick={() =>
-                                locationsSectionRef.current?.scrollIntoView({
-                                  behavior: 'smooth',
-                                })
-                              }
-                              disabled={isBusy}
-                            >
-                              GO TO LOCATIONS ↓
-                            </button>
-                          </>
-                        ) : trial2Puzzle ? (
-                          <TrialPuzzle
-                            key={`trial-discernment-${trial2.stepsCompleted}`}
-                            puzzle={trial2Puzzle}
-                            onSolved={() => advanceTrialStep('trial-discernment')}
-                          />
-                        ) : null}
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Trial 3 */}
-              <div
-                className={`quest-card fade-in ${!trial2?.isComplete ? 'opacity-50' : ''}`}
-                style={{ animationDelay: '0.4s' }}
-              >
-                <div className="flex items-start gap-4">
-                  <div className="text-4xl">♾️</div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-display mb-2">Trial of Sacred Exchange</h3>
-
-                    {!trial2?.isComplete ? (
-                      <p className="text-sm text-muted italic">
-                        🔒 Complete Trial of Discernment to unlock
-                      </p>
-                    ) : (
-                      <>
-                        <p className="text-sm text-secondary mb-3">
-                          A sacred exchange leaves both sides more whole. Master the art of
-                          giving and receiving in perfect integrity.
-                        </p>
-                        <div className="mb-4">
-                          <div className="flex justify-between text-xs mb-1">
-                            <span>Progress</span>
-                            <span>{trial3?.stepsCompleted ?? 0} / 3 Steps</span>
-                          </div>
-                          <div className="stat-bar">
-                            <div
-                              className="stat-bar-fill realm-44-bar"
-                              style={{ width: `${((trial3?.stepsCompleted ?? 0) / 3) * 100}%` }}
-                            />
-                          </div>
-                        </div>
-
-                        {trial3?.isComplete ? (
-                          <div className="text-green-400 font-bold">✓ COMPLETE</div>
-                        ) : !trial3 ? (
+                        ) : !trial1 ? (
                           <button
                             className="btn-primary"
                             onClick={() =>
                               handleStartTrial(
-                                'trial-sacred-exchange',
-                                'Trial of Sacred Exchange'
+                                'trial-barter-of-truth',
+                                'Trial of the Barter of Truth'
                               )
                             }
                             disabled={isBusy}
                           >
                             BEGIN TRIAL →
                           </button>
-                        ) : trial3Puzzle ? (
+                        ) : trial1.stepsCompleted === 0 && !hasVisited('merchant-quarter') ? (
+                          <>
+                            <p className="text-sm text-muted italic mb-3">
+                              📍 Visit <strong>The Merchant Quarter</strong> below to unlock Step 1.
+                            </p>
+                            <button
+                              className="btn-secondary"
+                              onClick={() =>
+                                locationsSectionRef.current?.scrollIntoView({ behavior: 'smooth' })
+                              }
+                              disabled={isBusy}
+                            >
+                              GO TO LOCATIONS ↓
+                            </button>
+                          </>
+                        ) : trial1Puzzle ? (
                           <TrialPuzzle
-                            key={`trial-sacred-exchange-${trial3.stepsCompleted}`}
-                            puzzle={trial3Puzzle}
-                            onSolved={() => advanceTrialStep('trial-sacred-exchange')}
+                            key={`trial-barter-of-truth-${trial1.stepsCompleted}`}
+                            puzzle={trial1Puzzle}
+                            onSolved={() => advanceTrialStep('trial-barter-of-truth')}
                           />
                         ) : null}
-                      </>
-                    )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    className={`quest-card fade-in ${!trial1?.isComplete ? 'opacity-50' : ''}`}
+                    style={{ animationDelay: '0.3s' }}
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="text-4xl">🔮</div>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-display mb-2">Trial of Discernment</h3>
+
+                        {!trial1?.isComplete ? (
+                          <p className="text-sm text-muted italic">
+                            🔒 Complete Trial of the Barter of Truth to unlock
+                          </p>
+                        ) : (
+                          <>
+                            <p className="text-sm text-secondary mb-3">
+                              Glitter and gold look the same to the untrained eye. Learn to see the difference.
+                            </p>
+
+                            <div className="mb-4">
+                              <div className="flex justify-between text-xs mb-1">
+                                <span>Progress</span>
+                                <span>{trial2?.stepsCompleted ?? 0} / 3 Steps</span>
+                              </div>
+                              <div className="stat-bar">
+                                <div
+                                  className="stat-bar-fill realm-44-bar"
+                                  style={{ width: `${((trial2?.stepsCompleted ?? 0) / 3) * 100}%` }}
+                                />
+                              </div>
+                            </div>
+
+                            {trial2?.isComplete ? (
+                              <div className="text-green-400 font-bold">✓ COMPLETE</div>
+                            ) : !trial2 ? (
+                              <button
+                                className="btn-primary"
+                                onClick={() =>
+                                  handleStartTrial('trial-discernment', 'Trial of Discernment')
+                                }
+                                disabled={isBusy}
+                              >
+                                BEGIN TRIAL →
+                              </button>
+                            ) : trial2.stepsCompleted === 0 && !hasVisited('gamblers-den') ? (
+                              <>
+                                <p className="text-sm text-muted italic mb-3">
+                                  📍 Visit <strong>The Gambler&apos;s Den</strong> below to unlock Step 1.
+                                </p>
+                                <button
+                                  className="btn-secondary"
+                                  onClick={() =>
+                                    locationsSectionRef.current?.scrollIntoView({
+                                      behavior: 'smooth',
+                                    })
+                                  }
+                                  disabled={isBusy}
+                                >
+                                  GO TO LOCATIONS ↓
+                                </button>
+                              </>
+                            ) : trial2Puzzle ? (
+                              <TrialPuzzle
+                                key={`trial-discernment-${trial2.stepsCompleted}`}
+                                puzzle={trial2Puzzle}
+                                onSolved={() => advanceTrialStep('trial-discernment')}
+                              />
+                            ) : null}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    className={`quest-card fade-in ${!trial2?.isComplete ? 'opacity-50' : ''}`}
+                    style={{ animationDelay: '0.4s' }}
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="text-4xl">♾️</div>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-display mb-2">Trial of Sacred Exchange</h3>
+
+                        {!trial2?.isComplete ? (
+                          <p className="text-sm text-muted italic">
+                            🔒 Complete Trial of Discernment to unlock
+                          </p>
+                        ) : (
+                          <>
+                            <p className="text-sm text-secondary mb-3">
+                              A sacred exchange leaves both sides more whole. Master the art of giving and receiving in perfect integrity.
+                            </p>
+
+                            <div className="mb-4">
+                              <div className="flex justify-between text-xs mb-1">
+                                <span>Progress</span>
+                                <span>{trial3?.stepsCompleted ?? 0} / 3 Steps</span>
+                              </div>
+                              <div className="stat-bar">
+                                <div
+                                  className="stat-bar-fill realm-44-bar"
+                                  style={{ width: `${((trial3?.stepsCompleted ?? 0) / 3) * 100}%` }}
+                                />
+                              </div>
+                            </div>
+
+                            {trial3?.isComplete ? (
+                              <div className="text-green-400 font-bold">✓ COMPLETE</div>
+                            ) : !trial3 ? (
+                              <button
+                                className="btn-primary"
+                                onClick={() =>
+                                  handleStartTrial(
+                                    'trial-sacred-exchange',
+                                    'Trial of Sacred Exchange'
+                                  )
+                                }
+                                disabled={isBusy}
+                              >
+                                BEGIN TRIAL →
+                              </button>
+                            ) : trial3Puzzle ? (
+                              <TrialPuzzle
+                                key={`trial-sacred-exchange-${trial3.stepsCompleted}`}
+                                puzzle={trial3Puzzle}
+                                onSolved={() => advanceTrialStep('trial-sacred-exchange')}
+                              />
+                            ) : null}
+                          </>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          <div ref={locationsSectionRef} id="locations-section" className="mb-8">
-            <h2 className="text-3xl font-display mb-6 flex items-center gap-3">
-              <span className="text-glow">📍</span> LOCATIONS{' '}
-              <span className="text-glow">📍</span>
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Merchant Quarter */}
-              <div
-                className={`realm-portal fade-in ${
-                  merchantQuarterUnlocked ? 'unlocked' : 'opacity-50'
-                }`}
-                style={{ animationDelay: '0.5s' }}
-              >
-                <div className="flex items-start gap-4">
-                  <div className="text-4xl">🏪</div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-display mb-2">The Merchant Quarter</h3>
-                    <p className="text-sm text-secondary mb-1">
-                      Endless stalls selling memories, skills, and impossible artefacts.
-                    </p>
+              <div ref={locationsSectionRef} id="locations-section" className="mb-8 fade-in">
+                <h2 className="text-3xl font-display mb-6 flex items-center gap-3">
+                  <span className="text-glow">📍</span> LOCATIONS <span className="text-glow">📍</span>
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div
+                    className={`realm-portal fade-in ${
+                      merchantQuarterUnlocked ? 'unlocked' : 'opacity-50'
+                    }`}
+                    style={{ animationDelay: '0.5s' }}
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="text-4xl">🏪</div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-display mb-2">The Merchant Quarter</h3>
+                        <p className="text-sm text-secondary mb-1">
+                          Endless stalls selling memories, skills, and impossible artefacts.
+                        </p>
 
-                    {!merchantQuarterUnlocked ? (
-                      <p className="text-xs text-muted italic mb-3">
-                        🔒 Begin Trial of the Barter of Truth to unlock this location
-                      </p>
-                    ) : !hasVisited('merchant-quarter') ? (
-                      <p className="text-xs text-glow mb-3">
-                        ⚠️ Required for Trial of the Barter of Truth — Step 1
-                      </p>
-                    ) : null}
+                        {!merchantQuarterUnlocked ? (
+                          <p className="text-xs text-muted italic mb-3">
+                            🔒 Begin Trial of the Barter of Truth to unlock this location
+                          </p>
+                        ) : !hasVisited('merchant-quarter') ? (
+                          <p className="text-xs text-glow mb-3">
+                            ⚠️ Required for Trial of the Barter of Truth — Step 1
+                          </p>
+                        ) : null}
 
-                    <button
-                      className="btn-secondary w-full"
-                      onClick={() =>
-                        handleLocationVisit('merchant-quarter', 'The Merchant Quarter')
-                      }
-                      disabled={
-                        !merchantQuarterUnlocked || hasVisited('merchant-quarter') || isBusy
-                      }
-                    >
-                      {hasVisited('merchant-quarter')
-                        ? '✅ EXPLORED'
-                        : !merchantQuarterUnlocked
-                          ? '🔒 LOCKED'
-                          : 'EXPLORE →'}
-                    </button>
+                        <button
+                          className="btn-secondary w-full"
+                          onClick={() =>
+                            handleLocationVisit('merchant-quarter', 'The Merchant Quarter')
+                          }
+                          disabled={
+                            !merchantQuarterUnlocked || hasVisited('merchant-quarter') || isBusy
+                          }
+                        >
+                          {hasVisited('merchant-quarter')
+                            ? '✅ EXPLORED'
+                            : !merchantQuarterUnlocked
+                            ? '🔒 LOCKED'
+                            : 'EXPLORE →'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    className={`realm-portal fade-in ${
+                      gamblersDenUnlocked ? 'unlocked' : 'opacity-50'
+                    }`}
+                    style={{ animationDelay: '0.6s' }}
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="text-4xl">🎲</div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-display mb-2">The Gambler&apos;s Den</h3>
+                        <p className="text-sm text-secondary mb-1">
+                          Where fortunes shift with every roll and fate bends to the bold.
+                        </p>
+
+                        {!gamblersDenUnlocked ? (
+                          <p className="text-xs text-muted italic mb-3">
+                            🔒 Begin Trial of Discernment to unlock this location
+                          </p>
+                        ) : !hasVisited('gamblers-den') ? (
+                          <p className="text-xs text-glow mb-3">
+                            ⚠️ Required for Trial of Discernment — Step 1
+                          </p>
+                        ) : null}
+
+                        <button
+                          className="btn-secondary w-full"
+                          onClick={() => handleLocationVisit('gamblers-den', "The Gambler's Den")}
+                          disabled={!gamblersDenUnlocked || hasVisited('gamblers-den') || isBusy}
+                        >
+                          {hasVisited('gamblers-den')
+                            ? '✅ EXPLORED'
+                            : !gamblersDenUnlocked
+                            ? '🔒 LOCKED'
+                            : 'EXPLORE →'}
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-
-              {/* Gambler's Den */}
-              <div
-                className={`realm-portal fade-in ${
-                  gamblersDenUnlocked ? 'unlocked' : 'opacity-50'
-                }`}
-                style={{ animationDelay: '0.6s' }}
-              >
-                <div className="flex items-start gap-4">
-                  <div className="text-4xl">🎲</div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-display mb-2">The Gambler&apos;s Den</h3>
-                    <p className="text-sm text-secondary mb-1">
-                      Where fortunes shift with every roll and fate bends to the bold.
-                    </p>
-
-                    {!gamblersDenUnlocked ? (
-                      <p className="text-xs text-muted italic mb-3">
-                        🔒 Begin Trial of Discernment to unlock this location
-                      </p>
-                    ) : !hasVisited('gamblers-den') ? (
-                      <p className="text-xs text-glow mb-3">
-                        ⚠️ Required for Trial of Discernment — Step 1
-                      </p>
-                    ) : null}
-
-                    <button
-                      className="btn-secondary w-full"
-                      onClick={() => handleLocationVisit('gamblers-den', "The Gambler's Den")}
-                      disabled={!gamblersDenUnlocked || hasVisited('gamblers-den') || isBusy}
-                    >
-                      {hasVisited('gamblers-den')
-                        ? '✅ EXPLORED'
-                        : !gamblersDenUnlocked
-                          ? '🔒 LOCKED'
-                          : 'EXPLORE →'}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="glass-card p-8 mb-8 fade-in" style={{ animationDelay: '0.7s' }}>
-            <h2 className="text-2xl font-display mb-4">🎵 REALM SOUNDTRACK</h2>
-            <p className="text-secondary mb-4">
-              The Astral Bazaar hums with mystic rhythms of ancient wisdom and cosmic commerce.
-            </p>
-            <RealmMusicPlayer
-              trackUrl="/music/realms/44/dogWatch.mp3"
-              trackTitle="Dog Watch"
-              artist="Cosmic 888"
-              realmName="Astral Bazaar"
-              realmColor="#9B59B6"
-              realmId={44}
-            />
-          </div>
+            </>
+          )}
 
           {completedTrialsCount >= 3 && (
             <div
-              className="glass-card p-8 mb-8 text-center fade-in"
-              style={{ border: '1px solid rgba(155,89,182,0.6)' }}
+              className="glass-card p-8 mb-8 text-center fade-in realm-44-complete-card"
+              style={{ border: '1px solid rgba(245,158,11,0.45)' }}
             >
-              <h3 className="text-2xl font-display mb-4" style={{ color: '#9B59B6' }}>
+              <h3 className="text-2xl font-display mb-4" style={{ color: '#F59E0B' }}>
                 🛍️ ASTRAL BAZAAR MASTERED 🛍️
               </h3>
               <p className="text-secondary mb-6 max-w-2xl mx-auto">
-                You have mastered Sacred Discernment and the art of the Cosmic Exchange.
-                The final realm awaits — InterSiddhi, where all paths converge at the Source.
+                You have mastered Sacred Discernment and the art of exchange. The final realm awaits — InterSiddhi, where all paths converge at the Source.
               </p>
               <Link href="/realms/0">
                 <button

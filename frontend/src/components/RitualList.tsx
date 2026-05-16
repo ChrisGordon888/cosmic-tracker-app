@@ -2,34 +2,57 @@
 
 import "@/styles/ritualList.css";
 
+export type Ritual = {
+    id: string;
+    title: string;
+    description: string;
+};
 
-export default function RitualList({ rituals, loading, error, onEdit, onDelete }) {
-  if (loading) return <p>Loading rituals...</p>;
-  if (error) return <p className="text-red-600">Error: {error.message}</p>;
-  if (!rituals || rituals.length === 0) {
-    return <p className="text-gray-500">You haven’t added any rituals yet.</p>;
-  }
+type RitualListProps = {
+    rituals?: Ritual[];
+    loading?: boolean;
+    error?: {
+        message?: string;
+    } | null;
+    onEdit?: (ritual: Ritual) => void;
+    onDelete?: (id: string) => void;
+};
 
-  return (
-    <ul className="space-y-4">
-      {rituals.map((ritual) => (
-        <li key={ritual.id} className="rituals-list-item">
-          <h2>{ritual.title}</h2>
-          <p>{ritual.description}</p>
-          <div className="flex gap-2">
-            <button
-              onClick={() => onEdit(ritual)}
-            >
-              Edit
-            </button>
-            <button
-              onClick={() => onDelete(ritual.id)}
-            >
-              Delete
-            </button>
-          </div>
-        </li>
-      ))}
-    </ul>
-  );
+export default function RitualList({
+    rituals,
+    loading,
+    error,
+    onEdit,
+    onDelete,
+}: RitualListProps) {
+    if (loading) return <p>Loading rituals...</p>;
+
+    if (error) {
+        return <p className="text-red-600">Error: {error.message}</p>;
+    }
+
+    if (!rituals || rituals.length === 0) {
+        return <p className="text-gray-500">You haven’t added any rituals yet.</p>;
+    }
+
+    return (
+        <ul className="space-y-4">
+            {rituals.map((ritual) => (
+                <li key={ritual.id} className="rituals-list-item">
+                    <h2>{ritual.title}</h2>
+                    <p>{ritual.description}</p>
+
+                    <div className="flex gap-2">
+                        <button onClick={() => onEdit?.(ritual)}>
+                            Edit
+                        </button>
+
+                        <button onClick={() => onDelete?.(ritual.id)}>
+                            Delete
+                        </button>
+                    </div>
+                </li>
+            ))}
+        </ul>
+    );
 }

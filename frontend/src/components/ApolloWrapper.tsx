@@ -1,17 +1,19 @@
-// src/components/ApolloWrapper.tsx
 "use client";
 
-import { ApolloClient, InMemoryCache, ApolloProvider, createHttpLink } from "@apollo/client";
+import {
+  ApolloClient,
+  InMemoryCache,
+  ApolloProvider,
+  createHttpLink,
+} from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 import { useSession } from "next-auth/react";
 
 const ApolloWrapper = ({ children }: { children: React.ReactNode }) => {
   const { data: session, status } = useSession();
 
-  // ✅ Wait for NextAuth session before mounting Apollo
   if (status === "loading") {
-    console.log("⏳ Waiting for session to be ready...");
-    return null; // 🔥 Prevents Apollo from mounting with undefined token
+    return null;
   }
 
   const httpLink = createHttpLink({
@@ -20,7 +22,7 @@ const ApolloWrapper = ({ children }: { children: React.ReactNode }) => {
 
   const authLink = setContext((_, { headers }) => {
     const token = session?.accessToken;
-    console.log("🚀 Apollo sending token:", token);
+
     return {
       headers: {
         ...headers,

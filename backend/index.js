@@ -8,6 +8,7 @@
  */
 
 require("dotenv").config();
+
 const express = require("express");
 const { ApolloServer } = require("apollo-server-express");
 const mongoose = require("mongoose");
@@ -19,38 +20,55 @@ const resolvers = require("./resolvers");
 
 async function startServer() {
     const app = express();
-    app.use(cors());
+
+    const allowedOrigins = [
+        "http://localhost:3000",
+        process.env.FRONTEND_URL,
+    ].filter(Boolean);
+
+    app.use(
+        cors({
+            origin: allowedOrigins,
+            credentials: true,
+        })
+    );
+
+    try {
+        await mongoose.connect(process.env.MONGODB_URI);
+        console.log("✅ Connected to MongoDB");
+    } catch (error) {
+        console.error("❌ MongoDB connection error:", error);
+        process.exit(1);
+    }
 
     const server = new ApolloServer({
         typeDefs,
         resolvers,
         context: async ({ req }) => {
             const authHeader = req.headers.authorization || "";
-            console.log("🚀 [Context] Authorization header received:", authHeader);
 
             const token = authHeader.startsWith("Bearer ")
                 ? authHeader.slice(7).trim()
                 : null;
 
             if (!token) {
-                console.log("🚫 No JWT token received or malformed Authorization header");
                 return { user: null };
             }
 
             try {
                 const decoded = jwt.verify(token, process.env.NEXTAUTH_SECRET);
-                console.log("✅ JWT verified successfully in context:", decoded);
 
-                // 🆕 FIND OR CREATE USER IN DATABASE
                 const User = require("./models/User");
 
                 let user = await User.findOne({ email: decoded.email });
 
                 if (!user) {
-                    console.log("🆕 Creating new user for:", decoded.email);
                     user = await User.create({
                         email: decoded.email,
-                        name: decoded.name || decoded.email?.split('@')[0] || "Cosmic Traveler",
+                        name:
+                            decoded.name ||
+                            decoded.email?.split("@")[0] ||
+                            "Cosmic Traveler",
                         image: decoded.picture || null,
                         level: 1,
                         xp: 0,
@@ -62,18 +80,15 @@ async function startServer() {
                         musicStats: {
                             tracksListened: [],
                             totalListeningTime: 0,
-                            totalTracksUnlocked: 6
+                            totalTracksUnlocked: 6,
                         },
                         streaks: {
                             currentStreak: 0,
                             longestStreak: 0,
                             lastLoginDate: new Date(),
-                            totalLogins: 1
-                        }
+                            totalLogins: 1,
+                        },
                     });
-                    console.log("✅ New user created:", user.email);
-                } else {
-                    console.log("✅ Existing user found:", user.email);
                 }
 
                 return {
@@ -83,28 +98,19 @@ async function startServer() {
                     },
                 };
             } catch (error) {
-                console.error("❌ JWT verification failed in context:", error.message);
+                console.error("❌ JWT verification failed:", error.message);
                 return { user: null };
             }
         },
     });
 
     await server.start();
-    server.applyMiddleware({ app });
-
-    try {
-        await mongoose.connect(process.env.MONGODB_URI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        });
-        console.log("✅ Connected to MongoDB");
-    } catch (error) {
-        console.error("❌ MongoDB connection error:", error);
-    }
+    server.applyMiddleware({ app, path: "/graphql" });
 
     const PORT = process.env.PORT || 4000;
+
     app.listen(PORT, () => {
-        console.log(`🚀 Server ready at http://localhost:${PORT}${server.graphqlPath}`);
+        console.log(`🚀 Server ready at http://localhost:${PORT}/graphql`);
     });
 }
 

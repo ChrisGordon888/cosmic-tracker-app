@@ -8,19 +8,11 @@ import {
   DELETE_RITUAL,
 } from "@/graphql/rituals";
 
-// ✅ Component imports
 import CosmicBackground from "@/components/CosmicBackground";
-import RitualList from "@/components/RitualList";
+import RitualList, { type Ritual } from "@/components/RitualList";
 import AddRitualForm from "@/components/AddRitualForm";
 
 import "@/styles/ritualsPage.css";
-
-// ✅ Define a type for ritual entries
-interface RitualEntry {
-  id: string;
-  title: string;
-  description: string;
-}
 
 export default function RitualsPage() {
   const { data, loading, error, refetch } = useQuery(ALL_RITUALS);
@@ -47,12 +39,13 @@ export default function RitualsPage() {
     }
   };
 
-  const handleEdit = async (ritual: RitualEntry) => {
+  const handleEdit = async (ritual: Ritual) => {
     const updatedTitle = prompt("Edit ritual title:", ritual.title);
     const updatedDescription = prompt(
       "Edit ritual description:",
       ritual.description
     );
+
     if (updatedTitle !== null && updatedDescription !== null) {
       try {
         await updateRitual({
@@ -82,7 +75,7 @@ export default function RitualsPage() {
 
   return (
     <main className="rituals-page min-h-screen flex flex-col items-center justify-start p-6 relative overflow-hidden">
-      <CosmicBackground /> {/* 🔮 Background component */}
+      <CosmicBackground />
 
       <h1 className="text-3xl font-bold mb-4">📖 My Ritual Library</h1>
       <p className="mb-8 text-gray-600 dark:text-gray-300">

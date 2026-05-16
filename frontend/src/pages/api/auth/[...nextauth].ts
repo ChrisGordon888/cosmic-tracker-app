@@ -2,6 +2,12 @@ import NextAuth from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
 import jwt from "jsonwebtoken";
 
+const nextAuthSecret = process.env.NEXTAUTH_SECRET;
+
+if (!nextAuthSecret) {
+  throw new Error("NEXTAUTH_SECRET is not defined");
+}
+
 export default NextAuth({
   providers: [
     GitHubProvider({
@@ -9,35 +15,45 @@ export default NextAuth({
       clientSecret: process.env.GITHUB_SECRET!,
     }),
   ],
-  secret: process.env.NEXTAUTH_SECRET,
+
+  secret: nextAuthSecret,
+
   session: {
     strategy: "jwt",
-    maxAge: 24 * 60 * 60,       // 24 hours for the session itself
+    maxAge: 24 * 60 * 60,
   },
+
   jwt: {
-    maxAge: 24 * 60 * 60,       // 24 hours for the token lifetime
+    maxAge: 24 * 60 * 60,
   },
+
   callbacks: {
     async jwt({ token }) {
-      // ✅ Only sign if we're issuing a new token (first login or refresh)
       if (!token.accessToken) {
         const customJwt = jwt.sign(
           {
             sub: token.sub,
             email: token.email,
+            name: token.name,
+            picture: token.picture,
           },
-          process.env.NEXTAUTH_SECRET,
+          nextAuthSecret,
           { expiresIn: "24h" }
         );
+
         token.accessToken = customJwt;
       }
+
       return token;
     },
+
     async session({ session, token }) {
-      if (session?.user) {
+      if (session.user) {
         session.user.id = token.sub;
       }
-      session.accessToken = token.accessToken; // ✅ Use our custom signed JWT
+
+      session.accessToken = token.accessToken;
+
       return session;
     },
   },

@@ -1,21 +1,276 @@
 /* ===================================
    🌪️ REALM 303 - FRACTURED FRONTIER
-   Custom styling for this realm
+   Premium rupture / pressure / cyber-fracture pass
    =================================== */
 
-/* Realm 303 specific color overrides */
 :root {
-  --realm-303-primary: #FF0040;
-  --realm-303-secondary: #00FFFF;
-  --realm-303-accent: #9D00FF;
+  --realm-303-primary: rgba(255, 77, 109, 0.95);
+  --realm-303-primary-soft: rgba(255, 77, 109, 0.18);
+  --realm-303-primary-dim: rgba(255, 77, 109, 0.08);
+
+  --realm-303-secondary: rgba(0, 220, 255, 0.92);
+  --realm-303-secondary-soft: rgba(0, 220, 255, 0.14);
+
+  --realm-303-violet: rgba(157, 0, 255, 0.88);
+  --realm-303-violet-soft: rgba(157, 0, 255, 0.14);
+
+  --realm-303-silver: rgba(236, 240, 245, 0.95);
+  --realm-303-silver-soft: rgba(210, 217, 227, 0.72);
+  --realm-303-silver-dim: rgba(186, 194, 205, 0.56);
+
+  --realm-303-panel-bg:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.07),
+      rgba(226, 220, 236, 0.025) 38%,
+      rgba(14, 14, 22, 0.60)
+    );
+
+  --realm-303-border: rgba(226, 230, 236, 0.16);
+  --realm-303-border-strong: rgba(238, 242, 246, 0.26);
 }
 
-/* Realm 303 heading colors */
+.realm-303-shell {
+  color: var(--realm-303-silver);
+}
+
+.realm-303-container {
+  position: relative;
+  z-index: 1;
+}
+
+.realm-303-hero {
+  position: relative;
+}
+
 .realm-303-title {
   color: var(--realm-303-primary);
+  text-shadow:
+    0 0 10px rgba(255,255,255,0.10),
+    0 0 18px rgba(255, 77, 109, 0.16),
+    0 0 28px rgba(0, 220, 255, 0.08);
 }
 
-/* Glitch effect for realm 303 */
+.realm-303-glow {
+  color: var(--realm-303-primary);
+  text-shadow:
+    0 0 10px rgba(255, 77, 109, 0.14),
+    0 0 18px rgba(0, 220, 255, 0.08);
+}
+
+.realm-303-shell .glass-card {
+  background: var(--realm-303-panel-bg);
+  border: 1px solid var(--realm-303-border);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 10px 28px rgba(0,0,0,0.18);
+  backdrop-filter: blur(14px) saturate(120%);
+  -webkit-backdrop-filter: blur(14px) saturate(120%);
+}
+
+.realm-303-shell .glass-card:hover {
+  border-color: var(--realm-303-border-strong);
+}
+
+.realm-303-shell .quest-card {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,0.045),
+      rgba(226,220,236,0.022) 40%,
+      rgba(14,14,22,0.54)
+    );
+  border: 1px solid rgba(226, 230, 236, 0.10);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    0 8px 20px rgba(0,0,0,0.14);
+}
+
+.realm-303-shell .text-secondary {
+  color: rgba(228, 233, 241, 0.84);
+}
+
+.realm-303-shell .text-muted {
+  color: rgba(188, 195, 205, 0.66);
+}
+
+.realm-303-shell .text-primary,
+.realm-303-shell .text-stats,
+.realm-303-shell .font-stats {
+  color: var(--realm-303-silver);
+}
+
+.realm-303-shell .text-glow {
+  color: var(--realm-303-silver);
+  text-shadow:
+    0 0 10px rgba(255,255,255,0.08),
+    0 0 16px rgba(255, 77, 109, 0.08);
+}
+
+.realm-303-shell .level-badge {
+  min-width: 86px;
+  min-height: 86px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.25), rgba(255,255,255,0.05) 34%, rgba(14,14,22,0.56) 78%),
+    linear-gradient(145deg, rgba(235,239,244,0.16), rgba(255,77,109,0.10), rgba(14,14,22,0.46));
+  border: 1px solid rgba(232, 236, 242, 0.24);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.16),
+    0 8px 24px rgba(0,0,0,0.22),
+    0 0 14px rgba(255,77,109,0.08);
+  color: var(--realm-303-silver);
+  text-shadow:
+    0 0 8px rgba(255,255,255,0.08),
+    0 0 12px rgba(255,77,109,0.06);
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+}
+
+.realm-303-shell .stat-bar {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.05), rgba(0,0,0,0.26));
+  border: 1px solid rgba(226, 230, 236, 0.10);
+  box-shadow: inset 0 1px 6px rgba(0,0,0,0.22);
+}
+
+.realm-303-shell .stat-bar-fill {
+  box-shadow:
+    0 0 12px rgba(255, 77, 109, 0.12),
+    0 0 8px rgba(0, 220, 255, 0.06);
+}
+
+.realm-303-bar {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(255, 77, 109, 0.95),
+      rgba(0, 220, 255, 0.92),
+      rgba(157, 0, 255, 0.84)
+    );
+  box-shadow:
+    0 0 14px rgba(255, 77, 109, 0.12),
+    0 0 10px rgba(0, 220, 255, 0.08);
+}
+
+.realm-303-overview {
+  background: var(--realm-303-panel-bg);
+  border: 1px solid var(--realm-303-border);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.10),
+    0 12px 34px rgba(0,0,0,0.22),
+    0 0 18px rgba(255, 77, 109, 0.05);
+  backdrop-filter: blur(16px) saturate(125%);
+  -webkit-backdrop-filter: blur(16px) saturate(125%);
+}
+
+.realm-303-overview:hover {
+  border-color: var(--realm-303-border-strong);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.14),
+    0 14px 38px rgba(0,0,0,0.24),
+    0 0 20px rgba(255, 77, 109, 0.06);
+}
+
+.realm-303-progression-toggle {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,0.05),
+      rgba(226,220,236,0.022) 38%,
+      rgba(14,14,22,0.56)
+    );
+  border: 1px solid rgba(226, 230, 236, 0.14);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    0 8px 20px rgba(0,0,0,0.16);
+}
+
+.realm-303-complete-card {
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 77, 109, 0.09),
+      rgba(255,255,255,0.03) 36%,
+      rgba(14,14,22,0.54)
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 14px 34px rgba(0,0,0,0.22),
+    0 0 18px rgba(255, 77, 109, 0.05);
+}
+
+.realm-303-shell .realm-portal {
+  border: 1px solid rgba(226, 230, 236, 0.14);
+  background:
+    linear-gradient(
+      150deg,
+      rgba(255,255,255,0.05),
+      rgba(226,220,236,0.022) 35%,
+      rgba(14,14,22,0.52)
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 10px 24px rgba(0,0,0,0.16);
+}
+
+.realm-303-shell .realm-portal:hover {
+  border-color: rgba(238, 242, 246, 0.22);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.12),
+    0 14px 30px rgba(0,0,0,0.20),
+    0 0 14px rgba(255, 77, 109, 0.05);
+}
+
+.realm-303-shell .btn-primary {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(238, 243, 250, 0.15),
+      rgba(255, 77, 109, 0.11) 40%,
+      rgba(0, 220, 255, 0.10) 100%
+    );
+  border: 1px solid rgba(232, 236, 242, 0.22);
+  color: var(--realm-303-silver);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.16),
+    0 8px 22px rgba(0,0,0,0.18);
+}
+
+.realm-303-shell .btn-primary:hover {
+  border-color: rgba(255, 77, 109, 0.28);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.20),
+    0 10px 26px rgba(0,0,0,0.22),
+    0 0 14px rgba(255, 77, 109, 0.08);
+}
+
+.realm-303-shell .btn-secondary {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,0.05),
+      rgba(226,220,236,0.022) 44%,
+      rgba(14,14,22,0.46)
+    );
+  border: 1px solid rgba(226, 230, 236, 0.14);
+  color: rgba(233, 239, 246, 0.92);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.10),
+    0 8px 18px rgba(0,0,0,0.16);
+}
+
+.realm-303-shell .btn-secondary:hover {
+  border-color: rgba(0, 220, 255, 0.22);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.14),
+    0 10px 20px rgba(0,0,0,0.20),
+    0 0 12px rgba(255, 77, 109, 0.07);
+}
+
 .glitch-effect {
   position: relative;
 }
@@ -24,47 +279,54 @@
 .glitch-effect::after {
   content: attr(data-text);
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0.8;
+  inset: 0;
+  opacity: 0.55;
 }
 
 .glitch-effect::before {
-  animation: glitch-1 2s infinite;
-  color: #FF0040;
+  animation: glitch-1 2.4s infinite;
+  color: rgba(255, 77, 109, 0.72);
   z-index: -1;
 }
 
 .glitch-effect::after {
-  animation: glitch-2 2s infinite;
-  color: #00FFFF;
+  animation: glitch-2 2.4s infinite;
+  color: rgba(0, 220, 255, 0.68);
   z-index: -2;
 }
 
 @keyframes glitch-1 {
   0%, 100% { transform: translate(0); }
-  20% { transform: translate(-2px, 2px); }
-  40% { transform: translate(-2px, -2px); }
-  60% { transform: translate(2px, 2px); }
-  80% { transform: translate(2px, -2px); }
+  20% { transform: translate(-1px, 1px); }
+  40% { transform: translate(-1px, -1px); }
+  60% { transform: translate(1px, 1px); }
+  80% { transform: translate(1px, -1px); }
 }
 
 @keyframes glitch-2 {
   0%, 100% { transform: translate(0); }
-  20% { transform: translate(2px, -2px); }
-  40% { transform: translate(2px, 2px); }
-  60% { transform: translate(-2px, -2px); }
-  80% { transform: translate(-2px, 2px); }
+  20% { transform: translate(1px, -1px); }
+  40% { transform: translate(1px, 1px); }
+  60% { transform: translate(-1px, -1px); }
+  80% { transform: translate(-1px, 1px); }
 }
 
-/* Trial cards specific styling */
 .trial-card-303 {
   border-left-color: var(--realm-303-primary);
 }
 
 .trial-card-303:hover {
   border-left-color: var(--realm-303-secondary);
-  box-shadow: 0 4px 20px rgba(255, 0, 64, 0.3);
+  box-shadow: 0 4px 20px rgba(255, 77, 109, 0.22);
+}
+
+@media (max-width: 768px) {
+  .realm-303-shell .level-badge {
+    min-width: 76px;
+    min-height: 76px;
+  }
+
+  .realm-303-overview {
+    padding: 1.1rem;
+  }
 }

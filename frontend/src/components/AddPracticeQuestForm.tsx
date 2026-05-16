@@ -8,6 +8,10 @@ import { ADD_PRACTICE_QUEST, GET_DAILY_QUESTS } from "@/graphql/practiceQuest";
 import dayjs from "dayjs";
 import "@/styles/addPracticeQuestForm.css";
 
+type Ritual = {
+  id: string;
+  title: string;
+};
 
 export default function AddPracticeQuestForm() {
     const { data: session } = useSession();
