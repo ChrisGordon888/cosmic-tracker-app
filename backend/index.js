@@ -25,7 +25,36 @@ const allowedOrigins = [
     process.env.FRONTEND_URL,
 ].filter(Boolean);
 
+function logStartupConfig() {
+    const mongoUri = process.env.MONGODB_URI || "";
+
+    console.log("🔎 Startup config check:");
+    console.log("NODE_ENV:", process.env.NODE_ENV);
+    console.log("Node version:", process.version);
+    console.log("FRONTEND_URL exists:", Boolean(process.env.FRONTEND_URL));
+    console.log("NEXTAUTH_SECRET exists:", Boolean(process.env.NEXTAUTH_SECRET));
+    console.log("MONGODB_URI exists:", Boolean(process.env.MONGODB_URI));
+    console.log(
+        "MONGODB_URI starts with mongodb+srv:",
+        mongoUri.startsWith("mongodb+srv://")
+    );
+
+    if (mongoUri.includes("@")) {
+        console.log("Mongo target:", mongoUri.split("@")[1]);
+    }
+}
+
 async function startServer() {
+    logStartupConfig();
+
+    if (!process.env.MONGODB_URI) {
+        throw new Error("MONGODB_URI is missing");
+    }
+
+    if (!process.env.NEXTAUTH_SECRET) {
+        throw new Error("NEXTAUTH_SECRET is missing");
+    }
+
     const app = express();
 
     app.use(
@@ -35,11 +64,20 @@ async function startServer() {
         })
     );
 
+    app.get("/", (req, res) => {
+        res.send("Cosmic Tracker API is running.");
+    });
+
+    app.get("/health", (req, res) => {
+        res.json({ status: "ok" });
+    });
+
     try {
         await mongoose.connect(process.env.MONGODB_URI);
         console.log("✅ Connected to MongoDB");
     } catch (error) {
-        console.error("❌ MongoDB connection error:", error);
+        console.error("❌ MongoDB connection error message:", error.message);
+        console.error("❌ MongoDB connection full error:", error);
         process.exit(1);
     }
 
