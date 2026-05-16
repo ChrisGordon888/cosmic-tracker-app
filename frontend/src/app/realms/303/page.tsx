@@ -316,8 +316,8 @@ export default function Realm303() {
                                 <h2 className="text-2xl font-display mb-3">⚡ Realm Overview</h2>
                                 <p className="text-secondary mb-4">
                                     The Fractured Frontier is the realm of rupture, creation under pressure,
-                                    and disciplined transformation. It is where disorder becomes material and
-                                    chaos is shaped into force.
+                                    and disciplined transformation. It is where disorder becomes material,
+                                    chaos is shaped into force, and every fracture becomes a doorway.
                                 </p>
 
                                 <div className="mb-4">
