@@ -26,6 +26,7 @@ interface RealmOrbitCardProps {
   realmRoute?: string;
   isCurrentRealm?: boolean;
   isRecommended?: boolean;
+  compactOnMobile?: boolean;
 }
 
 function getResponsiveOrbitSize() {
@@ -76,10 +77,12 @@ export default function RealmOrbitCard({
   realmRoute,
   isCurrentRealm = false,
   isRecommended = false,
+  compactOnMobile = false,
 }: RealmOrbitCardProps) {
   const visibleTracks = useMemo(() => tracks.slice(0, 8), [tracks]);
 
   const [cardSize, setCardSize] = useState(360);
+  const [isMobile, setIsMobile] = useState(false);
   const [selectedTrackId, setSelectedTrackId] = useState<string | null>(
     visibleTracks[0]?.id ?? null
   );
@@ -87,6 +90,7 @@ export default function RealmOrbitCard({
   useEffect(() => {
     const updateSize = () => {
       setCardSize(getResponsiveOrbitSize());
+      setIsMobile(window.innerWidth <= 768);
     };
 
     updateSize();
@@ -148,6 +152,139 @@ export default function RealmOrbitCard({
   const handleSelectOnly = (track: OrbitTrack) => {
     setSelectedTrackId(track.id);
   };
+
+  if (compactOnMobile && isMobile) {
+    return (
+      <div
+        className="realm-orbit-card nexus-compact-orbit rounded-3xl border p-4 relative overflow-hidden"
+        style={{
+          borderColor: `${realmColor}44`,
+          background: `linear-gradient(145deg, ${realmColor}12, rgba(255,255,255,0.035), rgba(8,10,18,0.72))`,
+          boxShadow: `0 8px 28px ${realmColor}14`,
+        }}
+      >
+        <div className="flex items-start gap-4">
+          <button
+            onClick={() => selectedTrack && handleTrackClick(selectedTrack)}
+            className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shrink-0"
+            style={{
+              background: `radial-gradient(circle at 35% 35%, ${realmColor}66, ${realmColor}22)`,
+              border: `1px solid ${realmColor}55`,
+              boxShadow: `0 0 18px ${realmColor}22`,
+            }}
+            aria-label={selectedTrack ? `Play ${selectedTrack.trackTitle}` : `Play ${realmName}`}
+          >
+            {selectedIsCurrent && isPlaying ? '⏸' : realmIcon}
+          </button>
+
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <p className="text-[10px] uppercase tracking-[0.18em] text-white/50">
+                Realm Soundtrack
+              </p>
+
+              {isCurrentRealm && (
+                <span className="px-2 py-0.5 rounded-full text-[9px] uppercase tracking-[0.12em] bg-white/5 border border-white/10 text-white/70">
+                  Current
+                </span>
+              )}
+
+              {isRecommended && (
+                <span className="px-2 py-0.5 rounded-full text-[9px] uppercase tracking-[0.12em] bg-yellow-300/10 border border-yellow-300/20 text-yellow-200/90">
+                  Suggested
+                </span>
+              )}
+            </div>
+
+            <h3
+              className="font-display text-lg truncate mb-1"
+              style={{ color: realmColor }}
+            >
+              {realmName}
+            </h3>
+
+            {selectedTrack ? (
+              <>
+                <p className="text-sm text-white/90 truncate">
+                  {selectedTrack.trackTitle}
+                </p>
+                <p className="text-xs text-white/55 truncate mb-3">
+                  {selectedTrack.artist} • {selectedTrack.realmName}
+                </p>
+              </>
+            ) : (
+              <p className="text-xs text-white/55 mb-3">No track selected yet.</p>
+            )}
+
+            <div className="mb-3">
+              <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.14em] text-white/50 mb-1.5">
+                <span>Progress</span>
+                <span>{clampedProgress}%</span>
+              </div>
+
+              <div className="h-2 rounded-full overflow-hidden bg-white/10 border border-white/10">
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${clampedProgress}%`,
+                    background: `linear-gradient(90deg, ${realmColor}88, ${realmColor})`,
+                    boxShadow: `0 0 12px ${realmColor}33`,
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <button
+                onClick={() => selectedTrack && handleTrackClick(selectedTrack)}
+                className="btn-secondary"
+              >
+                {selectedIsCurrent && isPlaying
+                  ? 'Pause'
+                  : selectedIsCurrent
+                    ? 'Resume'
+                    : 'Play'}
+              </button>
+
+              {realmRoute && isUnlocked && (
+                <Link href={realmRoute}>
+                  <button className="btn-primary">Enter →</button>
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {visibleTracks.length > 1 && (
+          <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
+            {visibleTracks.map((track) => {
+              const isSelected = selectedTrackId === track.id;
+              const isCurrent = currentTrackId === track.id;
+
+              return (
+                <button
+                  key={track.id}
+                  onClick={() => {
+                    setSelectedTrackId(track.id);
+                    onPlayTrack(track);
+                  }}
+                  className="shrink-0 px-3 py-2 rounded-full text-xs border transition-all"
+                  style={{
+                    borderColor: isSelected || isCurrent ? `${realmColor}88` : `${realmColor}22`,
+                    background: isSelected || isCurrent ? `${realmColor}22` : 'rgba(255,255,255,0.04)',
+                    color: isSelected || isCurrent ? realmColor : 'rgba(255,255,255,0.68)',
+                  }}
+                >
+                  {isCurrent && isPlaying ? '⏸ ' : '♪ '}
+                  {track.trackTitle}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div
@@ -326,8 +463,8 @@ export default function RealmOrbitCard({
                     isCurrent
                       ? `${realmColor}ee`
                       : isSelected
-                      ? `${realmColor}99`
-                      : `${realmColor}4d`
+                        ? `${realmColor}99`
+                        : `${realmColor}4d`
                   }
                   strokeWidth={isCurrent ? 2.6 : isSelected ? 1.9 : 1.2}
                   strokeLinecap="round"
@@ -376,20 +513,20 @@ export default function RealmOrbitCard({
                   background: isCurrent
                     ? `radial-gradient(circle, ${realmColor}, ${realmColor}dd)`
                     : isSelected
-                    ? `radial-gradient(circle, ${realmColor}99, ${realmColor}44)`
-                    : `radial-gradient(circle, ${realmColor}74, ${realmColor}30)`,
+                      ? `radial-gradient(circle, ${realmColor}99, ${realmColor}44)`
+                      : `radial-gradient(circle, ${realmColor}74, ${realmColor}30)`,
                   border: `1px solid ${
                     isCurrent
                       ? `${realmColor}ee`
                       : isSelected
-                      ? `${realmColor}aa`
-                      : `${realmColor}55`
+                        ? `${realmColor}aa`
+                        : `${realmColor}55`
                   }`,
                   boxShadow: isCurrent
                     ? `0 0 24px ${realmColor}88`
                     : isSelected
-                    ? `0 0 18px ${realmColor}55`
-                    : `0 0 12px ${realmColor}22`,
+                      ? `0 0 18px ${realmColor}55`
+                      : `0 0 12px ${realmColor}22`,
                   animationDelay: isCurrent ? '0s' : track.driftDelay,
                 }}
                 title={track.trackTitle}
@@ -464,8 +601,8 @@ export default function RealmOrbitCard({
                     {selectedIsCurrent && isPlaying
                       ? 'Now resonating in this realm.'
                       : selectedIsCurrent
-                      ? 'Paused in orbit. Resume whenever you are ready.'
-                      : 'Selected in orbit. Play this track to enter through its energy.'}
+                        ? 'Paused in orbit. Resume whenever you are ready.'
+                        : 'Selected in orbit. Play this track to enter through its energy.'}
                   </p>
                 </div>
 
@@ -477,8 +614,8 @@ export default function RealmOrbitCard({
                     {selectedIsCurrent && isPlaying
                       ? 'Pause'
                       : selectedIsCurrent
-                      ? 'Resume'
-                      : 'Play Selected'}
+                        ? 'Resume'
+                        : 'Play Selected'}
                   </button>
                 </div>
               </div>

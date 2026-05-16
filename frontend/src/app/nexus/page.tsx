@@ -494,6 +494,7 @@ export default function CosmicNexusHub() {
                                         realmRoute={`/realms/${realmGroup.id}`}
                                         isCurrentRealm={parseInt(realmGroup.id) === user?.currentRealm}
                                         isRecommended={guidanceRealmId !== null && parseInt(realmGroup.id) === guidanceRealmId}
+                                        compactOnMobile
                                     />
                                 ))}
                             </div>
