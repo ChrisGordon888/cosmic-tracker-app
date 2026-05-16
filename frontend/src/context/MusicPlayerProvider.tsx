@@ -9,6 +9,8 @@ import React, {
   useRef,
   useState,
 } from 'react';
+import { useMutation } from '@apollo/client';
+import { LOG_MUSIC_LISTEN } from '@/graphql/realms';
 
 export interface MusicTrack {
   id: string;
@@ -53,6 +55,11 @@ export function MusicPlayerProvider({
   const [volumeState, setVolumeState] = useState(0.7);
   const [isExpanded, setIsExpanded] = useState(false);
 
+  const [logMusicListen] = useMutation(LOG_MUSIC_LISTEN);
+
+  // Prevent duplicate listen logs for the same track during a single page session.
+  const loggedListenIdsRef = useRef<Set<string>>(new Set());
+
   useEffect(() => {
     const audio = new Audio();
     audio.preload = 'metadata';
@@ -60,13 +67,16 @@ export function MusicPlayerProvider({
     audioRef.current = audio;
 
     const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
+
     const handleLoadedMetadata = () =>
       setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
+
     const handleEnded = () => {
       setIsPlaying(false);
       setCurrentTime(0);
       audio.currentTime = 0;
     };
+
     const handlePause = () => setIsPlaying(false);
     const handlePlay = () => setIsPlaying(true);
 
@@ -91,6 +101,43 @@ export function MusicPlayerProvider({
       audioRef.current.volume = volumeState;
     }
   }, [volumeState]);
+
+  useEffect(() => {
+    if (!currentTrack || !isPlaying || currentTime < 1) return;
+
+    const listenProgress = duration > 0 ? currentTime / duration : 0;
+    const hasMetListenThreshold = currentTime >= 30 || listenProgress >= 0.8;
+    const listenKey = `${currentTrack.id}:${currentTrack.realmId}`;
+
+    if (!hasMetListenThreshold || loggedListenIdsRef.current.has(listenKey)) {
+      return;
+    }
+
+    loggedListenIdsRef.current.add(listenKey);
+
+    logMusicListen({
+      variables: {
+        realmId: currentTrack.realmId,
+        trackTitle: currentTrack.trackTitle,
+        duration: Math.round(duration || currentTime),
+      },
+    })
+      .then((result) => {
+        window.dispatchEvent(
+          new CustomEvent('cosmic:music-listen-logged', {
+            detail: {
+              realmId: currentTrack.realmId,
+              trackTitle: currentTrack.trackTitle,
+              message: result.data?.logMusicListen?.message,
+            },
+          })
+        );
+      })
+      .catch((error) => {
+        loggedListenIdsRef.current.delete(listenKey);
+        console.error('Failed to log music listen:', error);
+      });
+  }, [currentTrack, isPlaying, currentTime, duration, logMusicListen]);
 
   const playTrack = useCallback(
     async (track: MusicTrack) => {
@@ -175,6 +222,7 @@ export function MusicPlayerProvider({
   const pause = useCallback(() => {
     const audio = audioRef.current;
     if (!audio) return;
+
     audio.pause();
     setIsPlaying(false);
   }, []);
@@ -183,6 +231,7 @@ export function MusicPlayerProvider({
     (time: number) => {
       const audio = audioRef.current;
       if (!audio) return;
+
       audio.currentTime = Math.max(0, Math.min(time, duration || 0));
       setCurrentTime(audio.currentTime);
     },
@@ -241,8 +290,10 @@ export function MusicPlayerProvider({
 
 export function useMusicPlayerContext() {
   const context = useContext(MusicPlayerContext);
+
   if (!context) {
     throw new Error('useMusicPlayerContext must be used within MusicPlayerProvider');
   }
+
   return context;
 }
