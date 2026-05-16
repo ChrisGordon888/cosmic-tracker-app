@@ -97,6 +97,7 @@ async function startServer() {
     const server = new ApolloServer({
         typeDefs,
         resolvers,
+        cache: "bounded",
         context: async ({ req }) => {
             const authHeader = req.headers.authorization || "";
 
