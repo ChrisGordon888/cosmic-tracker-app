@@ -18,6 +18,17 @@ const jwt = require("jsonwebtoken");
 const typeDefs = require("./schemas");
 const resolvers = require("./resolvers");
 
+// Catch hidden startup/runtime crashes so Render prints the real reason.
+process.on("uncaughtException", (error) => {
+    console.error("❌ Uncaught Exception:", error);
+    process.exit(1);
+});
+
+process.on("unhandledRejection", (reason) => {
+    console.error("❌ Unhandled Rejection:", reason);
+    process.exit(1);
+});
+
 const allowedOrigins = [
     "http://localhost:3000",
     "https://studio.apollographql.com",
@@ -73,10 +84,12 @@ async function startServer() {
     });
 
     try {
+        console.log("🔌 Attempting MongoDB connection...");
         await mongoose.connect(process.env.MONGODB_URI);
         console.log("✅ Connected to MongoDB");
     } catch (error) {
         console.error("❌ MongoDB connection error message:", error.message);
+        console.error("❌ MongoDB connection stack:", error.stack);
         console.error("❌ MongoDB connection full error:", error);
         process.exit(1);
     }
@@ -153,4 +166,7 @@ async function startServer() {
     });
 }
 
-startServer();
+startServer().catch((error) => {
+    console.error("❌ startServer failed:", error);
+    process.exit(1);
+});
