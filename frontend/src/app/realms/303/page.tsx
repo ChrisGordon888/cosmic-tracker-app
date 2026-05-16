@@ -72,9 +72,11 @@ export default function Realm303() {
 
   const realm303Trials =
     user?.completedTrials?.filter((t: any) => Number(t.realmId) === REALM_ID) ?? [];
+
   const completedTrialsCount = realm303Trials.filter(
     (t: any) => t.isComplete || (t.stepsCompleted ?? 0) >= 3
   ).length;
+
   const realmProgress = Math.floor((completedTrialsCount / 3) * 100);
 
   const getTrial = (trialId: string) =>
@@ -89,7 +91,8 @@ export default function Realm303() {
   const hasListenedToTrack = (realmId: number, trackTitle: string) => {
     return (
       user?.musicStats?.tracksListened?.some(
-        (t: any) => Number(t.realmId) === Number(realmId) && t.trackTitle === trackTitle
+        (t: any) =>
+          Number(t.realmId) === Number(realmId) && t.trackTitle === trackTitle
       ) || false
     );
   };
@@ -137,26 +140,38 @@ export default function Realm303() {
   }, [completedTrialsCount, user, unlockRealm, refetch, isVeilUnlocked]);
 
   const ensureTrialStarted = async (trialId: string, trialName: string) => {
-    await startTrial({
-      variables: { realmId: REALM_ID, trialId, trialName },
-    });
-    await refetch();
+    try {
+      await startTrial({
+        variables: { realmId: REALM_ID, trialId, trialName },
+      });
+
+      await refetch();
+      alert(`${trialName} started.\nYour first realm path is now open.`);
+    } catch (error: any) {
+      console.error('Start trial error:', error);
+      alert('Error starting trial: ' + (error.message || 'Something went wrong'));
+    }
   };
 
   const advanceTrialStep = async (trialId: string, prefixMessage?: string) => {
-    const result = await completeTrialStep({
-      variables: { realmId: REALM_ID, trialId },
-    });
+    try {
+      const result = await completeTrialStep({
+        variables: { realmId: REALM_ID, trialId },
+      });
 
-    const trialMessage = result.data.completeTrialStep.message;
+      const trialMessage = result.data.completeTrialStep.message;
 
-    if (prefixMessage) {
-      alert(`${prefixMessage}\n${trialMessage}`);
-    } else {
-      alert(trialMessage);
+      if (prefixMessage) {
+        alert(`${prefixMessage}\n${trialMessage}`);
+      } else {
+        alert(trialMessage);
+      }
+
+      await refetch();
+    } catch (error: any) {
+      console.error('Trial step error:', error);
+      alert('Error advancing trial: ' + (error.message || 'Something went wrong'));
     }
-
-    await refetch();
   };
 
   const handleLocationVisit = async (locationId: string, locationName: string) => {
@@ -181,7 +196,7 @@ export default function Realm303() {
       await refetch();
     } catch (error: any) {
       console.error('Location visit error:', error);
-      alert('Error: ' + (error.message || 'Something went wrong'));
+      alert('Error visiting location: ' + (error.message || 'Something went wrong'));
     }
   };
 
@@ -201,7 +216,9 @@ export default function Realm303() {
       <div className="min-h-screen flex items-center justify-center p-6">
         <div className="glass-card p-12 max-w-md text-center">
           <h1 className="text-4xl font-display neon-glow mb-4">🔒 ACCESS DENIED</h1>
-          <p className="text-lg text-secondary mb-8">You must be logged in to enter this realm.</p>
+          <p className="text-lg text-secondary mb-8">
+            You must be logged in to enter this realm.
+          </p>
           <Link href="/auth" className="btn-primary">
             SIGN IN
           </Link>
@@ -269,7 +286,7 @@ export default function Realm303() {
               realmIcon="🌪️"
               realmColor="#FF4D6D"
               intro="Fractured Frontier is where chaos, pressure, rupture, and raw activation become fuel for form. Let the soundtrack tell you whether this realm matches what you need to face right now."
-              supportText="Start with the music first. If this realm feels true, then go deeper into its trials, locations, and symbols."
+              supportText="Start with the music first. If this realm feels true, open the optional Realm Path to explore trials, locations, and deeper world layers."
               progress={realmProgress}
               isUnlocked={true}
               isCurrentRealm={true}
@@ -285,12 +302,14 @@ export default function Realm303() {
               <div className="flex-1">
                 <h2 className="text-2xl font-display mb-3">⚡ Realm Overview</h2>
                 <p className="text-secondary mb-4">
-                  The Fractured Frontier is the realm of rupture, creation under pressure, and disciplined transformation. It is where disorder becomes material and chaos is shaped into force.
+                  The Fractured Frontier is the realm of rupture, creation under pressure,
+                  and disciplined transformation. It is where disorder becomes material and
+                  chaos is shaped into force.
                 </p>
 
                 <div className="mb-4">
                   <div className="flex items-center justify-between text-sm mb-2">
-                    <span className="text-secondary">Realm Progress</span>
+                    <span className="text-secondary">Realm Path Progress</span>
                     <span className="text-stats">{realmProgress}%</span>
                   </div>
 
@@ -303,7 +322,7 @@ export default function Realm303() {
                 </div>
 
                 <div className="text-sm text-muted">
-                  {completedTrialsCount} of 3 trials complete
+                  {completedTrialsCount} of 3 optional realm trials complete
                 </div>
               </div>
 
@@ -312,8 +331,9 @@ export default function Realm303() {
                   <div className="text-2xl font-display text-glow realm-303-glow">
                     {completedTrialsCount} / 3
                   </div>
-                  <div className="text-xs text-muted">Trials Complete</div>
+                  <div className="text-xs text-muted">Realm Path Trials</div>
                 </div>
+
                 <div className="glass-card p-4 text-center">
                   <div className="text-2xl font-display text-glow">
                     {isVeilUnlocked ? 'Unlocked' : 'Locked'}
@@ -324,20 +344,24 @@ export default function Realm303() {
             </div>
           </div>
 
-          <div className="glass-card p-4 mb-8 fade-in realm-303-progression-toggle" style={{ animationDelay: '0.15s' }}>
+          <div
+            className="glass-card p-4 mb-8 fade-in realm-303-progression-toggle"
+            style={{ animationDelay: '0.15s' }}
+          >
             <button
               onClick={() => setShowProgression((prev) => !prev)}
               className="w-full flex items-center justify-between text-left"
             >
               <div>
                 <p className="text-xs uppercase tracking-[0.18em] text-white/60 mb-1">
-                  Deeper Realm Progression
+                  Optional Realm Path
                 </p>
                 <h2 className="text-xl font-display">
-                  Trials, locations, and interactive systems
+                  Explore trials, locations, and unlocks
                 </h2>
                 <p className="text-sm text-muted mt-1">
-                  This layer is still being refined. The main focus of Fractured Frontier is music and emotional navigation.
+                  The music is the entry point. Open the realm path when you want to go
+                  deeper into the world and earn progression.
                 </p>
               </div>
 
@@ -352,7 +376,7 @@ export default function Realm303() {
               <div className="mb-8 fade-in">
                 <h2 className="text-3xl font-display mb-6 flex items-center gap-3">
                   <span className="text-glow">🎯</span>
-                  DEEPER REALM PATHS
+                  REALM PATH
                   <span className="text-glow">🎯</span>
                 </h2>
 
@@ -363,7 +387,8 @@ export default function Realm303() {
                       <div className="flex-1">
                         <h3 className="text-xl font-display mb-2">Trial of Creation</h3>
                         <p className="text-sm text-secondary mb-3">
-                          Begin the trial, explore the district, solve the pattern, then use the soundtrack to unlock the final creation sequence.
+                          Begin the realm path, explore the district, solve the pattern,
+                          then use the soundtrack to unlock the final creation sequence.
                         </p>
 
                         <div className="mb-3">
@@ -383,12 +408,14 @@ export default function Realm303() {
                           <>
                             <button
                               className="btn-primary mt-4"
-                              onClick={() => ensureTrialStarted('trial-creation', 'Trial of Creation')}
+                              onClick={() =>
+                                ensureTrialStarted('trial-creation', 'Trial of Creation')
+                              }
                             >
-                              BEGIN TRIAL OF CREATION →
+                              BEGIN REALM PATH →
                             </button>
                             <p className="text-xs text-muted mt-2">
-                              🔒 Start the trial to unlock the first movement.
+                              Start here to unlock the first location and begin earning realm XP.
                             </p>
                           </>
                         )}
@@ -399,7 +426,7 @@ export default function Realm303() {
                               STEP 1: EXPLORE GLITCH DISTRICT →
                             </button>
                             <p className="text-xs text-muted mt-2">
-                              🔒 Visit The Glitch District to auto-complete the first step.
+                              Visit The Glitch District to complete the first realm movement.
                             </p>
                           </>
                         )}
@@ -415,7 +442,7 @@ export default function Realm303() {
                               }}
                             />
                             <p className="text-xs text-muted mt-2">
-                              🔒 Solve the pattern challenge to stabilize creation.
+                              Solve the pattern challenge to stabilize creation.
                             </p>
                           </>
                         )}
@@ -423,10 +450,10 @@ export default function Realm303() {
                         {trial1Started && trial1Steps === 2 && !hasListenedNotEnough && (
                           <>
                             <button className="btn-primary mt-4" onClick={goToMusic}>
-                              STEP 3: LISTEN TO THE SOUNDTRACK →
+                              STEP 3: RETURN TO THE SOUNDTRACK →
                             </button>
                             <p className="text-xs text-muted mt-2">
-                              🔒 Listen to at least 80% of &quot;Not Enough&quot; to unlock the final creation puzzle.
+                              Listen to &quot;Not Enough&quot; to unlock the final creation puzzle.
                             </p>
                           </>
                         )}
@@ -447,7 +474,9 @@ export default function Realm303() {
                           </>
                         )}
 
-                        {trial1?.isComplete && <div className="text-green-400 font-bold">✓ COMPLETE</div>}
+                        {trial1?.isComplete && (
+                          <div className="text-green-400 font-bold">✓ COMPLETE</div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -485,13 +514,16 @@ export default function Realm303() {
                                 <button
                                   className="btn-primary mt-4"
                                   onClick={() =>
-                                    ensureTrialStarted('trial-transformation', 'Trial of Transformation')
+                                    ensureTrialStarted(
+                                      'trial-transformation',
+                                      'Trial of Transformation'
+                                    )
                                   }
                                 >
                                   BEGIN TRIAL OF TRANSFORMATION →
                                 </button>
                                 <p className="text-xs text-muted mt-2">
-                                  🔒 Start the trial to unlock the forge path.
+                                  Start the next movement to unlock the forge path.
                                 </p>
                               </>
                             )}
@@ -502,7 +534,7 @@ export default function Realm303() {
                                   STEP 1: VISIT CREATION FORGE →
                                 </button>
                                 <p className="text-xs text-muted mt-2">
-                                  🔒 Visit The Creation Forge to auto-complete the first step.
+                                  Visit The Creation Forge to complete this movement.
                                 </p>
                               </>
                             )}
@@ -518,7 +550,7 @@ export default function Realm303() {
                                   }}
                                 />
                                 <p className="text-xs text-muted mt-2">
-                                  🔒 Solve the first transformation puzzle to continue.
+                                  Solve the first transformation puzzle to continue.
                                 </p>
                               </>
                             )}
@@ -534,12 +566,14 @@ export default function Realm303() {
                                   }}
                                 />
                                 <p className="text-xs text-muted mt-2">
-                                  🔒 Complete the final alchemy puzzle to finish the trial.
+                                  Complete the final alchemy puzzle to finish the trial.
                                 </p>
                               </>
                             )}
 
-                            {trial2?.isComplete && <div className="text-green-400 font-bold">✓ COMPLETE</div>}
+                            {trial2?.isComplete && (
+                              <div className="text-green-400 font-bold">✓ COMPLETE</div>
+                            )}
                           </>
                         ) : (
                           <p className="text-sm text-muted italic">
@@ -562,7 +596,8 @@ export default function Realm303() {
                         {trial2?.isComplete ? (
                           <>
                             <p className="text-sm text-secondary mb-3">
-                              Read deeply, uncover the hidden clue, face chaos directly, then prove you understand the law of mastery.
+                              Read deeply, uncover the hidden clue, face chaos directly,
+                              then prove you understand the law of mastery.
                             </p>
 
                             <div className="mb-3">
@@ -583,13 +618,16 @@ export default function Realm303() {
                                 <button
                                   className="btn-primary mt-4"
                                   onClick={() =>
-                                    ensureTrialStarted('trial-chaos-mastery', 'Trial of Chaos Mastery')
+                                    ensureTrialStarted(
+                                      'trial-chaos-mastery',
+                                      'Trial of Chaos Mastery'
+                                    )
                                   }
                                 >
                                   BEGIN TRIAL OF CHAOS MASTERY →
                                 </button>
                                 <p className="text-xs text-muted mt-2">
-                                  🔒 Start the trial to enter the hidden clue sequence.
+                                  Start the final path to enter the hidden clue sequence.
                                 </p>
                               </>
                             )}
@@ -605,7 +643,7 @@ export default function Realm303() {
                                   }}
                                 />
                                 <p className="text-xs text-muted mt-2">
-                                  🔒 The answer is hidden in the realm overview above.
+                                  The answer is hidden in the realm overview above.
                                 </p>
                               </>
                             )}
@@ -621,7 +659,7 @@ export default function Realm303() {
                                   }}
                                 />
                                 <p className="text-xs text-muted mt-2">
-                                  🔒 Face the deeper riddle of chaos directly.
+                                  Face the deeper riddle of chaos directly.
                                 </p>
                               </>
                             )}
@@ -637,12 +675,14 @@ export default function Realm303() {
                                   }}
                                 />
                                 <p className="text-xs text-muted mt-2">
-                                  🔒 One final choice decides whether you understand mastery.
+                                  One final choice decides whether you understand mastery.
                                 </p>
                               </>
                             )}
 
-                            {trial3?.isComplete && <div className="text-green-400 font-bold">✓ COMPLETE</div>}
+                            {trial3?.isComplete && (
+                              <div className="text-green-400 font-bold">✓ COMPLETE</div>
+                            )}
                           </>
                         ) : (
                           <p className="text-sm text-muted italic">
@@ -664,7 +704,11 @@ export default function Realm303() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div
-                    className={`realm-portal ${canExploreGlitchDistrict || hasVisited('glitch-district') ? 'unlocked' : 'locked'} fade-in`}
+                    className={`realm-portal ${
+                      canExploreGlitchDistrict || hasVisited('glitch-district')
+                        ? 'unlocked'
+                        : 'locked'
+                    } fade-in`}
                     style={{ animationDelay: '0.5s' }}
                   >
                     <div className="flex items-start gap-4">
@@ -676,21 +720,27 @@ export default function Realm303() {
                         </p>
                         <button
                           className="btn-secondary w-full"
-                          onClick={() => handleLocationVisit('glitch-district', 'The Glitch District')}
+                          onClick={() =>
+                            handleLocationVisit('glitch-district', 'The Glitch District')
+                          }
                           disabled={!canExploreGlitchDistrict || hasVisited('glitch-district')}
                         >
                           {hasVisited('glitch-district')
                             ? '✅ EXPLORED'
                             : canExploreGlitchDistrict
-                            ? 'EXPLORE →'
-                            : 'LOCKED UNTIL TRIAL 1 STARTS'}
+                              ? 'EXPLORE →'
+                              : 'LOCKED UNTIL REALM PATH STARTS'}
                         </button>
                       </div>
                     </div>
                   </div>
 
                   <div
-                    className={`realm-portal ${canExploreCreationForge || hasVisited('creation-forge') ? 'unlocked' : 'locked'} fade-in`}
+                    className={`realm-portal ${
+                      canExploreCreationForge || hasVisited('creation-forge')
+                        ? 'unlocked'
+                        : 'locked'
+                    } fade-in`}
                     style={{ animationDelay: '0.6s' }}
                   >
                     <div className="flex items-start gap-4">
@@ -702,18 +752,20 @@ export default function Realm303() {
                         </p>
                         <button
                           className="btn-secondary w-full"
-                          onClick={() => handleLocationVisit('creation-forge', 'The Creation Forge')}
+                          onClick={() =>
+                            handleLocationVisit('creation-forge', 'The Creation Forge')
+                          }
                           disabled={!canExploreCreationForge || hasVisited('creation-forge')}
                         >
                           {hasVisited('creation-forge')
                             ? '✅ EXPLORED'
                             : canExploreCreationForge
-                            ? 'EXPLORE →'
-                            : 'LOCKED UNTIL TRIAL 2 LOCATION STEP'}
+                              ? 'EXPLORE →'
+                              : 'LOCKED UNTIL TRANSFORMATION PATH'}
                         </button>
                         {!canExploreCreationForge && !hasVisited('creation-forge') && (
                           <p className="text-xs text-muted mt-2">
-                            🔒 The Creation Forge opens during Trial of Transformation.
+                            The Creation Forge opens during Trial of Transformation.
                           </p>
                         )}
                       </div>
@@ -730,20 +782,21 @@ export default function Realm303() {
                 🌪️ FRACTURED FRONTIER MASTERED 🌪️
               </h3>
               <p className="text-secondary mb-6 max-w-2xl mx-auto">
-                Chaos has become your canvas. The Veil awaits — where dreams blur into reality and the unseen world speaks.
+                Chaos has become your canvas. The Veil awaits — where dreams blur into
+                reality and the unseen world speaks.
               </p>
               <Link href="/realms/202">
-                <button className="btn-primary" style={{ fontSize: '1.1rem', padding: '0.75rem 2rem' }}>
+                <button
+                  className="btn-primary"
+                  style={{ fontSize: '1.1rem', padding: '0.75rem 2rem' }}
+                >
                   ENTER THE VEIL →
                 </button>
               </Link>
             </div>
           )}
 
-          <div
-            className="flex justify-between items-center fade-in"
-            style={{ animationDelay: '0.8s' }}
-          >
+          <div className="flex justify-between items-center fade-in" style={{ animationDelay: '0.8s' }}>
             <Link href="/nexus">
               <button className="btn-secondary">← BACK TO NEXUS</button>
             </Link>
