@@ -303,6 +303,7 @@ export default function Realm303() {
                             progress={realmProgress}
                             isUnlocked={true}
                             isCurrentRealm={true}
+                            compactOnMobile
                         />
                     </div>
 
