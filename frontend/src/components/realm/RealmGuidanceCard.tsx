@@ -13,43 +13,51 @@ export default function RealmGuidanceCard({ realmId }: RealmGuidanceCardProps) {
 
   return (
     <div
-      className="glass-card p-6 mb-8"
+      className="glass-card realm-guidance-card p-4 md:p-6 mb-8"
       style={{
         border: `1px solid ${realm.color}33`,
         boxShadow: `0 8px 30px ${realm.color}12`,
       }}
     >
-      <div className="flex items-start gap-4">
+      <div className="flex flex-col sm:flex-row items-start gap-4">
         <div
-          className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shrink-0"
+          className="w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center text-2xl shrink-0"
           style={{
             background: `linear-gradient(135deg, ${realm.color}22, ${realm.color}55)`,
             border: `1px solid ${realm.color}55`,
+            boxShadow: `0 0 18px ${realm.color}18`,
           }}
         >
           {realm.icon}
         </div>
 
-        <div className="flex-1">
-          <p className="text-xs uppercase tracking-[0.18em] text-white/60 mb-2">
+        <div className="flex-1 min-w-0">
+          <p className="text-[10px] md:text-xs uppercase tracking-[0.18em] text-white/60 mb-2">
             Realm Meaning
           </p>
 
           <h2
-            className="text-2xl md:text-3xl font-display mb-3"
+            className="text-xl md:text-3xl font-display mb-3 leading-tight"
             style={{ color: realm.color }}
           >
             Why enter {realm.realmName}?
           </h2>
 
-          <p className="text-secondary mb-4">{guidance.whenToEnter}</p>
-          <p className="text-secondary mb-5">{guidance.whyThisRealmHelps}</p>
+          <div className="space-y-3">
+            <p className="text-sm md:text-base text-secondary leading-relaxed">
+              {guidance.whenToEnter}
+            </p>
 
-          <div className="flex flex-wrap gap-2">
+            <p className="text-sm md:text-base text-secondary leading-relaxed">
+              {guidance.whyThisRealmHelps}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-2 mt-5">
             {guidance.helpsWith.map((item) => (
               <span
                 key={item}
-                className="px-3 py-1 rounded-full text-sm"
+                className="px-3 py-1 rounded-full text-xs md:text-sm"
                 style={{
                   background: `${realm.color}18`,
                   border: `1px solid ${realm.color}44`,

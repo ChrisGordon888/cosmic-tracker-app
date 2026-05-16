@@ -434,3 +434,63 @@ body {
     padding: 0.95rem;
   }
 }
+
+/* === REALM MOBILE TOP-CARD POLISH === */
+
+@media (max-width: 768px) {
+  .realm-entry-guidance-card,
+  .realm-guidance-card {
+    border-radius: 1.25rem;
+  }
+
+  .realm-entry-guidance-card .btn-secondary,
+  .realm-guidance-card .btn-secondary {
+    width: 100%;
+  }
+
+  .realm-entry-guidance-card p,
+  .realm-guidance-card p {
+    line-height: 1.65;
+  }
+
+  .realm-303-hero,
+  .realm-202-hero,
+  .realm-101-hero,
+  .realm-55-hero,
+  .realm-44-hero,
+  .realm-0-hero {
+    margin-bottom: 1.75rem;
+  }
+
+  .realm-303-hero h1,
+  .realm-202-hero h1,
+  .realm-101-hero h1,
+  .realm-55-hero h1,
+  .realm-44-hero h1,
+  .realm-0-hero h1 {
+    font-size: clamp(2rem, 11vw, 3.15rem);
+    line-height: 0.98;
+    letter-spacing: 0.035em;
+  }
+
+  .realm-303-hero .text-6xl,
+  .realm-202-hero .text-6xl,
+  .realm-101-hero .text-6xl,
+  .realm-55-hero .text-6xl,
+  .realm-44-hero .text-6xl,
+  .realm-0-hero .text-6xl {
+    font-size: 3rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .realm-303-container,
+  .realm-202-container,
+  .realm-101-container,
+  .realm-55-container,
+  .realm-44-container,
+  .realm-0-container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 1.5rem;
+  }
+}
