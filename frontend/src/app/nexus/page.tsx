@@ -219,10 +219,20 @@ export default function CosmicNexusHub() {
 
     if (status === 'loading' || userLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-center">
-                    <div className="neon-glow text-4xl mb-4">🌌</div>
-                    <p className="text-xl">Loading The Nexus...</p>
+            <div className="min-h-screen grid place-items-center p-6 nexus-shell">
+                <div className="glass-card nexus-panel max-w-md text-center">
+                    <div className="mx-auto mb-4 w-12 h-12 rounded-full border border-white/15 grid place-items-center text-[#DCBA5C]">
+                        ✦
+                    </div>
+                    <p className="text-xs uppercase tracking-[0.22em] text-muted mb-2">
+                        Loading System
+                    </p>
+                    <h1 className="text-3xl font-display mb-3">
+                        Opening the Nexus
+                    </h1>
+                    <p className="text-secondary">
+                        Syncing traveler data, realm progress, and music state.
+                    </p>
                 </div>
             </div>
         );
@@ -230,16 +240,22 @@ export default function CosmicNexusHub() {
 
     if (!session) {
         return (
-            <div className="min-h-screen flex items-center justify-center p-6">
-                <div className="glass-card p-12 max-w-md text-center">
-                    <h1 className="text-4xl font-display neon-glow mb-4">
-                        🌌 THE COSMIC NEXUS 🌌
+            <div className="min-h-screen grid place-items-center p-6 nexus-shell">
+                <div className="glass-card nexus-panel max-w-md text-center">
+                    <div className="mx-auto mb-4 w-12 h-12 rounded-full border border-white/15 grid place-items-center text-[#DCBA5C]">
+                        ✦
+                    </div>
+                    <p className="text-xs uppercase tracking-[0.22em] text-muted mb-2">
+                        Nexus Locked
+                    </p>
+                    <h1 className="text-3xl font-display mb-3">
+                        Sign in to continue
                     </h1>
-                    <p className="text-lg text-secondary mb-8">
-                        You must sign in to enter the multiverse.
+                    <p className="text-secondary mb-6">
+                        Save your realm progress, XP, listening history, and traveler profile.
                     </p>
                     <button onClick={() => signIn('github')} className="btn-primary">
-                        ENTER THE NEXUS
+                        Sign in with GitHub
                     </button>
                 </div>
             </div>

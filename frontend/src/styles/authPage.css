@@ -1,0 +1,167 @@
+.cosmic-auth-page {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  padding: 4rem 1rem 7rem;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(120, 190, 255, 0.10), transparent 32%),
+    radial-gradient(circle at 50% 72%, rgba(220, 186, 92, 0.055), transparent 30%),
+    linear-gradient(180deg, #050812, #02040a 68%, #03050c);
+  color: rgba(238, 243, 250, 0.94);
+}
+
+.cosmic-auth-orb {
+  position: absolute;
+  width: min(70vw, 560px);
+  height: min(70vw, 560px);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, rgba(130, 190, 255, 0.10), transparent 58%),
+    radial-gradient(circle, rgba(220, 186, 92, 0.055), transparent 72%);
+  filter: blur(6px);
+  opacity: 0.85;
+}
+
+.cosmic-auth-card {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 560px);
+  padding: clamp(2rem, 5vw, 3rem);
+  border-radius: 2rem;
+  border: 1px solid rgba(226, 232, 240, 0.16);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.075),
+      rgba(190, 205, 225, 0.035) 42%,
+      rgba(8, 11, 20, 0.58)
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    0 18px 48px rgba(0, 0, 0, 0.32),
+    0 0 24px rgba(130, 190, 255, 0.06);
+  backdrop-filter: blur(16px) saturate(125%);
+  -webkit-backdrop-filter: blur(16px) saturate(125%);
+  text-align: center;
+}
+
+.cosmic-auth-mark {
+  width: 3rem;
+  height: 3rem;
+  margin: 0 auto 1rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  color: rgba(220, 186, 92, 0.95);
+  border: 1px solid rgba(220, 186, 92, 0.22);
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255,255,255,0.16), rgba(220,186,92,0.08) 42%, rgba(8,11,20,0.42));
+}
+
+.cosmic-auth-kicker {
+  margin-bottom: 0.8rem;
+  color: rgba(220, 186, 92, 0.82);
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.cosmic-auth-card h1 {
+  margin: 0 auto 1rem;
+  color: rgba(245, 247, 252, 0.96);
+  font-size: clamp(2.35rem, 8vw, 4rem);
+  line-height: 0.92;
+  letter-spacing: 0.045em;
+  font-weight: 800;
+}
+
+.cosmic-auth-card h1 span {
+  display: block;
+}
+
+.cosmic-auth-copy {
+  max-width: 28rem;
+  margin: 0 auto 1.8rem;
+  color: rgba(205, 214, 225, 0.76);
+  line-height: 1.7;
+}
+
+.cosmic-auth-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 1.4rem;
+}
+
+.cosmic-auth-primary,
+.cosmic-auth-secondary {
+  width: min(100%, 280px);
+  min-height: 3rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 800;
+  font-size: 0.8rem;
+  transition: all 0.22s ease;
+}
+
+.cosmic-auth-primary {
+  border: 1px solid rgba(224, 232, 240, 0.22);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(238, 243, 250, 0.18),
+      rgba(120, 190, 255, 0.12) 42%,
+      rgba(220, 186, 92, 0.16)
+    );
+  color: rgba(245, 247, 252, 0.95);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 10px 28px rgba(0, 0, 0, 0.24);
+}
+
+.cosmic-auth-secondary {
+  border: 1px solid rgba(226, 232, 240, 0.12);
+  color: rgba(205, 214, 225, 0.72);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.cosmic-auth-primary:hover,
+.cosmic-auth-secondary:hover {
+  transform: translateY(-2px);
+  border-color: rgba(220, 186, 92, 0.32);
+}
+
+.cosmic-auth-system-line {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.cosmic-auth-system-line span {
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid rgba(226, 232, 240, 0.10);
+  color: rgba(205, 214, 225, 0.62);
+  background: rgba(8, 11, 20, 0.22);
+  font-size: 0.6rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 520px) {
+  .cosmic-auth-card {
+    border-radius: 1.5rem;
+  }
+
+  .cosmic-auth-card h1 {
+    font-size: clamp(2.1rem, 12vw, 3rem);
+  }
+}
