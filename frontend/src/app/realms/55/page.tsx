@@ -50,9 +50,11 @@ export default function Realm55() {
 
   const realmTrials =
     user?.completedTrials?.filter((t: any) => Number(t.realmId) === REALM_ID) ?? [];
+
   const completedTrialsCount = realmTrials.filter(
     (t: any) => t.isComplete || (t.stepsCompleted ?? 0) >= 3
   ).length;
+
   const realmProgress = Math.floor((completedTrialsCount / 3) * 100);
 
   const getTrial = (trialId: string) =>
@@ -60,6 +62,7 @@ export default function Realm55() {
 
   const realmLocs =
     user?.visitedLocations?.filter((l: any) => Number(l.realmId) === REALM_ID) ?? [];
+
   const hasVisited = (locationId: string) =>
     realmLocs.some((l: any) => l.locationId === locationId);
 
@@ -176,10 +179,21 @@ export default function Realm55() {
 
   if (status === 'loading' || userLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="neon-glow text-4xl mb-4">⛰️</div>
-          <p className="text-xl">Ascending to Skybound City...</p>
+      <div className="min-h-screen grid place-items-center p-6 nexus-shell">
+        <div className="glass-card nexus-panel max-w-md text-center">
+          <div className="mx-auto mb-4 w-12 h-12 rounded-full border border-white/15 grid place-items-center text-[#DCBA5C]">
+            △
+          </div>
+
+          <p className="text-xs uppercase tracking-[0.22em] text-muted mb-2">
+            Entering Realm
+          </p>
+
+          <h1 className="text-3xl font-display mb-3">Skybound City</h1>
+
+          <p className="text-secondary">
+            Syncing realm progress, music state, and sovereignty path.
+          </p>
         </div>
       </div>
     );
@@ -187,14 +201,24 @@ export default function Realm55() {
 
   if (!session) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="glass-card p-12 max-w-md text-center">
-          <h1 className="text-4xl font-display neon-glow mb-4">🔒 ACCESS DENIED</h1>
-          <p className="text-lg text-secondary mb-8">
-            You must be logged in to enter this realm.
+      <div className="min-h-screen grid place-items-center p-6 nexus-shell">
+        <div className="glass-card nexus-panel max-w-md text-center">
+          <div className="mx-auto mb-4 w-12 h-12 rounded-full border border-white/15 grid place-items-center text-[#DCBA5C]">
+            ✦
+          </div>
+
+          <p className="text-xs uppercase tracking-[0.22em] text-muted mb-2">
+            Realm Locked
           </p>
+
+          <h1 className="text-3xl font-display mb-3">Sign in to enter</h1>
+
+          <p className="text-secondary mb-6">
+            Save realm progress, XP, listening history, and trial completion.
+          </p>
+
           <Link href="/auth" className="btn-primary">
-            SIGN IN
+            Open Cosmic Access
           </Link>
         </div>
       </div>
@@ -230,20 +254,25 @@ export default function Realm55() {
       <div className="min-h-screen pb-32 realm-55-shell">
         <div className="container mx-auto px-4 py-8 max-w-6xl realm-55-container">
           <header className="text-center mb-10 fade-in realm-55-hero">
-            <div className="text-6xl mb-4 neon-glow">⛰️</div>
-            <h1 className="text-5xl md:text-6xl font-display neon-glow mb-2 realm-55-title">
+            <div className="realm-55-symbol-mark mb-4">△</div>
+
+            <h1 className="text-5xl md:text-6xl font-display mb-2 realm-55-title">
               SKYBOUND CITY
             </h1>
+
             <p className="text-xl text-secondary mb-2">[ REALM 55 ]</p>
             <p className="text-lg text-muted">
               Power &amp; Manifestation • Where Will Becomes Reality
             </p>
+
             <div className="mt-6 flex justify-center items-center gap-4">
               <div className="level-badge">LVL {userLevel}</div>
+
               <div className="flex-1 max-w-xs">
                 <div className="stat-bar">
                   <div className="stat-bar-fill" style={{ width: `${xpPercent}%` }} />
                 </div>
+
                 <p className="text-sm text-secondary mt-1">
                   {userXP} / {safeXpToNext} XP
                 </p>
@@ -262,26 +291,33 @@ export default function Realm55() {
           <RealmSoundstage
             realmId={55}
             realmName="Skybound City"
-            realmIcon="⛰️"
+            realmIcon="△"
             realmColor="#FACC15"
             intro="Skybound City is where ambition, self-command, manifestation, wealth-building energy, and upward movement become focused. Let the soundtrack tell you whether this realm matches the power you need to direct right now."
             supportText="Start with the music first. If this realm feels true, then go deeper into its trials, locations, and symbols."
             progress={realmProgress}
             isUnlocked={true}
             isCurrentRealm={true}
+            compactOnMobile
           />
 
-          <div className="glass-card realm-55-overview p-6 mb-8 fade-in" style={{ animationDelay: '0.1s' }}>
+          <div
+            className="glass-card realm-55-overview p-6 mb-8 fade-in"
+            style={{ animationDelay: '0.1s' }}
+          >
             <div className="flex flex-col lg:flex-row lg:items-start gap-6">
               <div className="flex-1">
-                <h2 className="text-2xl font-display mb-3">⚡ Realm Overview</h2>
+                <h2 className="text-2xl font-display mb-3">Realm Overview</h2>
+
                 <p className="text-secondary mb-4">
-                  Skybound City is the realm of focused will, command, and manifestation. It is where vision becomes directed force and inner authority begins shaping the outer world.
+                  Skybound City is the realm of focused will, command, and manifestation.
+                  It is where vision becomes directed force and inner authority begins
+                  shaping the outer world.
                 </p>
 
                 <div className="mb-4">
                   <div className="flex items-center justify-between text-sm mb-2">
-                    <span className="text-secondary">Realm Progress</span>
+                    <span className="text-secondary">Realm Path Progress</span>
                     <span className="text-stats">{realmProgress}%</span>
                   </div>
 
@@ -294,7 +330,7 @@ export default function Realm55() {
                 </div>
 
                 <div className="text-sm text-muted">
-                  {completedTrialsCount} of 3 trials complete
+                  {completedTrialsCount} of 3 optional realm trials complete
                 </div>
               </div>
 
@@ -303,7 +339,7 @@ export default function Realm55() {
                   <div className="text-2xl font-display text-glow realm-55-glow">
                     {completedTrialsCount} / 3
                   </div>
-                  <div className="text-xs text-muted">Trials Complete</div>
+                  <div className="text-xs text-muted">Realm Path Trials</div>
                 </div>
 
                 <div className="glass-card p-4 text-center">
@@ -316,20 +352,26 @@ export default function Realm55() {
             </div>
           </div>
 
-          <div className="glass-card p-4 mb-8 fade-in realm-55-progression-toggle" style={{ animationDelay: '0.15s' }}>
+          <div
+            className="glass-card p-4 mb-8 fade-in realm-55-progression-toggle"
+            style={{ animationDelay: '0.15s' }}
+          >
             <button
               onClick={() => setShowProgression((prev) => !prev)}
               className="w-full flex items-center justify-between text-left"
             >
               <div>
                 <p className="text-xs uppercase tracking-[0.18em] text-white/60 mb-1">
-                  Deeper Realm Progression
+                  Optional Realm Path
                 </p>
+
                 <h2 className="text-xl font-display">
-                  Trials, locations, and interactive systems
+                  Explore sovereignty, power, and command
                 </h2>
+
                 <p className="text-sm text-muted mt-1">
-                  This layer is still being refined. The main focus of Skybound City is music and emotional navigation.
+                  The music is the entry point. Open the realm path when you want to move
+                  deeper into authority, manifestation, and focused will.
                 </p>
               </div>
 
@@ -343,17 +385,22 @@ export default function Realm55() {
             <>
               <div className="mb-8 fade-in">
                 <h2 className="text-3xl font-display mb-6 flex items-center gap-3">
-                  <span className="text-glow">🎯</span> DEEPER REALM PATHS <span className="text-glow">🎯</span>
+                  <span className="text-glow">✦</span>
+                  REALM PATH
                 </h2>
 
                 <div className="space-y-6">
                   <div className="quest-card fade-in" style={{ animationDelay: '0.2s' }}>
                     <div className="flex items-start gap-4">
-                      <div className="text-4xl">👑</div>
+                      <div className="text-4xl">△</div>
+
                       <div className="flex-1">
-                        <h3 className="text-xl font-display mb-2">Trial of Sovereignty</h3>
+                        <h3 className="text-xl font-display mb-2">
+                          Trial of Sovereignty
+                        </h3>
+
                         <p className="text-sm text-secondary mb-3">
-                          Claim your throne. Command your domain with absolute authority.
+                          Claim your center. Command your domain with grounded authority.
                         </p>
 
                         <div className="mb-4">
@@ -361,6 +408,7 @@ export default function Realm55() {
                             <span>Progress</span>
                             <span>{trial1?.stepsCompleted ?? 0} / 3 Steps</span>
                           </div>
+
                           <div className="stat-bar">
                             <div
                               className="stat-bar-fill realm-55-bar"
@@ -370,7 +418,7 @@ export default function Realm55() {
                         </div>
 
                         {trial1?.isComplete ? (
-                          <div className="text-green-400 font-bold">✓ COMPLETE</div>
+                          <div className="text-green-400 font-bold">✓ Complete</div>
                         ) : !trial1 ? (
                           <button
                             className="btn-primary"
@@ -379,13 +427,14 @@ export default function Realm55() {
                             }
                             disabled={isBusy}
                           >
-                            BEGIN TRIAL →
+                            Begin Realm Path →
                           </button>
                         ) : trial1.stepsCompleted === 0 && !hasVisited('tower-of-ascension') ? (
                           <>
                             <p className="text-sm text-muted italic mb-3">
-                              📍 Visit <strong>The Tower of Ascension</strong> below to unlock Step 1.
+                              Visit <strong>The Tower of Ascension</strong> below to unlock Step 1.
                             </p>
+
                             <button
                               className="btn-secondary"
                               onClick={() =>
@@ -393,7 +442,7 @@ export default function Realm55() {
                               }
                               disabled={isBusy}
                             >
-                              GO TO LOCATIONS ↓
+                              Go to Locations ↓
                             </button>
                           </>
                         ) : trial1Puzzle ? (
@@ -412,7 +461,8 @@ export default function Realm55() {
                     style={{ animationDelay: '0.3s' }}
                   >
                     <div className="flex items-start gap-4">
-                      <div className="text-4xl">⚔️</div>
+                      <div className="text-4xl">◇</div>
+
                       <div className="flex-1">
                         <h3 className="text-xl font-display mb-2">
                           Trial of Power Manifestation
@@ -420,12 +470,12 @@ export default function Realm55() {
 
                         {!trial1?.isComplete ? (
                           <p className="text-sm text-muted italic">
-                            🔒 Complete Trial of Sovereignty to unlock
+                            Locked — complete Trial of Sovereignty to unlock
                           </p>
                         ) : (
                           <>
                             <p className="text-sm text-secondary mb-3">
-                              Manifest your power. Turn thought into unstoppable reality.
+                              Direct your power. Turn thought, action, and intention into visible form.
                             </p>
 
                             <div className="mb-4">
@@ -433,6 +483,7 @@ export default function Realm55() {
                                 <span>Progress</span>
                                 <span>{trial2?.stepsCompleted ?? 0} / 3 Steps</span>
                               </div>
+
                               <div className="stat-bar">
                                 <div
                                   className="stat-bar-fill realm-55-bar"
@@ -442,7 +493,7 @@ export default function Realm55() {
                             </div>
 
                             {trial2?.isComplete ? (
-                              <div className="text-green-400 font-bold">✓ COMPLETE</div>
+                              <div className="text-green-400 font-bold">✓ Complete</div>
                             ) : !trial2 ? (
                               <button
                                 className="btn-primary"
@@ -454,13 +505,14 @@ export default function Realm55() {
                                 }
                                 disabled={isBusy}
                               >
-                                BEGIN TRIAL →
+                                Begin Trial of Power Manifestation →
                               </button>
                             ) : trial2.stepsCompleted === 0 && !hasVisited('arena-of-kings') ? (
                               <>
                                 <p className="text-sm text-muted italic mb-3">
-                                  📍 Visit <strong>The Arena of Kings</strong> below to unlock Step 1.
+                                  Visit <strong>The Arena of Kings</strong> below to unlock Step 1.
                                 </p>
+
                                 <button
                                   className="btn-secondary"
                                   onClick={() =>
@@ -470,7 +522,7 @@ export default function Realm55() {
                                   }
                                   disabled={isBusy}
                                 >
-                                  GO TO LOCATIONS ↓
+                                  Go to Locations ↓
                                 </button>
                               </>
                             ) : trial2Puzzle ? (
@@ -491,18 +543,21 @@ export default function Realm55() {
                     style={{ animationDelay: '0.4s' }}
                   >
                     <div className="flex items-start gap-4">
-                      <div className="text-4xl">⚡</div>
+                      <div className="text-4xl">✦</div>
+
                       <div className="flex-1">
-                        <h3 className="text-xl font-display mb-2">Trial of Divine Authority</h3>
+                        <h3 className="text-xl font-display mb-2">
+                          Trial of Divine Authority
+                        </h3>
 
                         {!trial2?.isComplete ? (
                           <p className="text-sm text-muted italic">
-                            🔒 Complete Trial of Power Manifestation to unlock
+                            Locked — complete Trial of Power Manifestation to unlock
                           </p>
                         ) : (
                           <>
                             <p className="text-sm text-secondary mb-3">
-                              Claim divine authority. Your will is sovereign. Your word is law.
+                              Claim your authority. Let your word, will, and action move as one.
                             </p>
 
                             <div className="mb-4">
@@ -510,6 +565,7 @@ export default function Realm55() {
                                 <span>Progress</span>
                                 <span>{trial3?.stepsCompleted ?? 0} / 2 Steps</span>
                               </div>
+
                               <div className="stat-bar">
                                 <div
                                   className="stat-bar-fill realm-55-bar"
@@ -519,7 +575,7 @@ export default function Realm55() {
                             </div>
 
                             {trial3?.isComplete ? (
-                              <div className="text-green-400 font-bold">✓ COMPLETE</div>
+                              <div className="text-green-400 font-bold">✓ Complete</div>
                             ) : !trial3 ? (
                               <button
                                 className="btn-primary"
@@ -531,7 +587,7 @@ export default function Realm55() {
                                 }
                                 disabled={isBusy}
                               >
-                                BEGIN TRIAL →
+                                Begin Trial of Divine Authority →
                               </button>
                             ) : trial3Puzzle ? (
                               <TrialPuzzle
@@ -550,7 +606,8 @@ export default function Realm55() {
 
               <div ref={locationsSectionRef} id="locations-section" className="mb-8 fade-in">
                 <h2 className="text-3xl font-display mb-6 flex items-center gap-3">
-                  <span className="text-glow">📍</span> LOCATIONS <span className="text-glow">📍</span>
+                  <span className="text-glow">⌖</span>
+                  LOCATIONS
                 </h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -559,20 +616,24 @@ export default function Realm55() {
                     style={{ animationDelay: '0.5s' }}
                   >
                     <div className="flex items-start gap-4">
-                      <div className="text-4xl">🏛️</div>
+                      <div className="text-4xl">▵</div>
+
                       <div className="flex-1">
-                        <h3 className="text-lg font-display mb-2">The Tower of Ascension</h3>
+                        <h3 className="text-lg font-display mb-2">
+                          The Tower of Ascension
+                        </h3>
+
                         <p className="text-sm text-secondary mb-1">
                           Climb higher. Each floor tests your will and strength.
                         </p>
 
                         {!towerUnlocked ? (
                           <p className="text-xs text-muted italic mb-3">
-                            🔒 Begin Trial of Sovereignty to unlock this location
+                            Begin Trial of Sovereignty to unlock this location.
                           </p>
                         ) : !hasVisited('tower-of-ascension') ? (
                           <p className="text-xs text-glow mb-3">
-                            ⚠️ Required for Trial of Sovereignty — Step 1
+                            Required for Trial of Sovereignty — Step 1
                           </p>
                         ) : null}
 
@@ -584,10 +645,10 @@ export default function Realm55() {
                           disabled={!towerUnlocked || hasVisited('tower-of-ascension') || isBusy}
                         >
                           {hasVisited('tower-of-ascension')
-                            ? '✅ EXPLORED'
+                            ? 'Explored'
                             : !towerUnlocked
-                            ? '🔒 LOCKED'
-                            : 'EXPLORE →'}
+                              ? 'Locked'
+                              : 'Explore →'}
                         </button>
                       </div>
                     </div>
@@ -598,20 +659,24 @@ export default function Realm55() {
                     style={{ animationDelay: '0.6s' }}
                   >
                     <div className="flex items-start gap-4">
-                      <div className="text-4xl">⚔️</div>
+                      <div className="text-4xl">◇</div>
+
                       <div className="flex-1">
-                        <h3 className="text-lg font-display mb-2">The Arena of Kings</h3>
+                        <h3 className="text-lg font-display mb-2">
+                          The Arena of Kings
+                        </h3>
+
                         <p className="text-sm text-secondary mb-1">
-                          Where warriors test their might and prove their worth.
+                          Where will is tested and power must become disciplined.
                         </p>
 
                         {!arenaUnlocked ? (
                           <p className="text-xs text-muted italic mb-3">
-                            🔒 Complete Trial of Sovereignty to unlock this location
+                            Complete Trial of Sovereignty to unlock this location.
                           </p>
                         ) : !hasVisited('arena-of-kings') ? (
                           <p className="text-xs text-glow mb-3">
-                            ⚠️ Required for Trial of Power Manifestation — Step 1
+                            Required for Trial of Power Manifestation — Step 1
                           </p>
                         ) : null}
 
@@ -621,10 +686,10 @@ export default function Realm55() {
                           disabled={!arenaUnlocked || hasVisited('arena-of-kings') || isBusy}
                         >
                           {hasVisited('arena-of-kings')
-                            ? '✅ EXPLORED'
+                            ? 'Explored'
                             : !arenaUnlocked
-                            ? '🔒 LOCKED'
-                            : 'EXPLORE →'}
+                              ? 'Locked'
+                              : 'Explore →'}
                         </button>
                       </div>
                     </div>
@@ -635,41 +700,43 @@ export default function Realm55() {
           )}
 
           {completedTrialsCount >= 3 && (
-            <div
-              className="glass-card p-8 mb-8 text-center fade-in realm-55-complete-card"
-              style={{ border: '1px solid rgba(250,204,21,0.45)' }}
-            >
+            <div className="glass-card p-8 mb-8 text-center fade-in realm-55-complete-card">
               <h3 className="text-2xl font-display mb-4" style={{ color: '#FACC15' }}>
-                ⚡ SKYBOUND CITY CONQUERED ⚡
+                SKYBOUND CITY COMMANDED
               </h3>
+
               <p className="text-secondary mb-6 max-w-2xl mx-auto">
-                You have mastered Power &amp; Manifestation. The Astral Bazaar awaits — where wisdom meets commerce and time bends to the bold.
+                You have shaped will into command. The Astral Bazaar awaits — where value,
+                exchange, and timing bend toward the bold.
               </p>
+
               <Link href="/realms/44">
                 <button
                   className="btn-primary"
                   style={{ fontSize: '1.1rem', padding: '0.75rem 2rem' }}
                 >
-                  ENTER ASTRAL BAZAAR →
+                  Enter Astral Bazaar →
                 </button>
               </Link>
             </div>
           )}
 
           <div
-            className="flex justify-between items-center fade-in"
+            className="flex flex-col sm:flex-row justify-between items-center gap-4 fade-in"
             style={{ animationDelay: '0.8s' }}
           >
             <Link href="/nexus">
-              <button className="btn-secondary">← BACK TO NEXUS</button>
+              <button className="btn-secondary">← Back to Nexus</button>
             </Link>
 
-            {completedTrialsCount >= 3 ? (
+            {isAstralBazaarUnlocked ? (
               <Link href="/realms/44">
-                <button className="btn-primary">🛍️ ASTRAL BAZAAR →</button>
+                <button className="btn-primary">Enter Astral Bazaar →</button>
               </Link>
             ) : (
-              <div className="text-sm text-muted">Next Realm: 🛍️ Astral Bazaar (🔒 Locked)</div>
+              <div className="text-sm text-muted">
+                Next Realm: ◇ Astral Bazaar (Locked)
+              </div>
             )}
           </div>
         </div>
