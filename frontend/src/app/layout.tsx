@@ -44,16 +44,23 @@ export default function RootLayout({
                             </main>
 
                             <footer className="cosmic-bottom-nav">
-                                <nav className="cosmic-bottom-nav-inner">
+                                <nav className="cosmic-bottom-nav-inner cosmic-bottom-nav-five">
                                     <Link href="/" className="cosmic-bottom-link">
                                         <span>Home</span>
                                     </Link>
+
                                     <Link href="/nexus" className="cosmic-bottom-link">
                                         <span>Nexus</span>
                                     </Link>
+
                                     <Link href="/find-your-realm" className="cosmic-bottom-link">
                                         <span>Align</span>
                                     </Link>
+
+                                    <Link href="/leaderboard" className="cosmic-bottom-link">
+                                        <span>Rank</span>
+                                    </Link>
+
                                     <Link href="/profile" className="cosmic-bottom-link">
                                         <span>Profile</span>
                                     </Link>

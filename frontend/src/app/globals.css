@@ -224,3 +224,7 @@ body {
         padding-right: 0.75rem;
     }
 }
+
+.cosmic-bottom-nav-five {
+  grid-template-columns: repeat(5, 1fr);
+}
