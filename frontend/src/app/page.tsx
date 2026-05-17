@@ -87,18 +87,18 @@ export default function LandingPage() {
                         emotional state, soundtrack, and path of progression.
                     </p>
 
-                    <div className="landing-actions">
-                        {isAuthenticated ? (
-                            <Link href="/nexus" className="landing-button-primary">
-                                Enter the Nexus
-                            </Link>
-                        ) : (
+                    <div className="landing-actions landing-actions-stacked">
+                        <Link href="/nexus" className="landing-button-primary">
+                            Enter the Nexus
+                        </Link>
+
+                        {!isAuthenticated && (
                             <button
                                 type="button"
-                                onClick={() => signIn("github")}
-                                className="landing-button-primary"
+                                onClick={() => signIn("github", { callbackUrl: "/nexus" })}
+                                className="landing-button-secondary-subtle"
                             >
-                                Sign in to enter
+                                Sign in to save progress
                             </button>
                         )}
                     </div>

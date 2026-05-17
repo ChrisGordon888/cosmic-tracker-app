@@ -11,8 +11,6 @@ import { useMusicPlayer } from '@/hooks/useMusicPlayer';
 import { MUSIC_REGISTRY } from '@/lib/musicRegistry';
 import { REALM_STATE_MAP, type ExperienceMode, type RealmId } from '@/lib/realmStateMap';
 import { REALM_RESULT_CONTENT } from '@/lib/realmResultContent';
-import { FEATURED_CONTENT } from '@/lib/featuredContent';
-import { REALM_PLAYLIST_LINKS } from '@/lib/realmPlaylistLinks';
 import RealmOrbitCard from '@/components/music/RealmOrbitCard';
 import '@/styles/realmShared.css';
 import '@/styles/nexus.css';
@@ -93,29 +91,6 @@ function getModeLabel(mode: ExperienceMode) {
     return 'Shift toward another state';
 }
 
-function ExternalLinkButton({ label, url }: { label: string; url: string }) {
-    if (!url) {
-        return (
-            <span className="nexus-external-link is-disabled">
-                {label}
-                <span>soon</span>
-            </span>
-        );
-    }
-
-    return (
-        <a
-            href={url}
-            target="_blank"
-            rel="noreferrer"
-            className="nexus-external-link"
-        >
-            {label}
-            <span>↗</span>
-        </a>
-    );
-}
-
 export default function CosmicNexusHub() {
     const { data: session, status } = useSession();
     const [moonPhase, setMoonPhase] = useState<any>(null);
@@ -187,16 +162,6 @@ export default function CosmicNexusHub() {
 
     const isRealmUnlocked = (realmId: number): boolean =>
         unlockedRealms.includes(realmId);
-
-    const realms: RealmPortalData[] = REALM_META.map((meta) => {
-        const realmId = parseInt(meta.id);
-
-        return {
-            ...meta,
-            status: isRealmUnlocked(realmId) ? 'unlocked' : 'locked',
-            progress: getRealmProgress(realmId),
-        };
-    });
 
     /**
      * Important V1.1 shift:
@@ -411,47 +376,21 @@ export default function CosmicNexusHub() {
                         </div>
                     </div>
 
-                    <div className="glass-card nexus-panel nexus-featured-card p-5 mb-4 fade-in" style={{ animationDelay: '0.18s' }}>
-                        <div className="flex flex-col lg:flex-row lg:items-center gap-5">
-                            <div
-                                className="nexus-featured-mark"
-                                style={{
-                                    borderColor: `${REALM_STATE_MAP[FEATURED_CONTENT.realmId as RealmId]?.color ?? '#DCBA5C'}55`,
-                                    color: REALM_STATE_MAP[FEATURED_CONTENT.realmId as RealmId]?.color ?? '#DCBA5C',
-                                }}
-                            >
-                                {FEATURED_CONTENT.realmMark}
-                            </div>
+                    <div
+                        className="glass-card nexus-panel nexus-featured-strip p-4 mb-4 fade-in"
+                        style={{ animationDelay: '0.18s' }}
+                    >
+                        <div className="flex flex-col md:flex-row md:items-center gap-3">
+                            <div className="nexus-symbol-icon shrink-0">✦</div>
 
-                            <div className="flex-1 text-center lg:text-left">
-                                <p className="text-xs uppercase tracking-[0.2em] text-muted mb-2">
-                                    {FEATURED_CONTENT.eyebrow}
+                            <div className="flex-1 text-center md:text-left">
+                                <p className="text-xs uppercase tracking-[0.2em] text-muted mb-1">
+                                    Latest Signal
                                 </p>
 
-                                <h2 className="text-2xl md:text-3xl font-display mb-2">
-                                    {FEATURED_CONTENT.title}
-                                </h2>
-
-                                <p className="text-sm text-secondary max-w-2xl">
-                                    {FEATURED_CONTENT.description}
+                                <p className="text-sm text-secondary">
+                                    Featured videos, releases, and playlist links will live here as the COSMIC world expands.
                                 </p>
-
-                                <p className="text-xs text-muted mt-3">
-                                    Featured Realm:{' '}
-                                    <span className="text-secondary">
-                                        {FEATURED_CONTENT.realmMark} {FEATURED_CONTENT.realmName}
-                                    </span>
-                                </p>
-                            </div>
-
-                            <div className="nexus-featured-links">
-                                {FEATURED_CONTENT.links.map((link) => (
-                                    <ExternalLinkButton
-                                        key={link.label}
-                                        label={link.label}
-                                        url={link.url}
-                                    />
-                                ))}
                             </div>
                         </div>
                     </div>
@@ -589,84 +528,6 @@ export default function CosmicNexusHub() {
                         </div>
                     </div>
 
-                    <div className="glass-card nexus-panel nexus-playlist-layer p-5 mb-5 fade-in" style={{ animationDelay: '0.28s' }}>
-                        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-5">
-                            <div>
-                                <p className="text-xs uppercase tracking-[0.2em] text-muted mb-2">
-                                    Free Listening Layer
-                                </p>
-
-                                <h2 className="text-2xl md:text-3xl font-display">
-                                    Realm Playlist Links
-                                </h2>
-
-                                <p className="text-sm text-secondary mt-1">
-                                    Explore COSMIC lanes across YouTube, SoundCloud, Deezer, and future platforms.
-                                </p>
-                            </div>
-
-                            {!isSignedIn && (
-                                <button onClick={() => signIn('github')} className="btn-secondary">
-                                    Sign in to save XP
-                                </button>
-                            )}
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                            {REALM_PLAYLIST_LINKS.map((realm) => (
-                                <div
-                                    key={realm.realmId}
-                                    className="nexus-playlist-card"
-                                    style={{
-                                        borderColor: `${realm.color}33`,
-                                        boxShadow: `0 12px 28px ${realm.color}08`,
-                                    }}
-                                >
-                                    <div className="flex items-start gap-3 mb-3">
-                                        <div
-                                            className="nexus-playlist-mark"
-                                            style={{
-                                                color: realm.color,
-                                                borderColor: `${realm.color}55`,
-                                                background: `${realm.color}12`,
-                                            }}
-                                        >
-                                            {realm.mark}
-                                        </div>
-
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-xs text-muted uppercase tracking-[0.16em]">
-                                                Realm {realm.realmId}
-                                            </p>
-
-                                            <h3 className="font-display text-lg truncate">
-                                                {realm.name}
-                                            </h3>
-
-                                            <p className="text-xs text-secondary mt-1">
-                                                {realm.tagline}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <p className="text-xs text-muted mb-4 leading-relaxed">
-                                        {realm.listenerCue}
-                                    </p>
-
-                                    <div className="flex flex-wrap gap-2">
-                                        {realm.links.map((link) => (
-                                            <ExternalLinkButton
-                                                key={`${realm.realmId}-${link.label}`}
-                                                label={link.label}
-                                                url={link.url}
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
                     <div className="glass-card nexus-panel nexus-soundtracks p-6 mb-5 fade-in" style={{ animationDelay: '0.3s' }}>
                         <div className="flex items-center justify-between gap-4 mb-5">
                             <div>
@@ -675,7 +536,7 @@ export default function CosmicNexusHub() {
                                 </h2>
 
                                 <p className="text-secondary text-sm mt-1">
-                                    Music is open. Realm mastery is earned through the deeper signed-in path.
+                                    Explore the six realm soundtracks. Music is open; progression is the deeper path.
                                 </p>
                             </div>
                         </div>
@@ -727,6 +588,35 @@ export default function CosmicNexusHub() {
                             </div>
                         )}
                     </div>
+
+                    <div
+                        className="glass-card nexus-panel nexus-external-strip p-4 mb-5 fade-in"
+                        style={{ animationDelay: '0.35s' }}
+                    >
+                        <div className="flex flex-col md:flex-row md:items-center gap-4">
+                            <div className="flex-1 text-center md:text-left">
+                                <p className="text-xs uppercase tracking-[0.2em] text-muted mb-1">
+                                    External Listening
+                                </p>
+
+                                <h3 className="text-lg font-display mb-1">
+                                    Playlist links coming soon
+                                </h3>
+
+                                <p className="text-sm text-secondary">
+                                    Future links will connect each realm to YouTube, SoundCloud, Deezer,
+                                    and other listening spaces without replacing the in-app realm soundtracks.
+                                </p>
+                            </div>
+
+                            <div className="nexus-external-mini-links">
+                                <span>YouTube</span>
+                                <span>SoundCloud</span>
+                                <span>Deezer</span>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </>

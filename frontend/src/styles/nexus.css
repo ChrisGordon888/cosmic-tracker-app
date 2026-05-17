@@ -696,3 +696,45 @@
     gap: 0.35rem;
   }
 }
+
+.nexus-external-strip {
+  border-color: rgba(224, 232, 240, 0.12);
+  opacity: 0.88;
+}
+
+.nexus-external-mini-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.nexus-external-mini-links span {
+  padding: 0.45rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(224, 232, 240, 0.12);
+  background: rgba(255, 255, 255, 0.035);
+  color: rgba(205, 214, 225, 0.68);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+  .nexus-external-strip {
+    text-align: center;
+  }
+
+  .nexus-external-mini-links {
+    width: 100%;
+  }
+
+  .nexus-external-mini-links span {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.nexus-featured-strip {
+  border-color: rgba(220, 186, 92, 0.14);
+}
