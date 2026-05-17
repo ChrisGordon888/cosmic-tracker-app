@@ -50,9 +50,11 @@ export default function Realm44() {
 
   const realmTrials =
     user?.completedTrials?.filter((t: any) => Number(t.realmId) === REALM_ID) ?? [];
+
   const completedTrialsCount = realmTrials.filter(
     (t: any) => t.isComplete || (t.stepsCompleted ?? 0) >= 3
   ).length;
+
   const realmProgress = Math.floor((completedTrialsCount / 3) * 100);
 
   const getTrial = (trialId: string) =>
@@ -60,6 +62,7 @@ export default function Realm44() {
 
   const realmLocs =
     user?.visitedLocations?.filter((l: any) => Number(l.realmId) === REALM_ID) ?? [];
+
   const hasVisited = (locationId: string) =>
     realmLocs.some((l: any) => l.locationId === locationId);
 
@@ -176,10 +179,21 @@ export default function Realm44() {
 
   if (status === 'loading' || userLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="neon-glow text-4xl mb-4">🛍️</div>
-          <p className="text-xl">Entering The Astral Bazaar...</p>
+      <div className="min-h-screen grid place-items-center p-6 nexus-shell">
+        <div className="glass-card nexus-panel max-w-md text-center">
+          <div className="mx-auto mb-4 w-12 h-12 rounded-full border border-white/15 grid place-items-center text-[#DCBA5C]">
+            ◇
+          </div>
+
+          <p className="text-xs uppercase tracking-[0.22em] text-muted mb-2">
+            Entering Realm
+          </p>
+
+          <h1 className="text-3xl font-display mb-3">Astral Bazaar</h1>
+
+          <p className="text-secondary">
+            Syncing realm progress, music state, and exchange path.
+          </p>
         </div>
       </div>
     );
@@ -187,14 +201,24 @@ export default function Realm44() {
 
   if (!session) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="glass-card p-12 max-w-md text-center">
-          <h1 className="text-4xl font-display neon-glow mb-4">🔒 ACCESS DENIED</h1>
-          <p className="text-lg text-secondary mb-8">
-            You must be logged in to enter this realm.
+      <div className="min-h-screen grid place-items-center p-6 nexus-shell">
+        <div className="glass-card nexus-panel max-w-md text-center">
+          <div className="mx-auto mb-4 w-12 h-12 rounded-full border border-white/15 grid place-items-center text-[#DCBA5C]">
+            ✦
+          </div>
+
+          <p className="text-xs uppercase tracking-[0.22em] text-muted mb-2">
+            Realm Locked
           </p>
+
+          <h1 className="text-3xl font-display mb-3">Sign in to enter</h1>
+
+          <p className="text-secondary mb-6">
+            Save realm progress, XP, listening history, and trial completion.
+          </p>
+
           <Link href="/auth" className="btn-primary">
-            SIGN IN
+            Open Cosmic Access
           </Link>
         </div>
       </div>
@@ -230,20 +254,25 @@ export default function Realm44() {
       <div className="min-h-screen pb-32 realm-44-shell">
         <div className="container mx-auto px-4 py-8 max-w-6xl realm-44-container">
           <header className="text-center mb-10 fade-in realm-44-hero">
-            <div className="text-6xl mb-4 neon-glow">🛍️</div>
-            <h1 className="text-5xl md:text-6xl font-display neon-glow mb-2 realm-44-title">
+            <div className="realm-44-symbol-mark mb-4">◇</div>
+
+            <h1 className="text-5xl md:text-6xl font-display mb-2 realm-44-title">
               ASTRAL BAZAAR
             </h1>
+
             <p className="text-xl text-secondary mb-2">[ REALM 44 ]</p>
             <p className="text-lg text-muted">
-              Hustle &amp; Wisdom • Where Everything Has Its Price
+              Value &amp; Exchange • Where Everything Has Its Price
             </p>
+
             <div className="mt-6 flex justify-center items-center gap-4">
               <div className="level-badge">LVL {userLevel}</div>
+
               <div className="flex-1 max-w-xs">
                 <div className="stat-bar">
                   <div className="stat-bar-fill" style={{ width: `${xpPercent}%` }} />
                 </div>
+
                 <p className="text-sm text-secondary mt-1">
                   {userXP} / {safeXpToNext} XP
                 </p>
@@ -262,26 +291,33 @@ export default function Realm44() {
           <RealmSoundstage
             realmId={44}
             realmName="Astral Bazaar"
-            realmIcon="🛍️"
+            realmIcon="◇"
             realmColor="#F59E0B"
             intro="Astral Bazaar is where discernment, value, temptation, reciprocity, and wise exchange come into focus. Let the soundtrack tell you whether this realm matches what you need to evaluate right now."
             supportText="Start with the music first. If this realm feels true, then go deeper into its trials, locations, and symbols."
             progress={realmProgress}
             isUnlocked={true}
             isCurrentRealm={true}
+            compactOnMobile
           />
 
-          <div className="glass-card realm-44-overview p-6 mb-8 fade-in" style={{ animationDelay: '0.1s' }}>
+          <div
+            className="glass-card realm-44-overview p-6 mb-8 fade-in"
+            style={{ animationDelay: '0.1s' }}
+          >
             <div className="flex flex-col lg:flex-row lg:items-start gap-6">
               <div className="flex-1">
-                <h2 className="text-2xl font-display mb-3">💰 Realm Overview</h2>
+                <h2 className="text-2xl font-display mb-3">Realm Overview</h2>
+
                 <p className="text-secondary mb-4">
-                  The Astral Bazaar is the realm of value, boundaries, discernment, and exchange. It is where glitter is tested, motives are revealed, and what is truly worth your energy becomes clear.
+                  The Astral Bazaar is the realm of value, boundaries, discernment,
+                  and exchange. It is where glitter is tested, motives are revealed,
+                  and what is truly worth your energy becomes clear.
                 </p>
 
                 <div className="mb-4">
                   <div className="flex items-center justify-between text-sm mb-2">
-                    <span className="text-secondary">Realm Progress</span>
+                    <span className="text-secondary">Realm Path Progress</span>
                     <span className="text-stats">{realmProgress}%</span>
                   </div>
 
@@ -294,7 +330,7 @@ export default function Realm44() {
                 </div>
 
                 <div className="text-sm text-muted">
-                  {completedTrialsCount} of 3 trials complete
+                  {completedTrialsCount} of 3 optional realm trials complete
                 </div>
               </div>
 
@@ -303,7 +339,7 @@ export default function Realm44() {
                   <div className="text-2xl font-display text-glow realm-44-glow">
                     {completedTrialsCount} / 3
                   </div>
-                  <div className="text-xs text-muted">Trials Complete</div>
+                  <div className="text-xs text-muted">Realm Path Trials</div>
                 </div>
 
                 <div className="glass-card p-4 text-center">
@@ -316,20 +352,26 @@ export default function Realm44() {
             </div>
           </div>
 
-          <div className="glass-card p-4 mb-8 fade-in realm-44-progression-toggle" style={{ animationDelay: '0.15s' }}>
+          <div
+            className="glass-card p-4 mb-8 fade-in realm-44-progression-toggle"
+            style={{ animationDelay: '0.15s' }}
+          >
             <button
               onClick={() => setShowProgression((prev) => !prev)}
               className="w-full flex items-center justify-between text-left"
             >
               <div>
                 <p className="text-xs uppercase tracking-[0.18em] text-white/60 mb-1">
-                  Deeper Realm Progression
+                  Optional Realm Path
                 </p>
+
                 <h2 className="text-xl font-display">
-                  Trials, locations, and interactive systems
+                  Explore value, discernment, and exchange
                 </h2>
+
                 <p className="text-sm text-muted mt-1">
-                  This layer is still being refined. The main focus of Astral Bazaar is music and emotional navigation.
+                  The music is the entry point. Open the realm path when you want to move
+                  deeper into boundaries, temptation, reciprocity, and worth.
                 </p>
               </div>
 
@@ -343,15 +385,20 @@ export default function Realm44() {
             <>
               <div className="mb-8 fade-in">
                 <h2 className="text-3xl font-display mb-6 flex items-center gap-3">
-                  <span className="text-glow">🎯</span> DEEPER REALM PATHS <span className="text-glow">🎯</span>
+                  <span className="text-glow">✦</span>
+                  REALM PATH
                 </h2>
 
                 <div className="space-y-6">
                   <div className="quest-card fade-in" style={{ animationDelay: '0.2s' }}>
                     <div className="flex items-start gap-4">
-                      <div className="text-4xl">⏳</div>
+                      <div className="text-4xl">◇</div>
+
                       <div className="flex-1">
-                        <h3 className="text-xl font-display mb-2">Trial of the Barter of Truth</h3>
+                        <h3 className="text-xl font-display mb-2">
+                          Trial of the Barter of Truth
+                        </h3>
+
                         <p className="text-sm text-secondary mb-3">
                           Learn what truth costs. Know what should never be traded away.
                         </p>
@@ -361,6 +408,7 @@ export default function Realm44() {
                             <span>Progress</span>
                             <span>{trial1?.stepsCompleted ?? 0} / 3 Steps</span>
                           </div>
+
                           <div className="stat-bar">
                             <div
                               className="stat-bar-fill realm-44-bar"
@@ -370,7 +418,7 @@ export default function Realm44() {
                         </div>
 
                         {trial1?.isComplete ? (
-                          <div className="text-green-400 font-bold">✓ COMPLETE</div>
+                          <div className="text-green-400 font-bold">✓ Complete</div>
                         ) : !trial1 ? (
                           <button
                             className="btn-primary"
@@ -382,13 +430,14 @@ export default function Realm44() {
                             }
                             disabled={isBusy}
                           >
-                            BEGIN TRIAL →
+                            Begin Realm Path →
                           </button>
                         ) : trial1.stepsCompleted === 0 && !hasVisited('merchant-quarter') ? (
                           <>
                             <p className="text-sm text-muted italic mb-3">
-                              📍 Visit <strong>The Merchant Quarter</strong> below to unlock Step 1.
+                              Visit <strong>The Merchant Quarter</strong> below to unlock Step 1.
                             </p>
+
                             <button
                               className="btn-secondary"
                               onClick={() =>
@@ -396,7 +445,7 @@ export default function Realm44() {
                               }
                               disabled={isBusy}
                             >
-                              GO TO LOCATIONS ↓
+                              Go to Locations ↓
                             </button>
                           </>
                         ) : trial1Puzzle ? (
@@ -415,13 +464,16 @@ export default function Realm44() {
                     style={{ animationDelay: '0.3s' }}
                   >
                     <div className="flex items-start gap-4">
-                      <div className="text-4xl">🔮</div>
+                      <div className="text-4xl">◈</div>
+
                       <div className="flex-1">
-                        <h3 className="text-xl font-display mb-2">Trial of Discernment</h3>
+                        <h3 className="text-xl font-display mb-2">
+                          Trial of Discernment
+                        </h3>
 
                         {!trial1?.isComplete ? (
                           <p className="text-sm text-muted italic">
-                            🔒 Complete Trial of the Barter of Truth to unlock
+                            Locked — complete Trial of the Barter of Truth to unlock
                           </p>
                         ) : (
                           <>
@@ -434,6 +486,7 @@ export default function Realm44() {
                                 <span>Progress</span>
                                 <span>{trial2?.stepsCompleted ?? 0} / 3 Steps</span>
                               </div>
+
                               <div className="stat-bar">
                                 <div
                                   className="stat-bar-fill realm-44-bar"
@@ -443,7 +496,7 @@ export default function Realm44() {
                             </div>
 
                             {trial2?.isComplete ? (
-                              <div className="text-green-400 font-bold">✓ COMPLETE</div>
+                              <div className="text-green-400 font-bold">✓ Complete</div>
                             ) : !trial2 ? (
                               <button
                                 className="btn-primary"
@@ -452,13 +505,14 @@ export default function Realm44() {
                                 }
                                 disabled={isBusy}
                               >
-                                BEGIN TRIAL →
+                                Begin Trial of Discernment →
                               </button>
                             ) : trial2.stepsCompleted === 0 && !hasVisited('gamblers-den') ? (
                               <>
                                 <p className="text-sm text-muted italic mb-3">
-                                  📍 Visit <strong>The Gambler&apos;s Den</strong> below to unlock Step 1.
+                                  Visit <strong>The Gambler&apos;s Den</strong> below to unlock Step 1.
                                 </p>
+
                                 <button
                                   className="btn-secondary"
                                   onClick={() =>
@@ -468,7 +522,7 @@ export default function Realm44() {
                                   }
                                   disabled={isBusy}
                                 >
-                                  GO TO LOCATIONS ↓
+                                  Go to Locations ↓
                                 </button>
                               </>
                             ) : trial2Puzzle ? (
@@ -489,18 +543,21 @@ export default function Realm44() {
                     style={{ animationDelay: '0.4s' }}
                   >
                     <div className="flex items-start gap-4">
-                      <div className="text-4xl">♾️</div>
+                      <div className="text-4xl">∞</div>
+
                       <div className="flex-1">
-                        <h3 className="text-xl font-display mb-2">Trial of Sacred Exchange</h3>
+                        <h3 className="text-xl font-display mb-2">
+                          Trial of Sacred Exchange
+                        </h3>
 
                         {!trial2?.isComplete ? (
                           <p className="text-sm text-muted italic">
-                            🔒 Complete Trial of Discernment to unlock
+                            Locked — complete Trial of Discernment to unlock
                           </p>
                         ) : (
                           <>
                             <p className="text-sm text-secondary mb-3">
-                              A sacred exchange leaves both sides more whole. Master the art of giving and receiving in perfect integrity.
+                              A sacred exchange leaves both sides more whole. Master the art of giving and receiving in integrity.
                             </p>
 
                             <div className="mb-4">
@@ -508,6 +565,7 @@ export default function Realm44() {
                                 <span>Progress</span>
                                 <span>{trial3?.stepsCompleted ?? 0} / 3 Steps</span>
                               </div>
+
                               <div className="stat-bar">
                                 <div
                                   className="stat-bar-fill realm-44-bar"
@@ -517,7 +575,7 @@ export default function Realm44() {
                             </div>
 
                             {trial3?.isComplete ? (
-                              <div className="text-green-400 font-bold">✓ COMPLETE</div>
+                              <div className="text-green-400 font-bold">✓ Complete</div>
                             ) : !trial3 ? (
                               <button
                                 className="btn-primary"
@@ -529,7 +587,7 @@ export default function Realm44() {
                                 }
                                 disabled={isBusy}
                               >
-                                BEGIN TRIAL →
+                                Begin Trial of Sacred Exchange →
                               </button>
                             ) : trial3Puzzle ? (
                               <TrialPuzzle
@@ -548,8 +606,10 @@ export default function Realm44() {
 
               <div ref={locationsSectionRef} id="locations-section" className="mb-8 fade-in">
                 <h2 className="text-3xl font-display mb-6 flex items-center gap-3">
-                  <span className="text-glow">📍</span> LOCATIONS <span className="text-glow">📍</span>
+                  <span className="text-glow">⌖</span>
+                  LOCATIONS
                 </h2>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div
                     className={`realm-portal fade-in ${
@@ -558,20 +618,24 @@ export default function Realm44() {
                     style={{ animationDelay: '0.5s' }}
                   >
                     <div className="flex items-start gap-4">
-                      <div className="text-4xl">🏪</div>
+                      <div className="text-4xl">▦</div>
+
                       <div className="flex-1">
-                        <h3 className="text-lg font-display mb-2">The Merchant Quarter</h3>
+                        <h3 className="text-lg font-display mb-2">
+                          The Merchant Quarter
+                        </h3>
+
                         <p className="text-sm text-secondary mb-1">
                           Endless stalls selling memories, skills, and impossible artefacts.
                         </p>
 
                         {!merchantQuarterUnlocked ? (
                           <p className="text-xs text-muted italic mb-3">
-                            🔒 Begin Trial of the Barter of Truth to unlock this location
+                            Begin Trial of the Barter of Truth to unlock this location.
                           </p>
                         ) : !hasVisited('merchant-quarter') ? (
                           <p className="text-xs text-glow mb-3">
-                            ⚠️ Required for Trial of the Barter of Truth — Step 1
+                            Required for Trial of the Barter of Truth — Step 1
                           </p>
                         ) : null}
 
@@ -585,10 +649,10 @@ export default function Realm44() {
                           }
                         >
                           {hasVisited('merchant-quarter')
-                            ? '✅ EXPLORED'
+                            ? 'Explored'
                             : !merchantQuarterUnlocked
-                            ? '🔒 LOCKED'
-                            : 'EXPLORE →'}
+                              ? 'Locked'
+                              : 'Explore →'}
                         </button>
                       </div>
                     </div>
@@ -601,20 +665,24 @@ export default function Realm44() {
                     style={{ animationDelay: '0.6s' }}
                   >
                     <div className="flex items-start gap-4">
-                      <div className="text-4xl">🎲</div>
+                      <div className="text-4xl">◈</div>
+
                       <div className="flex-1">
-                        <h3 className="text-lg font-display mb-2">The Gambler&apos;s Den</h3>
+                        <h3 className="text-lg font-display mb-2">
+                          The Gambler&apos;s Den
+                        </h3>
+
                         <p className="text-sm text-secondary mb-1">
-                          Where fortunes shift with every roll and fate bends to the bold.
+                          Where fortunes shift with every choice and discernment decides the cost.
                         </p>
 
                         {!gamblersDenUnlocked ? (
                           <p className="text-xs text-muted italic mb-3">
-                            🔒 Begin Trial of Discernment to unlock this location
+                            Begin Trial of Discernment to unlock this location.
                           </p>
                         ) : !hasVisited('gamblers-den') ? (
                           <p className="text-xs text-glow mb-3">
-                            ⚠️ Required for Trial of Discernment — Step 1
+                            Required for Trial of Discernment — Step 1
                           </p>
                         ) : null}
 
@@ -624,10 +692,10 @@ export default function Realm44() {
                           disabled={!gamblersDenUnlocked || hasVisited('gamblers-den') || isBusy}
                         >
                           {hasVisited('gamblers-den')
-                            ? '✅ EXPLORED'
+                            ? 'Explored'
                             : !gamblersDenUnlocked
-                            ? '🔒 LOCKED'
-                            : 'EXPLORE →'}
+                              ? 'Locked'
+                              : 'Explore →'}
                         </button>
                       </div>
                     </div>
@@ -638,41 +706,42 @@ export default function Realm44() {
           )}
 
           {completedTrialsCount >= 3 && (
-            <div
-              className="glass-card p-8 mb-8 text-center fade-in realm-44-complete-card"
-              style={{ border: '1px solid rgba(245,158,11,0.45)' }}
-            >
+            <div className="glass-card p-8 mb-8 text-center fade-in realm-44-complete-card">
               <h3 className="text-2xl font-display mb-4" style={{ color: '#F59E0B' }}>
-                🛍️ ASTRAL BAZAAR MASTERED 🛍️
+                ASTRAL BAZAAR MASTERED
               </h3>
+
               <p className="text-secondary mb-6 max-w-2xl mx-auto">
-                You have mastered Sacred Discernment and the art of exchange. The final realm awaits — InterSiddhi, where all paths converge at the Source.
+                You have mastered discernment and the art of exchange. The final realm awaits —
+                InterSiddhi, where all paths converge at the source.
               </p>
+
               <Link href="/realms/0">
                 <button
                   className="btn-primary"
                   style={{ fontSize: '1.1rem', padding: '0.75rem 2rem' }}
                 >
-                  ENTER INTERSIDDHI →
+                  Enter InterSiddhi →
                 </button>
               </Link>
             </div>
           )}
 
           <div
-            className="flex justify-between items-center fade-in"
+            className="flex flex-col sm:flex-row justify-between items-center gap-4 fade-in"
             style={{ animationDelay: '0.8s' }}
           >
             <Link href="/nexus">
-              <button className="btn-secondary">← BACK TO NEXUS</button>
+              <button className="btn-secondary">← Back to Nexus</button>
             </Link>
-            {completedTrialsCount >= 3 ? (
+
+            {isInterSiddhiUnlocked ? (
               <Link href="/realms/0">
-                <button className="btn-primary">🌌 INTERSIDDHI →</button>
+                <button className="btn-primary">Enter InterSiddhi →</button>
               </Link>
             ) : (
               <div className="text-sm text-muted">
-                Next Realm: 🌌 InterSiddhi (🔒 Locked)
+                Next Realm: ∞ InterSiddhi (Locked)
               </div>
             )}
           </div>
