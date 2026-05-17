@@ -108,6 +108,7 @@ export default function Realm101() {
   useEffect(() => {
     if (completedTrialsCount >= 3 && !hasUnlockedRef.current && user) {
       const alreadyUnlocked = user?.unlockedRealms?.includes(NEXT_REALM_ID);
+
       if (!alreadyUnlocked) {
         hasUnlockedRef.current = true;
         unlockNextRealm({ variables: { realmId: NEXT_REALM_ID } })
@@ -170,10 +171,21 @@ export default function Realm101() {
 
   if (status === 'loading' || userLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="neon-glow text-4xl mb-4">🌙</div>
-          <p className="text-xl">Walking The Moonlit Roads...</p>
+      <div className="min-h-screen grid place-items-center p-6 nexus-shell">
+        <div className="glass-card nexus-panel max-w-md text-center">
+          <div className="mx-auto mb-4 w-12 h-12 rounded-full border border-white/15 grid place-items-center text-[#DCBA5C]">
+            ☾
+          </div>
+
+          <p className="text-xs uppercase tracking-[0.22em] text-muted mb-2">
+            Entering Realm
+          </p>
+
+          <h1 className="text-3xl font-display mb-3">Moonlit Roads</h1>
+
+          <p className="text-secondary">
+            Syncing realm progress, music state, and reflection path.
+          </p>
         </div>
       </div>
     );
@@ -181,14 +193,24 @@ export default function Realm101() {
 
   if (!session) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="glass-card p-12 max-w-md text-center">
-          <h1 className="text-4xl font-display neon-glow mb-4">🔒 ACCESS DENIED</h1>
-          <p className="text-lg text-secondary mb-8">
-            You must be logged in to enter this realm.
+      <div className="min-h-screen grid place-items-center p-6 nexus-shell">
+        <div className="glass-card nexus-panel max-w-md text-center">
+          <div className="mx-auto mb-4 w-12 h-12 rounded-full border border-white/15 grid place-items-center text-[#DCBA5C]">
+            ✦
+          </div>
+
+          <p className="text-xs uppercase tracking-[0.22em] text-muted mb-2">
+            Realm Locked
           </p>
+
+          <h1 className="text-3xl font-display mb-3">Sign in to enter</h1>
+
+          <p className="text-secondary mb-6">
+            Save realm progress, XP, listening history, and trial completion.
+          </p>
+
           <Link href="/auth" className="btn-primary">
-            SIGN IN
+            Open Cosmic Access
           </Link>
         </div>
       </div>
@@ -213,21 +235,25 @@ export default function Realm101() {
       <div className="min-h-screen pb-32 realm-101-shell">
         <div className="container mx-auto px-4 py-8 max-w-6xl realm-101-container">
           <header className="text-center mb-10 fade-in realm-101-hero">
-            <div className="text-6xl mb-4 neon-glow">🌙</div>
-            <h1 className="text-5xl md:text-6xl font-display neon-glow mb-2 realm-101-title">
+            <div className="realm-101-symbol-mark mb-4">☾</div>
+
+            <h1 className="text-5xl md:text-6xl font-display mb-2 realm-101-title">
               MOONLIT ROADS
             </h1>
+
             <p className="text-xl text-secondary mb-2">[ REALM 101 ]</p>
             <p className="text-lg text-muted">
-              Reflection & Shadows • Where Memory Meets Mystery
+              Reflection &amp; Shadows • Where Memory Meets Mystery
             </p>
 
             <div className="mt-6 flex justify-center items-center gap-4">
               <div className="level-badge">LVL {userLevel}</div>
+
               <div className="flex-1 max-w-xs">
                 <div className="stat-bar">
                   <div className="stat-bar-fill" style={{ width: `${xpPercent}%` }} />
                 </div>
+
                 <p className="text-sm text-secondary mt-1">
                   {userXP} / {safeXpToNext} XP
                 </p>
@@ -246,26 +272,33 @@ export default function Realm101() {
           <RealmSoundstage
             realmId={101}
             realmName="Moonlit Roads"
-            realmIcon="🌙"
+            realmIcon="☾"
             realmColor="#38BDF8"
             intro="Moonlit Roads is where reflection, grief, distance, memory, and emotional integration move at a quieter pace. Let the soundtrack tell you whether this realm matches what you need to process right now."
             supportText="Start with the music first. If this realm feels true, then go deeper into its trials, locations, and symbols."
             progress={realmProgress}
             isUnlocked={true}
             isCurrentRealm={true}
+            compactOnMobile
           />
 
-          <div className="glass-card realm-101-overview p-6 mb-8 fade-in" style={{ animationDelay: '0.1s' }}>
+          <div
+            className="glass-card realm-101-overview p-6 mb-8 fade-in"
+            style={{ animationDelay: '0.1s' }}
+          >
             <div className="flex flex-col lg:flex-row lg:items-start gap-6">
               <div className="flex-1">
-                <h2 className="text-2xl font-display mb-3">🌙 Realm Overview</h2>
+                <h2 className="text-2xl font-display mb-3">Realm Overview</h2>
+
                 <p className="text-secondary mb-4">
-                  Moonlit Roads is a realm of reflection, distance, and shadow integration. It is where memory softens, emotion becomes legible, and the inner road reveals what is ready to be understood.
+                  Moonlit Roads is a realm of reflection, distance, and shadow integration.
+                  It is where memory softens, emotion becomes legible, and the inner road
+                  reveals what is ready to be understood.
                 </p>
 
                 <div className="mb-4">
                   <div className="flex items-center justify-between text-sm mb-2">
-                    <span className="text-secondary">Realm Progress</span>
+                    <span className="text-secondary">Realm Path Progress</span>
                     <span className="text-stats">{realmProgress}%</span>
                   </div>
 
@@ -278,7 +311,7 @@ export default function Realm101() {
                 </div>
 
                 <div className="text-sm text-muted">
-                  {completedTrialsCount} of 3 trials complete
+                  {completedTrialsCount} of 3 optional realm trials complete
                 </div>
               </div>
 
@@ -287,7 +320,7 @@ export default function Realm101() {
                   <div className="text-2xl font-display text-glow realm-101-glow">
                     {completedTrialsCount} / 3
                   </div>
-                  <div className="text-xs text-muted">Trials Complete</div>
+                  <div className="text-xs text-muted">Realm Path Trials</div>
                 </div>
 
                 <div className="glass-card p-4 text-center">
@@ -300,20 +333,26 @@ export default function Realm101() {
             </div>
           </div>
 
-          <div className="glass-card p-4 mb-8 fade-in realm-101-progression-toggle" style={{ animationDelay: '0.15s' }}>
+          <div
+            className="glass-card p-4 mb-8 fade-in realm-101-progression-toggle"
+            style={{ animationDelay: '0.15s' }}
+          >
             <button
               onClick={() => setShowProgression((prev) => !prev)}
               className="w-full flex items-center justify-between text-left"
             >
               <div>
                 <p className="text-xs uppercase tracking-[0.18em] text-white/60 mb-1">
-                  Deeper Realm Progression
+                  Optional Realm Path
                 </p>
+
                 <h2 className="text-xl font-display">
-                  Trials, locations, and interactive systems
+                  Explore reflection, shadow, and clarity
                 </h2>
+
                 <p className="text-sm text-muted mt-1">
-                  This layer is still being refined. The main focus of Moonlit Roads is music and emotional navigation.
+                  The music is the entry point. Open the realm path when you want to move
+                  deeper into memory, shadow, and integration.
                 </p>
               </div>
 
@@ -327,17 +366,23 @@ export default function Realm101() {
             <>
               <div className="mb-8 fade-in">
                 <h2 className="text-3xl font-display mb-6 flex items-center gap-3">
-                  <span className="text-glow">🎯</span> DEEPER REALM PATHS <span className="text-glow">🎯</span>
+                  <span className="text-glow">✦</span>
+                  REALM PATH
                 </h2>
 
                 <div className="space-y-4">
                   <div className="quest-card fade-in" style={{ animationDelay: '0.2s' }}>
                     <div className="flex items-start gap-4">
-                      <div className="text-4xl">🌑</div>
+                      <div className="text-4xl">☾</div>
+
                       <div className="flex-1">
-                        <h3 className="text-xl font-display mb-2">Trial of Shadow Integration</h3>
+                        <h3 className="text-xl font-display mb-2">
+                          Trial of Shadow Integration
+                        </h3>
+
                         <p className="text-sm text-secondary mb-3">
-                          Enter the shadow path, ride the Rainfall Train, confront what was denied, and integrate what follows you in silence.
+                          Enter the shadow path, ride the Rainfall Train, confront what was denied,
+                          and integrate what follows you in silence.
                         </p>
 
                         <div className="mb-3">
@@ -345,6 +390,7 @@ export default function Realm101() {
                             <span>Progress</span>
                             <span>{trial1Steps} / 3 Steps</span>
                           </div>
+
                           <div className="stat-bar">
                             <div
                               className="stat-bar-fill realm-101-bar"
@@ -364,10 +410,11 @@ export default function Realm101() {
                                 )
                               }
                             >
-                              BEGIN TRIAL OF SHADOW INTEGRATION →
+                              Begin Realm Path →
                             </button>
+
                             <p className="text-xs text-muted mt-2">
-                              🔒 Start the trial to enter the shadow path.
+                              Start the trial to enter the shadow path.
                             </p>
                           </>
                         )}
@@ -375,10 +422,11 @@ export default function Realm101() {
                         {trial1Started && trial1Steps === 0 && (
                           <>
                             <button className="btn-primary mt-4" onClick={goToLocations}>
-                              STEP 1: BOARD THE RAINFALL TRAIN →
+                              Step 1: Board the Rainfall Train →
                             </button>
+
                             <p className="text-xs text-muted mt-2">
-                              🔒 Visit The Rainfall Train to auto-complete the first step.
+                              Visit The Rainfall Train to auto-complete the first step.
                             </p>
                           </>
                         )}
@@ -393,8 +441,9 @@ export default function Realm101() {
                                 await advanceTrialStep('trial-shadow-integration');
                               }}
                             />
+
                             <p className="text-xs text-muted mt-2">
-                              🔒 Solve the first shadow-clue.
+                              Solve the first shadow clue.
                             </p>
                           </>
                         )}
@@ -409,14 +458,15 @@ export default function Realm101() {
                                 await advanceTrialStep('trial-shadow-integration');
                               }}
                             />
+
                             <p className="text-xs text-muted mt-2">
-                              🔒 Face what follows in silence and complete the trial.
+                              Face what follows in silence and complete the trial.
                             </p>
                           </>
                         )}
 
                         {trial1?.isComplete && (
-                          <div className="text-green-400 font-bold">✓ COMPLETE</div>
+                          <div className="text-green-400 font-bold">✓ Complete</div>
                         )}
                       </div>
                     </div>
@@ -427,9 +477,13 @@ export default function Realm101() {
                     style={{ animationDelay: '0.3s' }}
                   >
                     <div className="flex items-start gap-4">
-                      <div className="text-4xl">🌓</div>
+                      <div className="text-4xl">◐</div>
+
                       <div className="flex-1">
-                        <h3 className="text-xl font-display mb-2">Trial of Midnight Clarity</h3>
+                        <h3 className="text-xl font-display mb-2">
+                          Trial of Midnight Clarity
+                        </h3>
+
                         {trial1?.isComplete ? (
                           <>
                             <p className="text-sm text-secondary mb-3">
@@ -441,6 +495,7 @@ export default function Realm101() {
                                 <span>Progress</span>
                                 <span>{trial2Steps} / 3 Steps</span>
                               </div>
+
                               <div className="stat-bar">
                                 <div
                                   className="stat-bar-fill realm-101-bar"
@@ -460,10 +515,11 @@ export default function Realm101() {
                                     )
                                   }
                                 >
-                                  BEGIN TRIAL OF MIDNIGHT CLARITY →
+                                  Begin Trial of Midnight Clarity →
                                 </button>
+
                                 <p className="text-xs text-muted mt-2">
-                                  🔒 Start the trial to open the noir path.
+                                  Start the trial to open the noir path.
                                 </p>
                               </>
                             )}
@@ -471,10 +527,11 @@ export default function Realm101() {
                             {trial2Started && trial2Steps === 0 && (
                               <>
                                 <button className="btn-primary mt-4" onClick={goToLocations}>
-                                  STEP 1: VISIT NOIR DISTRICT →
+                                  Step 1: Visit Noir District →
                                 </button>
+
                                 <p className="text-xs text-muted mt-2">
-                                  🔒 Visit The Noir District to auto-complete the first step.
+                                  Visit The Noir District to auto-complete the first step.
                                 </p>
                               </>
                             )}
@@ -489,8 +546,9 @@ export default function Realm101() {
                                     await advanceTrialStep('trial-midnight-clarity');
                                   }}
                                 />
+
                                 <p className="text-xs text-muted mt-2">
-                                  🔒 Solve the first midnight clue.
+                                  Solve the first midnight clue.
                                 </p>
                               </>
                             )}
@@ -505,19 +563,20 @@ export default function Realm101() {
                                     await advanceTrialStep('trial-midnight-clarity');
                                   }}
                                 />
+
                                 <p className="text-xs text-muted mt-2">
-                                  🔒 Complete the final clarity test.
+                                  Complete the final clarity test.
                                 </p>
                               </>
                             )}
 
                             {trial2?.isComplete && (
-                              <div className="text-green-400 font-bold">✓ COMPLETE</div>
+                              <div className="text-green-400 font-bold">✓ Complete</div>
                             )}
                           </>
                         ) : (
                           <p className="text-sm text-muted italic">
-                            🔒 Complete Trial of Shadow Integration to unlock
+                            Locked — complete Trial of Shadow Integration to unlock
                           </p>
                         )}
                       </div>
@@ -529,11 +588,13 @@ export default function Realm101() {
                     style={{ animationDelay: '0.4s' }}
                   >
                     <div className="flex items-start gap-4">
-                      <div className="text-4xl">🌕</div>
+                      <div className="text-4xl">◯</div>
+
                       <div className="flex-1">
                         <h3 className="text-xl font-display mb-2">
                           Trial of Illuminated Darkness
                         </h3>
+
                         {trial2?.isComplete ? (
                           <>
                             <p className="text-sm text-secondary mb-3">
@@ -545,6 +606,7 @@ export default function Realm101() {
                                 <span>Progress</span>
                                 <span>{trial3Steps} / 3 Steps</span>
                               </div>
+
                               <div className="stat-bar">
                                 <div
                                   className="stat-bar-fill realm-101-bar"
@@ -564,10 +626,11 @@ export default function Realm101() {
                                     )
                                   }
                                 >
-                                  BEGIN TRIAL OF ILLUMINATED DARKNESS →
+                                  Begin Trial of Illuminated Darkness →
                                 </button>
+
                                 <p className="text-xs text-muted mt-2">
-                                  🔒 Start the trial to enter the illuminated path.
+                                  Start the trial to enter the illuminated path.
                                 </p>
                               </>
                             )}
@@ -582,8 +645,9 @@ export default function Realm101() {
                                     await advanceTrialStep('trial-illuminated-darkness');
                                   }}
                                 />
+
                                 <p className="text-xs text-muted mt-2">
-                                  🔒 Solve the first illumination clue.
+                                  Solve the first illumination clue.
                                 </p>
                               </>
                             )}
@@ -598,8 +662,9 @@ export default function Realm101() {
                                     await advanceTrialStep('trial-illuminated-darkness');
                                   }}
                                 />
+
                                 <p className="text-xs text-muted mt-2">
-                                  🔒 Solve the second illumination riddle.
+                                  Solve the second illumination riddle.
                                 </p>
                               </>
                             )}
@@ -614,19 +679,20 @@ export default function Realm101() {
                                     await advanceTrialStep('trial-illuminated-darkness');
                                   }}
                                 />
+
                                 <p className="text-xs text-muted mt-2">
-                                  🔒 One final choice completes the moonlit path.
+                                  One final choice completes the moonlit path.
                                 </p>
                               </>
                             )}
 
                             {trial3?.isComplete && (
-                              <div className="text-green-400 font-bold">✓ COMPLETE</div>
+                              <div className="text-green-400 font-bold">✓ Complete</div>
                             )}
                           </>
                         ) : (
                           <p className="text-sm text-muted italic">
-                            🔒 Complete Trial of Midnight Clarity to unlock
+                            Locked — complete Trial of Midnight Clarity to unlock
                           </p>
                         )}
                       </div>
@@ -637,57 +703,76 @@ export default function Realm101() {
 
               <div id="locations-section" className="mb-8 fade-in">
                 <h2 className="text-3xl font-display mb-6 flex items-center gap-3">
-                  <span className="text-glow">📍</span> LOCATIONS <span className="text-glow">📍</span>
+                  <span className="text-glow">⌖</span>
+                  LOCATIONS
                 </h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div
-                    className={`realm-portal ${canExploreRainfallTrain || hasVisited('rainfall-train') ? 'unlocked' : 'locked'} fade-in`}
+                    className={`realm-portal ${
+                      canExploreRainfallTrain || hasVisited('rainfall-train')
+                        ? 'unlocked'
+                        : 'locked'
+                    } fade-in`}
                     style={{ animationDelay: '0.5s' }}
                   >
                     <div className="flex items-start gap-4">
-                      <div className="text-4xl">🚇</div>
+                      <div className="text-4xl">═</div>
+
                       <div className="flex-1">
-                        <h3 className="text-lg font-display mb-2">The Rainfall Train</h3>
+                        <h3 className="text-lg font-display mb-2">
+                          The Rainfall Train
+                        </h3>
+
                         <p className="text-sm text-secondary mb-3">
                           An endless train through neon-lit streets in perpetual rain.
                         </p>
+
                         <button
                           className="btn-secondary w-full"
                           onClick={() => handleLocationVisit('rainfall-train', 'The Rainfall Train')}
                           disabled={!canExploreRainfallTrain || hasVisited('rainfall-train')}
                         >
                           {hasVisited('rainfall-train')
-                            ? '✅ EXPLORED'
+                            ? 'Explored'
                             : canExploreRainfallTrain
-                            ? 'EXPLORE →'
-                            : 'LOCKED UNTIL TRIAL 1 STARTS'}
+                              ? 'Explore →'
+                              : 'Locked Until Trial 1 Starts'}
                         </button>
                       </div>
                     </div>
                   </div>
 
                   <div
-                    className={`realm-portal ${canExploreNoirDistrict || hasVisited('noir-district') ? 'unlocked' : 'locked'} fade-in`}
+                    className={`realm-portal ${
+                      canExploreNoirDistrict || hasVisited('noir-district')
+                        ? 'unlocked'
+                        : 'locked'
+                    } fade-in`}
                     style={{ animationDelay: '0.6s' }}
                   >
                     <div className="flex items-start gap-4">
-                      <div className="text-4xl">🏙️</div>
+                      <div className="text-4xl">◼</div>
+
                       <div className="flex-1">
-                        <h3 className="text-lg font-display mb-2">The Noir District</h3>
+                        <h3 className="text-lg font-display mb-2">
+                          The Noir District
+                        </h3>
+
                         <p className="text-sm text-secondary mb-3">
                           Where secrets hide in shadows and truth walks in moonlight.
                         </p>
+
                         <button
                           className="btn-secondary w-full"
                           onClick={() => handleLocationVisit('noir-district', 'The Noir District')}
                           disabled={!canExploreNoirDistrict || hasVisited('noir-district')}
                         >
                           {hasVisited('noir-district')
-                            ? '✅ EXPLORED'
+                            ? 'Explored'
                             : canExploreNoirDistrict
-                            ? 'EXPLORE →'
-                            : 'LOCKED UNTIL TRIAL 2 LOCATION STEP'}
+                              ? 'Explore →'
+                              : 'Locked Until Trial 2 Location Step'}
                         </button>
                       </div>
                     </div>
@@ -698,39 +783,38 @@ export default function Realm101() {
           )}
 
           {completedTrialsCount >= 3 && (
-            <div
-              className="glass-card p-8 mb-8 text-center fade-in realm-101-complete-card"
-              style={{ border: '1px solid rgba(180,180,220,0.5)' }}
-            >
+            <div className="glass-card p-8 mb-8 text-center fade-in realm-101-complete-card">
               <h3 className="text-2xl font-display mb-4" style={{ color: '#C8C8FF' }}>
-                🌙 MOONLIT ROADS ILLUMINATED 🌙
+                MOONLIT ROADS ILLUMINATED
               </h3>
+
               <p className="text-secondary mb-6 max-w-2xl mx-auto">
                 Shadow and light are now one within you. Skybound City awaits — where will becomes form and intention commands reality.
               </p>
+
               <Link href="/realms/55">
                 <button
                   className="btn-primary"
                   style={{ fontSize: '1.1rem', padding: '0.75rem 2rem' }}
                 >
-                  ENTER SKYBOUND CITY →
+                  Enter Skybound City →
                 </button>
               </Link>
             </div>
           )}
 
-          <div className="flex justify-between items-center fade-in" style={{ animationDelay: '0.8s' }}>
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 fade-in" style={{ animationDelay: '0.8s' }}>
             <Link href="/nexus">
-              <button className="btn-secondary">← BACK TO NEXUS</button>
+              <button className="btn-secondary">← Back to Nexus</button>
             </Link>
 
             {isSkyboundUnlocked ? (
               <Link href="/realms/55">
-                <button className="btn-primary">ENTER SKYBOUND CITY →</button>
+                <button className="btn-primary">Enter Skybound City →</button>
               </Link>
             ) : (
               <div className="text-sm text-muted">
-                Next Realm: ⛰️ Skybound City (Locked)
+                Next Realm: △ Skybound City (Locked)
               </div>
             )}
           </div>
