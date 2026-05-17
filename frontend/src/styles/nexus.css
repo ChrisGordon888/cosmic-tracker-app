@@ -522,3 +522,177 @@
   color: rgba(220, 186, 92, 0.86);
   font-size: 0.9em;
 }
+
+/* ===================================
+   🎧 PUBLIC LISTENING LAYER
+   =================================== */
+
+.nexus-listener-card,
+.nexus-featured-card,
+.nexus-playlist-layer {
+  border-radius: 1.25rem;
+}
+
+.nexus-listener-card {
+  border-color: rgba(220, 186, 92, 0.20);
+}
+
+.nexus-featured-card {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(220, 186, 92, 0.18);
+}
+
+.nexus-featured-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at top left, rgba(220, 186, 92, 0.07), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(130, 190, 255, 0.07), transparent 32%);
+  pointer-events: none;
+}
+
+.nexus-featured-mark {
+  width: 4rem;
+  height: 4rem;
+  min-width: 4rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 1.8rem;
+  border: 1px solid rgba(220, 186, 92, 0.28);
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255,255,255,0.15), rgba(220,186,92,0.08) 44%, rgba(8,11,20,0.34));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.10),
+    0 0 18px rgba(220,186,92,0.08);
+}
+
+.nexus-featured-links {
+  min-width: min(100%, 220px);
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.nexus-playlist-layer {
+  border-color: rgba(224, 232, 240, 0.16);
+}
+
+.nexus-playlist-card {
+  border: 1px solid rgba(224, 232, 240, 0.12);
+  border-radius: 1.15rem;
+  padding: 1rem;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.045),
+      rgba(190, 205, 220, 0.025) 42%,
+      rgba(14, 20, 34, 0.42)
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 8px 18px rgba(0, 0, 0, 0.14);
+}
+
+.nexus-playlist-card:hover {
+  border-color: rgba(224, 232, 240, 0.24);
+  transform: translateY(-1px);
+}
+
+.nexus-playlist-mark {
+  width: 2.85rem;
+  height: 2.85rem;
+  min-width: 2.85rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 1.25rem;
+  border: 1px solid rgba(224, 232, 240, 0.18);
+}
+
+.nexus-external-link {
+  min-height: 2.25rem;
+  padding: 0.48rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(224, 232, 240, 0.14);
+  background: rgba(255, 255, 255, 0.045);
+  color: rgba(232, 238, 246, 0.90);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: all 0.18s ease;
+}
+
+.nexus-external-link:hover {
+  border-color: rgba(220, 186, 92, 0.28);
+  background: rgba(220, 186, 92, 0.08);
+  transform: translateY(-1px);
+}
+
+.nexus-external-link.is-disabled {
+  opacity: 0.48;
+  cursor: default;
+}
+
+.nexus-external-link.is-disabled:hover {
+  transform: none;
+  border-color: rgba(224, 232, 240, 0.14);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.nexus-path-note {
+  margin-top: -0.25rem;
+  padding: 0.75rem 0.95rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(224, 232, 240, 0.10);
+  background: rgba(8, 12, 22, 0.38);
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: rgba(186, 194, 206, 0.72);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.nexus-path-note span:first-child {
+  color: rgba(232, 238, 246, 0.82);
+}
+
+@media (max-width: 768px) {
+  .nexus-listener-card,
+  .nexus-featured-card,
+  .nexus-playlist-layer {
+    padding: 1rem;
+  }
+
+  .nexus-featured-card .flex {
+    text-align: center;
+  }
+
+  .nexus-featured-mark {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .nexus-featured-links {
+    width: 100%;
+  }
+
+  .nexus-external-link {
+    width: 100%;
+  }
+
+  .nexus-path-note {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.35rem;
+  }
+}
