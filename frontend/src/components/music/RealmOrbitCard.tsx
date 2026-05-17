@@ -260,7 +260,7 @@ export default function RealmOrbitCard({
                                     title={track.trackTitle}
                                     aria-label={`Play ${track.trackTitle}`}
                                 >
-                                    {isCurrent && isPlaying ? '⏸' : '♪'}
+                                    {isCurrent && isPlaying ? 'Ⅱ' : '♪'}
                                 </button>
                             );
                         })}
@@ -620,7 +620,7 @@ export default function RealmOrbitCard({
                                 aria-label={`Play ${track.trackTitle}`}
                             >
                                 <span className="text-base">
-                                    {isCurrentAndPlaying ? '⏸' : isCurrent ? '▶' : '🎵'}
+                                    {isCurrentAndPlaying ? 'Ⅱ' : isCurrent ? '▶' : '♪'}
                                 </span>
                             </button>
                         );

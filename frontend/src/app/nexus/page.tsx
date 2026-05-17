@@ -39,48 +39,48 @@ const REALM_META = [
         id: '303',
         name: 'FRACTURED FRONTIER',
         number: '303',
-        icon: '🌪️',
-        description: 'Chaos & Creation',
+        icon: '∴',
+        description: 'Chaos into form',
         unlockRequirement: undefined,
     },
     {
         id: '202',
         name: 'THE VEIL',
         number: '202',
-        icon: '🕯️',
-        description: 'Dreams & Longing',
+        icon: '◐',
+        description: 'Desire and mystery',
         unlockRequirement: 'Complete Trials in Fractured Frontier',
     },
     {
         id: '101',
         name: 'MOONLIT ROADS',
         number: '101',
-        icon: '🌙',
-        description: 'Reflection & Shadows',
+        icon: '☾',
+        description: 'Reflection and return',
         unlockRequirement: 'Complete Trials in The Veil',
     },
     {
         id: '55',
         name: 'SKYBOUND CITY',
         number: '55',
-        icon: '⛰️',
-        description: 'Power & Manifestation',
+        icon: '△',
+        description: 'Power with direction',
         unlockRequirement: 'Complete Trials in Moonlit Roads',
     },
     {
         id: '44',
         name: 'ASTRAL BAZAAR',
         number: '44',
-        icon: '🛍️',
-        description: 'Hustle & Wisdom',
+        icon: '◇',
+        description: 'Value and exchange',
         unlockRequirement: 'Complete Trials in Skybound City',
     },
     {
         id: '0',
         name: 'INTERSIDDHI',
         number: '0',
-        icon: '🌌',
-        description: 'Source & Transcendence',
+        icon: '∞',
+        description: 'Alignment and source',
         unlockRequirement: 'Complete Trials in Astral Bazaar',
     },
 ];
@@ -369,7 +369,7 @@ export default function CosmicNexusHub() {
                                 style={{ boxShadow: '0 8px 28px rgba(120, 180, 255, 0.10)' }}
                             >
                                 <div className="flex items-start gap-4">
-                                    <div className="text-4xl shrink-0">✨</div>
+                                    <div className="nexus-symbol-icon shrink-0">✦</div>
 
                                     <div className="flex-1">
                                         <p className="text-xs text-secondary uppercase tracking-[0.18em] mb-2">
@@ -485,7 +485,9 @@ export default function CosmicNexusHub() {
                     <div className="glass-card nexus-panel nexus-soundtracks p-6 mb-5 fade-in" style={{ animationDelay: '0.3s' }}>
                         <div className="flex items-center justify-between gap-4 mb-5">
                             <div>
-                                <h2 className="text-3xl font-display">🎵 SOUNDTRACKS</h2>
+                                <h2 className="text-3xl font-display">
+                                    <span className="nexus-section-mark">♪</span> SOUNDTRACKS
+                                </h2>
                                 <p className="text-secondary text-sm mt-1">
                                     Start here. Each realm is a center of gravity and every track orbits its world.
                                 </p>
