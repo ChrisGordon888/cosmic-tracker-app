@@ -5,111 +5,115 @@ import "@/styles/landingPage.css";
 import Link from "next/link";
 import { useSession, signIn } from "next-auth/react";
 
+const REALMS = [
+  {
+    id: "303",
+    icon: "🌪️",
+    name: "Fractured Frontier",
+  },
+  {
+    id: "202",
+    icon: "🕯️",
+    name: "The Veil",
+  },
+  {
+    id: "101",
+    icon: "🌙",
+    name: "Moonlit Roads",
+  },
+  {
+    id: "55",
+    icon: "⛰️",
+    name: "Skybound City",
+  },
+  {
+    id: "44",
+    icon: "🛍️",
+    name: "Astral Bazaar",
+  },
+  {
+    id: "0",
+    icon: "🌌",
+    name: "InterSiddhi",
+  },
+];
+
 export default function LandingPage() {
-    const { data: session } = useSession();
+  const { data: session } = useSession();
+  const isAuthenticated = !!session?.user;
 
-    const isAuthenticated = !!session?.user;
+  return (
+    <main className="landing-page min-h-screen relative overflow-hidden">
+      <div className="fixed inset-0 w-full h-full -z-10 overflow-hidden">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+        >
+          <source src="/cosmic-landing-intro.mp4" type="video/mp4" />
+        </video>
 
-    return (
-        <main className="landing-page min-h-screen flex flex-col items-center justify-center text-center relative overflow-hidden">
-            {/* Cinematic Background Video */}
-            <div className="fixed inset-0 w-full h-full -z-10 overflow-hidden">
-                <video
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    className="absolute inset-0 w-full h-full object-cover"
-                >
-                    <source src="/cosmic-landing-intro.mp4" type="video/mp4" />
-                </video>
-                <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
-            </div>
+        <div className="landing-video-overlay" />
+      </div>
 
-            <div className="relative z-10 p-6 max-w-2xl">
-                <h1 className="landing-title text-4xl sm:text-5xl md:text-6xl font-bold mb-6 drop-shadow-2xl">
-                    🌌 THE COSMIC MULTIVERSE 🌌
-                </h1>
+      <section className="landing-shell">
+        <div className="landing-hero-card">
+          <p className="landing-kicker">Music-Based Realm System</p>
 
-                <p className="landing-description text-lg sm:text-xl text-gray-200 mb-4 drop-shadow-lg">
-                    Six interconnected realms. Your music. Your journey.
-                </p>
+          <h1 className="landing-title">
+            COSMIC
+            <span>MULTIVERSE</span>
+          </h1>
 
-                <p className="text-md text-gray-300 mb-8 drop-shadow-lg">
-                    Explore sonic landscapes, complete trials, earn XP, and unlock your path through the realms.
-                </p>
+          <p className="landing-subtitle">
+            Six interconnected realms. Your music. Your journey.
+          </p>
 
-                <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-                    {isAuthenticated ? (
-                        <Link
-                            href="/nexus"
-                            className="landing-button-primary px-10 py-4 rounded-full font-bold text-lg transition transform hover:scale-105 inline-block shadow-2xl"
-                        >
-                            🌀 ENTER THE NEXUS
-                        </Link>
-                    ) : (
-                        <button
-                            onClick={() => signIn("github")}
-                            className="landing-button-primary px-10 py-4 rounded-full font-bold text-lg transition transform hover:scale-105 inline-block shadow-2xl"
-                        >
-                            🪐 SIGN IN WITH GITHUB
-                        </button>
-                    )}
-                </div>
+          <p className="landing-description">
+            Explore sonic landscapes, enter emotional worlds, unlock realm paths,
+            and move through a music-first experience built around transformation.
+          </p>
 
-                {/* Realm Preview Icons */}
-                <div className="mt-12 grid grid-cols-3 md:grid-cols-6 gap-4 text-4xl opacity-70">
-                    <div
-                        className="hover:scale-125 transition cursor-default drop-shadow-lg"
-                        title="Realm 303 - Fractured Frontier"
-                    >
-                        🌪️
-                    </div>
-                    <div
-                        className="hover:scale-125 transition cursor-default drop-shadow-lg"
-                        title="Realm 202 - The Veil"
-                    >
-                        🕯️
-                    </div>
-                    <div
-                        className="hover:scale-125 transition cursor-default drop-shadow-lg"
-                        title="Realm 101 - Moonlit Roads"
-                    >
-                        🌙
-                    </div>
-                    <div
-                        className="hover:scale-125 transition cursor-default drop-shadow-lg"
-                        title="Realm 55 - Skybound City"
-                    >
-                        ⛰️
-                    </div>
-                    <div
-                        className="hover:scale-125 transition cursor-default drop-shadow-lg"
-                        title="Realm 44 - Astral Bazaar"
-                    >
-                        🛍️
-                    </div>
-                    <div
-                        className="hover:scale-125 transition cursor-default drop-shadow-lg"
-                        title="Realm 0 - InterSiddhi"
-                    >
-                        🌌
-                    </div>
-                </div>
+          <div className="landing-actions">
+            {isAuthenticated ? (
+              <Link href="/nexus" className="landing-button-primary">
+                Enter the Nexus
+              </Link>
+            ) : (
+              <button
+                onClick={() => signIn("github")}
+                className="landing-button-primary"
+              >
+                Sign in to enter
+              </button>
+            )}
+          </div>
 
-                {/* Future Ritual Layer */}
-                <div className="mt-12 glass-card p-6 border border-gray-700/50 rounded-xl backdrop-blur-sm bg-black/30">
-                    <div className="flex items-center justify-center gap-3 mb-2">
-                        <span className="text-3xl">📿</span>
-                        <h3 className="text-xl font-bold text-gray-300">Ritual Layer</h3>
-                    </div>
-                    <p className="text-sm text-gray-400">
-                        Daily rituals, sacred tracking, and lunar alignment are planned as future modules.
-                        <br />
-                        <span className="text-xs text-gray-500">Core realm journey live now</span>
-                    </p>
-                </div>
-            </div>
-        </main>
-    );
+          <div className="landing-realm-grid" aria-label="Cosmic realms">
+            {REALMS.map((realm) => (
+              <div key={realm.id} className="landing-realm-glyph" title={realm.name}>
+                <span className="landing-realm-number">{realm.id}</span>
+                <span className="landing-realm-icon">{realm.icon}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="landing-future-card">
+          <div className="landing-future-icon">📿</div>
+
+          <div>
+            <p className="landing-future-label">Future Layer</p>
+            <h2>Ritual Layer</h2>
+            <p>
+              Daily rituals, sacred tracking, and lunar alignment are planned as
+              future modules. Core realm journey is live now.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
 }
