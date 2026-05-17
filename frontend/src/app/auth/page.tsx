@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { signIn, useSession } from "next-auth/react";
 import "@/styles/authPage.css";
+import '@/styles/nexus.css';
 
 export default function AuthPage() {
   const { data: session } = useSession();
