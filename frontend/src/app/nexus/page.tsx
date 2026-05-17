@@ -257,8 +257,9 @@ export default function CosmicNexusHub() {
             <div className="min-h-screen pb-32 nexus-shell">
                 <div className="container mx-auto px-4 py-6 max-w-5xl nexus-container">
                     <header className="text-center mb-8 fade-in nexus-hero">
-                        <h1 className="text-5xl md:text-6xl font-display neon-glow mb-3">
-                            🌌 THE COSMIC NEXUS 🌌
+                        <div className="nexus-hero-mark">✦</div>
+                        <h1 className="text-5xl md:text-6xl font-display mb-3">
+                            COSMIC NEXUS
                         </h1>
                         <p className="text-lg text-secondary">
                             A music-based emotional navigation system

@@ -3,8 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ApolloWrapper from "@/components/ApolloWrapper";
 import CosmicTopNav from "@/components/CosmicTopNav";
-import AuthButton from "@/components/AuthButton";
-import SessionWrapper from "@/components/SessionWrapper"; // ✅ Use wrapper
+import SessionWrapper from "@/components/SessionWrapper";
 import Link from "next/link";
 import { MusicPlayerProvider } from "@/context/MusicPlayerProvider";
 import MiniPlayer from "@/components/music/MiniPlayer";
@@ -22,7 +21,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
     title: "Cosmic Multiverse",
     description:
-        "A gamified music exploration platform. Six realms. Six trials. One cosmic journey.",
+        "A music-based emotional navigation system. Six realms. Six soundtracks. One cosmic journey.",
 };
 
 export default function RootLayout({
@@ -35,44 +34,31 @@ export default function RootLayout({
             <body
                 className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
             >
-                <SessionWrapper> {/* ✅ Now inside a Client Component */}
+                <SessionWrapper>
                     <ApolloWrapper>
                         <MusicPlayerProvider>
                             <CosmicTopNav />
-                            <div className="p-4 flex justify-end items-center border-b border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900">
-                                <AuthButton />
-                            </div>
 
-                            <div className="flex-grow">{children}</div>
+                            <main className="flex-grow">
+                                {children}
+                            </main>
 
-                            <footer className="border-t border-gray-200 bg-white dark:bg-gray-900 p-2">
-                                <nav className="flex justify-around text-center text-sm font-medium">
-                                    <Link href="/" className="hover:text-indigo-600"> 🌌 Home </Link>
-                                    <Link href="/nexus" className="hover:text-indigo-600"> 🗺️ Nexus </Link>
-                                    <Link href="/leaderboard" className="hover:text-indigo-600"> 🏆 Rankings </Link>
-                                    <Link href="/profile" className="hover:text-indigo-600"> 👤 Profile </Link>
+                            <footer className="cosmic-bottom-nav">
+                                <nav className="cosmic-bottom-nav-inner">
+                                    <Link href="/" className="cosmic-bottom-link">
+                                        <span>Home</span>
+                                    </Link>
+                                    <Link href="/nexus" className="cosmic-bottom-link">
+                                        <span>Nexus</span>
+                                    </Link>
+                                    <Link href="/find-your-realm" className="cosmic-bottom-link">
+                                        <span>Align</span>
+                                    </Link>
+                                    <Link href="/profile" className="cosmic-bottom-link">
+                                        <span>Profile</span>
+                                    </Link>
                                 </nav>
                             </footer>
-
-                            {/* <footer className="border-t border-gray-200 bg-white dark:bg-gray-900 p-2">
-              <nav className="flex justify-around text-center text-sm font-medium">
-                <Link href="/home" className="hover:text-indigo-600">
-                  🏠 Home
-                </Link>
-                <Link href="/calendar" className="hover:text-indigo-600">
-                  📆 Calendar
-                </Link>
-                <Link href="/rituals" className="hover:text-indigo-600">
-                  📖 Rituals
-                </Link>
-                <Link href="/tracker" className="hover:text-indigo-600">
-                  🌟 Tracker
-                </Link>
-                <Link href="/profile" className="hover:text-indigo-600">
-                  ⚙️ Profile
-                </Link>
-              </nav>
-            </footer> */}
 
                             <MiniPlayer />
                         </MusicPlayerProvider>

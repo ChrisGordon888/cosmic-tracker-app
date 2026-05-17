@@ -1,29 +1,226 @@
 @import "tailwindcss";
 
 :root {
-    --background: #14002A;    /* dark but not pure black */
-    --foreground: #F0F0F0;    /* brighter text for better contrast */
-    --accent-primary: #FF66CC; /* neon pink but more legible */
-    --accent-secondary: rgba(0,0,0,0.8);
+    --background: #14002A;
+    /* dark but not pure black */
+    --foreground: #F0F0F0;
+    /* brighter text for better contrast */
+    --accent-primary: #FF66CC;
+    /* neon pink but more legible */
+    --accent-secondary: rgba(0, 0, 0, 0.8);
     --highlight: #FFD700;
-  }
+}
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --font-sans: var(--font-geist-sans);
+    --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+    :root {
+        --background: #0a0a0a;
+        --foreground: #ededed;
+    }
 }
 
 body {
     background: var(--background);
-    color: #d1d5db; /* gray-300 as a sensible light default */
+    color: #d1d5db;
+    /* gray-300 as a sensible light default */
     font-family: 'Orbitron', Arial, sans-serif;
-  }
+}
+
+/* === COSMIC APP CHROME === */
+
+.cosmic-top-nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.12);
+    background:
+        linear-gradient(135deg,
+            rgba(8, 11, 20, 0.78),
+            rgba(20, 24, 42, 0.62),
+            rgba(8, 11, 20, 0.78));
+    backdrop-filter: blur(18px) saturate(130%);
+    -webkit-backdrop-filter: blur(18px) saturate(130%);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        0 10px 28px rgba(0, 0, 0, 0.22);
+}
+
+.cosmic-top-nav-inner {
+    width: min(100%, 1180px);
+    margin: 0 auto;
+    min-height: 58px;
+    padding: 0 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.cosmic-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    text-decoration: none;
+    color: rgba(245, 247, 252, 0.94);
+    letter-spacing: 0.16em;
+    font-weight: 800;
+    font-size: 0.95rem;
+}
+
+.cosmic-brand-mark {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(215, 190, 120, 0.96);
+    background:
+        radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.18), rgba(215, 190, 120, 0.08) 38%, rgba(8, 11, 20, 0.40));
+    border: 1px solid rgba(232, 224, 203, 0.20);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        0 0 14px rgba(215, 190, 120, 0.10);
+}
+
+.cosmic-brand-text {
+    line-height: 1;
+}
+
+.cosmic-page-title {
+    display: none;
+    color: rgba(226, 232, 240, 0.80);
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+}
+
+.cosmic-nav-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.cosmic-signout {
+    border: 1px solid rgba(226, 232, 240, 0.16);
+    background: rgba(255, 255, 255, 0.045);
+    color: rgba(226, 232, 240, 0.82);
+    border-radius: 999px;
+    padding: 0.45rem 0.75rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: all 0.2s ease;
+}
+
+.cosmic-signout:hover {
+    border-color: rgba(245, 247, 252, 0.28);
+    color: rgba(245, 247, 252, 0.96);
+    background: rgba(255, 255, 255, 0.075);
+}
+
+.cosmic-profile-link {
+    width: 2.35rem;
+    height: 2.35rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(226, 232, 240, 0.86);
+    border: 1px solid rgba(226, 232, 240, 0.14);
+    background: rgba(255, 255, 255, 0.045);
+    transition: all 0.2s ease;
+}
+
+.cosmic-profile-link:hover {
+    color: rgba(245, 247, 252, 0.96);
+    border-color: rgba(245, 247, 252, 0.26);
+    background: rgba(255, 255, 255, 0.075);
+}
+
+.cosmic-bottom-nav {
+    position: sticky;
+    bottom: 0;
+    z-index: 40;
+    padding: 0.65rem 1rem calc(0.65rem + env(safe-area-inset-bottom));
+    background:
+        linear-gradient(180deg,
+            rgba(8, 11, 20, 0.12),
+            rgba(8, 11, 20, 0.78));
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+.cosmic-bottom-nav-inner {
+    width: min(100%, 520px);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.45rem;
+    padding: 0.45rem;
+    border-radius: 999px;
+    border: 1px solid rgba(226, 232, 240, 0.12);
+    background: rgba(8, 11, 20, 0.78);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        0 10px 26px rgba(0, 0, 0, 0.24);
+}
+
+.cosmic-bottom-link {
+    min-height: 2.35rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(226, 232, 240, 0.72);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.cosmic-bottom-link:hover {
+    color: rgba(245, 247, 252, 0.96);
+    background: rgba(255, 255, 255, 0.07);
+}
+
+@media (min-width: 768px) {
+    .cosmic-page-title {
+        display: block;
+    }
+
+    .cosmic-brand {
+        font-size: 1rem;
+    }
+
+    .cosmic-bottom-nav {
+        padding-bottom: 0.75rem;
+    }
+}
+
+@media (max-width: 520px) {
+    .cosmic-top-nav-inner {
+        min-height: 56px;
+    }
+
+    .cosmic-brand {
+        letter-spacing: 0.12em;
+        font-size: 0.85rem;
+    }
+
+    .cosmic-signout {
+        display: none;
+    }
+
+    .cosmic-bottom-nav {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+}
