@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
 
 const navItems = [
@@ -16,6 +17,9 @@ const navItems = [
 export default function CosmicTopNav({ title }: { title?: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  const { data: session } = useSession();
+
+  const isSignedIn = !!session?.user;
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-[#070A12]/90 backdrop-blur-xl">
@@ -88,12 +92,25 @@ export default function CosmicTopNav({ title }: { title?: string }) {
           </h1>
         )}
 
-        <Link
-          href="/profile"
-          className="grid h-11 w-11 place-items-center rounded-full border border-white/15 bg-white/[0.03] text-white/75 transition hover:border-white/30 hover:text-white"
-        >
-          <UserCircleIcon className="h-7 w-7" />
-        </Link>
+        <div className="flex items-center gap-2">
+          {isSignedIn && (
+            <button
+              type="button"
+              onClick={() => signOut({ callbackUrl: "/" })}
+              className="rounded-full border border-white/15 bg-white/[0.03] px-4 py-2 text-[11px] font-medium uppercase tracking-[0.16em] text-white/70 transition hover:border-[#DCBA5C]/35 hover:bg-[#DCBA5C]/10 hover:text-white max-[420px]:px-3"
+            >
+              <span className="hidden sm:inline">Sign Out</span>
+              <span className="sm:hidden">Out</span>
+            </button>
+          )}
+
+          <Link
+            href="/profile"
+            className="grid h-11 w-11 place-items-center rounded-full border border-white/15 bg-white/[0.03] text-white/75 transition hover:border-white/30 hover:text-white"
+          >
+            <UserCircleIcon className="h-7 w-7" />
+          </Link>
+        </div>
       </div>
     </header>
   );
