@@ -347,29 +347,35 @@ export default function CosmicNexusHub() {
                     )}
 
                     <div className="glass-card nexus-panel nexus-top-strip p-4 mb-4 fade-in" style={{ animationDelay: '0.15s' }}>
-                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 text-sm text-center md:text-left">
-                            <div className="flex items-center justify-center md:justify-start gap-3">
+                        <div className="nexus-top-strip-inner">
+                            {moonPhase && (
+                                <div className="nexus-moon-mark mx-auto">
+                                    {moonPhase.icon}
+                                </div>
+                            )}
+
+                            <div className="nexus-top-strip-content">
                                 {moonPhase && (
-                                    <>
-                                        <span className="text-2xl">{moonPhase.icon}</span>
-                                        <span className="text-secondary">{moonPhase.phase}</span>
-                                    </>
+                                    <p className="text-xl md:text-base text-secondary mb-2 md:mb-0">
+                                        {moonPhase.phase}
+                                    </p>
                                 )}
-                            </div>
 
-                            <div className="text-muted">
-                                {realmAlignment && (
-                                    <>
-                                        Aligned Realm:{' '}
-                                        <span className="text-glow font-medium">
-                                            {realmAlignment.primaryRealm}
-                                        </span>
-                                    </>
-                                )}
-                            </div>
+                                <div className="text-muted">
+                                    {realmAlignment && (
+                                        <>
+                                            Aligned Realm:{' '}
+                                            <span className="text-glow font-medium">
+                                                {realmAlignment.primaryRealm}
+                                            </span>
+                                        </>
+                                    )}
+                                </div>
 
-                            <div>
-                                <Link href="/find-your-realm" className="text-glow hover:opacity-80 transition-opacity">
+                                <Link
+                                    href="/find-your-realm"
+                                    className="inline-block mt-3 text-glow hover:opacity-80 transition-opacity"
+                                >
                                     Find Your Realm →
                                 </Link>
                             </div>
