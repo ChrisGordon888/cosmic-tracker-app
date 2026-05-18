@@ -321,8 +321,8 @@ export default function CosmicNexusHub() {
                         </div>
                     ) : (
                         <div className="glass-card nexus-panel nexus-listener-card p-5 mb-4 fade-in" style={{ animationDelay: '0.1s' }}>
-                            <div className="flex flex-col md:flex-row md:items-center gap-5">
-                                <div className="nexus-symbol-icon shrink-0">♪</div>
+                            <div className="flex flex-col md:flex-row md:items-center gap-5 text-center md:text-left">
+                                <div className="nexus-listener-mark shrink-0 mx-auto md:mx-0">♪</div>
 
                                 <div className="flex-1 text-center md:text-left">
                                     <p className="text-xs uppercase tracking-[0.2em] text-muted mb-2">
@@ -339,16 +339,16 @@ export default function CosmicNexusHub() {
                                     </p>
                                 </div>
 
-                                <button onClick={() => signIn('github')} className="btn-primary shrink-0">
+                                <button onClick={() => signIn('github')} className="btn-primary shrink-0 w-full md:w-auto">
                                     Sign in for Progress
                                 </button>
                             </div>
                         </div>
                     )}
 
-                    <div className="glass-card nexus-panel nexus-top-strip p-3 mb-4 fade-in" style={{ animationDelay: '0.15s' }}>
-                        <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6 text-sm">
-                            <div className="flex items-center gap-3">
+                    <div className="glass-card nexus-panel nexus-top-strip p-4 mb-4 fade-in" style={{ animationDelay: '0.15s' }}>
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 text-sm text-center md:text-left">
+                            <div className="flex items-center justify-center md:justify-start gap-3">
                                 {moonPhase && (
                                     <>
                                         <span className="text-2xl">{moonPhase.icon}</span>
@@ -368,7 +368,7 @@ export default function CosmicNexusHub() {
                                 )}
                             </div>
 
-                            <div className="md:ml-auto">
+                            <div>
                                 <Link href="/find-your-realm" className="text-glow hover:opacity-80 transition-opacity">
                                     Find Your Realm →
                                 </Link>
