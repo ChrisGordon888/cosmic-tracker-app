@@ -3,26 +3,24 @@
    =================================== */
 
 :root {
-  --nexus-silver: rgba(232, 238, 246, 0.92);
-  --nexus-silver-soft: rgba(205, 214, 225, 0.72);
-  --nexus-silver-dim: rgba(160, 170, 184, 0.46);
+    --nexus-silver: rgba(232, 238, 246, 0.92);
+    --nexus-silver-soft: rgba(205, 214, 225, 0.72);
+    --nexus-silver-dim: rgba(160, 170, 184, 0.46);
 
-  --nexus-gold: rgba(220, 186, 92, 0.92);
-  --nexus-gold-soft: rgba(220, 186, 92, 0.22);
+    --nexus-gold: rgba(220, 186, 92, 0.92);
+    --nexus-gold-soft: rgba(220, 186, 92, 0.22);
 
-  --nexus-ice: rgba(188, 224, 255, 0.92);
-  --nexus-ice-soft: rgba(130, 190, 255, 0.18);
+    --nexus-ice: rgba(188, 224, 255, 0.92);
+    --nexus-ice-soft: rgba(130, 190, 255, 0.18);
 
-  --nexus-border: rgba(214, 224, 235, 0.18);
-  --nexus-border-strong: rgba(228, 236, 244, 0.28);
+    --nexus-border: rgba(214, 224, 235, 0.18);
+    --nexus-border-strong: rgba(228, 236, 244, 0.28);
 
-  --nexus-panel-bg:
-    linear-gradient(
-      145deg,
-      rgba(255, 255, 255, 0.08),
-      rgba(205, 215, 230, 0.035) 42%,
-      rgba(14, 20, 34, 0.52)
-    );
+    --nexus-panel-bg:
+        linear-gradient(145deg,
+            rgba(255, 255, 255, 0.08),
+            rgba(205, 215, 230, 0.035) 42%,
+            rgba(14, 20, 34, 0.52));
 }
 
 /* ===================================
@@ -30,12 +28,12 @@
    =================================== */
 
 .nexus-shell {
-  color: var(--nexus-silver);
+    color: var(--nexus-silver);
 }
 
 .nexus-container {
-  position: relative;
-  z-index: 1;
+    position: relative;
+    z-index: 1;
 }
 
 /* ===================================
@@ -43,21 +41,21 @@
    =================================== */
 
 .nexus-panel {
-  background: var(--nexus-panel-bg);
-  border: 1px solid var(--nexus-border);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.10),
-    0 12px 32px rgba(0, 0, 0, 0.22);
-  backdrop-filter: blur(14px) saturate(125%);
-  -webkit-backdrop-filter: blur(14px) saturate(125%);
+    background: var(--nexus-panel-bg);
+    border: 1px solid var(--nexus-border);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.10),
+        0 12px 32px rgba(0, 0, 0, 0.22);
+    backdrop-filter: blur(14px) saturate(125%);
+    -webkit-backdrop-filter: blur(14px) saturate(125%);
 }
 
 .nexus-panel:hover {
-  border-color: var(--nexus-border-strong);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
-    0 14px 36px rgba(0, 0, 0, 0.24),
-    0 0 18px rgba(130, 190, 255, 0.06);
+    border-color: var(--nexus-border-strong);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.14),
+        0 14px 36px rgba(0, 0, 0, 0.24),
+        0 0 18px rgba(130, 190, 255, 0.06);
 }
 
 /* ===================================
@@ -65,18 +63,18 @@
    =================================== */
 
 .nexus-hero {
-  text-align: center;
+    text-align: center;
 }
 
 .nexus-hero h1 {
-  color: rgba(238, 243, 250, 0.94);
-  text-shadow:
-    0 0 10px rgba(255, 255, 255, 0.12),
-    0 0 22px rgba(130, 190, 255, 0.10);
+    color: rgba(238, 243, 250, 0.94);
+    text-shadow:
+        0 0 10px rgba(255, 255, 255, 0.12),
+        0 0 22px rgba(130, 190, 255, 0.10);
 }
 
 .nexus-hero p {
-  color: rgba(224, 230, 240, 0.82);
+    color: rgba(224, 230, 240, 0.82);
 }
 
 /* ===================================
@@ -92,7 +90,7 @@
 .nexus-soundtracks,
 .nexus-external-strip,
 .nexus-realm-map {
-  border-radius: 1.25rem;
+    border-radius: 1.25rem;
 }
 
 /* ===================================
@@ -100,25 +98,21 @@
    =================================== */
 
 .nexus-identity-card .level-badge {
-  background:
-    radial-gradient(
-      circle at 30% 30%,
-      rgba(255, 255, 255, 0.28),
-      rgba(255, 255, 255, 0.06) 34%,
-      rgba(14, 20, 34, 0.48) 78%
-    ),
-    linear-gradient(
-      145deg,
-      rgba(230, 236, 245, 0.18),
-      rgba(144, 156, 172, 0.10),
-      rgba(18, 24, 36, 0.46)
-    );
-  border: 1px solid rgba(226, 232, 240, 0.28);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.18),
-    0 8px 24px rgba(0, 0, 0, 0.22),
-    0 0 12px rgba(160, 210, 255, 0.06);
-  color: var(--nexus-silver);
+    background:
+        radial-gradient(circle at 30% 30%,
+            rgba(255, 255, 255, 0.28),
+            rgba(255, 255, 255, 0.06) 34%,
+            rgba(14, 20, 34, 0.48) 78%),
+        linear-gradient(145deg,
+            rgba(230, 236, 245, 0.18),
+            rgba(144, 156, 172, 0.10),
+            rgba(18, 24, 36, 0.46));
+    border: 1px solid rgba(226, 232, 240, 0.28);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.18),
+        0 8px 24px rgba(0, 0, 0, 0.22),
+        0 0 12px rgba(160, 210, 255, 0.06);
+    color: var(--nexus-silver);
 }
 
 /* ===================================
@@ -126,97 +120,105 @@
    =================================== */
 
 .nexus-listener-card {
-  border-color: rgba(220, 186, 92, 0.20);
+    border-color: rgba(220, 186, 92, 0.20);
 }
 
 .nexus-listener-mark {
-  width: 3rem;
-  height: 3rem;
-  min-width: 3rem;
-  border-radius: 999px;
-  display: grid;
-  place-items: center;
-  border: 1px solid rgba(220, 186, 92, 0.22);
-  background:
-    radial-gradient(
-      circle at 35% 30%,
-      rgba(255, 255, 255, 0.12),
-      rgba(220, 186, 92, 0.08) 44%,
-      rgba(8, 11, 20, 0.35)
-    );
-  color: rgba(220, 186, 92, 0.86);
-  font-size: 1.2rem;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 0 18px rgba(220, 186, 92, 0.08);
+    width: 3rem;
+    height: 3rem;
+    min-width: 3rem;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(220, 186, 92, 0.22);
+    background:
+        radial-gradient(circle at 35% 30%,
+            rgba(255, 255, 255, 0.12),
+            rgba(220, 186, 92, 0.08) 44%,
+            rgba(8, 11, 20, 0.35));
+    color: rgba(220, 186, 92, 0.86);
+    font-size: 1.2rem;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 0 18px rgba(220, 186, 92, 0.08);
 }
 
 /* ===================================
-   🌙 NEXUS MOON CARD — CENTERED STACK
+   🌙 NEXUS MOON CARD — RESPONSIVE STRIP
    =================================== */
 
 .nexus-moon-card {
-  text-align: center;
-  border-color: rgba(214, 224, 235, 0.16);
+    text-align: center;
+    border-color: rgba(214, 224, 235, 0.16);
+    padding-top: 1.15rem;
+    padding-bottom: 1.15rem;
 }
 
 .nexus-moon-card-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.85rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    width: 100%;
+    margin: 0 auto;
 }
 
 .nexus-moon-card .nexus-moon-mark {
-  margin: 0 auto;
-  width: 2.85rem;
-  height: 2.85rem;
-  min-width: 2.85rem;
-  border-radius: 999px;
-  display: grid;
-  place-items: center;
-  border: 1px solid rgba(220, 186, 92, 0.22);
-  background:
-    radial-gradient(
-      circle at 35% 30%,
-      rgba(255, 255, 255, 0.12),
-      rgba(220, 186, 92, 0.08) 44%,
-      rgba(8, 11, 20, 0.35)
-    );
-  color: rgba(220, 186, 92, 0.86);
-  font-size: 1.25rem;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 0 18px rgba(220, 186, 92, 0.08);
+    margin: 0;
+    width: 2.85rem;
+    height: 2.85rem;
+    min-width: 2.85rem;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(220, 186, 92, 0.22);
+    background:
+        radial-gradient(circle at 35% 30%,
+            rgba(255, 255, 255, 0.12),
+            rgba(220, 186, 92, 0.08) 44%,
+            rgba(8, 11, 20, 0.35));
+    color: rgba(220, 186, 92, 0.86);
+    font-size: 1.25rem;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 0 18px rgba(220, 186, 92, 0.08);
 }
 
 .nexus-moon-copy {
-  width: 100%;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 0.85fr 1.25fr auto;
+    align-items: center;
+    gap: 1.5rem;
+    text-align: left;
 }
 
 .nexus-moon-title {
-  color: rgba(232, 238, 246, 0.88);
-  font-size: 1.12rem;
-  line-height: 1.35;
-  margin-bottom: 0.45rem;
+    color: rgba(232, 238, 246, 0.88);
+    font-size: 1.12rem;
+    line-height: 1.35;
+    margin-bottom: 0;
 }
 
 .nexus-moon-alignment {
-  color: rgba(186, 194, 206, 0.78);
-  font-size: 0.95rem;
-  line-height: 1.45;
-  margin-bottom: 0.75rem;
+    color: rgba(186, 194, 206, 0.78);
+    font-size: 0.95rem;
+    line-height: 1.45;
+    margin-bottom: 0;
+    text-align: center;
 }
 
 .nexus-moon-alignment .text-glow,
 .nexus-moon-link {
-  color: var(--nexus-ice);
+    color: var(--nexus-ice);
 }
 
 .nexus-moon-link {
-  display: inline-block;
-  font-size: 0.95rem;
+    display: inline-block;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    text-align: right;
 }
 
 /* ===================================
@@ -224,21 +226,21 @@
    =================================== */
 
 .nexus-featured-strip {
-  border-color: rgba(220, 186, 92, 0.14);
+    border-color: rgba(220, 186, 92, 0.14);
 }
 
 .nexus-signal-mark {
-  width: 2.75rem;
-  height: 2.75rem;
-  min-width: 2.75rem;
-  border-radius: 999px;
-  display: grid;
-  place-items: center;
-  border: 1px solid rgba(224, 232, 240, 0.14);
-  background: rgba(255, 255, 255, 0.035);
-  color: rgba(224, 232, 240, 0.64);
-  font-size: 1.35rem;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    width: 2.75rem;
+    height: 2.75rem;
+    min-width: 2.75rem;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(224, 232, 240, 0.14);
+    background: rgba(255, 255, 255, 0.035);
+    color: rgba(224, 232, 240, 0.64);
+    font-size: 1.35rem;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 /* ===================================
@@ -246,40 +248,38 @@
    =================================== */
 
 .nexus-guided-entry {
-  position: relative;
-  overflow: hidden;
+    position: relative;
+    overflow: hidden;
 }
 
 .nexus-guided-entry::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.06),
-      transparent 35%,
-      rgba(220, 186, 92, 0.04) 100%
-    );
-  pointer-events: none;
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(135deg,
+            rgba(255, 255, 255, 0.06),
+            transparent 35%,
+            rgba(220, 186, 92, 0.04) 100%);
+    pointer-events: none;
 }
 
 .nexus-guided-entry:hover {
-  transform: translateY(-2px) scale(1.01);
-  border-color: rgba(214, 224, 235, 0.26);
+    transform: translateY(-2px) scale(1.01);
+    border-color: rgba(214, 224, 235, 0.26);
 }
 
 .nexus-guided-entry .text-glow {
-  color: var(--nexus-silver);
-  text-shadow:
-    0 0 8px rgba(255, 255, 255, 0.14),
-    0 0 14px rgba(130, 190, 255, 0.10);
+    color: var(--nexus-silver);
+    text-shadow:
+        0 0 8px rgba(255, 255, 255, 0.14),
+        0 0 14px rgba(130, 190, 255, 0.10);
 }
 
 .nexus-guided-entry span[class*='rounded-full'] {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(214, 224, 235, 0.12);
-  color: rgba(228, 235, 244, 0.84);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(214, 224, 235, 0.12);
+    color: rgba(228, 235, 244, 0.84);
 }
 
 /* ===================================
@@ -287,18 +287,18 @@
    =================================== */
 
 .nexus-todays-realm {
-  position: relative;
-  overflow: hidden;
+    position: relative;
+    overflow: hidden;
 }
 
 .nexus-todays-realm::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at top right, rgba(220, 186, 92, 0.06), transparent 28%),
-    radial-gradient(circle at bottom left, rgba(130, 190, 255, 0.08), transparent 30%);
-  pointer-events: none;
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at top right, rgba(220, 186, 92, 0.06), transparent 28%),
+        radial-gradient(circle at bottom left, rgba(130, 190, 255, 0.08), transparent 30%);
+    pointer-events: none;
 }
 
 /* ===================================
@@ -306,20 +306,20 @@
    =================================== */
 
 .nexus-soundtracks {
-  border-color: rgba(224, 232, 240, 0.20);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.10),
-    0 14px 36px rgba(0, 0, 0, 0.24),
-    0 0 18px rgba(130, 190, 255, 0.05);
+    border-color: rgba(224, 232, 240, 0.20);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.10),
+        0 14px 36px rgba(0, 0, 0, 0.24),
+        0 0 18px rgba(130, 190, 255, 0.05);
 }
 
 .nexus-section-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 0.55rem;
-  color: rgba(220, 186, 92, 0.86);
-  font-size: 0.9em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.55rem;
+    color: rgba(220, 186, 92, 0.86);
+    font-size: 0.9em;
 }
 
 /* ===================================
@@ -327,22 +327,22 @@
    =================================== */
 
 .nexus-path-note {
-  margin-top: -0.25rem;
-  padding: 0.75rem 0.95rem;
-  border-radius: 1rem;
-  border: 1px solid rgba(224, 232, 240, 0.10);
-  background: rgba(8, 12, 22, 0.38);
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  color: rgba(186, 194, 206, 0.72);
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+    margin-top: -0.25rem;
+    padding: 0.75rem 0.95rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(224, 232, 240, 0.10);
+    background: rgba(8, 12, 22, 0.38);
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    color: rgba(186, 194, 206, 0.72);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
 }
 
 .nexus-path-note span:first-child {
-  color: rgba(232, 238, 246, 0.82);
+    color: rgba(232, 238, 246, 0.82);
 }
 
 /* ===================================
@@ -350,26 +350,26 @@
    =================================== */
 
 .nexus-external-strip {
-  border-color: rgba(224, 232, 240, 0.12);
-  opacity: 0.88;
+    border-color: rgba(224, 232, 240, 0.12);
+    opacity: 0.88;
 }
 
 .nexus-external-mini-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  justify-content: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
 }
 
 .nexus-external-mini-links span {
-  padding: 0.45rem 0.7rem;
-  border-radius: 999px;
-  border: 1px solid rgba(224, 232, 240, 0.12);
-  background: rgba(255, 255, 255, 0.035);
-  color: rgba(205, 214, 225, 0.68);
-  font-size: 0.68rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+    padding: 0.45rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid rgba(224, 232, 240, 0.12);
+    background: rgba(255, 255, 255, 0.035);
+    color: rgba(205, 214, 225, 0.68);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
 }
 
 /* ===================================
@@ -377,25 +377,23 @@
    =================================== */
 
 .nexus-realm-map .realm-portal {
-  border: 1px solid rgba(214, 224, 235, 0.14);
-  background:
-    linear-gradient(
-      150deg,
-      rgba(255, 255, 255, 0.05),
-      rgba(190, 205, 220, 0.03) 36%,
-      rgba(12, 18, 28, 0.50)
-    );
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 10px 24px rgba(0, 0, 0, 0.18);
+    border: 1px solid rgba(214, 224, 235, 0.14);
+    background:
+        linear-gradient(150deg,
+            rgba(255, 255, 255, 0.05),
+            rgba(190, 205, 220, 0.03) 36%,
+            rgba(12, 18, 28, 0.50));
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 10px 24px rgba(0, 0, 0, 0.18);
 }
 
 .nexus-realm-map .realm-portal:hover {
-  border-color: rgba(224, 232, 240, 0.24);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    0 14px 30px rgba(0, 0, 0, 0.22),
-    0 0 12px rgba(130, 190, 255, 0.06);
+    border-color: rgba(224, 232, 240, 0.24);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        0 14px 30px rgba(0, 0, 0, 0.22),
+        0 0 12px rgba(130, 190, 255, 0.06);
 }
 
 /* ===================================
@@ -403,20 +401,20 @@
    =================================== */
 
 .nexus-shell .text-secondary {
-  color: rgba(224, 231, 240, 0.82);
+    color: rgba(224, 231, 240, 0.82);
 }
 
 .nexus-shell .text-muted {
-  color: rgba(186, 194, 206, 0.66);
+    color: rgba(186, 194, 206, 0.66);
 }
 
 .nexus-shell .text-primary {
-  color: var(--nexus-silver);
+    color: var(--nexus-silver);
 }
 
 .nexus-shell .text-stats,
 .nexus-shell .font-stats {
-  color: var(--nexus-silver);
+    color: var(--nexus-silver);
 }
 
 /* ===================================
@@ -424,49 +422,45 @@
    =================================== */
 
 .nexus-shell .btn-primary {
-  background:
-    linear-gradient(
-      135deg,
-      rgba(238, 243, 250, 0.16),
-      rgba(180, 194, 210, 0.10) 36%,
-      rgba(220, 186, 92, 0.15) 100%
-    );
-  border: 1px solid rgba(224, 232, 240, 0.22);
-  color: var(--nexus-silver);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.16),
-    0 8px 22px rgba(0, 0, 0, 0.18);
+    background:
+        linear-gradient(135deg,
+            rgba(238, 243, 250, 0.16),
+            rgba(180, 194, 210, 0.10) 36%,
+            rgba(220, 186, 92, 0.15) 100%);
+    border: 1px solid rgba(224, 232, 240, 0.22);
+    color: var(--nexus-silver);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.16),
+        0 8px 22px rgba(0, 0, 0, 0.18);
 }
 
 .nexus-shell .btn-primary:hover {
-  border-color: rgba(220, 186, 92, 0.34);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.22),
-    0 10px 26px rgba(0, 0, 0, 0.22),
-    0 0 14px rgba(220, 186, 92, 0.10);
+    border-color: rgba(220, 186, 92, 0.34);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.22),
+        0 10px 26px rgba(0, 0, 0, 0.22),
+        0 0 14px rgba(220, 186, 92, 0.10);
 }
 
 .nexus-shell .btn-secondary {
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.06),
-      rgba(205, 215, 228, 0.03) 44%,
-      rgba(14, 20, 32, 0.44)
-    );
-  border: 1px solid rgba(214, 224, 235, 0.14);
-  color: rgba(232, 238, 246, 0.92);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.10),
-    0 8px 18px rgba(0, 0, 0, 0.16);
+    background:
+        linear-gradient(135deg,
+            rgba(255, 255, 255, 0.06),
+            rgba(205, 215, 228, 0.03) 44%,
+            rgba(14, 20, 32, 0.44));
+    border: 1px solid rgba(214, 224, 235, 0.14);
+    color: rgba(232, 238, 246, 0.92);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.10),
+        0 8px 18px rgba(0, 0, 0, 0.16);
 }
 
 .nexus-shell .btn-secondary:hover {
-  border-color: rgba(190, 210, 235, 0.24);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
-    0 10px 20px rgba(0, 0, 0, 0.20),
-    0 0 12px rgba(130, 190, 255, 0.08);
+    border-color: rgba(190, 210, 235, 0.24);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.14),
+        0 10px 20px rgba(0, 0, 0, 0.20),
+        0 0 12px rgba(130, 190, 255, 0.08);
 }
 
 /* ===================================
@@ -474,17 +468,15 @@
    =================================== */
 
 .nexus-shell .quest-card {
-  background:
-    linear-gradient(
-      145deg,
-      rgba(255, 255, 255, 0.05),
-      rgba(190, 205, 220, 0.025) 40%,
-      rgba(15, 20, 32, 0.48)
-    );
-  border: 1px solid rgba(214, 224, 235, 0.10);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 8px 18px rgba(0, 0, 0, 0.14);
+    background:
+        linear-gradient(145deg,
+            rgba(255, 255, 255, 0.05),
+            rgba(190, 205, 220, 0.025) 40%,
+            rgba(15, 20, 32, 0.48));
+    border: 1px solid rgba(214, 224, 235, 0.10);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 8px 18px rgba(0, 0, 0, 0.14);
 }
 
 /* ===================================
@@ -492,195 +484,211 @@
    =================================== */
 
 @media (max-width: 768px) {
-  .nexus-container {
-    padding-left: 1rem;
-    padding-right: 1rem;
-    padding-top: 1.5rem;
-  }
+    .nexus-container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+        padding-top: 1.5rem;
+    }
 
-  .nexus-hero {
-    margin-bottom: 1.5rem;
-    padding-top: 1rem;
-  }
+    .nexus-hero {
+        margin-bottom: 1.5rem;
+        padding-top: 1rem;
+    }
 
-  .nexus-hero h1 {
-    font-size: clamp(2.1rem, 13vw, 3rem);
-    line-height: 0.96;
-    letter-spacing: 0.045em;
-    max-width: 20rem;
-    margin-left: auto;
-    margin-right: auto;
-    text-align: center;
-  }
+    .nexus-hero h1 {
+        font-size: clamp(2.1rem, 13vw, 3rem);
+        line-height: 0.96;
+        letter-spacing: 0.045em;
+        max-width: 20rem;
+        margin-left: auto;
+        margin-right: auto;
+        text-align: center;
+    }
 
-  .nexus-hero p {
-    font-size: 1rem;
-    max-width: 20rem;
-    margin-left: auto;
-    margin-right: auto;
-  }
+    .nexus-hero p {
+        font-size: 1rem;
+        max-width: 20rem;
+        margin-left: auto;
+        margin-right: auto;
+    }
 
-  .nexus-panel {
-    border-radius: 1.25rem;
-  }
+    .nexus-panel {
+        border-radius: 1.25rem;
+    }
 
-  .nexus-identity-card {
-    padding: 1rem;
-  }
+    .nexus-identity-card {
+        padding: 1rem;
+    }
 
-  .nexus-identity-card h2 {
-    font-size: 1.15rem;
-    line-height: 1.25;
-  }
+    .nexus-identity-card h2 {
+        font-size: 1.15rem;
+        line-height: 1.25;
+    }
 
-  .nexus-identity-card .level-badge {
-    min-width: 68px;
-    min-height: 68px;
-    width: 68px;
-    height: 68px;
-  }
+    .nexus-identity-card .level-badge {
+        min-width: 68px;
+        min-height: 68px;
+        width: 68px;
+        height: 68px;
+    }
 
-  .nexus-listener-card {
-    padding: 1.4rem 1.15rem;
-  }
+    .nexus-listener-card {
+        padding: 1.4rem 1.15rem;
+    }
 
-  .nexus-listener-card .btn-primary {
-    margin-top: 0.25rem;
-  }
+    .nexus-listener-card .btn-primary {
+        margin-top: 0.25rem;
+    }
 
-  .nexus-moon-card {
-    padding: 1.15rem;
-  }
+    .nexus-moon-card {
+        padding: 1.15rem;
+    }
 
-  .nexus-moon-card-inner {
-    gap: 0.75rem;
-  }
+    .nexus-moon-card-inner {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.75rem;
+        max-width: none;
+    }
 
-  .nexus-moon-card .nexus-moon-mark,
-  .nexus-listener-mark,
-  .nexus-signal-mark {
-    width: 2.75rem;
-    height: 2.75rem;
-    min-width: 2.75rem;
-    font-size: 1.15rem;
-    margin-left: auto;
-    margin-right: auto;
-  }
+    .nexus-moon-copy {
+        width: 100%;
+        display: block;
+        text-align: center;
+    }
 
-  .nexus-moon-title {
-    font-size: 1.05rem;
-  }
+    .nexus-moon-card .nexus-moon-mark,
+    .nexus-listener-mark,
+    .nexus-signal-mark {
+        width: 2.75rem;
+        height: 2.75rem;
+        min-width: 2.75rem;
+        font-size: 1.15rem;
+        margin-left: auto;
+        margin-right: auto;
+    }
 
-  .nexus-moon-alignment,
-  .nexus-moon-link {
-    font-size: 0.92rem;
-  }
+    .nexus-moon-title {
+        font-size: 1.05rem;
+        margin-bottom: 0.45rem;
+    }
 
-  .nexus-featured-strip {
-    text-align: center;
-    padding: 1rem;
-  }
+    .nexus-moon-alignment {
+        font-size: 0.92rem;
+        margin-bottom: 0.75rem;
+        text-align: center;
+    }
 
-  .nexus-featured-strip .flex {
-    text-align: center;
-  }
+    .nexus-moon-link {
+        font-size: 0.92rem;
+        text-align: center;
+    }
 
-  .nexus-guided-entry,
-  .nexus-todays-realm,
-  .nexus-soundtracks,
-  .nexus-external-strip {
-    padding: 1rem;
-  }
+    .nexus-featured-strip {
+        text-align: center;
+        padding: 1rem;
+    }
 
-  .nexus-guided-entry .flex.items-start,
-  .nexus-todays-realm .flex.items-start {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 1rem;
-  }
+    .nexus-featured-strip .flex {
+        text-align: center;
+    }
 
-  .nexus-todays-realm .w-12.h-12 {
-    width: 3.75rem;
-    height: 3.75rem;
-    min-width: 3.75rem;
-    margin: 0 auto;
-  }
+    .nexus-guided-entry,
+    .nexus-todays-realm,
+    .nexus-soundtracks,
+    .nexus-external-strip {
+        padding: 1rem;
+    }
 
-  .nexus-guided-entry .flex-1,
-  .nexus-todays-realm .flex-1 {
-    width: 100%;
-    min-width: 0;
-  }
+    .nexus-guided-entry .flex.items-start,
+    .nexus-todays-realm .flex.items-start {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 1rem;
+    }
 
-  .nexus-guided-entry .flex-wrap,
-  .nexus-todays-realm .flex-wrap {
-    justify-content: center;
-  }
+    .nexus-todays-realm .w-12.h-12 {
+        width: 3.75rem;
+        height: 3.75rem;
+        min-width: 3.75rem;
+        margin: 0 auto;
+    }
 
-  .nexus-guided-entry h3,
-  .nexus-todays-realm h3 {
-    font-size: 1.55rem;
-    line-height: 1.1;
-    text-align: center;
-  }
+    .nexus-guided-entry .flex-1,
+    .nexus-todays-realm .flex-1 {
+        width: 100%;
+        min-width: 0;
+    }
 
-  .nexus-guided-entry p,
-  .nexus-todays-realm p,
-  .nexus-todays-realm .text-xs,
-  .nexus-todays-realm .text-sm {
-    text-align: center;
-  }
+    .nexus-guided-entry .flex-wrap,
+    .nexus-todays-realm .flex-wrap {
+        justify-content: center;
+    }
 
-  .nexus-todays-realm .btn-primary,
-  .nexus-todays-realm .btn-secondary {
-    margin-left: auto;
-    margin-right: auto;
-  }
+    .nexus-guided-entry h3,
+    .nexus-todays-realm h3 {
+        font-size: 1.55rem;
+        line-height: 1.1;
+        text-align: center;
+    }
 
-  .nexus-soundtracks h2 {
-    font-size: 1.85rem;
-    line-height: 1.05;
-  }
+    .nexus-guided-entry p,
+    .nexus-todays-realm p,
+    .nexus-todays-realm .text-xs,
+    .nexus-todays-realm .text-sm {
+        text-align: center;
+    }
 
-  .nexus-soundtracks > div:first-child {
-    align-items: flex-start;
-  }
+    .nexus-todays-realm .btn-primary,
+    .nexus-todays-realm .btn-secondary {
+        margin-left: auto;
+        margin-right: auto;
+    }
 
-  .nexus-path-note {
-    flex-direction: column;
-    text-align: center;
-    gap: 0.35rem;
-  }
+    .nexus-soundtracks h2 {
+        font-size: 1.85rem;
+        line-height: 1.05;
+    }
 
-  .nexus-external-strip {
-    text-align: center;
-  }
+    .nexus-soundtracks>div:first-child {
+        align-items: flex-start;
+    }
 
-  .nexus-external-mini-links {
-    width: 100%;
-  }
+    .nexus-path-note {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.35rem;
+    }
 
-  .nexus-external-mini-links span {
-    flex: 1;
-    min-width: 0;
-  }
+    .nexus-external-strip {
+        text-align: center;
+    }
 
-  .nexus-shell .btn-primary,
-  .nexus-shell .btn-secondary {
-    width: 100%;
-    text-align: center;
-  }
+    .nexus-external-mini-links {
+        width: 100%;
+    }
+
+    .nexus-external-mini-links span {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .nexus-shell .btn-primary,
+    .nexus-shell .btn-secondary {
+        width: 100%;
+        text-align: center;
+    }
 }
 
 @media (max-width: 430px) {
-  .nexus-hero h1 {
-    font-size: clamp(2rem, 13vw, 2.8rem);
-  }
+    .nexus-hero h1 {
+        font-size: clamp(2rem, 13vw, 2.8rem);
+    }
 
-  .nexus-guided-entry h3,
-  .nexus-todays-realm h3 {
-    font-size: 1.4rem;
-  }
+    .nexus-guided-entry h3,
+    .nexus-todays-realm h3 {
+        font-size: 1.4rem;
+    }
 }
