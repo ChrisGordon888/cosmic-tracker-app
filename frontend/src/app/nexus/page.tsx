@@ -381,7 +381,7 @@ export default function CosmicNexusHub() {
                         style={{ animationDelay: '0.18s' }}
                     >
                         <div className="flex flex-col md:flex-row md:items-center gap-3">
-                            <div className="nexus-symbol-icon shrink-0">✦</div>
+                            <div className="nexus-signal-mark shrink-0">◌</div>
 
                             <div className="flex-1 text-center md:text-left">
                                 <p className="text-xs uppercase tracking-[0.2em] text-muted mb-1">
@@ -406,7 +406,7 @@ export default function CosmicNexusHub() {
                                 style={{ boxShadow: '0 8px 28px rgba(120, 180, 255, 0.10)' }}
                             >
                                 <div className="flex items-start gap-4">
-                                    <div className="nexus-symbol-icon shrink-0">✦</div>
+                                    <div className="nexus-signal-mark shrink-0">⌁</div>
 
                                     <div className="flex-1">
                                         <p className="text-xs text-secondary uppercase tracking-[0.18em] mb-2">

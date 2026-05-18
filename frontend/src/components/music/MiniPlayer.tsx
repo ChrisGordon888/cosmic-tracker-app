@@ -29,7 +29,7 @@ export default function MiniPlayer() {
 
     return (
         <div
-            className="fixed z-[9999] rounded-2xl border backdrop-blur-xl shadow-2xl bottom-4 right-4 w-[340px] max-w-[calc(100vw-2rem)] max-[640px]:left-3 max-[640px]:right-3 max-[640px]:bottom-5 max-[640px]:w-auto max-[640px]:rounded-2xl"
+            className="cosmic-mini-player fixed z-[9999] rounded-2xl border backdrop-blur-xl shadow-2xl right-4 w-[340px] max-w-[calc(100vw-2rem)] max-[640px]:left-3 max-[640px]:right-3 max-[640px]:w-auto max-[640px]:rounded-2xl"
             style={{
                 background: 'rgba(8, 10, 20, 0.9)',
                 borderColor: `${realmColor}55`,

@@ -228,3 +228,13 @@ body {
 .cosmic-bottom-nav-five {
   grid-template-columns: repeat(5, 1fr);
 }
+
+.cosmic-mini-player {
+  bottom: 1rem;
+}
+
+@media (max-width: 640px) {
+  .cosmic-mini-player {
+    bottom: calc(env(safe-area-inset-bottom) + 5.75rem);
+  }
+}
