@@ -15,16 +15,6 @@ import RealmOrbitCard from '@/components/music/RealmOrbitCard';
 import '@/styles/realmShared.css';
 import '@/styles/nexus.css';
 
-interface RealmPortalData {
-    id: string;
-    name: string;
-    number: string;
-    icon: string;
-    status: 'unlocked' | 'locked' | 'current';
-    progress: number;
-    description: string;
-    unlockRequirement?: string;
-}
 
 interface StoredRealmGuidance {
     realmId: RealmId;
@@ -346,22 +336,25 @@ export default function CosmicNexusHub() {
                         </div>
                     )}
 
-                    <div className="glass-card nexus-panel nexus-top-strip p-4 mb-4 fade-in" style={{ animationDelay: '0.15s' }}>
-                        <div className="nexus-top-strip-inner">
+                    <div
+                        className="glass-card nexus-panel nexus-moon-card p-4 mb-4 fade-in"
+                        style={{ animationDelay: '0.15s' }}
+                    >
+                        <div className="nexus-moon-card-inner">
                             {moonPhase && (
-                                <div className="nexus-moon-mark mx-auto">
+                                <div className="nexus-moon-mark">
                                     {moonPhase.icon}
                                 </div>
                             )}
 
-                            <div className="nexus-top-strip-content">
+                            <div className="nexus-moon-copy">
                                 {moonPhase && (
-                                    <p className="text-xl md:text-base text-secondary mb-2 md:mb-0">
+                                    <p className="nexus-moon-title">
                                         {moonPhase.phase}
                                     </p>
                                 )}
 
-                                <div className="text-muted">
+                                <div className="nexus-moon-alignment">
                                     {realmAlignment && (
                                         <>
                                             Aligned Realm:{' '}
@@ -374,7 +367,7 @@ export default function CosmicNexusHub() {
 
                                 <Link
                                     href="/find-your-realm"
-                                    className="inline-block mt-3 text-glow hover:opacity-80 transition-opacity"
+                                    className="nexus-moon-link text-glow hover:opacity-80 transition-opacity"
                                 >
                                     Find Your Realm →
                                 </Link>

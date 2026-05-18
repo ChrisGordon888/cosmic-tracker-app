@@ -25,7 +25,9 @@
     );
 }
 
-/* === SHELL === */
+/* ===================================
+   SHELL
+   =================================== */
 
 .nexus-shell {
   color: var(--nexus-silver);
@@ -36,7 +38,9 @@
   z-index: 1;
 }
 
-/* === PANEL CHROME === */
+/* ===================================
+   PANEL CHROME
+   =================================== */
 
 .nexus-panel {
   background: var(--nexus-panel-bg);
@@ -56,7 +60,9 @@
     0 0 18px rgba(130, 190, 255, 0.06);
 }
 
-/* === HERO === */
+/* ===================================
+   HERO
+   =================================== */
 
 .nexus-hero {
   text-align: center;
@@ -73,18 +79,25 @@
   color: rgba(224, 230, 240, 0.82);
 }
 
-/* === CARD RADIUS === */
+/* ===================================
+   CARD RADIUS
+   =================================== */
 
 .nexus-identity-card,
-.nexus-top-strip,
+.nexus-listener-card,
+.nexus-moon-card,
+.nexus-featured-strip,
 .nexus-guided-entry,
 .nexus-todays-realm,
 .nexus-soundtracks,
+.nexus-external-strip,
 .nexus-realm-map {
   border-radius: 1.25rem;
 }
 
-/* === IDENTITY CARD === */
+/* ===================================
+   IDENTITY CARD
+   =================================== */
 
 .nexus-identity-card .level-badge {
   background:
@@ -108,18 +121,129 @@
   color: var(--nexus-silver);
 }
 
-/* === TOP STRIP / MOON CARD === */
+/* ===================================
+   PUBLIC LISTENER CARD
+   =================================== */
 
-.nexus-top-strip {
+.nexus-listener-card {
+  border-color: rgba(220, 186, 92, 0.20);
+}
+
+.nexus-listener-mark {
+  width: 3rem;
+  height: 3rem;
+  min-width: 3rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(220, 186, 92, 0.22);
+  background:
+    radial-gradient(
+      circle at 35% 30%,
+      rgba(255, 255, 255, 0.12),
+      rgba(220, 186, 92, 0.08) 44%,
+      rgba(8, 11, 20, 0.35)
+    );
+  color: rgba(220, 186, 92, 0.86);
+  font-size: 1.2rem;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 18px rgba(220, 186, 92, 0.08);
+}
+
+/* ===================================
+   🌙 NEXUS MOON CARD — CENTERED STACK
+   =================================== */
+
+.nexus-moon-card {
+  text-align: center;
   border-color: rgba(214, 224, 235, 0.16);
 }
 
-.nexus-top-strip .text-glow,
-.nexus-top-strip a {
+.nexus-moon-card-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+}
+
+.nexus-moon-card .nexus-moon-mark {
+  margin: 0 auto;
+  width: 2.85rem;
+  height: 2.85rem;
+  min-width: 2.85rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(220, 186, 92, 0.22);
+  background:
+    radial-gradient(
+      circle at 35% 30%,
+      rgba(255, 255, 255, 0.12),
+      rgba(220, 186, 92, 0.08) 44%,
+      rgba(8, 11, 20, 0.35)
+    );
+  color: rgba(220, 186, 92, 0.86);
+  font-size: 1.25rem;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 18px rgba(220, 186, 92, 0.08);
+}
+
+.nexus-moon-copy {
+  width: 100%;
+}
+
+.nexus-moon-title {
+  color: rgba(232, 238, 246, 0.88);
+  font-size: 1.12rem;
+  line-height: 1.35;
+  margin-bottom: 0.45rem;
+}
+
+.nexus-moon-alignment {
+  color: rgba(186, 194, 206, 0.78);
+  font-size: 0.95rem;
+  line-height: 1.45;
+  margin-bottom: 0.75rem;
+}
+
+.nexus-moon-alignment .text-glow,
+.nexus-moon-link {
   color: var(--nexus-ice);
 }
 
-/* === GUIDED ENTRY CARD === */
+.nexus-moon-link {
+  display: inline-block;
+  font-size: 0.95rem;
+}
+
+/* ===================================
+   FEATURED / LATEST SIGNAL STRIP
+   =================================== */
+
+.nexus-featured-strip {
+  border-color: rgba(220, 186, 92, 0.14);
+}
+
+.nexus-signal-mark {
+  width: 2.75rem;
+  height: 2.75rem;
+  min-width: 2.75rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(224, 232, 240, 0.14);
+  background: rgba(255, 255, 255, 0.035);
+  color: rgba(224, 232, 240, 0.64);
+  font-size: 1.35rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* ===================================
+   GUIDED ENTRY CARD
+   =================================== */
 
 .nexus-guided-entry {
   position: relative;
@@ -158,7 +282,9 @@
   color: rgba(228, 235, 244, 0.84);
 }
 
-/* === TODAY'S REALM CARD === */
+/* ===================================
+   TODAY'S REALM CARD
+   =================================== */
 
 .nexus-todays-realm {
   position: relative;
@@ -175,7 +301,9 @@
   pointer-events: none;
 }
 
-/* === SOUNDTRACK BLOCK === */
+/* ===================================
+   SOUNDTRACK BLOCK
+   =================================== */
 
 .nexus-soundtracks {
   border-color: rgba(224, 232, 240, 0.20);
@@ -185,7 +313,68 @@
     0 0 18px rgba(130, 190, 255, 0.05);
 }
 
-/* === REALM MAP === */
+.nexus-section-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.55rem;
+  color: rgba(220, 186, 92, 0.86);
+  font-size: 0.9em;
+}
+
+/* ===================================
+   PATH NOTE
+   =================================== */
+
+.nexus-path-note {
+  margin-top: -0.25rem;
+  padding: 0.75rem 0.95rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(224, 232, 240, 0.10);
+  background: rgba(8, 12, 22, 0.38);
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: rgba(186, 194, 206, 0.72);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.nexus-path-note span:first-child {
+  color: rgba(232, 238, 246, 0.82);
+}
+
+/* ===================================
+   EXTERNAL LISTENING STRIP
+   =================================== */
+
+.nexus-external-strip {
+  border-color: rgba(224, 232, 240, 0.12);
+  opacity: 0.88;
+}
+
+.nexus-external-mini-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.nexus-external-mini-links span {
+  padding: 0.45rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(224, 232, 240, 0.12);
+  background: rgba(255, 255, 255, 0.035);
+  color: rgba(205, 214, 225, 0.68);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ===================================
+   REALM MAP
+   =================================== */
 
 .nexus-realm-map .realm-portal {
   border: 1px solid rgba(214, 224, 235, 0.14);
@@ -209,7 +398,9 @@
     0 0 12px rgba(130, 190, 255, 0.06);
 }
 
-/* === TEXT TUNING === */
+/* ===================================
+   TEXT TUNING
+   =================================== */
 
 .nexus-shell .text-secondary {
   color: rgba(224, 231, 240, 0.82);
@@ -228,7 +419,9 @@
   color: var(--nexus-silver);
 }
 
-/* === BUTTONS INSIDE NEXUS === */
+/* ===================================
+   BUTTONS INSIDE NEXUS
+   =================================== */
 
 .nexus-shell .btn-primary {
   background:
@@ -276,7 +469,9 @@
     0 0 12px rgba(130, 190, 255, 0.08);
 }
 
-/* === QUEST CARD INSIDE NEXUS === */
+/* ===================================
+   QUEST CARD INSIDE NEXUS
+   =================================== */
 
 .nexus-shell .quest-card {
   background:
@@ -345,87 +540,58 @@
     height: 68px;
   }
 
-  .nexus-guided-entry,
-  .nexus-todays-realm,
-  .nexus-soundtracks {
+  .nexus-listener-card {
+    padding: 1.4rem 1.15rem;
+  }
+
+  .nexus-listener-card .btn-primary {
+    margin-top: 0.25rem;
+  }
+
+  .nexus-moon-card {
+    padding: 1.15rem;
+  }
+
+  .nexus-moon-card-inner {
+    gap: 0.75rem;
+  }
+
+  .nexus-moon-card .nexus-moon-mark,
+  .nexus-listener-mark,
+  .nexus-signal-mark {
+    width: 2.75rem;
+    height: 2.75rem;
+    min-width: 2.75rem;
+    font-size: 1.15rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .nexus-moon-title {
+    font-size: 1.05rem;
+  }
+
+  .nexus-moon-alignment,
+  .nexus-moon-link {
+    font-size: 0.92rem;
+  }
+
+  .nexus-featured-strip {
+    text-align: center;
     padding: 1rem;
   }
 
-  .nexus-guided-entry h3,
-  .nexus-todays-realm h3 {
-    font-size: 1.55rem;
-    line-height: 1.1;
-  }
-
-  .nexus-soundtracks h2 {
-    font-size: 1.85rem;
-    line-height: 1.05;
-  }
-
-  .nexus-soundtracks > div:first-child {
-    align-items: flex-start;
-  }
-
-  .nexus-shell .btn-primary,
-  .nexus-shell .btn-secondary {
-    width: 100%;
+  .nexus-featured-strip .flex {
     text-align: center;
   }
-}
 
-/* === NEW MOON / TOP STRIP MOBILE ALIGNMENT === */
-
-@media (max-width: 768px) {
-  .nexus-top-strip {
-    padding: 1.1rem;
+  .nexus-guided-entry,
+  .nexus-todays-realm,
+  .nexus-soundtracks,
+  .nexus-external-strip {
+    padding: 1rem;
   }
 
-  .nexus-top-strip > div {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    align-items: center;
-    column-gap: 0.9rem;
-    row-gap: 0.55rem;
-  }
-
-  .nexus-top-strip > div > div:first-child {
-    display: contents;
-  }
-
-  .nexus-top-strip span.text-2xl {
-    grid-column: 1;
-    grid-row: 1 / span 3;
-    width: 2.65rem;
-    height: 2.65rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.035);
-    border: 1px solid rgba(226, 232, 240, 0.10);
-    flex-shrink: 0;
-  }
-
-  .nexus-top-strip .text-secondary {
-    grid-column: 2;
-    font-size: 1rem;
-    line-height: 1.25;
-  }
-
-  .nexus-top-strip .text-muted {
-    grid-column: 2;
-    font-size: 0.95rem;
-    line-height: 1.35;
-  }
-
-  .nexus-top-strip .md\:ml-auto {
-    grid-column: 2;
-  }
-}
-
-/* === GUIDED ENTRY / TODAY'S REALM MOBILE CENTERING === */
-
-@media (max-width: 768px) {
   .nexus-guided-entry .flex.items-start,
   .nexus-todays-realm .flex.items-start {
     display: flex;
@@ -433,17 +599,6 @@
     align-items: center;
     text-align: center;
     gap: 1rem;
-  }
-
-  .nexus-guided-entry .text-4xl {
-    width: 3.75rem;
-    height: 3.75rem;
-    min-width: 3.75rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2.25rem;
-    margin: 0 auto;
   }
 
   .nexus-todays-realm .w-12.h-12 {
@@ -466,6 +621,8 @@
 
   .nexus-guided-entry h3,
   .nexus-todays-realm h3 {
+    font-size: 1.55rem;
+    line-height: 1.1;
     text-align: center;
   }
 
@@ -481,213 +638,14 @@
     margin-left: auto;
     margin-right: auto;
   }
-}
 
-@media (max-width: 430px) {
-  .nexus-hero h1 {
-    font-size: clamp(2rem, 13vw, 2.8rem);
+  .nexus-soundtracks h2 {
+    font-size: 1.85rem;
+    line-height: 1.05;
   }
 
-  .nexus-guided-entry h3,
-  .nexus-todays-realm h3 {
-    font-size: 1.4rem;
-  }
-}
-
-/* === SYMBOLIC ICON LANGUAGE === */
-
-.nexus-symbol-icon {
-  width: 3rem;
-  height: 3rem;
-  min-width: 3rem;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: rgba(220, 186, 92, 0.92);
-  font-size: 1.35rem;
-  border: 1px solid rgba(220, 186, 92, 0.20);
-  background:
-    radial-gradient(circle at 35% 30%, rgba(255,255,255,0.14), rgba(220,186,92,0.08) 44%, rgba(8,11,20,0.34));
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.10),
-    0 0 16px rgba(220,186,92,0.08);
-}
-
-.nexus-section-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 0.55rem;
-  color: rgba(220, 186, 92, 0.86);
-  font-size: 0.9em;
-}
-
-/* ===================================
-   🎧 PUBLIC LISTENING LAYER
-   =================================== */
-
-.nexus-listener-card,
-.nexus-featured-card,
-.nexus-playlist-layer {
-  border-radius: 1.25rem;
-}
-
-.nexus-listener-card {
-  border-color: rgba(220, 186, 92, 0.20);
-}
-
-.nexus-featured-card {
-  position: relative;
-  overflow: hidden;
-  border-color: rgba(220, 186, 92, 0.18);
-}
-
-.nexus-featured-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at top left, rgba(220, 186, 92, 0.07), transparent 28%),
-    radial-gradient(circle at bottom right, rgba(130, 190, 255, 0.07), transparent 32%);
-  pointer-events: none;
-}
-
-.nexus-featured-mark {
-  width: 4rem;
-  height: 4rem;
-  min-width: 4rem;
-  border-radius: 999px;
-  display: grid;
-  place-items: center;
-  font-size: 1.8rem;
-  border: 1px solid rgba(220, 186, 92, 0.28);
-  background:
-    radial-gradient(circle at 35% 30%, rgba(255,255,255,0.15), rgba(220,186,92,0.08) 44%, rgba(8,11,20,0.34));
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.10),
-    0 0 18px rgba(220,186,92,0.08);
-}
-
-.nexus-featured-links {
-  min-width: min(100%, 220px);
-  display: flex;
-  flex-direction: column;
-  gap: 0.55rem;
-}
-
-.nexus-playlist-layer {
-  border-color: rgba(224, 232, 240, 0.16);
-}
-
-.nexus-playlist-card {
-  border: 1px solid rgba(224, 232, 240, 0.12);
-  border-radius: 1.15rem;
-  padding: 1rem;
-  background:
-    linear-gradient(
-      145deg,
-      rgba(255, 255, 255, 0.045),
-      rgba(190, 205, 220, 0.025) 42%,
-      rgba(14, 20, 34, 0.42)
-    );
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.07),
-    0 8px 18px rgba(0, 0, 0, 0.14);
-}
-
-.nexus-playlist-card:hover {
-  border-color: rgba(224, 232, 240, 0.24);
-  transform: translateY(-1px);
-}
-
-.nexus-playlist-mark {
-  width: 2.85rem;
-  height: 2.85rem;
-  min-width: 2.85rem;
-  border-radius: 999px;
-  display: grid;
-  place-items: center;
-  font-size: 1.25rem;
-  border: 1px solid rgba(224, 232, 240, 0.18);
-}
-
-.nexus-external-link {
-  min-height: 2.25rem;
-  padding: 0.48rem 0.7rem;
-  border-radius: 999px;
-  border: 1px solid rgba(224, 232, 240, 0.14);
-  background: rgba(255, 255, 255, 0.045);
-  color: rgba(232, 238, 246, 0.90);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  text-decoration: none;
-  transition: all 0.18s ease;
-}
-
-.nexus-external-link:hover {
-  border-color: rgba(220, 186, 92, 0.28);
-  background: rgba(220, 186, 92, 0.08);
-  transform: translateY(-1px);
-}
-
-.nexus-external-link.is-disabled {
-  opacity: 0.48;
-  cursor: default;
-}
-
-.nexus-external-link.is-disabled:hover {
-  transform: none;
-  border-color: rgba(224, 232, 240, 0.14);
-  background: rgba(255, 255, 255, 0.045);
-}
-
-.nexus-path-note {
-  margin-top: -0.25rem;
-  padding: 0.75rem 0.95rem;
-  border-radius: 1rem;
-  border: 1px solid rgba(224, 232, 240, 0.10);
-  background: rgba(8, 12, 22, 0.38);
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  color: rgba(186, 194, 206, 0.72);
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.nexus-path-note span:first-child {
-  color: rgba(232, 238, 246, 0.82);
-}
-
-@media (max-width: 768px) {
-  .nexus-listener-card,
-  .nexus-featured-card,
-  .nexus-playlist-layer {
-    padding: 1rem;
-  }
-
-  .nexus-featured-card .flex {
-    text-align: center;
-  }
-
-  .nexus-featured-mark {
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .nexus-featured-links {
-    width: 100%;
-  }
-
-  .nexus-external-link {
-    width: 100%;
+  .nexus-soundtracks > div:first-child {
+    align-items: flex-start;
   }
 
   .nexus-path-note {
@@ -695,32 +653,7 @@
     text-align: center;
     gap: 0.35rem;
   }
-}
 
-.nexus-external-strip {
-  border-color: rgba(224, 232, 240, 0.12);
-  opacity: 0.88;
-}
-
-.nexus-external-mini-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  justify-content: center;
-}
-
-.nexus-external-mini-links span {
-  padding: 0.45rem 0.7rem;
-  border-radius: 999px;
-  border: 1px solid rgba(224, 232, 240, 0.12);
-  background: rgba(255, 255, 255, 0.035);
-  color: rgba(205, 214, 225, 0.68);
-  font-size: 0.68rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-@media (max-width: 768px) {
   .nexus-external-strip {
     text-align: center;
   }
@@ -733,102 +666,21 @@
     flex: 1;
     min-width: 0;
   }
-}
 
-.nexus-featured-strip {
-  border-color: rgba(220, 186, 92, 0.14);
-}
-
-.nexus-signal-mark {
-  width: 2.75rem;
-  height: 2.75rem;
-  min-width: 2.75rem;
-  border-radius: 999px;
-  display: grid;
-  place-items: center;
-  border: 1px solid rgba(224, 232, 240, 0.14);
-  background: rgba(255, 255, 255, 0.035);
-  color: rgba(224, 232, 240, 0.64);
-  font-size: 1.35rem;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
-}
-
-@media (max-width: 768px) {
-  .nexus-signal-mark {
-    margin-left: auto;
-    margin-right: auto;
-  }
-}
-
-/* Mobile-centered listener and moon cards */
-
-.nexus-listener-mark,
-.nexus-moon-mark {
-  width: 3rem;
-  height: 3rem;
-  min-width: 3rem;
-  border-radius: 999px;
-  display: grid;
-  place-items: center;
-  border: 1px solid rgba(220, 186, 92, 0.22);
-  background:
-    radial-gradient(circle at 35% 30%, rgba(255,255,255,0.12), rgba(220,186,92,0.08) 44%, rgba(8,11,20,0.35));
-  color: rgba(220, 186, 92, 0.86);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.08),
-    0 0 18px rgba(220,186,92,0.08);
-}
-
-.nexus-listener-mark {
-  font-size: 1.2rem;
-}
-
-.nexus-moon-mark {
-  font-size: 1.35rem;
-}
-
-@media (max-width: 768px) {
-  .nexus-listener-card {
-    padding: 1.4rem 1.15rem;
-  }
-
-  .nexus-listener-card .btn-primary {
-    margin-top: 0.25rem;
-  }
-
-  .nexus-top-strip {
-    padding: 1.15rem;
-  }
-
-  .nexus-top-strip .text-muted,
-  .nexus-top-strip .text-secondary {
-    line-height: 1.45;
-  }
-}
-
-.nexus-top-strip-inner {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.nexus-top-strip-content {
-  flex: 1;
-}
-
-@media (max-width: 768px) {
-  .nexus-top-strip-inner {
-    flex-direction: column;
-    text-align: center;
-    gap: 0.85rem;
-  }
-
-  .nexus-top-strip-content {
+  .nexus-shell .btn-primary,
+  .nexus-shell .btn-secondary {
     width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 430px) {
+  .nexus-hero h1 {
+    font-size: clamp(2rem, 13vw, 2.8rem);
   }
 
-  .nexus-top-strip .nexus-moon-mark {
-    margin-left: auto;
-    margin-right: auto;
+  .nexus-guided-entry h3,
+  .nexus-todays-realm h3 {
+    font-size: 1.4rem;
   }
 }
