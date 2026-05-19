@@ -22,6 +22,8 @@ import { REALM_44_PUZZLES } from '@/lib/realmPuzzles';
 
 const REALM_ID = 44;
 const NEXT_REALM_ID = 0;
+const REALM_COLOR = '#10B981';
+const PREVIOUS_REALM_ID = 55;
 
 export default function Realm44() {
   const { data: session, status } = useSession();
@@ -181,7 +183,7 @@ export default function Realm44() {
     return (
       <div className="min-h-screen grid place-items-center p-6 nexus-shell">
         <div className="glass-card nexus-panel max-w-md text-center">
-          <div className="mx-auto mb-4 w-12 h-12 rounded-full border border-white/15 grid place-items-center text-[#DCBA5C]">
+          <div className="mx-auto mb-4 w-12 h-12 rounded-full border border-white/15 grid place-items-center text-[#10B981]">
             ◇
           </div>
 
@@ -203,7 +205,7 @@ export default function Realm44() {
     return (
       <div className="min-h-screen grid place-items-center p-6 nexus-shell">
         <div className="glass-card nexus-panel max-w-md text-center">
-          <div className="mx-auto mb-4 w-12 h-12 rounded-full border border-white/15 grid place-items-center text-[#DCBA5C]">
+          <div className="mx-auto mb-4 w-12 h-12 rounded-full border border-white/15 grid place-items-center text-[#10B981]">
             ✦
           </div>
 
@@ -283,7 +285,7 @@ export default function Realm44() {
           <RealmEntryGuidanceBanner
             realmId={44}
             realmName="Astral Bazaar"
-            realmColor="#F59E0B"
+            realmColor="#10B981"
           />
 
           <RealmGuidanceCard realmId={44} />
@@ -292,7 +294,7 @@ export default function Realm44() {
             realmId={44}
             realmName="Astral Bazaar"
             realmIcon="◇"
-            realmColor="#F59E0B"
+            realmColor="#10B981"
             intro="Astral Bazaar is where discernment, value, temptation, reciprocity, and wise exchange come into focus. Let the soundtrack tell you whether this realm matches what you need to evaluate right now."
             supportText="Start with the music first. If this realm feels true, then go deeper into its trials, locations, and symbols."
             progress={realmProgress}
@@ -707,7 +709,7 @@ export default function Realm44() {
 
           {completedTrialsCount >= 3 && (
             <div className="glass-card p-8 mb-8 text-center fade-in realm-44-complete-card">
-              <h3 className="text-2xl font-display mb-4" style={{ color: '#F59E0B' }}>
+              <h3 className="text-2xl font-display mb-4" style={{ color: '#10B981' }}>
                 ASTRAL BAZAAR MASTERED
               </h3>
 
