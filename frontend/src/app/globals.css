@@ -1,14 +1,24 @@
 @import "tailwindcss";
 
+/* ===================================
+   GLOBAL THEME TOKENS
+   =================================== */
+
 :root {
-    --background: #14002A;
-    /* dark but not pure black */
-    --foreground: #F0F0F0;
-    /* brighter text for better contrast */
-    --accent-primary: #FF66CC;
-    /* neon pink but more legible */
+    --background: #14002a;
+    --foreground: #f0f0f0;
+
+    --accent-primary: #ff66cc;
     --accent-secondary: rgba(0, 0, 0, 0.8);
-    --highlight: #FFD700;
+    --highlight: #ffd700;
+
+    --cosmic-bg: rgba(8, 11, 20, 0.86);
+    --cosmic-bg-soft: rgba(14, 18, 30, 0.72);
+    --cosmic-border: rgba(226, 232, 240, 0.12);
+    --cosmic-border-strong: rgba(245, 247, 252, 0.26);
+    --cosmic-text: rgba(245, 247, 252, 0.94);
+    --cosmic-text-muted: rgba(226, 232, 240, 0.72);
+    --cosmic-gold: rgba(215, 190, 120, 0.96);
 }
 
 @theme inline {
@@ -25,20 +35,30 @@
     }
 }
 
+/* ===================================
+   BASE DOCUMENT
+   =================================== */
+
+html {
+    background: var(--background);
+}
+
 body {
+    margin: 0;
     background: var(--background);
     color: #d1d5db;
-    /* gray-300 as a sensible light default */
     font-family: 'Orbitron', Arial, sans-serif;
 }
 
-/* === COSMIC APP CHROME === */
+/* ===================================
+   COSMIC TOP NAV
+   =================================== */
 
 .cosmic-top-nav {
     position: sticky;
     top: 0;
     z-index: 50;
-    border-bottom: 1px solid rgba(226, 232, 240, 0.12);
+    border-bottom: 1px solid var(--cosmic-border);
     background:
         linear-gradient(135deg,
             rgba(8, 11, 20, 0.78),
@@ -53,8 +73,8 @@ body {
 
 .cosmic-top-nav-inner {
     width: min(100%, 1180px);
-    margin: 0 auto;
     min-height: 58px;
+    margin: 0 auto;
     padding: 0 1rem;
     display: flex;
     align-items: center;
@@ -66,8 +86,8 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 0.55rem;
+    color: var(--cosmic-text);
     text-decoration: none;
-    color: rgba(245, 247, 252, 0.94);
     letter-spacing: 0.16em;
     font-weight: 800;
     font-size: 0.95rem;
@@ -80,9 +100,12 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: rgba(215, 190, 120, 0.96);
+    color: var(--cosmic-gold);
     background:
-        radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.18), rgba(215, 190, 120, 0.08) 38%, rgba(8, 11, 20, 0.40));
+        radial-gradient(circle at 35% 30%,
+            rgba(255, 255, 255, 0.18),
+            rgba(215, 190, 120, 0.08) 38%,
+            rgba(8, 11, 20, 0.40));
     border: 1px solid rgba(232, 224, 203, 0.20);
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.12),
@@ -107,6 +130,10 @@ body {
     gap: 0.75rem;
 }
 
+/* ===================================
+   TOP NAV ACTIONS
+   =================================== */
+
 .cosmic-signout {
     border: 1px solid rgba(226, 232, 240, 0.16);
     background: rgba(255, 255, 255, 0.045);
@@ -116,11 +143,15 @@ body {
     font-size: 0.72rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    transition: all 0.2s ease;
+    transition:
+        color 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
 }
 
 .cosmic-signout:hover {
-    border-color: rgba(245, 247, 252, 0.28);
+    border-color: var(--cosmic-border-strong);
     color: rgba(245, 247, 252, 0.96);
     background: rgba(255, 255, 255, 0.075);
 }
@@ -135,14 +166,21 @@ body {
     color: rgba(226, 232, 240, 0.86);
     border: 1px solid rgba(226, 232, 240, 0.14);
     background: rgba(255, 255, 255, 0.045);
-    transition: all 0.2s ease;
+    transition:
+        color 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease;
 }
 
 .cosmic-profile-link:hover {
     color: rgba(245, 247, 252, 0.96);
-    border-color: rgba(245, 247, 252, 0.26);
+    border-color: var(--cosmic-border-strong);
     background: rgba(255, 255, 255, 0.075);
 }
+
+/* ===================================
+   COSMIC BOTTOM NAV
+   =================================== */
 
 .cosmic-bottom-nav {
     position: sticky;
@@ -165,11 +203,15 @@ body {
     gap: 0.45rem;
     padding: 0.45rem;
     border-radius: 999px;
-    border: 1px solid rgba(226, 232, 240, 0.12);
+    border: 1px solid var(--cosmic-border);
     background: rgba(8, 11, 20, 0.78);
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.06),
         0 10px 26px rgba(0, 0, 0, 0.24);
+}
+
+.cosmic-bottom-nav-five {
+    grid-template-columns: repeat(5, 1fr);
 }
 
 .cosmic-bottom-link {
@@ -178,18 +220,68 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: rgba(226, 232, 240, 0.72);
+    color: var(--cosmic-text-muted);
     font-size: 0.72rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     text-decoration: none;
-    transition: all 0.2s ease;
+    transition:
+        color 0.2s ease,
+        background 0.2s ease;
 }
 
 .cosmic-bottom-link:hover {
     color: rgba(245, 247, 252, 0.96);
     background: rgba(255, 255, 255, 0.07);
 }
+
+/* ===================================
+   GLOBAL MINI PLAYER
+   Desktop default: compact card bottom-right
+   Mobile expanded: full card above footer
+   Mobile collapsed: small floating control
+   =================================== */
+
+.cosmic-mini-player {
+    bottom: 1rem;
+    transition:
+        width 0.24s ease,
+        max-width 0.24s ease,
+        left 0.24s ease,
+        right 0.24s ease,
+        bottom 0.24s ease,
+        border-radius 0.24s ease,
+        transform 0.24s ease,
+        opacity 0.24s ease;
+}
+
+.cosmic-mini-player-inner {
+    transition: padding 0.24s ease;
+}
+
+.mini-player-play-button {
+    transition:
+        width 0.24s ease,
+        height 0.24s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.mini-player-play-button:hover {
+    transform: scale(1.03);
+}
+
+.mini-player-copy,
+.mini-player-progress,
+.mini-player-expanded {
+    transition:
+        opacity 0.18s ease,
+        transform 0.18s ease;
+}
+
+/* ===================================
+   DESKTOP BREAKPOINTS
+   =================================== */
 
 @media (min-width: 768px) {
     .cosmic-page-title {
@@ -204,6 +296,10 @@ body {
         padding-bottom: 0.75rem;
     }
 }
+
+/* ===================================
+   TABLET / SMALL DESKTOP
+   =================================== */
 
 @media (max-width: 520px) {
     .cosmic-top-nav-inner {
@@ -225,16 +321,73 @@ body {
     }
 }
 
-.cosmic-bottom-nav-five {
-  grid-template-columns: repeat(5, 1fr);
-}
-
-.cosmic-mini-player {
-  bottom: 1rem;
-}
+/* ===================================
+   MOBILE MINI PLAYER STATES
+   =================================== */
 
 @media (max-width: 640px) {
-  .cosmic-mini-player {
-    bottom: calc(env(safe-area-inset-bottom) + 5.75rem);
-  }
+    .cosmic-mini-player.is-expanded {
+        left: 1rem;
+        right: 1rem;
+        bottom: calc(env(safe-area-inset-bottom) + 5.75rem);
+        width: auto;
+        max-width: none;
+        border-radius: 1.25rem;
+    }
+
+    .cosmic-mini-player.is-collapsed {
+        left: auto;
+        right: 1rem;
+        bottom: calc(env(safe-area-inset-bottom) + 6rem);
+        width: auto;
+        max-width: none;
+        border-radius: 999px;
+    }
+
+    .cosmic-mini-player.is-collapsed .cosmic-mini-player-inner {
+        padding: 0.65rem;
+    }
+
+    .cosmic-mini-player.is-collapsed .mini-player-copy,
+    .cosmic-mini-player.is-collapsed .mini-player-progress,
+    .cosmic-mini-player.is-collapsed .mini-player-expanded {
+        display: none;
+    }
+
+    .cosmic-mini-player.is-collapsed .mini-player-play-button {
+        width: 3.15rem;
+        height: 3.15rem;
+    }
+
+    .cosmic-mini-player.is-collapsed .mini-player-toggle {
+        width: 2rem;
+        height: 2rem;
+        display: grid;
+        place-items: center;
+    }
+}
+
+/* ===================================
+   VERY SMALL MOBILE TUNING
+   =================================== */
+
+@media (max-width: 390px) {
+    .cosmic-bottom-link {
+        font-size: 0.64rem;
+        letter-spacing: 0.06em;
+    }
+
+    .cosmic-bottom-nav-inner {
+        gap: 0.3rem;
+        padding: 0.35rem;
+    }
+
+    .cosmic-mini-player.is-expanded {
+        left: 0.75rem;
+        right: 0.75rem;
+    }
+
+    .cosmic-mini-player.is-collapsed {
+        right: 0.75rem;
+    }
 }

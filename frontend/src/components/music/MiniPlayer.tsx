@@ -29,18 +29,18 @@ export default function MiniPlayer() {
 
     return (
         <div
-            className="cosmic-mini-player fixed z-[9999] rounded-2xl border backdrop-blur-xl shadow-2xl right-4 w-[340px] max-w-[calc(100vw-2rem)] max-[640px]:left-3 max-[640px]:right-3 max-[640px]:w-auto max-[640px]:rounded-2xl"
+            className={`cosmic-mini-player ${isExpanded ? 'is-expanded' : 'is-collapsed'} fixed z-[9999] rounded-2xl border backdrop-blur-xl shadow-2xl right-4 w-[340px] max-w-[calc(100vw-2rem)] max-[640px]:w-auto max-[640px]:rounded-2xl`}
             style={{
                 background: 'rgba(8, 10, 20, 0.9)',
                 borderColor: `${realmColor}55`,
                 boxShadow: `0 12px 40px ${realmColor}33`,
             }}
         >
-            <div className="p-4">
+            <div className="cosmic-mini-player-inner p-4">
                 <div className="flex items-center gap-3">
                     <button
                         onClick={togglePlayPause}
-                        className="w-12 h-12 rounded-full text-xl flex items-center justify-center shrink-0"
+                        className="mini-player-play-button w-12 h-12 rounded-full text-xl flex items-center justify-center shrink-0"
                         style={{
                             background: `linear-gradient(135deg, ${realmColor}, ${realmColor}cc)`,
                         }}
@@ -48,10 +48,11 @@ export default function MiniPlayer() {
                         {isPlaying ? '⏸' : '▶️'}
                     </button>
 
-                    <div className="flex-1 min-w-0">
+                    <div className="mini-player-copy flex-1 min-w-0">
                         <p className="text-sm font-semibold truncate" style={{ color: realmColor }}>
                             {currentTrack.trackTitle}
                         </p>
+
                         <p className="text-xs text-white/70 truncate">
                             {currentTrack.artist || 'Cosmic 888'} • {currentTrack.realmName}
                         </p>
@@ -59,41 +60,45 @@ export default function MiniPlayer() {
 
                     <button
                         onClick={toggleExpanded}
-                        className="text-sm text-white/70 hover:text-white transition-colors"
+                        className="mini-player-toggle text-sm text-white/70 hover:text-white transition-colors"
+                        aria-label={isExpanded ? 'Minimize player' : 'Expand player'}
                     >
                         {isExpanded ? '▾' : '▴'}
                     </button>
                 </div>
 
-                <div
-                    className="mt-3 h-2 rounded-full bg-white/10 cursor-pointer overflow-hidden"
-                    onClick={(e) => {
-                        const rect = e.currentTarget.getBoundingClientRect();
-                        const clickX = e.clientX - rect.left;
-                        const pct = rect.width > 0 ? clickX / rect.width : 0;
-                        seekTo((duration || 0) * pct);
-                    }}
-                >
+                <div className="mini-player-progress">
                     <div
-                        className="h-full rounded-full"
-                        style={{
-                            width: `${progress}%`,
-                            background: `linear-gradient(90deg, ${realmColor}, ${realmColor}cc)`,
+                        className="mt-3 h-2 rounded-full bg-white/10 cursor-pointer overflow-hidden"
+                        onClick={(e) => {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            const clickX = e.clientX - rect.left;
+                            const pct = rect.width > 0 ? clickX / rect.width : 0;
+                            seekTo((duration || 0) * pct);
                         }}
-                    />
-                </div>
+                    >
+                        <div
+                            className="h-full rounded-full"
+                            style={{
+                                width: `${progress}%`,
+                                background: `linear-gradient(90deg, ${realmColor}, ${realmColor}cc)`,
+                            }}
+                        />
+                    </div>
 
-                <div className="mt-2 flex justify-between text-[11px] text-white/60">
-                    <span>{formatTime(currentTime)}</span>
-                    <span>{formatTime(duration)}</span>
+                    <div className="mt-2 flex justify-between text-[11px] text-white/60">
+                        <span>{formatTime(currentTime)}</span>
+                        <span>{formatTime(duration)}</span>
+                    </div>
                 </div>
 
                 {isExpanded && (
-                    <div className="mt-4 border-t border-white/10 pt-4">
+                    <div className="mini-player-expanded mt-4 border-t border-white/10 pt-4">
                         <div className="mb-3">
                             <p className="text-xs uppercase tracking-wide text-white/50 mb-1">
                                 Now Playing
                             </p>
+
                             <p className="text-sm text-white/90">
                                 Realm {currentTrack.realmId} • {currentTrack.realmName}
                             </p>
@@ -101,6 +106,7 @@ export default function MiniPlayer() {
 
                         <div className="flex items-center gap-3">
                             <span className="text-sm">🔊</span>
+
                             <input
                                 type="range"
                                 min="0"
@@ -110,6 +116,7 @@ export default function MiniPlayer() {
                                 onChange={(e) => setVolume(parseFloat(e.target.value))}
                                 className="flex-1"
                             />
+
                             <span className="text-xs text-white/60 w-10 text-right">
                                 {Math.round(volume * 100)}%
                             </span>
