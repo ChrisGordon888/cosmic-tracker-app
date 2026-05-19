@@ -21,7 +21,9 @@ import '@/styles/realmShared.css';
 import '@/styles/realm202.css';
 
 const REALM_ID = 202;
+const PREVIOUS_REALM_ID = 303;
 const NEXT_REALM_ID = 101;
+const REALM_COLOR = '#8B5CF6';
 
 const LONGINGS_FINAL_PUZZLE: PuzzleConfig = {
     id: 'longings-end-step-3',
@@ -187,7 +189,8 @@ export default function Realm202() {
         return (
             <div className="min-h-screen grid place-items-center p-6 nexus-shell">
                 <div className="glass-card nexus-panel max-w-md text-center">
-                    <div className="mx-auto mb-4 w-12 h-12 rounded-full border border-white/15 grid place-items-center text-[#DCBA5C]">
+                    <div className="mx-auto mb-4 w-12 h-12 rounded-full border border-white/15 grid place-items-center"
+                        style={{ color: REALM_COLOR }}>
                         ◐
                     </div>
 
@@ -211,7 +214,8 @@ export default function Realm202() {
         return (
             <div className="min-h-screen grid place-items-center p-6 nexus-shell">
                 <div className="glass-card nexus-panel max-w-md text-center">
-                    <div className="mx-auto mb-4 w-12 h-12 rounded-full border border-white/15 grid place-items-center text-[#DCBA5C]">
+                    <div className="mx-auto mb-4 w-12 h-12 rounded-full border border-white/15 grid place-items-center"
+                        style={{ color: REALM_COLOR }}>
                         ✦
                     </div>
 
@@ -283,18 +287,18 @@ export default function Realm202() {
                     </header>
 
                     <RealmEntryGuidanceBanner
-                        realmId={202}
+                        realmId={REALM_ID}
                         realmName="The Veil"
-                        realmColor="#8B5CF6"
+                        realmColor={REALM_COLOR}
                     />
 
                     <RealmGuidanceCard realmId={202} />
 
                     <RealmSoundstage
-                        realmId={202}
+                        realmId={REALM_ID}
                         realmName="The Veil"
                         realmIcon="◐"
-                        realmColor="#8B5CF6"
+                        realmColor={REALM_COLOR}
                         intro="The Veil is where mystery, longing, projection, and hidden truth blur together. Let the soundtrack tell you whether this realm matches what you are moving through right now."
                         supportText="Start with the music first. If this realm feels true, open the optional Realm Path to explore symbols, visions, and hidden truth."
                         progress={realmProgress}
@@ -675,11 +679,10 @@ export default function Realm202() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div
-                                        className={`realm-portal ${
-                                            canExploreMistGardens || hasVisited('mist-gardens')
-                                                ? 'unlocked'
-                                                : 'locked'
-                                        } fade-in`}
+                                        className={`realm-portal ${canExploreMistGardens || hasVisited('mist-gardens')
+                                            ? 'unlocked'
+                                            : 'locked'
+                                            } fade-in`}
                                         style={{ animationDelay: '0.5s' }}
                                     >
                                         <div className="flex items-start gap-4">
@@ -710,11 +713,10 @@ export default function Realm202() {
                                     </div>
 
                                     <div
-                                        className={`realm-portal ${
-                                            canExploreLanternArchive || hasVisited('lantern-archive')
-                                                ? 'unlocked'
-                                                : 'locked'
-                                        } fade-in`}
+                                        className={`realm-portal ${canExploreLanternArchive || hasVisited('lantern-archive')
+                                            ? 'unlocked'
+                                            : 'locked'
+                                            } fade-in`}
                                         style={{ animationDelay: '0.6s' }}
                                     >
                                         <div className="flex items-start gap-4">
@@ -750,7 +752,7 @@ export default function Realm202() {
 
                     {completedTrialsCount >= 3 && (
                         <div className="glass-card p-8 mb-8 text-center fade-in realm-202-complete-card">
-                            <h3 className="text-2xl font-display mb-4" style={{ color: '#9370DB' }}>
+                            <h3 className="text-2xl font-display mb-4" style={{ color: REALM_COLOR }}>
                                 THE VEIL TRANSCENDED
                             </h3>
 
@@ -770,18 +772,25 @@ export default function Realm202() {
                         </div>
                     )}
 
-                    <div className="flex flex-col sm:flex-row justify-between items-center gap-4 fade-in" style={{ animationDelay: '0.8s' }}>
+                    <div
+                        className="realm-page-nav fade-in"
+                        style={{ animationDelay: '0.8s' }}
+                    >
+                        <Link href={`/realms/${PREVIOUS_REALM_ID}`}>
+                            <button className="btn-secondary">← Fractured Frontier</button>
+                        </Link>
+
                         <Link href="/nexus">
-                            <button className="btn-secondary">← Back to Nexus</button>
+                            <button className="btn-secondary">Back to Nexus</button>
                         </Link>
 
                         {isMoonlitRoadsUnlocked ? (
-                            <Link href="/realms/101">
-                                <button className="btn-primary">Enter Moonlit Roads →</button>
+                            <Link href={`/realms/${NEXT_REALM_ID}`}>
+                                <button className="btn-primary">Moonlit Roads →</button>
                             </Link>
                         ) : (
-                            <div className="text-sm text-muted">
-                                Next Realm: ☾ Moonlit Roads (Locked)
+                            <div className="realm-next-locked">
+                                Next Realm: ☾ Moonlit Roads Locked
                             </div>
                         )}
                     </div>

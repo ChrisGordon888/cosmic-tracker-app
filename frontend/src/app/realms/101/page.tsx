@@ -13,813 +13,822 @@ import '@/styles/realmShared.css';
 import '@/styles/realm101.css';
 import { useQuery, useMutation } from '@apollo/client';
 import {
-  GET_ME,
-  COMPLETE_TRIAL_STEP,
-  START_TRIAL,
-  VISIT_LOCATION,
-  UNLOCK_REALM,
+    GET_ME,
+    COMPLETE_TRIAL_STEP,
+    START_TRIAL,
+    VISIT_LOCATION,
+    UNLOCK_REALM,
 } from '@/graphql/realms';
 
 const REALM_ID = 101;
+const PREVIOUS_REALM_ID = 202;
 const NEXT_REALM_ID = 55;
+const REALM_COLOR = '#38BDF8';
 
 const ILLUMINATED_FINAL_PUZZLE: PuzzleConfig = {
-  id: 'illuminated-darkness-step-3',
-  trialId: 'trial-illuminated-darkness',
-  type: 'multiple-choice',
-  prompt: 'Which path reflects illuminated darkness?',
-  options: [
-    'Destroy every shadow until nothing remains',
-    'Walk consciously through shadow with light',
-    'Hide inside the night and refuse to see',
-  ],
-  correctOption: 'Walk consciously through shadow with light',
-  hint: 'This realm is about integration, awareness, and presence.',
+    id: 'illuminated-darkness-step-3',
+    trialId: 'trial-illuminated-darkness',
+    type: 'multiple-choice',
+    prompt: 'Which path reflects illuminated darkness?',
+    options: [
+        'Destroy every shadow until nothing remains',
+        'Walk consciously through shadow with light',
+        'Hide inside the night and refuse to see',
+    ],
+    correctOption: 'Walk consciously through shadow with light',
+    hint: 'This realm is about integration, awareness, and presence.',
 };
 
 export default function Realm101() {
-  const { data: session, status } = useSession();
-  const [showProgression, setShowProgression] = useState(false);
+    const { data: session, status } = useSession();
+    const [showProgression, setShowProgression] = useState(false);
 
-  const { data: userData, loading: userLoading, refetch } = useQuery(GET_ME, {
-    fetchPolicy: 'network-only',
-    nextFetchPolicy: 'cache-first',
-  });
-
-  const [completeTrialStep] = useMutation(COMPLETE_TRIAL_STEP);
-  const [startTrial] = useMutation(START_TRIAL);
-  const [visitLocation] = useMutation(VISIT_LOCATION);
-  const [unlockNextRealm] = useMutation(UNLOCK_REALM);
-  const hasUnlockedRef = useRef(false);
-
-  const [trial1Puzzle1Solved, setTrial1Puzzle1Solved] = useState(false);
-  const [trial1Puzzle2Solved, setTrial1Puzzle2Solved] = useState(false);
-
-  const [trial2Puzzle1Solved, setTrial2Puzzle1Solved] = useState(false);
-  const [trial2Puzzle2Solved, setTrial2Puzzle2Solved] = useState(false);
-
-  const [trial3Puzzle1Solved, setTrial3Puzzle1Solved] = useState(false);
-  const [trial3Puzzle2Solved, setTrial3Puzzle2Solved] = useState(false);
-  const [trial3Puzzle3Solved, setTrial3Puzzle3Solved] = useState(false);
-
-  const user = userData?.me;
-  const userLevel = user?.level ?? 1;
-  const userXP = user?.xp ?? 0;
-  const xpToNext = user?.xpToNextLevel ?? 100;
-  const safeXpToNext = Math.max(xpToNext, 1);
-  const xpPercent = Math.min((userXP / safeXpToNext) * 100, 100);
-
-  const realmTrials =
-    user?.completedTrials?.filter((t: any) => Number(t.realmId) === REALM_ID) ?? [];
-
-  const completedTrialsCount = realmTrials.filter(
-    (t: any) => t.isComplete || (t.stepsCompleted ?? 0) >= 3
-  ).length;
-
-  const realmProgress = Math.floor((completedTrialsCount / 3) * 100);
-
-  const getTrial = (trialId: string) =>
-    realmTrials.find((t: any) => t.trialId === trialId);
-
-  const realmLocations =
-    user?.visitedLocations?.filter((l: any) => Number(l.realmId) === REALM_ID) ?? [];
-
-  const hasVisited = (locationId: string) =>
-    realmLocations.some((l: any) => l.locationId === locationId);
-
-  const isSkyboundUnlocked = user?.unlockedRealms?.includes(NEXT_REALM_ID);
-
-  const trial1 = getTrial('trial-shadow-integration');
-  const trial2 = getTrial('trial-midnight-clarity');
-  const trial3 = getTrial('trial-illuminated-darkness');
-
-  const trial1Started = !!trial1;
-  const trial2Started = !!trial2;
-  const trial3Started = !!trial3;
-
-  const trial1Steps = trial1?.stepsCompleted || 0;
-  const trial2Steps = trial2?.stepsCompleted || 0;
-  const trial3Steps = trial3?.stepsCompleted || 0;
-
-  const shadowPuzzles = REALM_101_PUZZLES['trial-shadow-integration'].steps;
-  const midnightPuzzles = REALM_101_PUZZLES['trial-midnight-clarity'].steps;
-  const illuminatedPuzzles = REALM_101_PUZZLES['trial-illuminated-darkness'].steps;
-
-  useEffect(() => {
-    if (completedTrialsCount >= 3 && !hasUnlockedRef.current && user) {
-      const alreadyUnlocked = user?.unlockedRealms?.includes(NEXT_REALM_ID);
-
-      if (!alreadyUnlocked) {
-        hasUnlockedRef.current = true;
-        unlockNextRealm({ variables: { realmId: NEXT_REALM_ID } })
-          .then(() => {
-            refetch();
-          })
-          .catch((err) => console.error('Unlock error:', err));
-      } else {
-        hasUnlockedRef.current = true;
-      }
-    }
-  }, [completedTrialsCount, user, unlockNextRealm, refetch]);
-
-  const ensureTrialStarted = async (trialId: string, trialName: string) => {
-    await startTrial({ variables: { realmId: REALM_ID, trialId, trialName } });
-    await refetch();
-  };
-
-  const advanceTrialStep = async (trialId: string, prefixMessage?: string) => {
-    const result = await completeTrialStep({
-      variables: { realmId: REALM_ID, trialId },
+    const { data: userData, loading: userLoading, refetch } = useQuery(GET_ME, {
+        fetchPolicy: 'network-only',
+        nextFetchPolicy: 'cache-first',
     });
 
-    const trialMessage = result.data.completeTrialStep.message;
+    const [completeTrialStep] = useMutation(COMPLETE_TRIAL_STEP);
+    const [startTrial] = useMutation(START_TRIAL);
+    const [visitLocation] = useMutation(VISIT_LOCATION);
+    const [unlockNextRealm] = useMutation(UNLOCK_REALM);
+    const hasUnlockedRef = useRef(false);
 
-    if (prefixMessage) {
-      alert(`${prefixMessage}\n${trialMessage}`);
-    } else {
-      alert(trialMessage);
+    const [trial1Puzzle1Solved, setTrial1Puzzle1Solved] = useState(false);
+    const [trial1Puzzle2Solved, setTrial1Puzzle2Solved] = useState(false);
+
+    const [trial2Puzzle1Solved, setTrial2Puzzle1Solved] = useState(false);
+    const [trial2Puzzle2Solved, setTrial2Puzzle2Solved] = useState(false);
+
+    const [trial3Puzzle1Solved, setTrial3Puzzle1Solved] = useState(false);
+    const [trial3Puzzle2Solved, setTrial3Puzzle2Solved] = useState(false);
+    const [trial3Puzzle3Solved, setTrial3Puzzle3Solved] = useState(false);
+
+    const user = userData?.me;
+    const userLevel = user?.level ?? 1;
+    const userXP = user?.xp ?? 0;
+    const xpToNext = user?.xpToNextLevel ?? 100;
+    const safeXpToNext = Math.max(xpToNext, 1);
+    const xpPercent = Math.min((userXP / safeXpToNext) * 100, 100);
+
+    const realmTrials =
+        user?.completedTrials?.filter((t: any) => Number(t.realmId) === REALM_ID) ?? [];
+
+    const completedTrialsCount = realmTrials.filter(
+        (t: any) => t.isComplete || (t.stepsCompleted ?? 0) >= 3
+    ).length;
+
+    const realmProgress = Math.floor((completedTrialsCount / 3) * 100);
+
+    const getTrial = (trialId: string) =>
+        realmTrials.find((t: any) => t.trialId === trialId);
+
+    const realmLocations =
+        user?.visitedLocations?.filter((l: any) => Number(l.realmId) === REALM_ID) ?? [];
+
+    const hasVisited = (locationId: string) =>
+        realmLocations.some((l: any) => l.locationId === locationId);
+
+    const isSkyboundUnlocked = user?.unlockedRealms?.includes(NEXT_REALM_ID);
+
+    const trial1 = getTrial('trial-shadow-integration');
+    const trial2 = getTrial('trial-midnight-clarity');
+    const trial3 = getTrial('trial-illuminated-darkness');
+
+    const trial1Started = !!trial1;
+    const trial2Started = !!trial2;
+    const trial3Started = !!trial3;
+
+    const trial1Steps = trial1?.stepsCompleted || 0;
+    const trial2Steps = trial2?.stepsCompleted || 0;
+    const trial3Steps = trial3?.stepsCompleted || 0;
+
+    const shadowPuzzles = REALM_101_PUZZLES['trial-shadow-integration'].steps;
+    const midnightPuzzles = REALM_101_PUZZLES['trial-midnight-clarity'].steps;
+    const illuminatedPuzzles = REALM_101_PUZZLES['trial-illuminated-darkness'].steps;
+
+    useEffect(() => {
+        if (completedTrialsCount >= 3 && !hasUnlockedRef.current && user) {
+            const alreadyUnlocked = user?.unlockedRealms?.includes(NEXT_REALM_ID);
+
+            if (!alreadyUnlocked) {
+                hasUnlockedRef.current = true;
+                unlockNextRealm({ variables: { realmId: NEXT_REALM_ID } })
+                    .then(() => {
+                        refetch();
+                    })
+                    .catch((err) => console.error('Unlock error:', err));
+            } else {
+                hasUnlockedRef.current = true;
+            }
+        }
+    }, [completedTrialsCount, user, unlockNextRealm, refetch]);
+
+    const ensureTrialStarted = async (trialId: string, trialName: string) => {
+        await startTrial({ variables: { realmId: REALM_ID, trialId, trialName } });
+        await refetch();
+    };
+
+    const advanceTrialStep = async (trialId: string, prefixMessage?: string) => {
+        const result = await completeTrialStep({
+            variables: { realmId: REALM_ID, trialId },
+        });
+
+        const trialMessage = result.data.completeTrialStep.message;
+
+        if (prefixMessage) {
+            alert(`${prefixMessage}\n${trialMessage}`);
+        } else {
+            alert(trialMessage);
+        }
+
+        await refetch();
+    };
+
+    const handleLocationVisit = async (locationId: string, locationName: string) => {
+        try {
+            const result = await visitLocation({
+                variables: { realmId: REALM_ID, locationId, locationName },
+            });
+
+            const visitMessage = result.data.visitLocation.message;
+
+            if (locationId === 'rainfall-train' && trial1Started && trial1Steps === 0) {
+                await advanceTrialStep('trial-shadow-integration', visitMessage);
+                return;
+            }
+
+            if (locationId === 'noir-district' && trial2Started && trial2Steps === 0) {
+                await advanceTrialStep('trial-midnight-clarity', visitMessage);
+                return;
+            }
+
+            alert(visitMessage);
+            await refetch();
+        } catch (error: any) {
+            console.error('Location error:', error);
+            alert('Error: ' + (error.message ?? 'Something went wrong'));
+        }
+    };
+
+    if (status === 'loading' || userLoading) {
+        return (
+            <div className="min-h-screen grid place-items-center p-6 nexus-shell">
+                <div className="glass-card nexus-panel max-w-md text-center">
+                    <div className="mx-auto mb-4 w-12 h-12 rounded-full border border-white/15 grid place-items-center"
+                        style={{ color: REALM_COLOR }}>
+                        ☾
+                    </div>
+
+                    <p className="text-xs uppercase tracking-[0.22em] text-muted mb-2">
+                        Entering Realm
+                    </p>
+
+                    <h1 className="text-3xl font-display mb-3">Moonlit Roads</h1>
+
+                    <p className="text-secondary">
+                        Syncing realm progress, music state, and reflection path.
+                    </p>
+                </div>
+            </div>
+        );
     }
 
-    await refetch();
-  };
+    if (!session) {
+        return (
+            <div className="min-h-screen grid place-items-center p-6 nexus-shell">
+                <div className="glass-card nexus-panel max-w-md text-center">
+                    <div className="mx-auto mb-4 w-12 h-12 rounded-full border border-white/15 grid place-items-center"
+                        style={{ color: REALM_COLOR }}>
+                        ✦
+                    </div>
 
-  const handleLocationVisit = async (locationId: string, locationName: string) => {
-    try {
-      const result = await visitLocation({
-        variables: { realmId: REALM_ID, locationId, locationName },
-      });
+                    <p className="text-xs uppercase tracking-[0.22em] text-muted mb-2">
+                        Realm Locked
+                    </p>
 
-      const visitMessage = result.data.visitLocation.message;
+                    <h1 className="text-3xl font-display mb-3">Sign in to enter</h1>
 
-      if (locationId === 'rainfall-train' && trial1Started && trial1Steps === 0) {
-        await advanceTrialStep('trial-shadow-integration', visitMessage);
-        return;
-      }
+                    <p className="text-secondary mb-6">
+                        Save realm progress, XP, listening history, and trial completion.
+                    </p>
 
-      if (locationId === 'noir-district' && trial2Started && trial2Steps === 0) {
-        await advanceTrialStep('trial-midnight-clarity', visitMessage);
-        return;
-      }
-
-      alert(visitMessage);
-      await refetch();
-    } catch (error: any) {
-      console.error('Location error:', error);
-      alert('Error: ' + (error.message ?? 'Something went wrong'));
+                    <Link href="/auth" className="btn-primary">
+                        Open Cosmic Access
+                    </Link>
+                </div>
+            </div>
+        );
     }
-  };
 
-  if (status === 'loading' || userLoading) {
+    const canExploreRainfallTrain = trial1Started && trial1Steps === 0;
+    const canExploreNoirDistrict = trial2Started && trial2Steps === 0;
+
+    const goToLocations = () => {
+        document.getElementById('locations-section')?.scrollIntoView({ behavior: 'smooth' });
+    };
+
     return (
-      <div className="min-h-screen grid place-items-center p-6 nexus-shell">
-        <div className="glass-card nexus-panel max-w-md text-center">
-          <div className="mx-auto mb-4 w-12 h-12 rounded-full border border-white/15 grid place-items-center text-[#DCBA5C]">
-            ☾
-          </div>
+        <>
+            <RealmBackground
+                videoSrc="/moonlit-roads.mp4"
+                realmName="Moonlit Roads"
+                overlayOpacity={0.5}
+            />
 
-          <p className="text-xs uppercase tracking-[0.22em] text-muted mb-2">
-            Entering Realm
-          </p>
+            <div className="min-h-screen pb-32 realm-101-shell">
+                <div className="container mx-auto px-4 py-8 max-w-6xl realm-101-container">
+                    <header className="text-center mb-10 fade-in realm-101-hero">
+                        <div className="realm-101-symbol-mark mb-4">☾</div>
 
-          <h1 className="text-3xl font-display mb-3">Moonlit Roads</h1>
+                        <h1 className="text-5xl md:text-6xl font-display mb-2 realm-101-title">
+                            MOONLIT ROADS
+                        </h1>
 
-          <p className="text-secondary">
-            Syncing realm progress, music state, and reflection path.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!session) {
-    return (
-      <div className="min-h-screen grid place-items-center p-6 nexus-shell">
-        <div className="glass-card nexus-panel max-w-md text-center">
-          <div className="mx-auto mb-4 w-12 h-12 rounded-full border border-white/15 grid place-items-center text-[#DCBA5C]">
-            ✦
-          </div>
-
-          <p className="text-xs uppercase tracking-[0.22em] text-muted mb-2">
-            Realm Locked
-          </p>
-
-          <h1 className="text-3xl font-display mb-3">Sign in to enter</h1>
-
-          <p className="text-secondary mb-6">
-            Save realm progress, XP, listening history, and trial completion.
-          </p>
-
-          <Link href="/auth" className="btn-primary">
-            Open Cosmic Access
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  const canExploreRainfallTrain = trial1Started && trial1Steps === 0;
-  const canExploreNoirDistrict = trial2Started && trial2Steps === 0;
-
-  const goToLocations = () => {
-    document.getElementById('locations-section')?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  return (
-    <>
-      <RealmBackground
-        videoSrc="/moonlit-roads.mp4"
-        realmName="Moonlit Roads"
-        overlayOpacity={0.5}
-      />
-
-      <div className="min-h-screen pb-32 realm-101-shell">
-        <div className="container mx-auto px-4 py-8 max-w-6xl realm-101-container">
-          <header className="text-center mb-10 fade-in realm-101-hero">
-            <div className="realm-101-symbol-mark mb-4">☾</div>
-
-            <h1 className="text-5xl md:text-6xl font-display mb-2 realm-101-title">
-              MOONLIT ROADS
-            </h1>
-
-            <p className="text-xl text-secondary mb-2">[ REALM 101 ]</p>
-            <p className="text-lg text-muted">
-              Reflection &amp; Shadows • Where Memory Meets Mystery
-            </p>
-
-            <div className="mt-6 flex justify-center items-center gap-4">
-              <div className="level-badge">LVL {userLevel}</div>
-
-              <div className="flex-1 max-w-xs">
-                <div className="stat-bar">
-                  <div className="stat-bar-fill" style={{ width: `${xpPercent}%` }} />
-                </div>
-
-                <p className="text-sm text-secondary mt-1">
-                  {userXP} / {safeXpToNext} XP
-                </p>
-              </div>
-            </div>
-          </header>
-
-          <RealmEntryGuidanceBanner
-            realmId={101}
-            realmName="Moonlit Roads"
-            realmColor="#38BDF8"
-          />
-
-          <RealmGuidanceCard realmId={101} />
-
-          <RealmSoundstage
-            realmId={101}
-            realmName="Moonlit Roads"
-            realmIcon="☾"
-            realmColor="#38BDF8"
-            intro="Moonlit Roads is where reflection, grief, distance, memory, and emotional integration move at a quieter pace. Let the soundtrack tell you whether this realm matches what you need to process right now."
-            supportText="Start with the music first. If this realm feels true, then go deeper into its trials, locations, and symbols."
-            progress={realmProgress}
-            isUnlocked={true}
-            isCurrentRealm={true}
-            compactOnMobile
-          />
-
-          <div
-            className="glass-card realm-101-overview p-6 mb-8 fade-in"
-            style={{ animationDelay: '0.1s' }}
-          >
-            <div className="flex flex-col lg:flex-row lg:items-start gap-6">
-              <div className="flex-1">
-                <h2 className="text-2xl font-display mb-3">Realm Overview</h2>
-
-                <p className="text-secondary mb-4">
-                  Moonlit Roads is a realm of reflection, distance, and shadow integration.
-                  It is where memory softens, emotion becomes legible, and the inner road
-                  reveals what is ready to be understood.
-                </p>
-
-                <div className="mb-4">
-                  <div className="flex items-center justify-between text-sm mb-2">
-                    <span className="text-secondary">Realm Path Progress</span>
-                    <span className="text-stats">{realmProgress}%</span>
-                  </div>
-
-                  <div className="stat-bar">
-                    <div
-                      className="stat-bar-fill realm-101-bar"
-                      style={{ width: `${realmProgress}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div className="text-sm text-muted">
-                  {completedTrialsCount} of 3 optional realm trials complete
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 min-w-[260px]">
-                <div className="glass-card p-4 text-center">
-                  <div className="text-2xl font-display text-glow realm-101-glow">
-                    {completedTrialsCount} / 3
-                  </div>
-                  <div className="text-xs text-muted">Realm Path Trials</div>
-                </div>
-
-                <div className="glass-card p-4 text-center">
-                  <div className="text-2xl font-display text-glow">
-                    {isSkyboundUnlocked ? 'Unlocked' : 'Locked'}
-                  </div>
-                  <div className="text-xs text-muted">Next Realm</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div
-            className="glass-card p-4 mb-8 fade-in realm-101-progression-toggle"
-            style={{ animationDelay: '0.15s' }}
-          >
-            <button
-              onClick={() => setShowProgression((prev) => !prev)}
-              className="w-full flex items-center justify-between text-left"
-            >
-              <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-white/60 mb-1">
-                  Optional Realm Path
-                </p>
-
-                <h2 className="text-xl font-display">
-                  Explore reflection, shadow, and clarity
-                </h2>
-
-                <p className="text-sm text-muted mt-1">
-                  The music is the entry point. Open the realm path when you want to move
-                  deeper into memory, shadow, and integration.
-                </p>
-              </div>
-
-              <div className="text-2xl text-white/70 shrink-0 ml-4">
-                {showProgression ? '▾' : '▸'}
-              </div>
-            </button>
-          </div>
-
-          {showProgression && (
-            <>
-              <div className="mb-8 fade-in">
-                <h2 className="text-3xl font-display mb-6 flex items-center gap-3">
-                  <span className="text-glow">✦</span>
-                  REALM PATH
-                </h2>
-
-                <div className="space-y-4">
-                  <div className="quest-card fade-in" style={{ animationDelay: '0.2s' }}>
-                    <div className="flex items-start gap-4">
-                      <div className="text-4xl">☾</div>
-
-                      <div className="flex-1">
-                        <h3 className="text-xl font-display mb-2">
-                          Trial of Shadow Integration
-                        </h3>
-
-                        <p className="text-sm text-secondary mb-3">
-                          Enter the shadow path, ride the Rainfall Train, confront what was denied,
-                          and integrate what follows you in silence.
+                        <p className="text-xl text-secondary mb-2">[ REALM 101 ]</p>
+                        <p className="text-lg text-muted">
+                            Reflection &amp; Shadows • Where Memory Meets Mystery
                         </p>
 
-                        <div className="mb-3">
-                          <div className="flex justify-between text-xs mb-1">
-                            <span>Progress</span>
-                            <span>{trial1Steps} / 3 Steps</span>
-                          </div>
+                        <div className="mt-6 flex justify-center items-center gap-4">
+                            <div className="level-badge">LVL {userLevel}</div>
 
-                          <div className="stat-bar">
-                            <div
-                              className="stat-bar-fill realm-101-bar"
-                              style={{ width: `${(trial1Steps / 3) * 100}%` }}
-                            />
-                          </div>
+                            <div className="flex-1 max-w-xs">
+                                <div className="stat-bar">
+                                    <div className="stat-bar-fill" style={{ width: `${xpPercent}%` }} />
+                                </div>
+
+                                <p className="text-sm text-secondary mt-1">
+                                    {userXP} / {safeXpToNext} XP
+                                </p>
+                            </div>
                         </div>
+                    </header>
 
-                        {!trial1Started && (
-                          <>
-                            <button
-                              className="btn-primary mt-4"
-                              onClick={() =>
-                                ensureTrialStarted(
-                                  'trial-shadow-integration',
-                                  'Trial of Shadow Integration'
-                                )
-                              }
-                            >
-                              Begin Realm Path →
-                            </button>
+                    <RealmEntryGuidanceBanner
+                        realmId={REALM_ID}
+                        realmName="Moonlit Roads"
+                        realmColor={REALM_COLOR}
+                    />
 
-                            <p className="text-xs text-muted mt-2">
-                              Start the trial to enter the shadow path.
-                            </p>
-                          </>
-                        )}
+                    <RealmGuidanceCard realmId={101} />
 
-                        {trial1Started && trial1Steps === 0 && (
-                          <>
-                            <button className="btn-primary mt-4" onClick={goToLocations}>
-                              Step 1: Board the Rainfall Train →
-                            </button>
+                    <RealmSoundstage
+                        realmId={REALM_ID}
+                        realmName="Moonlit Roads"
+                        realmIcon="☾"
+                        realmColor={REALM_COLOR}
+                        intro="Moonlit Roads is where reflection, grief, distance, memory, and emotional integration move at a quieter pace. Let the soundtrack tell you whether this realm matches what you need to process right now."
+                        supportText="Start with the music first. If this realm feels true, then go deeper into its trials, locations, and symbols."
+                        progress={realmProgress}
+                        isUnlocked={true}
+                        isCurrentRealm={true}
+                        compactOnMobile
+                    />
 
-                            <p className="text-xs text-muted mt-2">
-                              Visit The Rainfall Train to auto-complete the first step.
-                            </p>
-                          </>
-                        )}
+                    <div
+                        className="glass-card realm-101-overview p-6 mb-8 fade-in"
+                        style={{ animationDelay: '0.1s' }}
+                    >
+                        <div className="flex flex-col lg:flex-row lg:items-start gap-6">
+                            <div className="flex-1">
+                                <h2 className="text-2xl font-display mb-3">Realm Overview</h2>
 
-                        {trial1Started && trial1Steps === 1 && (
-                          <>
-                            <TrialPuzzle
-                              puzzle={shadowPuzzles[0]}
-                              onSolved={async () => {
-                                if (trial1Puzzle1Solved) return;
-                                setTrial1Puzzle1Solved(true);
-                                await advanceTrialStep('trial-shadow-integration');
-                              }}
-                            />
+                                <p className="text-secondary mb-4">
+                                    Moonlit Roads is a realm of reflection, distance, and shadow integration.
+                                    It is where memory softens, emotion becomes legible, and the inner road
+                                    reveals what is ready to be understood.
+                                </p>
 
-                            <p className="text-xs text-muted mt-2">
-                              Solve the first shadow clue.
-                            </p>
-                          </>
-                        )}
+                                <div className="mb-4">
+                                    <div className="flex items-center justify-between text-sm mb-2">
+                                        <span className="text-secondary">Realm Path Progress</span>
+                                        <span className="text-stats">{realmProgress}%</span>
+                                    </div>
 
-                        {trial1Started && trial1Steps === 2 && (
-                          <>
-                            <TrialPuzzle
-                              puzzle={shadowPuzzles[1]}
-                              onSolved={async () => {
-                                if (trial1Puzzle2Solved) return;
-                                setTrial1Puzzle2Solved(true);
-                                await advanceTrialStep('trial-shadow-integration');
-                              }}
-                            />
+                                    <div className="stat-bar">
+                                        <div
+                                            className="stat-bar-fill realm-101-bar"
+                                            style={{ width: `${realmProgress}%` }}
+                                        />
+                                    </div>
+                                </div>
 
-                            <p className="text-xs text-muted mt-2">
-                              Face what follows in silence and complete the trial.
-                            </p>
-                          </>
-                        )}
-
-                        {trial1?.isComplete && (
-                          <div className="text-green-400 font-bold">✓ Complete</div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div
-                    className={`quest-card fade-in ${!trial1?.isComplete ? 'opacity-50' : ''}`}
-                    style={{ animationDelay: '0.3s' }}
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="text-4xl">◐</div>
-
-                      <div className="flex-1">
-                        <h3 className="text-xl font-display mb-2">
-                          Trial of Midnight Clarity
-                        </h3>
-
-                        {trial1?.isComplete ? (
-                          <>
-                            <p className="text-sm text-secondary mb-3">
-                              Walk into the Noir District, sharpen perception, and discover what midnight reveals.
-                            </p>
-
-                            <div className="mb-3">
-                              <div className="flex justify-between text-xs mb-1">
-                                <span>Progress</span>
-                                <span>{trial2Steps} / 3 Steps</span>
-                              </div>
-
-                              <div className="stat-bar">
-                                <div
-                                  className="stat-bar-fill realm-101-bar"
-                                  style={{ width: `${(trial2Steps / 3) * 100}%` }}
-                                />
-                              </div>
+                                <div className="text-sm text-muted">
+                                    {completedTrialsCount} of 3 optional realm trials complete
+                                </div>
                             </div>
 
-                            {!trial2Started && (
-                              <>
-                                <button
-                                  className="btn-primary mt-4"
-                                  onClick={() =>
-                                    ensureTrialStarted(
-                                      'trial-midnight-clarity',
-                                      'Trial of Midnight Clarity'
-                                    )
-                                  }
-                                >
-                                  Begin Trial of Midnight Clarity →
-                                </button>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 min-w-[260px]">
+                                <div className="glass-card p-4 text-center">
+                                    <div className="text-2xl font-display text-glow realm-101-glow">
+                                        {completedTrialsCount} / 3
+                                    </div>
+                                    <div className="text-xs text-muted">Realm Path Trials</div>
+                                </div>
 
-                                <p className="text-xs text-muted mt-2">
-                                  Start the trial to open the noir path.
-                                </p>
-                              </>
-                            )}
-
-                            {trial2Started && trial2Steps === 0 && (
-                              <>
-                                <button className="btn-primary mt-4" onClick={goToLocations}>
-                                  Step 1: Visit Noir District →
-                                </button>
-
-                                <p className="text-xs text-muted mt-2">
-                                  Visit The Noir District to auto-complete the first step.
-                                </p>
-                              </>
-                            )}
-
-                            {trial2Started && trial2Steps === 1 && (
-                              <>
-                                <TrialPuzzle
-                                  puzzle={midnightPuzzles[0]}
-                                  onSolved={async () => {
-                                    if (trial2Puzzle1Solved) return;
-                                    setTrial2Puzzle1Solved(true);
-                                    await advanceTrialStep('trial-midnight-clarity');
-                                  }}
-                                />
-
-                                <p className="text-xs text-muted mt-2">
-                                  Solve the first midnight clue.
-                                </p>
-                              </>
-                            )}
-
-                            {trial2Started && trial2Steps === 2 && (
-                              <>
-                                <TrialPuzzle
-                                  puzzle={midnightPuzzles[1]}
-                                  onSolved={async () => {
-                                    if (trial2Puzzle2Solved) return;
-                                    setTrial2Puzzle2Solved(true);
-                                    await advanceTrialStep('trial-midnight-clarity');
-                                  }}
-                                />
-
-                                <p className="text-xs text-muted mt-2">
-                                  Complete the final clarity test.
-                                </p>
-                              </>
-                            )}
-
-                            {trial2?.isComplete && (
-                              <div className="text-green-400 font-bold">✓ Complete</div>
-                            )}
-                          </>
-                        ) : (
-                          <p className="text-sm text-muted italic">
-                            Locked — complete Trial of Shadow Integration to unlock
-                          </p>
-                        )}
-                      </div>
+                                <div className="glass-card p-4 text-center">
+                                    <div className="text-2xl font-display text-glow">
+                                        {isSkyboundUnlocked ? 'Unlocked' : 'Locked'}
+                                    </div>
+                                    <div className="text-xs text-muted">Next Realm</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                  </div>
 
-                  <div
-                    className={`quest-card fade-in ${!trial2?.isComplete ? 'opacity-50' : ''}`}
-                    style={{ animationDelay: '0.4s' }}
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="text-4xl">◯</div>
+                    <div
+                        className="glass-card p-4 mb-8 fade-in realm-101-progression-toggle"
+                        style={{ animationDelay: '0.15s' }}
+                    >
+                        <button
+                            onClick={() => setShowProgression((prev) => !prev)}
+                            className="w-full flex items-center justify-between text-left"
+                        >
+                            <div>
+                                <p className="text-xs uppercase tracking-[0.18em] text-white/60 mb-1">
+                                    Optional Realm Path
+                                </p>
 
-                      <div className="flex-1">
-                        <h3 className="text-xl font-display mb-2">
-                          Trial of Illuminated Darkness
-                        </h3>
+                                <h2 className="text-xl font-display">
+                                    Explore reflection, shadow, and clarity
+                                </h2>
 
-                        {trial2?.isComplete ? (
-                          <>
-                            <p className="text-sm text-secondary mb-3">
-                              Reveal the hidden, solve the light-clue, and prove you can walk with awareness through shadow.
-                            </p>
-
-                            <div className="mb-3">
-                              <div className="flex justify-between text-xs mb-1">
-                                <span>Progress</span>
-                                <span>{trial3Steps} / 3 Steps</span>
-                              </div>
-
-                              <div className="stat-bar">
-                                <div
-                                  className="stat-bar-fill realm-101-bar"
-                                  style={{ width: `${(trial3Steps / 3) * 100}%` }}
-                                />
-                              </div>
+                                <p className="text-sm text-muted mt-1">
+                                    The music is the entry point. Open the realm path when you want to move
+                                    deeper into memory, shadow, and integration.
+                                </p>
                             </div>
 
-                            {!trial3Started && (
-                              <>
+                            <div className="text-2xl text-white/70 shrink-0 ml-4">
+                                {showProgression ? '▾' : '▸'}
+                            </div>
+                        </button>
+                    </div>
+
+                    {showProgression && (
+                        <>
+                            <div className="mb-8 fade-in">
+                                <h2 className="text-3xl font-display mb-6 flex items-center gap-3">
+                                    <span className="text-glow">✦</span>
+                                    REALM PATH
+                                </h2>
+
+                                <div className="space-y-4">
+                                    <div className="quest-card fade-in" style={{ animationDelay: '0.2s' }}>
+                                        <div className="flex items-start gap-4">
+                                            <div className="text-4xl">☾</div>
+
+                                            <div className="flex-1">
+                                                <h3 className="text-xl font-display mb-2">
+                                                    Trial of Shadow Integration
+                                                </h3>
+
+                                                <p className="text-sm text-secondary mb-3">
+                                                    Enter the shadow path, ride the Rainfall Train, confront what was denied,
+                                                    and integrate what follows you in silence.
+                                                </p>
+
+                                                <div className="mb-3">
+                                                    <div className="flex justify-between text-xs mb-1">
+                                                        <span>Progress</span>
+                                                        <span>{trial1Steps} / 3 Steps</span>
+                                                    </div>
+
+                                                    <div className="stat-bar">
+                                                        <div
+                                                            className="stat-bar-fill realm-101-bar"
+                                                            style={{ width: `${(trial1Steps / 3) * 100}%` }}
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                {!trial1Started && (
+                                                    <>
+                                                        <button
+                                                            className="btn-primary mt-4"
+                                                            onClick={() =>
+                                                                ensureTrialStarted(
+                                                                    'trial-shadow-integration',
+                                                                    'Trial of Shadow Integration'
+                                                                )
+                                                            }
+                                                        >
+                                                            Begin Realm Path →
+                                                        </button>
+
+                                                        <p className="text-xs text-muted mt-2">
+                                                            Start the trial to enter the shadow path.
+                                                        </p>
+                                                    </>
+                                                )}
+
+                                                {trial1Started && trial1Steps === 0 && (
+                                                    <>
+                                                        <button className="btn-primary mt-4" onClick={goToLocations}>
+                                                            Step 1: Board the Rainfall Train →
+                                                        </button>
+
+                                                        <p className="text-xs text-muted mt-2">
+                                                            Visit The Rainfall Train to auto-complete the first step.
+                                                        </p>
+                                                    </>
+                                                )}
+
+                                                {trial1Started && trial1Steps === 1 && (
+                                                    <>
+                                                        <TrialPuzzle
+                                                            puzzle={shadowPuzzles[0]}
+                                                            onSolved={async () => {
+                                                                if (trial1Puzzle1Solved) return;
+                                                                setTrial1Puzzle1Solved(true);
+                                                                await advanceTrialStep('trial-shadow-integration');
+                                                            }}
+                                                        />
+
+                                                        <p className="text-xs text-muted mt-2">
+                                                            Solve the first shadow clue.
+                                                        </p>
+                                                    </>
+                                                )}
+
+                                                {trial1Started && trial1Steps === 2 && (
+                                                    <>
+                                                        <TrialPuzzle
+                                                            puzzle={shadowPuzzles[1]}
+                                                            onSolved={async () => {
+                                                                if (trial1Puzzle2Solved) return;
+                                                                setTrial1Puzzle2Solved(true);
+                                                                await advanceTrialStep('trial-shadow-integration');
+                                                            }}
+                                                        />
+
+                                                        <p className="text-xs text-muted mt-2">
+                                                            Face what follows in silence and complete the trial.
+                                                        </p>
+                                                    </>
+                                                )}
+
+                                                {trial1?.isComplete && (
+                                                    <div className="text-green-400 font-bold">✓ Complete</div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div
+                                        className={`quest-card fade-in ${!trial1?.isComplete ? 'opacity-50' : ''}`}
+                                        style={{ animationDelay: '0.3s' }}
+                                    >
+                                        <div className="flex items-start gap-4">
+                                            <div className="text-4xl">◐</div>
+
+                                            <div className="flex-1">
+                                                <h3 className="text-xl font-display mb-2">
+                                                    Trial of Midnight Clarity
+                                                </h3>
+
+                                                {trial1?.isComplete ? (
+                                                    <>
+                                                        <p className="text-sm text-secondary mb-3">
+                                                            Walk into the Noir District, sharpen perception, and discover what midnight reveals.
+                                                        </p>
+
+                                                        <div className="mb-3">
+                                                            <div className="flex justify-between text-xs mb-1">
+                                                                <span>Progress</span>
+                                                                <span>{trial2Steps} / 3 Steps</span>
+                                                            </div>
+
+                                                            <div className="stat-bar">
+                                                                <div
+                                                                    className="stat-bar-fill realm-101-bar"
+                                                                    style={{ width: `${(trial2Steps / 3) * 100}%` }}
+                                                                />
+                                                            </div>
+                                                        </div>
+
+                                                        {!trial2Started && (
+                                                            <>
+                                                                <button
+                                                                    className="btn-primary mt-4"
+                                                                    onClick={() =>
+                                                                        ensureTrialStarted(
+                                                                            'trial-midnight-clarity',
+                                                                            'Trial of Midnight Clarity'
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    Begin Trial of Midnight Clarity →
+                                                                </button>
+
+                                                                <p className="text-xs text-muted mt-2">
+                                                                    Start the trial to open the noir path.
+                                                                </p>
+                                                            </>
+                                                        )}
+
+                                                        {trial2Started && trial2Steps === 0 && (
+                                                            <>
+                                                                <button className="btn-primary mt-4" onClick={goToLocations}>
+                                                                    Step 1: Visit Noir District →
+                                                                </button>
+
+                                                                <p className="text-xs text-muted mt-2">
+                                                                    Visit The Noir District to auto-complete the first step.
+                                                                </p>
+                                                            </>
+                                                        )}
+
+                                                        {trial2Started && trial2Steps === 1 && (
+                                                            <>
+                                                                <TrialPuzzle
+                                                                    puzzle={midnightPuzzles[0]}
+                                                                    onSolved={async () => {
+                                                                        if (trial2Puzzle1Solved) return;
+                                                                        setTrial2Puzzle1Solved(true);
+                                                                        await advanceTrialStep('trial-midnight-clarity');
+                                                                    }}
+                                                                />
+
+                                                                <p className="text-xs text-muted mt-2">
+                                                                    Solve the first midnight clue.
+                                                                </p>
+                                                            </>
+                                                        )}
+
+                                                        {trial2Started && trial2Steps === 2 && (
+                                                            <>
+                                                                <TrialPuzzle
+                                                                    puzzle={midnightPuzzles[1]}
+                                                                    onSolved={async () => {
+                                                                        if (trial2Puzzle2Solved) return;
+                                                                        setTrial2Puzzle2Solved(true);
+                                                                        await advanceTrialStep('trial-midnight-clarity');
+                                                                    }}
+                                                                />
+
+                                                                <p className="text-xs text-muted mt-2">
+                                                                    Complete the final clarity test.
+                                                                </p>
+                                                            </>
+                                                        )}
+
+                                                        {trial2?.isComplete && (
+                                                            <div className="text-green-400 font-bold">✓ Complete</div>
+                                                        )}
+                                                    </>
+                                                ) : (
+                                                    <p className="text-sm text-muted italic">
+                                                        Locked — complete Trial of Shadow Integration to unlock
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div
+                                        className={`quest-card fade-in ${!trial2?.isComplete ? 'opacity-50' : ''}`}
+                                        style={{ animationDelay: '0.4s' }}
+                                    >
+                                        <div className="flex items-start gap-4">
+                                            <div className="text-4xl">◯</div>
+
+                                            <div className="flex-1">
+                                                <h3 className="text-xl font-display mb-2">
+                                                    Trial of Illuminated Darkness
+                                                </h3>
+
+                                                {trial2?.isComplete ? (
+                                                    <>
+                                                        <p className="text-sm text-secondary mb-3">
+                                                            Reveal the hidden, solve the light-clue, and prove you can walk with awareness through shadow.
+                                                        </p>
+
+                                                        <div className="mb-3">
+                                                            <div className="flex justify-between text-xs mb-1">
+                                                                <span>Progress</span>
+                                                                <span>{trial3Steps} / 3 Steps</span>
+                                                            </div>
+
+                                                            <div className="stat-bar">
+                                                                <div
+                                                                    className="stat-bar-fill realm-101-bar"
+                                                                    style={{ width: `${(trial3Steps / 3) * 100}%` }}
+                                                                />
+                                                            </div>
+                                                        </div>
+
+                                                        {!trial3Started && (
+                                                            <>
+                                                                <button
+                                                                    className="btn-primary mt-4"
+                                                                    onClick={() =>
+                                                                        ensureTrialStarted(
+                                                                            'trial-illuminated-darkness',
+                                                                            'Trial of Illuminated Darkness'
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    Begin Trial of Illuminated Darkness →
+                                                                </button>
+
+                                                                <p className="text-xs text-muted mt-2">
+                                                                    Start the trial to enter the illuminated path.
+                                                                </p>
+                                                            </>
+                                                        )}
+
+                                                        {trial3Started && trial3Steps === 0 && (
+                                                            <>
+                                                                <TrialPuzzle
+                                                                    puzzle={illuminatedPuzzles[0]}
+                                                                    onSolved={async () => {
+                                                                        if (trial3Puzzle1Solved) return;
+                                                                        setTrial3Puzzle1Solved(true);
+                                                                        await advanceTrialStep('trial-illuminated-darkness');
+                                                                    }}
+                                                                />
+
+                                                                <p className="text-xs text-muted mt-2">
+                                                                    Solve the first illumination clue.
+                                                                </p>
+                                                            </>
+                                                        )}
+
+                                                        {trial3Started && trial3Steps === 1 && (
+                                                            <>
+                                                                <TrialPuzzle
+                                                                    puzzle={illuminatedPuzzles[1]}
+                                                                    onSolved={async () => {
+                                                                        if (trial3Puzzle2Solved) return;
+                                                                        setTrial3Puzzle2Solved(true);
+                                                                        await advanceTrialStep('trial-illuminated-darkness');
+                                                                    }}
+                                                                />
+
+                                                                <p className="text-xs text-muted mt-2">
+                                                                    Solve the second illumination riddle.
+                                                                </p>
+                                                            </>
+                                                        )}
+
+                                                        {trial3Started && trial3Steps === 2 && (
+                                                            <>
+                                                                <TrialPuzzle
+                                                                    puzzle={ILLUMINATED_FINAL_PUZZLE}
+                                                                    onSolved={async () => {
+                                                                        if (trial3Puzzle3Solved) return;
+                                                                        setTrial3Puzzle3Solved(true);
+                                                                        await advanceTrialStep('trial-illuminated-darkness');
+                                                                    }}
+                                                                />
+
+                                                                <p className="text-xs text-muted mt-2">
+                                                                    One final choice completes the moonlit path.
+                                                                </p>
+                                                            </>
+                                                        )}
+
+                                                        {trial3?.isComplete && (
+                                                            <div className="text-green-400 font-bold">✓ Complete</div>
+                                                        )}
+                                                    </>
+                                                ) : (
+                                                    <p className="text-sm text-muted italic">
+                                                        Locked — complete Trial of Midnight Clarity to unlock
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="locations-section" className="mb-8 fade-in">
+                                <h2 className="text-3xl font-display mb-6 flex items-center gap-3">
+                                    <span className="text-glow">⌖</span>
+                                    LOCATIONS
+                                </h2>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div
+                                        className={`realm-portal ${canExploreRainfallTrain || hasVisited('rainfall-train')
+                                            ? 'unlocked'
+                                            : 'locked'
+                                            } fade-in`}
+                                        style={{ animationDelay: '0.5s' }}
+                                    >
+                                        <div className="flex items-start gap-4">
+                                            <div className="text-4xl">═</div>
+
+                                            <div className="flex-1">
+                                                <h3 className="text-lg font-display mb-2">
+                                                    The Rainfall Train
+                                                </h3>
+
+                                                <p className="text-sm text-secondary mb-3">
+                                                    An endless train through neon-lit streets in perpetual rain.
+                                                </p>
+
+                                                <button
+                                                    className="btn-secondary w-full"
+                                                    onClick={() => handleLocationVisit('rainfall-train', 'The Rainfall Train')}
+                                                    disabled={!canExploreRainfallTrain || hasVisited('rainfall-train')}
+                                                >
+                                                    {hasVisited('rainfall-train')
+                                                        ? 'Explored'
+                                                        : canExploreRainfallTrain
+                                                            ? 'Explore →'
+                                                            : 'Locked Until Trial 1 Starts'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div
+                                        className={`realm-portal ${canExploreNoirDistrict || hasVisited('noir-district')
+                                            ? 'unlocked'
+                                            : 'locked'
+                                            } fade-in`}
+                                        style={{ animationDelay: '0.6s' }}
+                                    >
+                                        <div className="flex items-start gap-4">
+                                            <div className="text-4xl">◼</div>
+
+                                            <div className="flex-1">
+                                                <h3 className="text-lg font-display mb-2">
+                                                    The Noir District
+                                                </h3>
+
+                                                <p className="text-sm text-secondary mb-3">
+                                                    Where secrets hide in shadows and truth walks in moonlight.
+                                                </p>
+
+                                                <button
+                                                    className="btn-secondary w-full"
+                                                    onClick={() => handleLocationVisit('noir-district', 'The Noir District')}
+                                                    disabled={!canExploreNoirDistrict || hasVisited('noir-district')}
+                                                >
+                                                    {hasVisited('noir-district')
+                                                        ? 'Explored'
+                                                        : canExploreNoirDistrict
+                                                            ? 'Explore →'
+                                                            : 'Locked Until Trial 2 Location Step'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </>
+                    )}
+
+                    {completedTrialsCount >= 3 && (
+                        <div className="glass-card p-8 mb-8 text-center fade-in realm-101-complete-card">
+                            <h3 className="text-2xl font-display mb-4" style={{ color: REALM_COLOR }}>
+                                MOONLIT ROADS ILLUMINATED
+                            </h3>
+
+                            <p className="text-secondary mb-6 max-w-2xl mx-auto">
+                                Shadow and light are now one within you. Skybound City awaits — where will becomes form and intention commands reality.
+                            </p>
+
+                            <Link href="/realms/55">
                                 <button
-                                  className="btn-primary mt-4"
-                                  onClick={() =>
-                                    ensureTrialStarted(
-                                      'trial-illuminated-darkness',
-                                      'Trial of Illuminated Darkness'
-                                    )
-                                  }
+                                    className="btn-primary"
+                                    style={{ fontSize: '1.1rem', padding: '0.75rem 2rem' }}
                                 >
-                                  Begin Trial of Illuminated Darkness →
+                                    Enter Skybound City →
                                 </button>
+                            </Link>
+                        </div>
+                    )}
 
-                                <p className="text-xs text-muted mt-2">
-                                  Start the trial to enter the illuminated path.
-                                </p>
-                              </>
-                            )}
+                    <div
+                        className="realm-page-nav fade-in"
+                        style={{ animationDelay: '0.8s' }}
+                    >
+                        <Link href={`/realms/${PREVIOUS_REALM_ID}`}>
+                            <button className="btn-secondary">← The Veil</button>
+                        </Link>
 
-                            {trial3Started && trial3Steps === 0 && (
-                              <>
-                                <TrialPuzzle
-                                  puzzle={illuminatedPuzzles[0]}
-                                  onSolved={async () => {
-                                    if (trial3Puzzle1Solved) return;
-                                    setTrial3Puzzle1Solved(true);
-                                    await advanceTrialStep('trial-illuminated-darkness');
-                                  }}
-                                />
+                        <Link href="/nexus">
+                            <button className="btn-secondary">Back to Nexus</button>
+                        </Link>
 
-                                <p className="text-xs text-muted mt-2">
-                                  Solve the first illumination clue.
-                                </p>
-                              </>
-                            )}
-
-                            {trial3Started && trial3Steps === 1 && (
-                              <>
-                                <TrialPuzzle
-                                  puzzle={illuminatedPuzzles[1]}
-                                  onSolved={async () => {
-                                    if (trial3Puzzle2Solved) return;
-                                    setTrial3Puzzle2Solved(true);
-                                    await advanceTrialStep('trial-illuminated-darkness');
-                                  }}
-                                />
-
-                                <p className="text-xs text-muted mt-2">
-                                  Solve the second illumination riddle.
-                                </p>
-                              </>
-                            )}
-
-                            {trial3Started && trial3Steps === 2 && (
-                              <>
-                                <TrialPuzzle
-                                  puzzle={ILLUMINATED_FINAL_PUZZLE}
-                                  onSolved={async () => {
-                                    if (trial3Puzzle3Solved) return;
-                                    setTrial3Puzzle3Solved(true);
-                                    await advanceTrialStep('trial-illuminated-darkness');
-                                  }}
-                                />
-
-                                <p className="text-xs text-muted mt-2">
-                                  One final choice completes the moonlit path.
-                                </p>
-                              </>
-                            )}
-
-                            {trial3?.isComplete && (
-                              <div className="text-green-400 font-bold">✓ Complete</div>
-                            )}
-                          </>
+                        {isSkyboundUnlocked ? (
+                            <Link href={`/realms/${NEXT_REALM_ID}`}>
+                                <button className="btn-primary">Skybound City →</button>
+                            </Link>
                         ) : (
-                          <p className="text-sm text-muted italic">
-                            Locked — complete Trial of Midnight Clarity to unlock
-                          </p>
+                            <div className="realm-next-locked">
+                                Next Realm: △ Skybound City Locked
+                            </div>
                         )}
-                      </div>
                     </div>
-                  </div>
                 </div>
-              </div>
-
-              <div id="locations-section" className="mb-8 fade-in">
-                <h2 className="text-3xl font-display mb-6 flex items-center gap-3">
-                  <span className="text-glow">⌖</span>
-                  LOCATIONS
-                </h2>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div
-                    className={`realm-portal ${
-                      canExploreRainfallTrain || hasVisited('rainfall-train')
-                        ? 'unlocked'
-                        : 'locked'
-                    } fade-in`}
-                    style={{ animationDelay: '0.5s' }}
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="text-4xl">═</div>
-
-                      <div className="flex-1">
-                        <h3 className="text-lg font-display mb-2">
-                          The Rainfall Train
-                        </h3>
-
-                        <p className="text-sm text-secondary mb-3">
-                          An endless train through neon-lit streets in perpetual rain.
-                        </p>
-
-                        <button
-                          className="btn-secondary w-full"
-                          onClick={() => handleLocationVisit('rainfall-train', 'The Rainfall Train')}
-                          disabled={!canExploreRainfallTrain || hasVisited('rainfall-train')}
-                        >
-                          {hasVisited('rainfall-train')
-                            ? 'Explored'
-                            : canExploreRainfallTrain
-                              ? 'Explore →'
-                              : 'Locked Until Trial 1 Starts'}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div
-                    className={`realm-portal ${
-                      canExploreNoirDistrict || hasVisited('noir-district')
-                        ? 'unlocked'
-                        : 'locked'
-                    } fade-in`}
-                    style={{ animationDelay: '0.6s' }}
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="text-4xl">◼</div>
-
-                      <div className="flex-1">
-                        <h3 className="text-lg font-display mb-2">
-                          The Noir District
-                        </h3>
-
-                        <p className="text-sm text-secondary mb-3">
-                          Where secrets hide in shadows and truth walks in moonlight.
-                        </p>
-
-                        <button
-                          className="btn-secondary w-full"
-                          onClick={() => handleLocationVisit('noir-district', 'The Noir District')}
-                          disabled={!canExploreNoirDistrict || hasVisited('noir-district')}
-                        >
-                          {hasVisited('noir-district')
-                            ? 'Explored'
-                            : canExploreNoirDistrict
-                              ? 'Explore →'
-                              : 'Locked Until Trial 2 Location Step'}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-
-          {completedTrialsCount >= 3 && (
-            <div className="glass-card p-8 mb-8 text-center fade-in realm-101-complete-card">
-              <h3 className="text-2xl font-display mb-4" style={{ color: '#C8C8FF' }}>
-                MOONLIT ROADS ILLUMINATED
-              </h3>
-
-              <p className="text-secondary mb-6 max-w-2xl mx-auto">
-                Shadow and light are now one within you. Skybound City awaits — where will becomes form and intention commands reality.
-              </p>
-
-              <Link href="/realms/55">
-                <button
-                  className="btn-primary"
-                  style={{ fontSize: '1.1rem', padding: '0.75rem 2rem' }}
-                >
-                  Enter Skybound City →
-                </button>
-              </Link>
             </div>
-          )}
-
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 fade-in" style={{ animationDelay: '0.8s' }}>
-            <Link href="/nexus">
-              <button className="btn-secondary">← Back to Nexus</button>
-            </Link>
-
-            {isSkyboundUnlocked ? (
-              <Link href="/realms/55">
-                <button className="btn-primary">Enter Skybound City →</button>
-              </Link>
-            ) : (
-              <div className="text-sm text-muted">
-                Next Realm: △ Skybound City (Locked)
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </>
-  );
+        </>
+    );
 }

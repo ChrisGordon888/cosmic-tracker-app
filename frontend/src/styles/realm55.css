@@ -1,15 +1,18 @@
 /* ===================================
-   ⛰️ REALM 55 - SKYBOUND CITY
-   Premium gold / silver / sovereign pass
+   △ REALM 55 - SKYBOUND CITY
+   Gold / silver / sovereign ascent pass
    =================================== */
 
 :root {
-  --realm-55-primary: rgba(250, 204, 21, 0.95);
+  --realm-55-primary: rgba(250, 204, 21, 0.96);
   --realm-55-primary-soft: rgba(250, 204, 21, 0.18);
   --realm-55-primary-dim: rgba(250, 204, 21, 0.08);
 
   --realm-55-secondary: rgba(252, 211, 77, 0.90);
   --realm-55-secondary-soft: rgba(252, 211, 77, 0.14);
+
+  --realm-55-cream: rgba(255, 241, 194, 0.84);
+  --realm-55-cream-soft: rgba(255, 241, 194, 0.12);
 
   --realm-55-blue: rgba(30, 64, 175, 0.88);
   --realm-55-blue-soft: rgba(30, 64, 175, 0.14);
@@ -22,13 +25,17 @@
     linear-gradient(
       145deg,
       rgba(255, 255, 255, 0.08),
-      rgba(228, 222, 198, 0.03) 38%,
+      rgba(250, 204, 21, 0.032) 38%,
       rgba(18, 20, 30, 0.58)
     );
 
-  --realm-55-border: rgba(224, 228, 235, 0.16);
-  --realm-55-border-strong: rgba(236, 240, 245, 0.26);
+  --realm-55-border: rgba(250, 204, 21, 0.16);
+  --realm-55-border-strong: rgba(250, 204, 21, 0.32);
 }
+
+/* ===================================
+   Shell
+   =================================== */
 
 .realm-55-shell {
   color: var(--realm-55-silver);
@@ -39,6 +46,10 @@
   z-index: 1;
 }
 
+/* ===================================
+   Hero
+   =================================== */
+
 .realm-55-hero {
   position: relative;
 }
@@ -46,7 +57,7 @@
 .realm-55-title {
   color: var(--realm-55-primary);
   text-shadow:
-    0 0 10px rgba(255,255,255,0.10),
+    0 0 10px rgba(255, 255, 255, 0.10),
     0 0 18px rgba(250, 204, 21, 0.16),
     0 0 28px rgba(252, 211, 77, 0.08);
 }
@@ -58,33 +69,46 @@
     0 0 18px rgba(252, 211, 77, 0.08);
 }
 
+/* ===================================
+   Shared glass tuning
+   =================================== */
+
 .realm-55-shell .glass-card {
   background: var(--realm-55-panel-bg);
   border: 1px solid var(--realm-55-border);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.08),
-    0 10px 28px rgba(0,0,0,0.18);
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 10px 28px rgba(0, 0, 0, 0.18),
+    0 0 18px rgba(250, 204, 21, 0.04);
   backdrop-filter: blur(14px) saturate(120%);
   -webkit-backdrop-filter: blur(14px) saturate(120%);
 }
 
 .realm-55-shell .glass-card:hover {
   border-color: var(--realm-55-border-strong);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 12px 32px rgba(0, 0, 0, 0.22),
+    0 0 20px rgba(250, 204, 21, 0.07);
 }
 
 .realm-55-shell .quest-card {
   background:
     linear-gradient(
       145deg,
-      rgba(255,255,255,0.045),
-      rgba(228,222,198,0.022) 40%,
-      rgba(18,20,30,0.54)
+      rgba(255, 255, 255, 0.045),
+      rgba(250, 204, 21, 0.024) 40%,
+      rgba(18, 20, 30, 0.54)
     );
-  border: 1px solid rgba(224, 228, 235, 0.10);
+  border: 1px solid rgba(250, 204, 21, 0.12);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.06),
-    0 8px 20px rgba(0,0,0,0.14);
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 8px 20px rgba(0, 0, 0, 0.14);
 }
+
+/* ===================================
+   Text tuning
+   =================================== */
 
 .realm-55-shell .text-secondary {
   color: rgba(228, 233, 241, 0.84);
@@ -101,11 +125,15 @@
 }
 
 .realm-55-shell .text-glow {
-  color: var(--realm-55-silver);
+  color: var(--realm-55-primary);
   text-shadow:
-    0 0 10px rgba(255,255,255,0.08),
-    0 0 16px rgba(250, 204, 21, 0.08);
+    0 0 10px rgba(250, 204, 21, 0.14),
+    0 0 16px rgba(252, 211, 77, 0.08);
 }
+
+/* ===================================
+   Level badge / symbol
+   =================================== */
 
 .realm-55-shell .level-badge {
   min-width: 86px;
@@ -115,26 +143,68 @@
   align-items: center;
   justify-content: center;
   background:
-    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.25), rgba(255,255,255,0.05) 34%, rgba(18,20,30,0.56) 78%),
-    linear-gradient(145deg, rgba(235,239,244,0.16), rgba(250,204,21,0.10), rgba(18,24,36,0.46));
-  border: 1px solid rgba(230, 234, 240, 0.24);
+    radial-gradient(
+      circle at 30% 30%,
+      rgba(255, 255, 255, 0.25),
+      rgba(255, 255, 255, 0.05) 34%,
+      rgba(18, 20, 30, 0.56) 78%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(235, 239, 244, 0.16),
+      rgba(250, 204, 21, 0.12),
+      rgba(18, 24, 36, 0.46)
+    );
+  border: 1px solid rgba(250, 204, 21, 0.26);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.16),
-    0 8px 24px rgba(0,0,0,0.22),
-    0 0 14px rgba(250,204,21,0.08);
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 8px 24px rgba(0, 0, 0, 0.22),
+    0 0 14px rgba(250, 204, 21, 0.08);
   color: var(--realm-55-silver);
   text-shadow:
-    0 0 8px rgba(255,255,255,0.08),
-    0 0 12px rgba(250,204,21,0.06);
+    0 0 8px rgba(255, 255, 255, 0.08),
+    0 0 12px rgba(250, 204, 21, 0.06);
   backdrop-filter: blur(10px) saturate(120%);
   -webkit-backdrop-filter: blur(10px) saturate(120%);
 }
 
+.realm-55-symbol-mark {
+  width: 4.5rem;
+  height: 4.5rem;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  color: var(--realm-55-primary);
+  font-size: 2.15rem;
+  border: 1px solid rgba(250, 204, 21, 0.30);
+  background:
+    radial-gradient(
+      circle at 35% 30%,
+      rgba(255, 255, 255, 0.16),
+      rgba(250, 204, 21, 0.12) 42%,
+      rgba(8, 11, 20, 0.36)
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    0 0 24px rgba(250, 204, 21, 0.16),
+    0 0 12px rgba(252, 211, 77, 0.08);
+}
+
+/* ===================================
+   Bars / stats
+   =================================== */
+
 .realm-55-shell .stat-bar {
   background:
-    linear-gradient(180deg, rgba(255,255,255,0.05), rgba(0,0,0,0.26));
-  border: 1px solid rgba(224, 228, 235, 0.10);
-  box-shadow: inset 0 1px 6px rgba(0,0,0,0.22);
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.05),
+      rgba(0, 0, 0, 0.26)
+    );
+  border: 1px solid rgba(250, 204, 21, 0.12);
+  box-shadow: inset 0 1px 6px rgba(0, 0, 0, 0.22);
 }
 
 .realm-55-shell .stat-bar-fill {
@@ -143,25 +213,30 @@
     0 0 8px rgba(252, 211, 77, 0.06);
 }
 
-.realm-55-bar {
+.realm-55-bar,
+.realm-55-shell .stat-bar-fill.realm-55-bar {
   background:
     linear-gradient(
       90deg,
       rgba(252, 211, 77, 0.92),
-      rgba(250, 204, 21, 0.95),
-      rgba(255, 241, 194, 0.80)
-    );
+      rgba(250, 204, 21, 0.96),
+      rgba(255, 241, 194, 0.84)
+    ) !important;
   box-shadow:
-    0 0 14px rgba(250, 204, 21, 0.12),
-    0 0 10px rgba(252, 211, 77, 0.08);
+    0 0 14px rgba(250, 204, 21, 0.14),
+    0 0 10px rgba(252, 211, 77, 0.08) !important;
 }
+
+/* ===================================
+   Overview / progression / completion
+   =================================== */
 
 .realm-55-overview {
   background: var(--realm-55-panel-bg);
   border: 1px solid var(--realm-55-border);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.10),
-    0 12px 34px rgba(0,0,0,0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    0 12px 34px rgba(0, 0, 0, 0.22),
     0 0 18px rgba(250, 204, 21, 0.05);
   backdrop-filter: blur(16px) saturate(125%);
   -webkit-backdrop-filter: blur(16px) saturate(125%);
@@ -170,8 +245,8 @@
 .realm-55-overview:hover {
   border-color: var(--realm-55-border-strong);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.14),
-    0 14px 38px rgba(0,0,0,0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 14px 38px rgba(0, 0, 0, 0.24),
     0 0 20px rgba(250, 204, 21, 0.06);
 }
 
@@ -179,97 +254,127 @@
   background:
     linear-gradient(
       145deg,
-      rgba(255,255,255,0.05),
-      rgba(228,222,198,0.022) 38%,
-      rgba(14,18,28,0.56)
+      rgba(255, 255, 255, 0.05),
+      rgba(250, 204, 21, 0.022) 38%,
+      rgba(14, 18, 28, 0.56)
     );
-  border: 1px solid rgba(224, 228, 235, 0.14);
+  border: 1px solid rgba(250, 204, 21, 0.16);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.06),
-    0 8px 20px rgba(0,0,0,0.16);
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 8px 20px rgba(0, 0, 0, 0.16);
 }
 
 .realm-55-complete-card {
   background:
     linear-gradient(
       145deg,
-      rgba(250, 204, 21, 0.09),
-      rgba(255,255,255,0.03) 36%,
-      rgba(18,20,30,0.54)
+      rgba(250, 204, 21, 0.10),
+      rgba(255, 255, 255, 0.03) 36%,
+      rgba(18, 20, 30, 0.54)
     );
+  border: 1px solid rgba(250, 204, 21, 0.18);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.08),
-    0 14px 34px rgba(0,0,0,0.22),
-    0 0 18px rgba(250, 204, 21, 0.05);
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 14px 34px rgba(0, 0, 0, 0.22),
+    0 0 18px rgba(250, 204, 21, 0.06);
 }
 
+/* ===================================
+   Portals / locations
+   =================================== */
+
 .realm-55-shell .realm-portal {
-  border: 1px solid rgba(224, 228, 235, 0.14);
+  border: 1px solid rgba(250, 204, 21, 0.14);
   background:
     linear-gradient(
       150deg,
-      rgba(255,255,255,0.05),
-      rgba(228,222,198,0.022) 35%,
-      rgba(18,20,30,0.52)
+      rgba(255, 255, 255, 0.05),
+      rgba(250, 204, 21, 0.022) 35%,
+      rgba(18, 20, 30, 0.52)
     );
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.08),
-    0 10px 24px rgba(0,0,0,0.16);
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 10px 24px rgba(0, 0, 0, 0.16);
 }
 
 .realm-55-shell .realm-portal:hover {
-  border-color: rgba(236, 240, 245, 0.22);
+  border-color: rgba(250, 204, 21, 0.30);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.12),
-    0 14px 30px rgba(0,0,0,0.20),
-    0 0 14px rgba(250, 204, 21, 0.05);
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 14px 30px rgba(0, 0, 0, 0.20),
+    0 0 14px rgba(250, 204, 21, 0.07);
 }
+
+/* ===================================
+   Buttons
+   =================================== */
 
 .realm-55-shell .btn-primary {
   background:
     linear-gradient(
       135deg,
       rgba(238, 243, 250, 0.15),
-      rgba(250, 204, 21, 0.11) 40%,
+      rgba(250, 204, 21, 0.13) 40%,
       rgba(252, 211, 77, 0.10) 100%
     );
-  border: 1px solid rgba(230, 234, 240, 0.22);
+  border: 1px solid rgba(250, 204, 21, 0.28);
   color: var(--realm-55-silver);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.16),
-    0 8px 22px rgba(0,0,0,0.18);
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 8px 22px rgba(0, 0, 0, 0.18);
 }
 
 .realm-55-shell .btn-primary:hover {
-  border-color: rgba(250, 204, 21, 0.28);
+  border-color: rgba(250, 204, 21, 0.42);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.20),
-    0 10px 26px rgba(0,0,0,0.22),
-    0 0 14px rgba(250, 204, 21, 0.08);
+    inset 0 1px 0 rgba(255, 255, 255, 0.20),
+    0 10px 26px rgba(0, 0, 0, 0.22),
+    0 0 14px rgba(250, 204, 21, 0.10);
 }
 
 .realm-55-shell .btn-secondary {
   background:
     linear-gradient(
       135deg,
-      rgba(255,255,255,0.05),
-      rgba(228,222,198,0.022) 44%,
-      rgba(18,20,30,0.46)
+      rgba(255, 255, 255, 0.05),
+      rgba(250, 204, 21, 0.022) 44%,
+      rgba(18, 20, 30, 0.46)
     );
-  border: 1px solid rgba(224, 228, 235, 0.14);
+  border: 1px solid rgba(250, 204, 21, 0.16);
   color: rgba(233, 239, 246, 0.92);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.10),
-    0 8px 18px rgba(0,0,0,0.16);
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    0 8px 18px rgba(0, 0, 0, 0.16);
 }
 
 .realm-55-shell .btn-secondary:hover {
-  border-color: rgba(252, 211, 77, 0.22);
+  border-color: rgba(252, 211, 77, 0.32);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.14),
-    0 10px 20px rgba(0,0,0,0.20),
-    0 0 12px rgba(250, 204, 21, 0.07);
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 10px 20px rgba(0, 0, 0, 0.20),
+    0 0 12px rgba(250, 204, 21, 0.08);
 }
+
+/* ===================================
+   Bottom realm navigation
+   =================================== */
+
+.realm-page-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.realm-next-locked {
+  color: rgba(188, 195, 205, 0.72);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* ===================================
+   Realm effects
+   =================================== */
 
 .divine-rays {
   position: relative;
@@ -304,8 +409,13 @@
 }
 
 @keyframes divine-rotate {
-  0% { transform: translate(-50%, -50%) rotate(0deg); }
-  100% { transform: translate(-50%, -50%) rotate(360deg); }
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
 }
 
 .power-pulse {
@@ -317,6 +427,7 @@
     box-shadow: 0 0 18px rgba(250, 204, 21, 0.22);
     transform: scale(1);
   }
+
   50% {
     box-shadow:
       0 0 28px rgba(250, 204, 21, 0.34),
@@ -337,19 +448,29 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(250, 204, 21, 0.18),
-    transparent
-  );
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(250, 204, 21, 0.18),
+      transparent
+    );
   animation: shimmer-sweep 4s infinite;
 }
 
 @keyframes shimmer-sweep {
-  0% { left: -100%; }
-  100% { left: 200%; }
+  0% {
+    left: -100%;
+  }
+
+  100% {
+    left: 200%;
+  }
 }
+
+/* ===================================
+   Responsive
+   =================================== */
 
 @media (max-width: 768px) {
   .realm-55-shell .level-badge {
@@ -360,31 +481,20 @@
   .realm-55-overview {
     padding: 1.1rem;
   }
-}
 
-.realm-55-symbol-mark {
-  width: 4.5rem;
-  height: 4.5rem;
-  margin-left: auto;
-  margin-right: auto;
-  border-radius: 999px;
-  display: grid;
-  place-items: center;
-  color: rgba(250, 204, 21, 0.96);
-  font-size: 2.15rem;
-  border: 1px solid rgba(250, 204, 21, 0.30);
-  background:
-    radial-gradient(circle at 35% 30%, rgba(255,255,255,0.16), rgba(250,204,21,0.12) 42%, rgba(8,11,20,0.36));
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.10),
-    0 0 24px rgba(250,204,21,0.16),
-    0 0 12px rgba(252,211,77,0.08);
-}
-
-@media (max-width: 768px) {
   .realm-55-symbol-mark {
     width: 3.75rem;
     height: 3.75rem;
     font-size: 1.8rem;
+  }
+
+  .realm-page-nav {
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .realm-page-nav .btn-primary,
+  .realm-page-nav .btn-secondary {
+    width: 100%;
   }
 }

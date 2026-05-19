@@ -20,6 +20,8 @@ import {
 import { REALM_0_PUZZLES } from '@/lib/realmPuzzles';
 
 const REALM_ID = 0;
+const PREVIOUS_REALM_ID = 44;
+const REALM_COLOR = '#E5E7EB';
 
 export default function Realm0() {
     const { data: session, status } = useSession();
@@ -111,7 +113,8 @@ export default function Realm0() {
         return (
             <div className="min-h-screen grid place-items-center p-6 nexus-shell">
                 <div className="glass-card nexus-panel max-w-md text-center">
-                    <div className="mx-auto mb-4 w-12 h-12 rounded-full border border-white/15 grid place-items-center text-[#DCBA5C]">
+                    <div className="mx-auto mb-4 w-12 h-12 rounded-full border border-white/15 grid place-items-center"
+                        style={{ color: REALM_COLOR }}>
                         ∞
                     </div>
 
@@ -133,7 +136,8 @@ export default function Realm0() {
         return (
             <div className="min-h-screen grid place-items-center p-6 nexus-shell">
                 <div className="glass-card nexus-panel max-w-md text-center">
-                    <div className="mx-auto mb-4 w-12 h-12 rounded-full border border-white/15 grid place-items-center text-[#DCBA5C]">
+                    <div className="mx-auto mb-4 w-12 h-12 rounded-full border border-white/15 grid place-items-center"
+                        style={{ color: REALM_COLOR }}>
                         ✦
                     </div>
 
@@ -196,18 +200,18 @@ export default function Realm0() {
                     </header>
 
                     <RealmEntryGuidanceBanner
-                        realmId={0}
+                        realmId={REALM_ID}
                         realmName="InterSiddhi"
-                        realmColor="#E5E7EB"
+                        realmColor={REALM_COLOR}
                     />
 
                     <RealmGuidanceCard realmId={0} />
 
                     <RealmSoundstage
-                        realmId={0}
+                        realmId={REALM_ID}
                         realmName="InterSiddhi"
                         realmIcon="∞"
-                        realmColor="#E5E7EB"
+                        realmColor={REALM_COLOR}
                         intro="InterSiddhi is the realm of return, balance, source-awareness, and completion. Let the soundtrack tell you whether this realm matches the state of integration you need right now."
                         supportText="Start with the music first. If this realm feels true, open the optional Source Path to explore remembrance, unity, and return."
                         progress={realmProgress}
@@ -625,14 +629,20 @@ export default function Realm0() {
                     )}
 
                     <div
-                        className="flex flex-col sm:flex-row justify-between items-center gap-4 fade-in"
+                        className="realm-page-nav fade-in"
                         style={{ animationDelay: '0.9s' }}
                     >
-                        <Link href="/nexus">
-                            <button className="btn-secondary">← Back to Nexus</button>
+                        <Link href={`/realms/${PREVIOUS_REALM_ID}`}>
+                            <button className="btn-secondary">← Astral Bazaar</button>
                         </Link>
 
-                        <div className="text-sm text-glow">∞ The Final Realm</div>
+                        <Link href="/nexus">
+                            <button className="btn-secondary">Back to Nexus</button>
+                        </Link>
+
+                        <div className="realm-next-locked text-glow">
+                            ∞ Final Realm
+                        </div>
                     </div>
                 </div>
             </div>

@@ -730,7 +730,7 @@ export default function Realm44() {
                     )}
 
                     <div
-                        className="flex flex-col sm:flex-row justify-between items-center gap-4 fade-in"
+                        className="realm-page-nav fade-in"
                         style={{ animationDelay: '0.8s' }}
                     >
                         <Link href={`/realms/${PREVIOUS_REALM_ID}`}>
@@ -746,7 +746,7 @@ export default function Realm44() {
                                 <button className="btn-primary">InterSiddhi →</button>
                             </Link>
                         ) : (
-                            <div className="text-sm text-muted text-center">
+                            <div className="realm-next-locked">
                                 Next Realm: ∞ InterSiddhi Locked
                             </div>
                         )}

@@ -22,6 +22,7 @@ import '@/styles/realm303.css';
 
 const REALM_ID = 303;
 const NEXT_REALM_ID = 202;
+const REALM_COLOR = '#FF4D6D';
 
 const CHAOS_FINAL_PUZZLE: PuzzleConfig = {
     id: 'chaos-step-3',
@@ -218,7 +219,8 @@ export default function Realm303() {
         return (
             <div className="min-h-screen grid place-items-center p-6 nexus-shell">
                 <div className="glass-card nexus-panel max-w-md text-center">
-                    <div className="mx-auto mb-4 w-12 h-12 rounded-full border border-white/15 grid place-items-center text-[#DCBA5C]">
+                    <div className="mx-auto mb-4 w-12 h-12 rounded-full border border-white/15 grid place-items-center"
+                        style={{ color: REALM_COLOR }}>
                         ∴
                     </div>
 
@@ -318,19 +320,19 @@ export default function Realm303() {
                     </header>
 
                     <RealmEntryGuidanceBanner
-                        realmId={303}
+                        realmId={REALM_ID}
                         realmName="Fractured Frontier"
-                        realmColor="#FF4D6D"
+                        realmColor={REALM_COLOR}
                     />
 
                     <RealmGuidanceCard realmId={303} />
 
                     <div id="music-section">
                         <RealmSoundstage
-                            realmId={303}
+                            realmId={REALM_ID}
                             realmName="Fractured Frontier"
                             realmIcon="∴"
-                            realmColor="#FF4D6D"
+                            realmColor={REALM_COLOR}
                             intro="Fractured Frontier is where chaos, pressure, rupture, and raw activation become fuel for form. Let the soundtrack tell you whether this realm matches what you need to face right now."
                             supportText="Start with the music first. If this realm feels true, open the optional Realm Path to explore trials, locations, and deeper world layers."
                             progress={realmProgress}
@@ -780,11 +782,10 @@ export default function Realm303() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div
-                                        className={`realm-portal ${
-                                            canExploreGlitchDistrict || hasVisited('glitch-district')
-                                                ? 'unlocked'
-                                                : 'locked'
-                                        } fade-in`}
+                                        className={`realm-portal ${canExploreGlitchDistrict || hasVisited('glitch-district')
+                                            ? 'unlocked'
+                                            : 'locked'
+                                            } fade-in`}
                                         style={{ animationDelay: '0.5s' }}
                                     >
                                         <div className="flex items-start gap-4">
@@ -817,11 +818,10 @@ export default function Realm303() {
                                     </div>
 
                                     <div
-                                        className={`realm-portal ${
-                                            canExploreCreationForge || hasVisited('creation-forge')
-                                                ? 'unlocked'
-                                                : 'locked'
-                                        } fade-in`}
+                                        className={`realm-portal ${canExploreCreationForge || hasVisited('creation-forge')
+                                            ? 'unlocked'
+                                            : 'locked'
+                                            } fade-in`}
                                         style={{ animationDelay: '0.6s' }}
                                     >
                                         <div className="flex items-start gap-4">
@@ -865,7 +865,7 @@ export default function Realm303() {
 
                     {completedTrialsCount >= 3 && (
                         <div className="glass-card p-8 mb-8 text-center fade-in realm-303-complete-card">
-                            <h3 className="text-2xl font-display mb-4" style={{ color: '#FF4D6D' }}>
+                            <h3 className="text-2xl font-display mb-4" style={{ color: REALM_COLOR }}>
                                 FRACTURED FRONTIER MASTERED
                             </h3>
 
@@ -885,17 +885,22 @@ export default function Realm303() {
                         </div>
                     )}
 
-                    <div className="flex flex-col sm:flex-row justify-between items-center gap-4 fade-in" style={{ animationDelay: '0.8s' }}>
+                    <div
+                        className="realm-page-nav fade-in"
+                        style={{ animationDelay: '0.8s' }}
+                    >
                         <Link href="/nexus">
                             <button className="btn-secondary">← Back to Nexus</button>
                         </Link>
 
                         {isVeilUnlocked ? (
-                            <Link href="/realms/202">
-                                <button className="btn-primary">Enter The Veil →</button>
+                            <Link href={`/realms/${NEXT_REALM_ID}`}>
+                                <button className="btn-primary">The Veil →</button>
                             </Link>
                         ) : (
-                            <div className="text-sm text-muted">Next Realm: ◐ The Veil (Locked)</div>
+                            <div className="realm-next-locked">
+                                Next Realm: ◐ The Veil Locked
+                            </div>
                         )}
                     </div>
                 </div>
