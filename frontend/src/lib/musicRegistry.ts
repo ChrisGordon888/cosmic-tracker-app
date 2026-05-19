@@ -11,40 +11,31 @@
  * - Music listening XP
  * - Future featured shelves, playlist lanes, vaults, and premium unlocks
  *
- * FILE ORGANIZATION:
- * Store audio by realm:
+ * CORE IDEA:
+ * MUSIC_REGISTRY = every track and its metadata.
+ * MUSIC_COLLECTIONS = curated experiences made from those tracks.
  *
- * /public/music/realms/303/track-name.mp3
- * /public/music/realms/202/track-name.mp3
- * /public/music/realms/101/track-name.mp3
- * /public/music/realms/55/track-name.mp3
- * /public/music/realms/44/track-name.mp3
- * /public/music/realms/0/track-name.mp3
- *
- * BEST PRACTICE:
- * - Keep folders organized by realm.
- * - Keep filenames clean and stable.
- * - Track batch/date/status inside metadata, not always in the filename.
- * - Only add dates to filenames if there are multiple versions.
- *
- * FEATURED SYSTEM:
- * - role: 'anchor' is the original/main realm identity track.
- * - role: 'featured' is a top/current track you may want to highlight.
- * - role: 'expansion' is a normal added track.
- * - role: 'vault' is a demo/rough draft/private-candidate track.
- *
- * FUTURE:
- * We can later create UI shelves from this metadata:
- * - Featured Tracks
- * - April–May Vault
- * - Realm Anchors
- * - Demo Vault
- * - Premium / Supporter Previews
+ * This lets the app support:
+ * - 1 app-wide flagship song
+ * - 6 realm anchors
+ * - 18 public listening songs
+ * - signed-in vault tracks
+ * - future premium / supporter drops
+ * - artwork and story-based EP/group concepts
  */
 
 export type RealmId = 303 | 202 | 101 | 55 | 44 | 0;
 
-export type TrackRole = 'anchor' | 'featured' | 'expansion' | 'vault';
+export type TrackRole =
+    | 'flagship'
+    | 'anchor'
+    | 'public'
+    | 'featured'
+    | 'expansion'
+    | 'vault'
+    | 'premium';
+
+export type TrackVisibility = 'public' | 'signup' | 'premium';
 
 export type TrackStatus =
     | 'finished'
@@ -53,6 +44,17 @@ export type TrackStatus =
     | 'needs-mix'
     | 'needs-writing'
     | 'clip-only';
+
+export type TrackEnergy = 'low' | 'medium' | 'high';
+
+export type MusicCollectionType =
+    | 'flagship'
+    | 'realm-anchor-set'
+    | 'public-three-piece'
+    | 'vault'
+    | 'premium'
+    | 'season'
+    | 'episode';
 
 export interface MusicTrack {
     id: string;
@@ -64,19 +66,39 @@ export interface MusicTrack {
     realmColor: string;
 
     /**
-     * Optional metadata for future UI/features.
-     * These fields will not break the current player.
+     * Catalog metadata.
+     * These fields are designed so the Nexus can evolve without rewriting
+     * the entire music system every time the catalog changes.
      */
     role?: TrackRole;
+    visibility?: TrackVisibility;
     status?: TrackStatus;
     releaseBatch?: string;
     key?: string;
     bpm?: number;
+    energy?: TrackEnergy;
     vibe?: string[];
     bestUse?: string[];
     isFeatured?: boolean;
+    isFlagship?: boolean;
+    isRealmAnchor?: boolean;
+    isPublicPick?: boolean;
     sortOrder?: number;
     notes?: string;
+}
+
+export interface MusicCollection {
+    id: string;
+    title: string;
+    type: MusicCollectionType;
+    realmId?: RealmId;
+    description: string;
+    story: string;
+    trackIds: string[];
+    artworkUrl?: string;
+    youtubeEpisodeTitle?: string;
+    isActive: boolean;
+    sortOrder: number;
 }
 
 export const REALM_COLORS: Record<RealmId, string> = {
@@ -97,10 +119,13 @@ export const REALM_NAMES: Record<RealmId, string> = {
     0: 'InterSiddhi',
 };
 
+export const REALM_ORDER: RealmId[] = [303, 202, 101, 55, 44, 0];
+
 const ARTIST = 'COSMIC';
 
 function createTrack(track: Omit<MusicTrack, 'artist' | 'realmName' | 'realmColor'>): MusicTrack {
     return {
+        visibility: 'public',
         ...track,
         artist: ARTIST,
         realmName: REALM_NAMES[track.realmId],
@@ -119,12 +144,13 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         realmId: 303,
         trackTitle: 'Not Enough',
         trackUrl: '/music/realms/303/notEnough.mp3',
-        role: 'anchor',
+        role: 'vault',
+        visibility: 'signup',
         status: 'finished',
         releaseBatch: 'original-v1',
-        sortOrder: 10,
+        sortOrder: 40,
         vibe: ['pressure', 'conflict', 'survival'],
-        bestUse: ['realm anchor', 'original Nexus track'],
+        bestUse: ['original Nexus track', 'vault archive'],
     }),
 
     createTrack({
@@ -132,10 +158,12 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         realmId: 303,
         trackTitle: 'War Ready',
         trackUrl: '/music/realms/303/warReady.mp3',
-        role: 'anchor',
+        role: 'public',
+        visibility: 'public',
         status: 'finished',
         releaseBatch: 'original-v1',
-        sortOrder: 20,
+        sortOrder: 30,
+        isPublicPick: true,
         vibe: ['battle', 'activation', 'pressure'],
         bestUse: ['activation track', 'realm opener'],
     }),
@@ -145,12 +173,13 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         realmId: 303,
         trackTitle: 'Space King',
         trackUrl: '/music/realms/303/spaceKing.mp3',
-        role: 'expansion',
+        role: 'vault',
+        visibility: 'signup',
         status: 'finished',
         releaseBatch: 'original-v1',
-        sortOrder: 30,
+        sortOrder: 50,
         vibe: ['cosmic', 'power', 'fracture'],
-        bestUse: ['realm expansion'],
+        bestUse: ['realm expansion', 'vault archive'],
     }),
 
     createTrack({
@@ -158,15 +187,19 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         realmId: 303,
         trackTitle: 'hardcoded',
         trackUrl: '/music/realms/303/hardcoded.mp3',
-        role: 'featured',
+        role: 'anchor',
+        visibility: 'public',
         status: 'demo',
         releaseBatch: 'april-may-2026',
         key: 'Bmin',
         bpm: 133,
+        energy: 'medium',
         isFeatured: true,
+        isRealmAnchor: true,
+        isPublicPick: true,
         sortOrder: 1,
         vibe: ['bouncy', 'spacious', 'hypnotic', 'wounded', 'self-overcoming'],
-        bestUse: ['realm opener', 'dark playlist anchor', 'transition into freeFall'],
+        bestUse: ['realm anchor', 'dark playlist opener', 'transition into freeFall'],
         notes:
             'Confronts programmed emotional patterns, clones, pain, healing, and surrender.',
     }),
@@ -176,12 +209,15 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         realmId: 303,
         trackTitle: 'losing my mind',
         trackUrl: '/music/realms/303/losing-my-mind.mp3',
-        role: 'featured',
+        role: 'public',
+        visibility: 'public',
         status: 'demo',
         releaseBatch: 'april-may-2026',
         key: 'G#min',
         bpm: 118,
+        energy: 'medium',
         isFeatured: true,
+        isPublicPick: true,
         sortOrder: 2,
         vibe: ['dark', 'emotional', 'haunted', 'urgent', 'truth-seeking'],
         bestUse: ['Fractured Frontier featured track', 'dark visual teaser'],
@@ -194,12 +230,15 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         realmId: 303,
         trackTitle: 'HardWay',
         trackUrl: '/music/realms/303/hardway.mp3',
-        role: 'featured',
+        role: 'public',
+        visibility: 'public',
         status: 'demo',
         releaseBatch: 'april-may-2026',
         key: 'A#min',
         bpm: 156,
+        energy: 'high',
         isFeatured: true,
+        isPublicPick: true,
         sortOrder: 3,
         vibe: ['emotional', 'hard', 'powerful', 'traumatic', 'magical'],
         bestUse: ['high-energy social clip', 'performance record', 'realm anthem'],
@@ -212,12 +251,14 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         realmId: 303,
         trackTitle: 'outcome',
         trackUrl: '/music/realms/303/outcome.mp3',
-        role: 'expansion',
+        role: 'vault',
+        visibility: 'signup',
         status: 'demo',
         releaseBatch: 'april-may-2026',
         key: 'D#min',
         bpm: 85,
-        sortOrder: 40,
+        energy: 'high',
+        sortOrder: 60,
         vibe: ['witty', 'arcade', 'combative', 'loop-breaking'],
         bestUse: ['game-coded realm track', 'trial-theme track', 'social clip'],
         notes:
@@ -229,12 +270,14 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         realmId: 303,
         trackTitle: 'in the deep',
         trackUrl: '/music/realms/303/in-the-deep.mp3',
-        role: 'expansion',
+        role: 'vault',
+        visibility: 'signup',
         status: 'demo',
         releaseBatch: 'april-may-2026',
         key: 'C#min',
         bpm: 80,
-        sortOrder: 50,
+        energy: 'high',
+        sortOrder: 70,
         vibe: ['dark', 'submerged', 'hard', 'heated', 'volatile'],
         bestUse: ['dark realm track', 'underground clip', 'intensity track'],
         notes:
@@ -251,12 +294,13 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         realmId: 202,
         trackTitle: 'Night Light',
         trackUrl: '/music/realms/202/nightLight.mp3',
-        role: 'anchor',
+        role: 'vault',
+        visibility: 'signup',
         status: 'finished',
         releaseBatch: 'original-v1',
-        sortOrder: 10,
+        sortOrder: 40,
         vibe: ['dream', 'night', 'mystery'],
-        bestUse: ['original Nexus track', 'realm anchor'],
+        bestUse: ['original Nexus track', 'vault archive'],
     }),
 
     createTrack({
@@ -264,12 +308,13 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         realmId: 202,
         trackTitle: 'What it Take',
         trackUrl: '/music/realms/202/whatItTake.mp3',
-        role: 'anchor',
+        role: 'vault',
+        visibility: 'signup',
         status: 'finished',
         releaseBatch: 'original-v1',
-        sortOrder: 20,
+        sortOrder: 50,
         vibe: ['mystery', 'desire', 'pressure'],
-        bestUse: ['realm expansion'],
+        bestUse: ['realm expansion', 'vault archive'],
     }),
 
     createTrack({
@@ -277,12 +322,13 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         realmId: 202,
         trackTitle: 'Jus Because',
         trackUrl: '/music/realms/202/jusBecause.mp3',
-        role: 'expansion',
+        role: 'vault',
+        visibility: 'signup',
         status: 'finished',
         releaseBatch: 'original-v1',
-        sortOrder: 30,
+        sortOrder: 60,
         vibe: ['dreamy', 'relationship', 'veil'],
-        bestUse: ['realm expansion'],
+        bestUse: ['realm expansion', 'vault archive'],
     }),
 
     createTrack({
@@ -290,12 +336,13 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         realmId: 202,
         trackTitle: 'Blame On Me',
         trackUrl: '/music/realms/202/blameOnMe.mp3',
-        role: 'expansion',
+        role: 'vault',
+        visibility: 'signup',
         status: 'finished',
         releaseBatch: 'original-v1',
-        sortOrder: 40,
+        sortOrder: 70,
         vibe: ['emotional', 'shadow', 'blame'],
-        bestUse: ['realm expansion'],
+        bestUse: ['realm expansion', 'vault archive'],
     }),
 
     createTrack({
@@ -303,15 +350,19 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         realmId: 202,
         trackTitle: 'siren',
         trackUrl: '/music/realms/202/siren.mp3',
-        role: 'featured',
+        role: 'flagship',
+        visibility: 'public',
         status: 'demo',
         releaseBatch: 'april-may-2026',
         key: 'Gmin',
         bpm: 155,
+        energy: 'high',
         isFeatured: true,
+        isFlagship: true,
+        isPublicPick: true,
         sortOrder: 1,
         vibe: ['mysterious', 'dark', 'elegant', 'dangerous', 'dreamlike', 'cinematic'],
-        bestUse: ['Veil featured track', 'visual teaser', 'music video candidate'],
+        bestUse: ['app flagship', 'visual teaser', 'music video candidate'],
         notes:
             'Siren warning energy, dreamlike danger, fake labels, water imagery, and money focus.',
     }),
@@ -321,15 +372,19 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         realmId: 202,
         trackTitle: 'her fantasy',
         trackUrl: '/music/realms/202/her-fantasy.mp3',
-        role: 'featured',
+        role: 'anchor',
+        visibility: 'public',
         status: 'demo',
         releaseBatch: 'april-may-2026',
         key: 'D#min',
         bpm: 144,
+        energy: 'medium',
         isFeatured: true,
+        isRealmAnchor: true,
+        isPublicPick: true,
         sortOrder: 2,
         vibe: ['dreamy', 'romantic', 'numb', 'guitar-driven', 'emotional'],
-        bestUse: ['Veil featured track', 'melodic trap playlist', 'social clip'],
+        bestUse: ['Veil realm anchor', 'melodic trap playlist', 'social clip'],
         notes:
             'Fantasy vs reality, numb love, emotional overload, and romantic projection.',
     }),
@@ -339,12 +394,15 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         realmId: 202,
         trackTitle: 'voices',
         trackUrl: '/music/realms/202/voices.mp3',
-        role: 'expansion',
+        role: 'public',
+        visibility: 'public',
         status: 'demo',
         releaseBatch: 'april-may-2026',
         key: 'F#min',
         bpm: 94,
-        sortOrder: 50,
+        energy: 'low',
+        isPublicPick: true,
+        sortOrder: 3,
         vibe: ['soft', 'melodic', 'futuristic', 'summery', 'romantic', 'mentally hazy'],
         bestUse: ['Veil playlist track', 'soft social clip', 'melodic mood-setter'],
         notes:
@@ -357,11 +415,13 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         trackTitle: 'airplane mode',
         trackUrl: '/music/realms/202/airplane-mode.mp3',
         role: 'vault',
+        visibility: 'signup',
         status: 'needs-writing',
         releaseBatch: 'april-may-2026',
         key: 'C#min',
         bpm: 120,
-        sortOrder: 60,
+        energy: 'medium',
+        sortOrder: 80,
         vibe: ['pluggnb', 'spacious', 'floating', 'reflective', 'disconnected'],
         bestUse: ['future hook polish', 'Veil demo', 'playlist candidate'],
         notes:
@@ -378,12 +438,13 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         realmId: 101,
         trackTitle: 'Mysterious Way',
         trackUrl: '/music/realms/101/mysteriousWay.mp3',
-        role: 'anchor',
+        role: 'vault',
+        visibility: 'signup',
         status: 'finished',
         releaseBatch: 'original-v1',
-        sortOrder: 10,
+        sortOrder: 40,
         vibe: ['reflection', 'night', 'mystery'],
-        bestUse: ['original Nexus track', 'realm anchor'],
+        bestUse: ['original Nexus track', 'vault archive'],
     }),
 
     createTrack({
@@ -391,12 +452,13 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         realmId: 101,
         trackTitle: 'Hopscotch',
         trackUrl: '/music/realms/101/hopscotch.mp3',
-        role: 'expansion',
+        role: 'vault',
+        visibility: 'signup',
         status: 'finished',
         releaseBatch: 'original-v1',
-        sortOrder: 20,
+        sortOrder: 50,
         vibe: ['movement', 'memory', 'playful'],
-        bestUse: ['realm expansion'],
+        bestUse: ['realm expansion', 'vault archive'],
     }),
 
     createTrack({
@@ -404,12 +466,13 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         realmId: 101,
         trackTitle: 'So Far Off',
         trackUrl: '/music/realms/101/soFarOff.mp3',
-        role: 'anchor',
+        role: 'vault',
+        visibility: 'signup',
         status: 'finished',
         releaseBatch: 'original-v1',
-        sortOrder: 30,
+        sortOrder: 60,
         vibe: ['distance', 'emotion', 'reflection'],
-        bestUse: ['realm expansion'],
+        bestUse: ['realm expansion', 'vault archive'],
     }),
 
     createTrack({
@@ -417,15 +480,19 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         realmId: 101,
         trackTitle: 'holdMyHand',
         trackUrl: '/music/realms/101/holdMyHand.mp3',
-        role: 'featured',
+        role: 'anchor',
+        visibility: 'public',
         status: 'demo',
         releaseBatch: 'april-may-2026',
         key: 'Cmaj',
         bpm: 143,
+        energy: 'medium',
         isFeatured: true,
+        isRealmAnchor: true,
+        isPublicPick: true,
         sortOrder: 1,
         vibe: ['tender', 'dreamy', 'smooth', 'healing', 'lush', 'grounding'],
-        bestUse: ['emotional entry point', 'featured realm track', 'fan-favorite candidate'],
+        bestUse: ['Moonlit realm anchor', 'emotional entry point', 'fan-favorite candidate'],
         notes:
             'Healing and dreamy connection. Feels more Moonlit if grounding is central.',
     }),
@@ -435,12 +502,15 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         realmId: 101,
         trackTitle: 'little further',
         trackUrl: '/music/realms/101/little-further.mp3',
-        role: 'featured',
+        role: 'public',
+        visibility: 'public',
         status: 'demo',
         releaseBatch: 'april-may-2026',
         key: 'F#min',
         bpm: 96,
+        energy: 'low',
         isFeatured: true,
+        isPublicPick: true,
         sortOrder: 2,
         vibe: ['hopeful', 'emotional', 'soft', 'loving', 'guitar-driven', 'resilient'],
         bestUse: ['Moonlit featured track', 'reflective playlist anchor', 'motivational soft clip'],
@@ -452,13 +522,16 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         id: '101-freefall',
         realmId: 101,
         trackTitle: 'freeFall',
-        trackUrl: '/music/realms/101/freefall.mp3',
-        role: 'featured',
+        trackUrl: '/music/realms/101/freeFall.mp3',
+        role: 'public',
+        visibility: 'public',
         status: 'demo',
         releaseBatch: 'april-may-2026',
         key: 'Dmin',
         bpm: 144,
+        energy: 'medium',
         isFeatured: true,
+        isPublicPick: true,
         sortOrder: 3,
         vibe: ['atmospheric', 'spacious', 'reflective', 'surrendering', 'drifting'],
         bestUse: ['emotional entry point', 'late-night playlist', 'transition track'],
@@ -471,12 +544,15 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         realmId: 101,
         trackTitle: 'through da forest',
         trackUrl: '/music/realms/101/through-da-forest.mp3',
-        role: 'expansion',
+        role: 'public',
+        visibility: 'public',
         status: 'demo',
         releaseBatch: 'april-may-2026',
         key: 'G#min',
         bpm: 81,
-        sortOrder: 40,
+        energy: 'medium',
+        isPublicPick: true,
+        sortOrder: 4,
         vibe: ['playful', 'mystical', 'arcade', 'forested', 'smooth', 'reflective'],
         bestUse: ['worldbuilding track', 'game-inspired clip', 'Moonlit side-path track'],
         notes:
@@ -489,11 +565,13 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         trackTitle: 'paranoid',
         trackUrl: '/music/realms/101/paranoid.mp3',
         role: 'vault',
+        visibility: 'signup',
         status: 'needs-writing',
         releaseBatch: 'april-may-2026',
         key: 'Cmaj',
         bpm: 137,
-        sortOrder: 50,
+        energy: 'medium',
+        sortOrder: 70,
         vibe: ['drifting', 'redemptive', 'summery', 'anxious', 'reflective'],
         bestUse: ['rewrite candidate', 'late-night playlist', 'private vault'],
         notes:
@@ -506,11 +584,13 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         trackTitle: 'wondering',
         trackUrl: '/music/realms/101/wondering.mp3',
         role: 'vault',
+        visibility: 'signup',
         status: 'rough-draft',
         releaseBatch: 'april-may-2026',
         key: 'Bmin',
         bpm: 150,
-        sortOrder: 60,
+        energy: 'medium',
+        sortOrder: 80,
         vibe: ['raw', 'reflective', 'nostalgic', 'upbeat', 'wandering'],
         bestUse: ['private vault', 'future rewrite candidate', 'late-night demo'],
         notes:
@@ -523,11 +603,13 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         trackTitle: 'felt it',
         trackUrl: '/music/realms/101/feltIt.mp3',
         role: 'vault',
+        visibility: 'signup',
         status: 'needs-writing',
         releaseBatch: 'april-may-2026',
         key: 'Dmaj',
         bpm: 81,
-        sortOrder: 70,
+        energy: 'low',
+        sortOrder: 90,
         vibe: ['nostalgic', 'soft', 'wavey', 'romantic', 'summery', 'imaginative'],
         bestUse: ['future emotional track', 'late-night playlist', 'private vault'],
         notes:
@@ -544,12 +626,15 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         realmId: 55,
         trackTitle: 'Mula',
         trackUrl: '/music/realms/55/mula.mp3',
-        role: 'anchor',
+        role: 'public',
+        visibility: 'public',
         status: 'finished',
         releaseBatch: 'original-v1',
-        sortOrder: 10,
+        energy: 'high',
+        sortOrder: 2,
+        isPublicPick: true,
         vibe: ['money', 'motion', 'power'],
-        bestUse: ['original Nexus track', 'realm anchor'],
+        bestUse: ['original Nexus track', 'Skybound public pick'],
     }),
 
     createTrack({
@@ -557,12 +642,15 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         realmId: 55,
         trackTitle: 'Bank',
         trackUrl: '/music/realms/55/bank.mp3',
-        role: 'anchor',
+        role: 'public',
+        visibility: 'public',
         status: 'finished',
         releaseBatch: 'original-v1',
-        sortOrder: 20,
+        energy: 'high',
+        sortOrder: 3,
+        isPublicPick: true,
         vibe: ['power', 'wealth', 'command'],
-        bestUse: ['realm expansion'],
+        bestUse: ['Skybound public pick', 'realm expansion'],
     }),
 
     createTrack({
@@ -570,28 +658,34 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         realmId: 55,
         trackTitle: 'Stacked',
         trackUrl: '/music/realms/55/stacked.mp3',
-        role: 'expansion',
+        role: 'vault',
+        visibility: 'signup',
         status: 'finished',
         releaseBatch: 'original-v1',
-        sortOrder: 30,
+        energy: 'medium',
+        sortOrder: 40,
         vibe: ['stacking', 'power', 'manifestation'],
-        bestUse: ['realm expansion'],
+        bestUse: ['realm expansion', 'vault archive'],
     }),
 
     createTrack({
         id: '55-glory-n-power',
         realmId: 55,
         trackTitle: 'Glory n Power',
-        trackUrl: '/music/realms/55/glory-n-power.mp3',
-        role: 'featured',
+        trackUrl: '/music/realms/55/Glory-n-Power.mp3',
+        role: 'anchor',
+        visibility: 'public',
         status: 'demo',
         releaseBatch: 'april-may-2026',
         key: 'C#min',
         bpm: 152,
+        energy: 'high',
         isFeatured: true,
+        isRealmAnchor: true,
+        isPublicPick: true,
         sortOrder: 1,
         vibe: ['anthemic', 'victorious', 'messy', 'human', 'celebratory', 'powerful'],
-        bestUse: ['realm anthem', 'motivational clip', 'performance track'],
+        bestUse: ['Skybound realm anchor', 'motivational clip', 'performance track'],
         notes:
             'Glory and power vs money/powder. Enjoying the moment while recognizing the energy behind things.',
     }),
@@ -606,12 +700,14 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         realmId: 44,
         trackTitle: 'Dog Watch',
         trackUrl: '/music/realms/44/dogWatch.mp3',
-        role: 'anchor',
+        role: 'vault',
+        visibility: 'signup',
         status: 'finished',
         releaseBatch: 'original-v1',
-        sortOrder: 10,
+        energy: 'medium',
+        sortOrder: 40,
         vibe: ['market', 'watchful', 'value'],
-        bestUse: ['original Nexus track', 'realm anchor'],
+        bestUse: ['original Nexus track', 'vault archive'],
     }),
 
     createTrack({
@@ -619,12 +715,15 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         realmId: 44,
         trackTitle: 'Golden Tickets',
         trackUrl: '/music/realms/44/goldenTickets.mp3',
-        role: 'anchor',
+        role: 'public',
+        visibility: 'public',
         status: 'finished',
         releaseBatch: 'original-v1',
-        sortOrder: 20,
+        energy: 'medium',
+        sortOrder: 3,
+        isPublicPick: true,
         vibe: ['access', 'tickets', 'rarity'],
-        bestUse: ['realm expansion'],
+        bestUse: ['Astral public pick', 'realm expansion'],
     }),
 
     createTrack({
@@ -632,15 +731,19 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         realmId: 44,
         trackTitle: '13933',
         trackUrl: '/music/realms/44/13933.mp3',
-        role: 'featured',
+        role: 'anchor',
+        visibility: 'public',
         status: 'demo',
         releaseBatch: 'april-may-2026',
         key: 'Dmin',
         bpm: 148,
+        energy: 'medium',
         isFeatured: true,
+        isRealmAnchor: true,
+        isPublicPick: true,
         sortOrder: 1,
         vibe: ['smooth', 'mysterious', 'suave', 'ambitious', 'coded', 'elegant'],
-        bestUse: ['stylish realm track', 'playlist anchor', 'social clip'],
+        bestUse: ['Astral realm anchor', 'playlist anchor', 'social clip'],
         notes:
             'Beautiful distraction / bot concept. Focus, rank, ambition, and temptation.',
     }),
@@ -650,12 +753,15 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         realmId: 44,
         trackTitle: 'new jazz',
         trackUrl: '/music/realms/44/new-jazz.mp3',
-        role: 'featured',
+        role: 'public',
+        visibility: 'public',
         status: 'demo',
         releaseBatch: 'april-may-2026',
         key: 'Dmin',
         bpm: 96,
+        energy: 'medium',
         isFeatured: true,
+        isPublicPick: true,
         sortOrder: 2,
         vibe: ['bouncy', 'exotic', 'stylish', 'youthful', 'playful', 'smooth'],
         bestUse: ['Astral playlist track', 'lifestyle clip', 'stylish interlude'],
@@ -673,12 +779,15 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         realmId: 0,
         trackTitle: 'Walking Forward',
         trackUrl: '/music/realms/0/walkingForward.mp3',
-        role: 'anchor',
+        role: 'public',
+        visibility: 'public',
         status: 'finished',
         releaseBatch: 'original-v1',
-        sortOrder: 10,
+        energy: 'low',
+        sortOrder: 2,
+        isPublicPick: true,
         vibe: ['forward', 'source', 'completion'],
-        bestUse: ['original Nexus track', 'realm anchor'],
+        bestUse: ['InterSiddhi public pick', 'original Nexus track'],
     }),
 
     createTrack({
@@ -686,12 +795,15 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         realmId: 0,
         trackTitle: 'Feel Blessed',
         trackUrl: '/music/realms/0/feelBlessed.mp3',
-        role: 'anchor',
+        role: 'public',
+        visibility: 'public',
         status: 'finished',
         releaseBatch: 'original-v1',
-        sortOrder: 20,
+        energy: 'low',
+        sortOrder: 3,
+        isPublicPick: true,
         vibe: ['blessing', 'gratitude', 'alignment'],
-        bestUse: ['realm expansion'],
+        bestUse: ['InterSiddhi public pick', 'realm expansion'],
     }),
 
     createTrack({
@@ -699,27 +811,207 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         realmId: 0,
         trackTitle: 'same person',
         trackUrl: '/music/realms/0/same-person.mp3',
-        role: 'featured',
+        role: 'anchor',
+        visibility: 'public',
         status: 'demo',
         releaseBatch: 'april-may-2026',
         key: 'Bmin',
         bpm: 122,
+        energy: 'medium',
         isFeatured: true,
+        isRealmAnchor: true,
+        isPublicPick: true,
         sortOrder: 1,
         vibe: ['hypnotic', 'clean', 'nostalgic', 'self-aware', 'grounded', 'evolving'],
-        bestUse: ['source-path track', 'introspective playlist', 'future polished fan favorite'],
+        bestUse: ['InterSiddhi realm anchor', 'introspective playlist', 'future polished fan favorite'],
         notes:
             'Same core self while upgrading, solving self, receiving blessings, and becoming more integrated.',
     }),
 ];
 
+export const MUSIC_COLLECTIONS: MusicCollection[] = [
+    // =========================================================
+    // APP-WIDE FLAGSHIP
+    // =========================================================
+
+    {
+        id: 'cosmic-featured-signal',
+        title: 'Featured Signal',
+        type: 'flagship',
+        description: 'The clearest entry point into the Cosmic Multiverse.',
+        story:
+            'A single track chosen to introduce the sound, visual world, and emotional signal of the app.',
+        trackIds: ['202-siren'],
+        artworkUrl: '/images/music/collections/featured-signal.jpg',
+        youtubeEpisodeTitle: 'Why siren became the first COSMIC flagship signal',
+        isActive: true,
+        sortOrder: 1,
+    },
+
+    // =========================================================
+    // REALM ANCHOR SET
+    // =========================================================
+
+    {
+        id: 'cosmic-realm-anchors',
+        title: 'Realm Anchors',
+        type: 'realm-anchor-set',
+        description: 'Six tracks that define the emotional identity of each world.',
+        story:
+            'These are the current anchor songs for each realm. They can be swapped as the catalog grows, but each one explains the world it belongs to.',
+        trackIds: [
+            '303-hardcoded',
+            '202-her-fantasy',
+            '101-hold-my-hand',
+            '55-glory-n-power',
+            '44-13933',
+            '0-same-person',
+        ],
+        artworkUrl: '/images/music/collections/realm-anchors.jpg',
+        youtubeEpisodeTitle: 'Choosing the six realm anchor songs',
+        isActive: true,
+        sortOrder: 2,
+    },
+
+    // =========================================================
+    // PUBLIC THREE-PIECE REALM COLLECTIONS
+    // =========================================================
+
+    {
+        id: 'realm-303-break-the-code',
+        title: 'Break the Code',
+        type: 'public-three-piece',
+        realmId: 303,
+        description: 'Three tracks for pressure, fracture, and self-overcoming.',
+        story:
+            'A sequence about recognizing the code, surviving mental pressure, and turning pain into force.',
+        trackIds: ['303-hardcoded', '303-losing-my-mind', '303-hardway'],
+        artworkUrl: '/images/music/collections/303-break-the-code.jpg',
+        youtubeEpisodeTitle: 'Fractured Frontier: songs for pressure and survival',
+        isActive: true,
+        sortOrder: 10,
+    },
+
+    {
+        id: 'realm-202-dont-follow-the-siren',
+        title: "Don’t Follow the Siren",
+        type: 'public-three-piece',
+        realmId: 202,
+        description: 'Three tracks for mystery, fantasy, warning, and emotional fog.',
+        story:
+            'A sequence about hearing the warning, seeing the fantasy, and recognizing the voices inside the haze.',
+        trackIds: ['202-siren', '202-her-fantasy', '202-voices'],
+        artworkUrl: '/images/music/collections/202-dont-follow-the-siren.jpg',
+        youtubeEpisodeTitle: 'The Veil: songs for fantasy, warning, and emotional fog',
+        isActive: true,
+        sortOrder: 20,
+    },
+
+    {
+        id: 'realm-101-hold-on-while-you-drift',
+        title: 'Hold On While You Drift',
+        type: 'public-three-piece',
+        realmId: 101,
+        description: 'Three tracks for healing, surrender, and night-road reflection.',
+        story:
+            'A sequence about being held, pushing a little further, and surrendering into the unknown.',
+        trackIds: ['101-hold-my-hand', '101-little-further', '101-freefall'],
+        artworkUrl: '/images/music/collections/101-hold-on-while-you-drift.jpg',
+        youtubeEpisodeTitle: 'Moonlit Roads: songs for healing, drift, and night drives',
+        isActive: true,
+        sortOrder: 30,
+    },
+
+    {
+        id: 'realm-55-glory-and-command',
+        title: 'Glory & Command',
+        type: 'public-three-piece',
+        realmId: 55,
+        description: 'Three tracks for ambition, power, money motion, and command.',
+        story:
+            'A sequence about stepping into glory, moving resources, and claiming the city of self-command.',
+        trackIds: ['55-glory-n-power', 'realm-55-bank', 'realm-55-mula'],
+        artworkUrl: '/images/music/collections/55-glory-and-command.jpg',
+        youtubeEpisodeTitle: 'Skybound City: songs for glory, power, and command',
+        isActive: true,
+        sortOrder: 40,
+    },
+
+    {
+        id: 'realm-44-price-of-focus',
+        title: 'The Price of Focus',
+        type: 'public-three-piece',
+        realmId: 44,
+        description: 'Three tracks for value, temptation, taste, and discernment.',
+        story:
+            'A sequence about distraction, style, access, and deciding what is actually worth your energy.',
+        trackIds: ['44-13933', '44-new-jazz', 'realm-44-golden-tickets'],
+        artworkUrl: '/images/music/collections/44-price-of-focus.jpg',
+        youtubeEpisodeTitle: 'Astral Bazaar: songs for value, temptation, and focus',
+        isActive: true,
+        sortOrder: 50,
+    },
+
+    {
+        id: 'realm-0-same-self-higher-form',
+        title: 'Same Self, Higher Form',
+        type: 'public-three-piece',
+        realmId: 0,
+        description: 'Three tracks for source, self-recognition, blessing, and integration.',
+        story:
+            'A sequence about remaining the same core person while walking forward into blessing and integration.',
+        trackIds: ['0-same-person', 'realm-0-walking-forward', 'realm-0-feel-blessed'],
+        artworkUrl: '/images/music/collections/0-same-self-higher-form.jpg',
+        youtubeEpisodeTitle: 'InterSiddhi: songs for source, self-recognition, and integration',
+        isActive: true,
+        sortOrder: 60,
+    },
+
+    // =========================================================
+    // SIGNED-IN VAULT
+    // =========================================================
+
+    {
+        id: 'april-may-vault',
+        title: 'April–May Vault',
+        type: 'vault',
+        description: 'A deeper batch of demos, experiments, and private-candidate tracks.',
+        story:
+            'This vault captures the creative jump where the recordings became more intentional, layered, hypnotic, and cleaner in vocal direction.',
+        trackIds: [
+            '303-outcome',
+            '303-in-the-deep',
+            '202-airplane-mode',
+            '101-through-da-forest',
+            '101-paranoid',
+            '101-wondering',
+            '101-felt-it',
+        ],
+        artworkUrl: '/images/music/collections/april-may-vault.jpg',
+        youtubeEpisodeTitle: 'Inside the April–May vault and the sound shift',
+        isActive: true,
+        sortOrder: 100,
+    },
+];
+
 export const FEATURED_TRACKS = MUSIC_REGISTRY.filter((track) => track.isFeatured);
+
+export const FLAGSHIP_TRACKS = MUSIC_REGISTRY.filter((track) => track.isFlagship);
+
+export const REALM_ANCHOR_TRACKS = MUSIC_REGISTRY.filter((track) => track.isRealmAnchor).sort(
+    (a, b) => REALM_ORDER.indexOf(a.realmId) - REALM_ORDER.indexOf(b.realmId)
+);
+
+export const PUBLIC_TRACKS = MUSIC_REGISTRY.filter((track) => track.visibility === 'public');
+
+export const VAULT_TRACKS = MUSIC_REGISTRY.filter((track) => track.visibility === 'signup');
+
+export const PREMIUM_TRACKS = MUSIC_REGISTRY.filter((track) => track.visibility === 'premium');
 
 export const TOP_THREE_TRACKS = MUSIC_REGISTRY.filter((track) => track.isFeatured)
     .sort((a, b) => {
-        const realmOrder: RealmId[] = [303, 202, 101, 55, 44, 0];
-        const aRealmIndex = realmOrder.indexOf(a.realmId);
-        const bRealmIndex = realmOrder.indexOf(b.realmId);
+        const aRealmIndex = REALM_ORDER.indexOf(a.realmId);
+        const bRealmIndex = REALM_ORDER.indexOf(b.realmId);
 
         if (aRealmIndex !== bRealmIndex) return aRealmIndex - bRealmIndex;
 
@@ -742,3 +1034,45 @@ export const TRACKS_BY_REALM = MUSIC_REGISTRY.reduce<Record<RealmId, MusicTrack[
         0: [],
     }
 );
+
+export const ACTIVE_MUSIC_COLLECTIONS = MUSIC_COLLECTIONS.filter((collection) => collection.isActive).sort(
+    (a, b) => a.sortOrder - b.sortOrder
+);
+
+export const PUBLIC_THREE_PIECE_COLLECTIONS = ACTIVE_MUSIC_COLLECTIONS.filter(
+    (collection) => collection.type === 'public-three-piece'
+);
+
+export function getTrackById(trackId: string): MusicTrack | undefined {
+    return MUSIC_REGISTRY.find((track) => track.id === trackId);
+}
+
+export function getTracksByIds(trackIds: string[]): MusicTrack[] {
+    return trackIds
+        .map((trackId) => getTrackById(trackId))
+        .filter((track): track is MusicTrack => Boolean(track));
+}
+
+export function getCollectionById(collectionId: string): MusicCollection | undefined {
+    return MUSIC_COLLECTIONS.find((collection) => collection.id === collectionId);
+}
+
+export function getTracksByCollection(collectionId: string): MusicTrack[] {
+    const collection = getCollectionById(collectionId);
+
+    if (!collection) return [];
+
+    return getTracksByIds(collection.trackIds);
+}
+
+export function getCollectionsByRealm(realmId: RealmId): MusicCollection[] {
+    return ACTIVE_MUSIC_COLLECTIONS.filter((collection) => collection.realmId === realmId);
+}
+
+export function getPublicTracksByRealm(realmId: RealmId): MusicTrack[] {
+    return TRACKS_BY_REALM[realmId].filter((track) => track.visibility === 'public');
+}
+
+export function getVaultTracksByRealm(realmId: RealmId): MusicTrack[] {
+    return TRACKS_BY_REALM[realmId].filter((track) => track.visibility === 'signup');
+}
