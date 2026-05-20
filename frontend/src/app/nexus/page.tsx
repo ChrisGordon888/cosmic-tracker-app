@@ -12,7 +12,6 @@ import {
     MUSIC_REGISTRY,
     FLAGSHIP_TRACKS,
     PUBLIC_TRACKS,
-    REALM_ANCHOR_TRACKS,
     PUBLIC_THREE_PIECE_COLLECTIONS,
     VAULT_TRACKS,
     getTracksByIds,
@@ -97,7 +96,6 @@ export default function CosmicNexusHub() {
     const { playOrToggleTrack, currentTrack, isPlaying } = useMusicPlayer();
 
     const flagshipTrack = FLAGSHIP_TRACKS[0] ?? null;
-    const realmAnchorTracks = REALM_ANCHOR_TRACKS;
     const publicThreePieceCollections = PUBLIC_THREE_PIECE_COLLECTIONS;
     const vaultTrackCount = VAULT_TRACKS.length;
 
@@ -390,29 +388,82 @@ export default function CosmicNexusHub() {
 
                     {flagshipTrack && (
                         <div
-                            className="glass-card nexus-panel nexus-featured-strip p-4 mb-4 fade-in"
-                            style={{ animationDelay: '0.18s' }}
+                            className="glass-card nexus-panel nexus-featured-strip nexus-featured-signal p-5 mb-4 fade-in"
+                            style={{
+                                animationDelay: '0.18s',
+                                borderColor: `${flagshipTrack.realmColor}44`,
+                                background: `linear-gradient(145deg, ${flagshipTrack.realmColor}16, rgba(255,255,255,0.045), rgba(8,10,18,0.62))`,
+                                boxShadow: `0 14px 36px ${flagshipTrack.realmColor}18`,
+                            }}
                         >
                             <div className="flex flex-col md:flex-row md:items-center gap-4">
-                                <div className="nexus-signal-mark shrink-0 mx-auto md:mx-0">◌</div>
+                                <div
+                                    className="nexus-signal-mark shrink-0 mx-auto md:mx-0"
+                                    style={{
+                                        color: flagshipTrack.realmColor,
+                                        borderColor: `${flagshipTrack.realmColor}33`,
+                                        boxShadow: `0 0 18px ${flagshipTrack.realmColor}18`,
+                                    }}
+                                >
+                                    ◌
+                                </div>
 
-                                <div className="flex-1 text-center md:text-left">
-                                    <p className="text-xs uppercase tracking-[0.2em] text-muted mb-1">
-                                        Featured Signal
-                                    </p>
+                                <div className="flex-1 text-center md:text-left min-w-0">
+                                    <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-2">
+                                        <p className="text-xs uppercase tracking-[0.2em] text-muted">
+                                            Featured Signal
+                                        </p>
 
-                                    <h2 className="text-xl md:text-2xl font-display mb-1">
+                                        <span
+                                            className="px-2 py-0.5 rounded-full text-[10px] uppercase tracking-[0.14em]"
+                                            style={{
+                                                background: `${flagshipTrack.realmColor}18`,
+                                                border: `1px solid ${flagshipTrack.realmColor}38`,
+                                                color: flagshipTrack.realmColor,
+                                            }}
+                                        >
+                                            Realm {flagshipTrack.realmId} • {flagshipTrack.realmName}
+                                        </span>
+                                    </div>
+
+                                    <h2
+                                        className="text-2xl md:text-3xl font-display mb-2"
+                                        style={{ color: flagshipTrack.realmColor }}
+                                    >
                                         {flagshipTrack.trackTitle}
                                     </h2>
 
-                                    <p className="text-sm text-secondary">
-                                        The current flagship entry point into the Cosmic Multiverse.
+                                    <p className="text-sm text-secondary max-w-2xl">
+                                        The current flagship entry point into the Cosmic Multiverse — chosen to introduce
+                                        the sound, visual world, and emotional signal of the app.
                                     </p>
+
+                                    {flagshipTrack.vibe && (
+                                        <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-3">
+                                            {flagshipTrack.vibe.slice(0, 5).map((tag) => (
+                                                <span
+                                                    key={tag}
+                                                    className="px-2.5 py-1 rounded-full text-[11px]"
+                                                    style={{
+                                                        background: `${flagshipTrack.realmColor}14`,
+                                                        border: `1px solid ${flagshipTrack.realmColor}28`,
+                                                        color: flagshipTrack.realmColor,
+                                                    }}
+                                                >
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
 
                                 <button
                                     className="btn-primary w-full md:w-auto"
                                     onClick={() => playOrToggleTrack(flagshipTrack)}
+                                    style={{
+                                        borderColor: `${flagshipTrack.realmColor}44`,
+                                        boxShadow: `0 0 16px ${flagshipTrack.realmColor}12`,
+                                    }}
                                 >
                                     {currentTrack?.id === flagshipTrack.id
                                         ? isPlaying
@@ -557,64 +608,81 @@ export default function CosmicNexusHub() {
                         </div>
                     </div>
 
-                    {realmAnchorTracks.length > 0 && (
-                        <div
-                            className="glass-card nexus-panel nexus-soundtracks p-6 mb-5 fade-in"
-                            style={{ animationDelay: '0.28s' }}
-                        >
-                            <div className="mb-5">
+
+                    <div className="glass-card nexus-panel nexus-soundtracks p-6 mb-5 fade-in" style={{ animationDelay: '0.3s' }}>
+                        <div className="flex items-center justify-between gap-4 mb-5">
+                            <div>
                                 <h2 className="text-3xl font-display">
-                                    <span className="nexus-section-mark">◇</span> REALM ANCHORS
+                                    <span className="nexus-section-mark">♪</span> PUBLIC REALM SOUNDTRACKS
                                 </h2>
 
                                 <p className="text-secondary text-sm mt-1">
-                                    Six songs chosen to define the emotional identity of each world.
+                                    Explore the public listening path for each realm. Sign in to save progress
+                                    and access deeper vault tracks later.
                                 </p>
                             </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                {realmAnchorTracks.map((track) => (
-                                    <button
-                                        key={track.id}
-                                        type="button"
-                                        onClick={() => playOrToggleTrack(track)}
-                                        className="quest-card text-left transition-all hover:scale-[1.01]"
-                                        style={{
-                                            borderColor: `${track.realmColor}33`,
-                                        }}
-                                    >
-                                        <p
-                                            className="text-xs uppercase tracking-[0.18em] mb-1"
-                                            style={{ color: track.realmColor }}
-                                        >
-                                            Realm {track.realmId} • {track.realmName}
-                                        </p>
-
-                                        <h3 className="text-lg font-display mb-1">
-                                            {track.trackTitle}
-                                        </h3>
-
-                                        <p className="text-xs text-muted line-clamp-2">
-                                            {track.vibe?.slice(0, 4).join(' • ')}
-                                        </p>
-                                    </button>
-                                ))}
-                            </div>
                         </div>
-                    )}
+
+                        {groupedTracks.length > 0 ? (
+                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                                {groupedTracks.map((realmGroup) => {
+                                    const realmId = parseInt(realmGroup.id);
+                                    const pathUnlocked = isRealmUnlocked(realmId);
+
+                                    return (
+                                        <div key={realmGroup.id} className="space-y-3">
+                                            <RealmOrbitCard
+                                                realmId={realmGroup.id}
+                                                realmName={realmGroup.name}
+                                                realmIcon={realmGroup.icon}
+                                                realmColor={realmGroup.tracks[0]?.realmColor || '#7FDBFF'}
+                                                tracks={realmGroup.tracks}
+                                                currentTrackId={currentTrack?.id ?? null}
+                                                isPlaying={isPlaying}
+                                                onPlayTrack={handlePlayOrbitTrack}
+                                                progress={realmGroup.progress}
+                                                isUnlocked={true}
+                                                realmRoute={isSignedIn ? `/realms/${realmGroup.id}` : '/auth'}
+                                                isCurrentRealm={isSignedIn && realmId === user?.currentRealm}
+                                                isRecommended={guidanceRealmId !== null && realmId === guidanceRealmId}
+                                                compactOnMobile
+                                            />
+
+                                            <div className="nexus-path-note">
+                                                <span>Public Soundtrack Available</span>
+                                                <span>
+                                                    {isSignedIn
+                                                        ? pathUnlocked
+                                                            ? 'Realm Path Open'
+                                                            : 'Realm Path Locked'
+                                                        : 'Sign in to save progression'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <div className="quest-card opacity-70">
+                                <p className="text-sm text-muted text-center">
+                                    No public realm tracks available yet.
+                                </p>
+                            </div>
+                        )}
+                    </div>
 
                     {publicThreePieceCollections.length > 0 && (
                         <div
                             className="glass-card nexus-panel nexus-soundtracks p-6 mb-5 fade-in"
-                            style={{ animationDelay: '0.29s' }}
+                            style={{ animationDelay: '0.32s' }}
                         >
                             <div className="mb-5">
                                 <h2 className="text-3xl font-display">
-                                    <span className="nexus-section-mark">⌁</span> PUBLIC REALM JOURNEYS
+                                    <span className="nexus-section-mark">⌁</span> CURATED REALM JOURNEYS
                                 </h2>
 
                                 <p className="text-secondary text-sm mt-1">
-                                    Six three-song paths that introduce each realm through story, mood, and sound.
+                                    After exploring the soundcards, enter six three-song paths curated by story, mood, and realm.
                                 </p>
                             </div>
 
@@ -695,68 +763,6 @@ export default function CosmicNexusHub() {
                             </div>
                         </div>
                     )}
-
-                    <div className="glass-card nexus-panel nexus-soundtracks p-6 mb-5 fade-in" style={{ animationDelay: '0.3s' }}>
-                        <div className="flex items-center justify-between gap-4 mb-5">
-                            <div>
-                                <h2 className="text-3xl font-display">
-                                    <span className="nexus-section-mark">♪</span> PUBLIC REALM SOUNDTRACKS
-                                </h2>
-
-                                <p className="text-secondary text-sm mt-1">
-                                    Explore the public listening path for each realm. Sign in to save progress
-                                    and access deeper vault tracks later.
-                                </p>
-                            </div>
-                        </div>
-
-                        {groupedTracks.length > 0 ? (
-                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                                {groupedTracks.map((realmGroup) => {
-                                    const realmId = parseInt(realmGroup.id);
-                                    const pathUnlocked = isRealmUnlocked(realmId);
-
-                                    return (
-                                        <div key={realmGroup.id} className="space-y-3">
-                                            <RealmOrbitCard
-                                                realmId={realmGroup.id}
-                                                realmName={realmGroup.name}
-                                                realmIcon={realmGroup.icon}
-                                                realmColor={realmGroup.tracks[0]?.realmColor || '#7FDBFF'}
-                                                tracks={realmGroup.tracks}
-                                                currentTrackId={currentTrack?.id ?? null}
-                                                isPlaying={isPlaying}
-                                                onPlayTrack={handlePlayOrbitTrack}
-                                                progress={realmGroup.progress}
-                                                isUnlocked={true}
-                                                realmRoute={isSignedIn ? `/realms/${realmGroup.id}` : '/auth'}
-                                                isCurrentRealm={isSignedIn && realmId === user?.currentRealm}
-                                                isRecommended={guidanceRealmId !== null && realmId === guidanceRealmId}
-                                                compactOnMobile
-                                            />
-
-                                            <div className="nexus-path-note">
-                                                <span>Public Soundtrack Available</span>
-                                                <span>
-                                                    {isSignedIn
-                                                        ? pathUnlocked
-                                                            ? 'Realm Path Open'
-                                                            : 'Realm Path Locked'
-                                                        : 'Sign in to save progression'}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        ) : (
-                            <div className="quest-card opacity-70">
-                                <p className="text-sm text-muted text-center">
-                                    No public realm tracks available yet.
-                                </p>
-                            </div>
-                        )}
-                    </div>
 
                     <div
                         className="glass-card nexus-panel nexus-external-strip p-4 mb-5 fade-in"

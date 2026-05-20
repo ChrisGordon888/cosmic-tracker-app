@@ -9,6 +9,10 @@ interface OrbitTrack {
     artist: string;
     realmName: string;
     realmColor: string;
+    role?: string;
+    isRealmAnchor?: boolean;
+    isPublicPick?: boolean;
+    vibe?: string[];
 }
 
 interface RealmOrbitCardProps {
@@ -142,7 +146,12 @@ export default function RealmOrbitCard({
         visibleTracks.find((track) => track.id === selectedTrackId) ?? visibleTracks[0] ?? null;
 
     const selectedIsCurrent = selectedTrack?.id === currentTrackId;
-    const selectedIsAnchor = selectedTrack?.id === visibleTracks[0]?.id;
+    const anchorTrack = visibleTracks.find(
+        (track) => track.isRealmAnchor || track.role === 'anchor'
+    );
+    const selectedIsAnchor = Boolean(
+        selectedTrack?.isRealmAnchor || selectedTrack?.role === 'anchor'
+    );
     const realmTags = getRealmStateTags(realmName);
     const clampedProgress = Math.max(0, Math.min(progress, 100));
 
@@ -467,12 +476,32 @@ export default function RealmOrbitCard({
 
             <div className="relative min-w-0">
                 <div className="mb-4">
-                    <p className="text-xs uppercase tracking-[0.18em] text-white/60 mb-1">
-                        Realm Music Portal
-                    </p>
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <p className="text-xs uppercase tracking-[0.18em] text-white/60">
+                            Realm Music Portal
+                        </p>
+
+                        {anchorTrack && (
+                            <span
+                                className="px-2 py-0.5 rounded-full text-[10px] uppercase tracking-[0.14em]"
+                                style={{
+                                    background: `${realmColor}18`,
+                                    border: `1px solid ${realmColor}38`,
+                                    color: realmColor,
+                                }}
+                            >
+                                Realm Anchor: {anchorTrack.trackTitle}
+                            </span>
+                        )}
+                    </div>
+
                     <h3 className="text-2xl font-display" style={{ color: realmColor }}>
                         {realmName}
                     </h3>
+
+                    <p className="text-xs text-white/55 mt-1">
+                        {visibleTracks.length} public track{visibleTracks.length === 1 ? '' : 's'} in orbit
+                    </p>
                 </div>
 
                 <div
@@ -653,7 +682,7 @@ export default function RealmOrbitCard({
                                                     color: realmColor,
                                                 }}
                                             >
-                                                Anchor
+                                                Realm Anchor
                                             </span>
                                         )}
                                     </div>
