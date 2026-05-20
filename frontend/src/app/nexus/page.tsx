@@ -164,10 +164,11 @@ export default function CosmicNexusHub() {
         unlockedRealms.includes(realmId);
 
     /**
-     * V1.5 catalog shift:
-     * Public listeners see the curated public catalog.
-     * Signed-in users still use progression to enter realm paths.
-     * Vault/premium layers are staged for future UI.
+     * Public Realm Soundcards:
+     * These show each realm's public music portal.
+     *
+     * Curated Realm Journeys:
+     * These are separate three-song story/EP paths below the soundcards.
      */
     const groupedTracks = REALM_META.map((realm) => {
         const realmId = parseInt(realm.id);
@@ -266,8 +267,97 @@ export default function CosmicNexusHub() {
                         </p>
                     </header>
 
+                    {flagshipTrack && (
+                        <div
+                            className="glass-card nexus-panel nexus-featured-strip nexus-featured-signal p-5 mb-4 fade-in"
+                            style={{
+                                animationDelay: '0.08s',
+                                borderColor: `${flagshipTrack.realmColor}44`,
+                                background: `linear-gradient(145deg, ${flagshipTrack.realmColor}16, rgba(255,255,255,0.045), rgba(8,10,18,0.62))`,
+                                boxShadow: `0 14px 36px ${flagshipTrack.realmColor}18`,
+                            }}
+                        >
+                            <div className="flex flex-col md:flex-row md:items-center gap-4">
+                                <div
+                                    className="nexus-signal-mark shrink-0 mx-auto md:mx-0"
+                                    style={{
+                                        color: flagshipTrack.realmColor,
+                                        borderColor: `${flagshipTrack.realmColor}33`,
+                                        boxShadow: `0 0 18px ${flagshipTrack.realmColor}18`,
+                                    }}
+                                >
+                                    ◌
+                                </div>
+
+                                <div className="flex-1 text-center md:text-left min-w-0">
+                                    <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-2">
+                                        <p className="text-xs uppercase tracking-[0.2em] text-muted">
+                                            Featured Signal
+                                        </p>
+
+                                        <span
+                                            className="px-2 py-0.5 rounded-full text-[10px] uppercase tracking-[0.14em]"
+                                            style={{
+                                                background: `${flagshipTrack.realmColor}18`,
+                                                border: `1px solid ${flagshipTrack.realmColor}38`,
+                                                color: flagshipTrack.realmColor,
+                                            }}
+                                        >
+                                            Realm {flagshipTrack.realmId} • {flagshipTrack.realmName}
+                                        </span>
+                                    </div>
+
+                                    <h2
+                                        className="text-2xl md:text-3xl font-display mb-2"
+                                        style={{ color: flagshipTrack.realmColor }}
+                                    >
+                                        {flagshipTrack.trackTitle}
+                                    </h2>
+
+                                    <p className="text-sm text-secondary max-w-2xl">
+                                        The current flagship entry point into the Cosmic Multiverse —
+                                        chosen to introduce the sound, visual world, and emotional signal of the app.
+                                    </p>
+
+                                    {flagshipTrack.vibe && (
+                                        <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-3">
+                                            {flagshipTrack.vibe.slice(0, 5).map((tag) => (
+                                                <span
+                                                    key={tag}
+                                                    className="px-2.5 py-1 rounded-full text-[11px]"
+                                                    style={{
+                                                        background: `${flagshipTrack.realmColor}14`,
+                                                        border: `1px solid ${flagshipTrack.realmColor}28`,
+                                                        color: flagshipTrack.realmColor,
+                                                    }}
+                                                >
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <button
+                                    className="btn-primary w-full md:w-auto"
+                                    onClick={() => playOrToggleTrack(flagshipTrack)}
+                                    style={{
+                                        borderColor: `${flagshipTrack.realmColor}44`,
+                                        boxShadow: `0 0 16px ${flagshipTrack.realmColor}12`,
+                                    }}
+                                >
+                                    {currentTrack?.id === flagshipTrack.id
+                                        ? isPlaying
+                                            ? 'Pause Signal'
+                                            : 'Resume Signal'
+                                        : '▶ Play Signal'}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
                     {isSignedIn ? (
-                        <div className="glass-card nexus-panel nexus-identity-card p-5 mb-4 fade-in" style={{ animationDelay: '0.1s' }}>
+                        <div className="glass-card nexus-panel nexus-identity-card p-5 mb-4 fade-in" style={{ animationDelay: '0.12s' }}>
                             <div className="flex flex-col md:flex-row items-center gap-5">
                                 <div className="level-badge">
                                     <div className="flex flex-col items-center">
@@ -321,7 +411,7 @@ export default function CosmicNexusHub() {
                             </div>
                         </div>
                     ) : (
-                        <div className="glass-card nexus-panel nexus-listener-card p-5 mb-4 fade-in" style={{ animationDelay: '0.1s' }}>
+                        <div className="glass-card nexus-panel nexus-listener-card p-5 mb-4 fade-in" style={{ animationDelay: '0.12s' }}>
                             <div className="flex flex-col md:flex-row md:items-center gap-5 text-center md:text-left">
                                 <div className="nexus-listener-mark shrink-0 mx-auto md:mx-0">♪</div>
 
@@ -349,7 +439,7 @@ export default function CosmicNexusHub() {
 
                     <div
                         className="glass-card nexus-panel nexus-moon-card p-4 mb-4 fade-in"
-                        style={{ animationDelay: '0.15s' }}
+                        style={{ animationDelay: '0.16s' }}
                     >
                         <div className="nexus-moon-card-inner">
                             {moonPhase && (
@@ -385,95 +475,6 @@ export default function CosmicNexusHub() {
                             </div>
                         </div>
                     </div>
-
-                    {flagshipTrack && (
-                        <div
-                            className="glass-card nexus-panel nexus-featured-strip nexus-featured-signal p-5 mb-4 fade-in"
-                            style={{
-                                animationDelay: '0.18s',
-                                borderColor: `${flagshipTrack.realmColor}44`,
-                                background: `linear-gradient(145deg, ${flagshipTrack.realmColor}16, rgba(255,255,255,0.045), rgba(8,10,18,0.62))`,
-                                boxShadow: `0 14px 36px ${flagshipTrack.realmColor}18`,
-                            }}
-                        >
-                            <div className="flex flex-col md:flex-row md:items-center gap-4">
-                                <div
-                                    className="nexus-signal-mark shrink-0 mx-auto md:mx-0"
-                                    style={{
-                                        color: flagshipTrack.realmColor,
-                                        borderColor: `${flagshipTrack.realmColor}33`,
-                                        boxShadow: `0 0 18px ${flagshipTrack.realmColor}18`,
-                                    }}
-                                >
-                                    ◌
-                                </div>
-
-                                <div className="flex-1 text-center md:text-left min-w-0">
-                                    <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-2">
-                                        <p className="text-xs uppercase tracking-[0.2em] text-muted">
-                                            Featured Signal
-                                        </p>
-
-                                        <span
-                                            className="px-2 py-0.5 rounded-full text-[10px] uppercase tracking-[0.14em]"
-                                            style={{
-                                                background: `${flagshipTrack.realmColor}18`,
-                                                border: `1px solid ${flagshipTrack.realmColor}38`,
-                                                color: flagshipTrack.realmColor,
-                                            }}
-                                        >
-                                            Realm {flagshipTrack.realmId} • {flagshipTrack.realmName}
-                                        </span>
-                                    </div>
-
-                                    <h2
-                                        className="text-2xl md:text-3xl font-display mb-2"
-                                        style={{ color: flagshipTrack.realmColor }}
-                                    >
-                                        {flagshipTrack.trackTitle}
-                                    </h2>
-
-                                    <p className="text-sm text-secondary max-w-2xl">
-                                        The current flagship entry point into the Cosmic Multiverse — chosen to introduce
-                                        the sound, visual world, and emotional signal of the app.
-                                    </p>
-
-                                    {flagshipTrack.vibe && (
-                                        <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-3">
-                                            {flagshipTrack.vibe.slice(0, 5).map((tag) => (
-                                                <span
-                                                    key={tag}
-                                                    className="px-2.5 py-1 rounded-full text-[11px]"
-                                                    style={{
-                                                        background: `${flagshipTrack.realmColor}14`,
-                                                        border: `1px solid ${flagshipTrack.realmColor}28`,
-                                                        color: flagshipTrack.realmColor,
-                                                    }}
-                                                >
-                                                    {tag}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-
-                                <button
-                                    className="btn-primary w-full md:w-auto"
-                                    onClick={() => playOrToggleTrack(flagshipTrack)}
-                                    style={{
-                                        borderColor: `${flagshipTrack.realmColor}44`,
-                                        boxShadow: `0 0 16px ${flagshipTrack.realmColor}12`,
-                                    }}
-                                >
-                                    {currentTrack?.id === flagshipTrack.id
-                                        ? isPlaying
-                                            ? 'Pause Signal'
-                                            : 'Resume Signal'
-                                        : '▶ Play Signal'}
-                                </button>
-                            </div>
-                        </div>
-                    )}
 
                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-5">
                         <Link
@@ -516,7 +517,7 @@ export default function CosmicNexusHub() {
                             </div>
                         </Link>
 
-                        <div className="glass-card nexus-panel nexus-todays-realm p-5 fade-in" style={{ animationDelay: '0.25s' }}>
+                        <div className="glass-card nexus-panel nexus-todays-realm p-5 fade-in" style={{ animationDelay: '0.22s' }}>
                             {guidanceRealm && guidanceRealmContent && guidanceModeContent ? (
                                 <div className="flex items-start gap-4">
                                     <div
@@ -608,8 +609,7 @@ export default function CosmicNexusHub() {
                         </div>
                     </div>
 
-
-                    <div className="glass-card nexus-panel nexus-soundtracks p-6 mb-5 fade-in" style={{ animationDelay: '0.3s' }}>
+                    <div className="glass-card nexus-panel nexus-soundtracks p-6 mb-5 fade-in" style={{ animationDelay: '0.26s' }}>
                         <div className="flex items-center justify-between gap-4 mb-5">
                             <div>
                                 <h2 className="text-3xl font-display">
@@ -617,7 +617,7 @@ export default function CosmicNexusHub() {
                                 </h2>
 
                                 <p className="text-secondary text-sm mt-1">
-                                    Explore each realm’s public music portal.
+                                    Explore each realm&apos;s public music portal.
                                     Some worlds include extra public tracks beyond the curated three-song journey.
                                 </p>
                             </div>
@@ -674,7 +674,7 @@ export default function CosmicNexusHub() {
                     {publicThreePieceCollections.length > 0 && (
                         <div
                             className="glass-card nexus-panel nexus-soundtracks p-6 mb-5 fade-in"
-                            style={{ animationDelay: '0.32s' }}
+                            style={{ animationDelay: '0.28s' }}
                         >
                             <div className="mb-5">
                                 <h2 className="text-3xl font-display">
@@ -682,11 +682,12 @@ export default function CosmicNexusHub() {
                                 </h2>
 
                                 <p className="text-secondary text-sm mt-1">
-                                    Six intentional three-song paths curated like mini-EPs — built for story, visuals, and future rollout episodes.
+                                    Swipe through six three-song paths curated like mini-EPs — built for story,
+                                    visuals, and future rollout episodes.
                                 </p>
                             </div>
 
-                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                            <div className="nexus-journey-scroll">
                                 {publicThreePieceCollections.map((collection) => {
                                     const collectionTracks = getTracksByIds(collection.trackIds);
                                     const firstTrack = collectionTracks[0] ?? null;
@@ -694,7 +695,7 @@ export default function CosmicNexusHub() {
                                     return (
                                         <div
                                             key={collection.id}
-                                            className="quest-card"
+                                            className="quest-card nexus-journey-card"
                                             style={{
                                                 borderColor: firstTrack
                                                     ? `${firstTrack.realmColor}33`
@@ -766,7 +767,7 @@ export default function CosmicNexusHub() {
 
                     <div
                         className="glass-card nexus-panel nexus-external-strip p-4 mb-5 fade-in"
-                        style={{ animationDelay: '0.34s' }}
+                        style={{ animationDelay: '0.3s' }}
                     >
                         <div className="flex flex-col md:flex-row md:items-center gap-4">
                             <div className="flex-1 text-center md:text-left">
@@ -775,12 +776,13 @@ export default function CosmicNexusHub() {
                                 </p>
 
                                 <h3 className="text-lg font-display mb-1">
-                                    {vaultTrackCount} Deeper tracks staged for signed-in access
+                                    Deeper tracks staged for signed-in access
                                 </h3>
 
                                 <p className="text-sm text-secondary">
-                                    The public catalog introduces each realm through open soundcards and curated three-song journeys.
-                                    The vault holds demos, experiments, older cuts, alternates, and private listening candidates as the catalog grows.
+                                    The public catalog introduces each realm through open soundcards and curated
+                                    three-song journeys. The vault currently holds {vaultTrackCount} demos,
+                                    experiments, older cuts, alternates, and private listening candidates as the catalog grows.
                                 </p>
                             </div>
 
@@ -801,7 +803,7 @@ export default function CosmicNexusHub() {
 
                     <div
                         className="glass-card nexus-panel nexus-external-strip p-4 mb-5 fade-in"
-                        style={{ animationDelay: '0.35s' }}
+                        style={{ animationDelay: '0.32s' }}
                     >
                         <div className="flex flex-col md:flex-row md:items-center gap-4">
                             <div className="flex-1 text-center md:text-left">
@@ -826,7 +828,6 @@ export default function CosmicNexusHub() {
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
         </>

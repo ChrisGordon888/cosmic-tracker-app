@@ -343,6 +343,20 @@
 }
 
 /* ===================================
+   CURATED JOURNEY SCROLL
+   =================================== */
+
+.nexus-journey-scroll {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.nexus-journey-card {
+    min-width: 0;
+}
+
+/* ===================================
    PATH NOTE
    =================================== */
 
@@ -507,12 +521,12 @@
     .nexus-container {
         padding-left: 1rem;
         padding-right: 1rem;
-        padding-top: 1.5rem;
+        padding-top: 1.15rem;
     }
 
     .nexus-hero {
-        margin-bottom: 1.5rem;
-        padding-top: 1rem;
+        margin-bottom: 1rem;
+        padding-top: 0.65rem;
     }
 
     .nexus-hero h1 {
@@ -526,7 +540,7 @@
     }
 
     .nexus-hero p {
-        font-size: 1rem;
+        font-size: 0.95rem;
         max-width: 20rem;
         margin-left: auto;
         margin-right: auto;
@@ -553,7 +567,7 @@
     }
 
     .nexus-listener-card {
-        padding: 1.4rem 1.15rem;
+        padding: 1.25rem 1.05rem;
     }
 
     .nexus-listener-card .btn-primary {
@@ -561,13 +575,13 @@
     }
 
     .nexus-moon-card {
-        padding: 1.15rem;
+        padding: 1rem;
     }
 
     .nexus-moon-card-inner {
         flex-direction: column;
         text-align: center;
-        gap: 0.75rem;
+        gap: 0.65rem;
         max-width: none;
     }
 
@@ -590,12 +604,12 @@
 
     .nexus-moon-title {
         font-size: 1.05rem;
-        margin-bottom: 0.45rem;
+        margin-bottom: 0.4rem;
     }
 
     .nexus-moon-alignment {
         font-size: 0.92rem;
-        margin-bottom: 0.75rem;
+        margin-bottom: 0.65rem;
         text-align: center;
     }
 
@@ -668,12 +682,40 @@
     }
 
     .nexus-soundtracks h2 {
-        font-size: 1.85rem;
+        font-size: 1.75rem;
         line-height: 1.05;
     }
 
-    .nexus-soundtracks>div:first-child {
+    .nexus-soundtracks > div:first-child {
         align-items: flex-start;
+    }
+
+    .nexus-journey-scroll {
+        display: flex;
+        overflow-x: auto;
+        gap: 0.9rem;
+        padding-bottom: 0.75rem;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .nexus-journey-scroll::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .nexus-journey-scroll::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: 999px;
+    }
+
+    .nexus-journey-scroll::-webkit-scrollbar-thumb {
+        background: rgba(220, 186, 92, 0.32);
+        border-radius: 999px;
+    }
+
+    .nexus-journey-card {
+        flex: 0 0 82%;
+        scroll-snap-align: start;
     }
 
     .nexus-path-note {
@@ -710,5 +752,9 @@
     .nexus-guided-entry h3,
     .nexus-todays-realm h3 {
         font-size: 1.4rem;
+    }
+
+    .nexus-journey-card {
+        flex-basis: 88%;
     }
 }
