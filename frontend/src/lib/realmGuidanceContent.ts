@@ -14,78 +14,78 @@ export const REALM_GUIDANCE_CONTENT: Record<RealmId, RealmGuidanceContent> = {
   303: {
     realmId: 303,
     whenToEnter:
-      'Enter when life feels sharp, unstable, demanding, or like something is breaking open.',
-    helpsWith: ['chaos', 'pressure', 'conflict', 'survival', 'raw activation'],
+      'Enter when life feels sharp, unstable, demanding, coded, or like something inside you is being forced to break open.',
+    helpsWith: ['chaos', 'pressure', 'conflict', 'survival', 'self-overcoming'],
     suggestedMode: 'move-through',
-    recommendedTrack: 'War Ready',
+    recommendedTrack: 'hardcoded',
     reflectionPrompt:
-      'What am I fighting right now — and what strength is this pressure trying to force out of me?',
+      'What pattern keeps repeating — and what strength is trying to emerge from the pressure?',
     whyThisRealmHelps:
-      'Fractured Frontier does not ask you to pretend everything is calm. It helps you meet pressure honestly and find force inside the fracture.',
+      'Fractured Frontier does not ask you to pretend everything is calm. It helps you meet pressure honestly, recognize the code you are moving through, and turn fracture into force.',
   },
 
   202: {
     realmId: 202,
     whenToEnter:
-      'Enter when you feel pulled by longing, confusion, projection, fantasy, or hidden emotional truth.',
-    helpsWith: ['desire', 'confusion', 'mystery', 'projection', 'hidden truth'],
+      'Enter when you feel pulled by longing, confusion, projection, fantasy, desire, or hidden emotional truth.',
+    helpsWith: ['desire', 'confusion', 'mystery', 'projection', 'emotional fog'],
     suggestedMode: 'move-through',
-    recommendedTrack: 'Night Light',
+    recommendedTrack: 'her fantasy',
     reflectionPrompt:
-      'What feels true beneath the fog — and what part of me is projecting instead of seeing clearly?',
+      'What feels true beneath the fantasy — and what part of me is projecting instead of seeing clearly?',
     whyThisRealmHelps:
-      'The Veil helps you sit with emotional fog, mystery, and desire without forcing false certainty too early.',
+      'The Veil helps you sit with mystery, attraction, emotional fog, and fantasy without forcing false certainty too early.',
   },
 
   101: {
     realmId: 101,
     whenToEnter:
-      'Enter when you need space to reflect, process grief, travel inward, or make peace with what has been.',
-    helpsWith: ['reflection', 'grief', 'distance', 'integration', 'calm movement'],
+      'Enter when you need space to reflect, soften, process emotion, travel inward, or feel held while moving through uncertainty.',
+    helpsWith: ['reflection', 'healing', 'distance', 'integration', 'soft movement'],
     suggestedMode: 'stay',
-    recommendedTrack: 'Mysterious Way',
+    recommendedTrack: 'holdMyHand',
     reflectionPrompt:
-      'What am I still carrying that needs space instead of speed?',
+      'What am I still carrying that needs gentleness instead of speed?',
     whyThisRealmHelps:
-      'Moonlit Roads offers movement without pressure and helps you understand what is surfacing at a gentler pace.',
+      'Moonlit Roads offers movement without pressure. It gives your inner world space to breathe, process, and integrate without forcing the next answer too quickly.',
   },
 
   55: {
     realmId: 55,
     whenToEnter:
-      'Enter when you need to reclaim your power, direct your energy, and act with intention.',
+      'Enter when you need to reclaim your power, direct your energy, remember your ambition, and move with command.',
     helpsWith: ['ambition', 'discipline', 'command', 'manifestation', 'confidence'],
     suggestedMode: 'move-through',
-    recommendedTrack: 'Bank',
+    recommendedTrack: 'Glory n Power',
     reflectionPrompt:
       'Where is my energy leaking — and what would happen if I directed it fully?',
     whyThisRealmHelps:
-      'Skybound City helps you turn rising energy into focused action, disciplined power, and intentional movement.',
+      'Skybound City helps you turn rising energy into focused action, disciplined power, and visible movement.',
   },
 
   44: {
     realmId: 44,
     whenToEnter:
-      'Enter when you are deciding what is worth your energy, time, attention, or devotion.',
+      'Enter when you are deciding what is worth your energy, attention, time, loyalty, or devotion.',
     helpsWith: ['discernment', 'value', 'boundaries', 'exchange', 'temptation'],
     suggestedMode: 'move-through',
-    recommendedTrack: 'Golden Tickets',
+    recommendedTrack: '13933',
     reflectionPrompt:
-      'What in my life is truly valuable — and what only looks valuable from a distance?',
+      'What is truly valuable here — and what only looks valuable because it is pulling my attention?',
     whyThisRealmHelps:
-      'Astral Bazaar helps you clarify worth, recognize illusion, and choose more wisely what deserves your attention.',
+      'Astral Bazaar helps you clarify worth, recognize temptation, protect your focus, and choose more wisely what deserves your energy.',
   },
 
   0: {
     realmId: 0,
     whenToEnter:
-      'Enter when you need to return to what is essential, whole, and already within.',
+      'Enter when you need to return to what is essential, whole, aligned, and already within you.',
     helpsWith: ['alignment', 'blessing', 'stillness', 'completion', 'source'],
     suggestedMode: 'stay',
-    recommendedTrack: 'Feel Blessed',
+    recommendedTrack: 'same person',
     reflectionPrompt:
-      'What is already present in my life that I have not fully allowed myself to receive?',
+      'What part of me is already whole, even while I am still becoming?',
     whyThisRealmHelps:
-      'InterSiddhi helps you reconnect with what is already whole beneath striving, confusion, and performance.',
+      'InterSiddhi helps you reconnect with the self beneath striving, confusion, and performance — the same core self, in a higher form.',
   },
 };
