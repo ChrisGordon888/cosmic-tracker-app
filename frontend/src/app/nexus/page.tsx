@@ -617,8 +617,8 @@ export default function CosmicNexusHub() {
                                 </h2>
 
                                 <p className="text-secondary text-sm mt-1">
-                                    Explore the public listening path for each realm. Sign in to save progress
-                                    and access deeper vault tracks later.
+                                    Explore each realm’s public music portal.
+                                    Some worlds include extra public tracks beyond the curated three-song journey.
                                 </p>
                             </div>
                         </div>
@@ -682,7 +682,7 @@ export default function CosmicNexusHub() {
                                 </h2>
 
                                 <p className="text-secondary text-sm mt-1">
-                                    After exploring the soundcards, enter six three-song paths curated by story, mood, and realm.
+                                    Six intentional three-song paths curated like mini-EPs — built for story, visuals, and future rollout episodes.
                                 </p>
                             </div>
 
@@ -775,12 +775,12 @@ export default function CosmicNexusHub() {
                                 </p>
 
                                 <h3 className="text-lg font-display mb-1">
-                                    {vaultTrackCount} deeper tracks staged for signed-in access
+                                    {vaultTrackCount} Deeper tracks staged for signed-in access
                                 </h3>
 
                                 <p className="text-sm text-secondary">
-                                    The public catalog introduces the realms. The vault will hold demos,
-                                    experiments, deeper cuts, and private listening paths as the catalog grows.
+                                    The public catalog introduces each realm through open soundcards and curated three-song journeys.
+                                    The vault holds demos, experiments, older cuts, alternates, and private listening candidates as the catalog grows.
                                 </p>
                             </div>
 
