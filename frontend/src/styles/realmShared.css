@@ -1,49 +1,86 @@
 /* ===================================
-   🌌 SHARED REALM COMPONENTS
+   SHARED REALM COMPONENTS
    Used across all realm pages
+   SAFE COSMIC CHROME PASS
    =================================== */
+
+/* === SHARED TOKENS === */
+:root {
+  --realm-bg-deep: rgba(8, 11, 20, 0.88);
+  --realm-bg-panel: rgba(14, 20, 34, 0.56);
+  --realm-bg-panel-soft: rgba(255, 255, 255, 0.045);
+
+  --realm-border: rgba(226, 232, 240, 0.13);
+  --realm-border-strong: rgba(226, 232, 240, 0.24);
+
+  --realm-text: rgba(245, 247, 252, 0.94);
+  --realm-text-secondary: rgba(224, 231, 240, 0.80);
+  --realm-text-muted: rgba(186, 194, 206, 0.64);
+
+  --realm-ice: rgba(188, 224, 255, 0.92);
+  --realm-ice-soft: rgba(130, 190, 255, 0.16);
+
+  --realm-gold: rgba(220, 186, 92, 0.92);
+  --realm-gold-soft: rgba(220, 186, 92, 0.16);
+
+  --realm-violet: rgba(139, 92, 246, 0.70);
+  --realm-violet-soft: rgba(139, 92, 246, 0.14);
+
+  --realm-shadow: rgba(0, 0, 0, 0.28);
+}
 
 /* === GLASS MORPHISM CARDS === */
 .glass-card {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.1),
-    rgba(255, 255, 255, 0.05)
-  );
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.065),
+      rgba(205, 215, 230, 0.028) 42%,
+      rgba(14, 20, 34, 0.50)
+    );
+  backdrop-filter: blur(14px) saturate(122%);
+  -webkit-backdrop-filter: blur(14px) saturate(122%);
+  border: 1px solid var(--realm-border);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 12px 32px var(--realm-shadow);
   border-radius: 16px;
   padding: 1.5rem;
-  transition: all 0.3s ease;
+  transition:
+    border-color 0.24s ease,
+    box-shadow 0.24s ease,
+    transform 0.24s ease,
+    background 0.24s ease;
 }
 
 .glass-card:hover {
-  border-color: rgba(0, 212, 255, 0.5);
-  box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+  border-color: var(--realm-border-strong);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.11),
+    0 14px 34px rgba(0, 0, 0, 0.30),
+    0 0 18px rgba(130, 190, 255, 0.055);
 }
 
-/* === NEON GLOW TEXT === */
+/* === SUBTLE GLOW TEXT === */
 .neon-glow {
-  text-shadow: 
-    0 0 10px rgba(0, 212, 255, 0.8),
-    0 0 20px rgba(0, 212, 255, 0.6),
-    0 0 30px rgba(0, 212, 255, 0.4);
-  animation: pulse-glow 2s ease-in-out infinite;
+  color: var(--realm-text);
+  text-shadow:
+    0 0 10px rgba(255, 255, 255, 0.10),
+    0 0 18px rgba(130, 190, 255, 0.12),
+    0 0 28px rgba(220, 186, 92, 0.06);
 }
 
+/* Keep the old keyframe name for compatibility, but make it gentle. */
 @keyframes pulse-glow {
   0%, 100% {
-    text-shadow: 
-      0 0 10px rgba(0, 212, 255, 0.8),
-      0 0 20px rgba(0, 212, 255, 0.6);
+    text-shadow:
+      0 0 10px rgba(255, 255, 255, 0.10),
+      0 0 18px rgba(130, 190, 255, 0.10);
   }
   50% {
-    text-shadow: 
-      0 0 20px rgba(0, 212, 255, 1),
-      0 0 30px rgba(0, 212, 255, 0.8),
-      0 0 40px rgba(0, 212, 255, 0.6);
+    text-shadow:
+      0 0 14px rgba(255, 255, 255, 0.14),
+      0 0 24px rgba(130, 190, 255, 0.13);
   }
 }
 
@@ -55,16 +92,28 @@
   justify-content: center;
   width: 80px;
   height: 80px;
-  background: linear-gradient(135deg, #FF006E, #9D4EDD);
+  min-width: 80px;
+  min-height: 80px;
+  background:
+    radial-gradient(
+      circle at 30% 25%,
+      rgba(255, 255, 255, 0.20),
+      rgba(188, 224, 255, 0.12) 36%,
+      rgba(15, 23, 42, 0.76) 100%
+    );
+  border: 1px solid rgba(226, 232, 240, 0.22);
   border-radius: 50%;
   font-family: 'Orbitron', sans-serif;
   font-size: 1.5rem;
   font-weight: bold;
-  color: white;
-  box-shadow: 0 0 30px rgba(157, 78, 221, 0.6);
-  animation: rotate-ring 8s linear infinite;
+  color: var(--realm-text);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 14px 34px rgba(0, 0, 0, 0.28),
+    0 0 18px rgba(130, 190, 255, 0.08);
 }
 
+/* Keep the old keyframe name for compatibility. */
 @keyframes rotate-ring {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
@@ -74,15 +123,24 @@
 .stat-bar {
   width: 100%;
   height: 8px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.085);
   border-radius: 999px;
   overflow: hidden;
   position: relative;
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.28),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.03);
 }
 
 .stat-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #00D4FF, #9D4EDD);
+  background:
+    linear-gradient(
+      90deg,
+      rgba(188, 224, 255, 0.92),
+      rgba(139, 92, 246, 0.52),
+      rgba(220, 186, 92, 0.80)
+    );
   border-radius: 999px;
   transition: width 0.3s ease;
   position: relative;
@@ -92,17 +150,15 @@
 .stat-bar-fill::after {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.3),
-    transparent
-  );
-  animation: shimmer 2s infinite;
+  inset: 0;
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.24),
+      transparent
+    );
+  animation: shimmer 2.4s infinite;
 }
 
 @keyframes shimmer {
@@ -112,55 +168,108 @@
 
 /* === BUTTONS === */
 .btn-primary {
-  background: linear-gradient(135deg, #FF006E, #9D4EDD);
-  color: white;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(238, 243, 250, 0.16),
+      rgba(180, 194, 210, 0.10) 36%,
+      rgba(220, 186, 92, 0.15) 100%
+    );
+  color: var(--realm-text);
   padding: 0.75rem 2rem;
   border-radius: 9999px;
   font-family: 'Orbitron', sans-serif;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
-  border: none;
+  border: 1px solid rgba(224, 232, 240, 0.22);
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(157, 78, 221, 0.4);
+  transition:
+    transform 0.24s ease,
+    box-shadow 0.24s ease,
+    border-color 0.24s ease,
+    background 0.24s ease;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 8px 22px rgba(0, 0, 0, 0.18);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 25px rgba(157, 78, 221, 0.6);
+  border-color: rgba(220, 186, 92, 0.34);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.20),
+    0 10px 26px rgba(0, 0, 0, 0.24),
+    0 0 14px rgba(220, 186, 92, 0.10);
 }
 
 .btn-secondary {
-  background: transparent;
-  color: #00D4FF;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.055),
+      rgba(205, 215, 228, 0.028) 44%,
+      rgba(14, 20, 32, 0.44)
+    );
+  color: rgba(232, 238, 246, 0.92);
   padding: 0.75rem 2rem;
   border-radius: 9999px;
-  border: 2px solid #00D4FF;
+  border: 1px solid rgba(214, 224, 235, 0.16);
   font-family: 'Orbitron', sans-serif;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition:
+    transform 0.24s ease,
+    box-shadow 0.24s ease,
+    border-color 0.24s ease,
+    background 0.24s ease,
+    color 0.24s ease;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    0 8px 18px rgba(0, 0, 0, 0.16);
 }
 
 .btn-secondary:hover {
-  background: #00D4FF;
-  color: #0A0A0F;
-  box-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
+  transform: translateY(-2px);
+  border-color: rgba(190, 210, 235, 0.25);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.075),
+      rgba(130, 190, 255, 0.055),
+      rgba(14, 20, 32, 0.48)
+    );
+  color: rgba(245, 247, 252, 0.96);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 10px 22px rgba(0, 0, 0, 0.20),
+    0 0 12px rgba(130, 190, 255, 0.08);
 }
 
 /* === REALM PORTAL CARDS === */
 .realm-portal {
   position: relative;
-  background: linear-gradient(135deg, rgba(30, 30, 50, 0.9), rgba(15, 15, 30, 0.8));
-  border: 2px solid transparent;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.055),
+      rgba(190, 205, 220, 0.026) 38%,
+      rgba(12, 18, 28, 0.54)
+    );
+  border: 1px solid rgba(214, 224, 235, 0.14);
   border-radius: 16px;
   padding: 1.5rem;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition:
+    border-color 0.24s ease,
+    transform 0.24s ease,
+    box-shadow 0.24s ease;
   overflow: hidden;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 10px 24px rgba(0, 0, 0, 0.18);
 }
 
 .realm-portal::before {
@@ -169,9 +278,15 @@
   top: 0;
   left: 0;
   width: 100%;
-  height: 4px;
-  background: linear-gradient(90deg, #FF006E, #00D4FF);
+  height: 3px;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(220, 186, 92, 0.70),
+      rgba(188, 224, 255, 0.70)
+    );
   transform: scaleX(0);
+  transform-origin: left;
   transition: transform 0.3s ease;
 }
 
@@ -180,9 +295,12 @@
 }
 
 .realm-portal:hover {
-  border-color: #00D4FF;
-  transform: translateY(-4px);
-  box-shadow: 0 10px 40px rgba(0, 212, 255, 0.3);
+  border-color: rgba(224, 232, 240, 0.24);
+  transform: translateY(-3px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 14px 30px rgba(0, 0, 0, 0.22),
+    0 0 12px rgba(130, 190, 255, 0.06);
 }
 
 .realm-portal.locked {
@@ -196,29 +314,49 @@
 
 /* === QUEST CARDS === */
 .quest-card {
-  background: linear-gradient(135deg, rgba(40, 40, 60, 0.8), rgba(20, 20, 40, 0.8));
-  border-left: 4px solid #FF006E;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.05),
+      rgba(190, 205, 220, 0.025) 40%,
+      rgba(15, 20, 32, 0.48)
+    );
+  border-left: 4px solid rgba(220, 186, 92, 0.58);
   border-radius: 12px;
   padding: 1.25rem;
-  transition: all 0.3s ease;
+  transition:
+    border-color 0.24s ease,
+    transform 0.24s ease,
+    box-shadow 0.24s ease;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 8px 18px rgba(0, 0, 0, 0.14);
 }
 
 .quest-card:hover {
-  border-left-color: #00D4FF;
-  transform: translateX(8px);
-  box-shadow: 0 4px 20px rgba(0, 212, 255, 0.2);
+  border-left-color: rgba(188, 224, 255, 0.72);
+  transform: translateX(6px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    0 10px 22px rgba(0, 0, 0, 0.18),
+    0 0 12px rgba(130, 190, 255, 0.055);
 }
 
 .quest-card.completed {
   opacity: 0.6;
-  border-left-color: #FFD60A;
+  border-left-color: rgba(220, 186, 92, 0.78);
 }
 
 /* === TEXT UTILITIES === */
-.text-primary { color: #FFFFFF; }
-.text-secondary { color: #A0A0B0; }
-.text-muted { color: #6B6B7B; }
-.text-glow { color: #00D4FF; }
+.text-primary { color: var(--realm-text); }
+.text-secondary { color: var(--realm-text-secondary); }
+.text-muted { color: var(--realm-text-muted); }
+.text-glow {
+  color: var(--realm-ice);
+  text-shadow:
+    0 0 8px rgba(188, 224, 255, 0.16),
+    0 0 16px rgba(130, 190, 255, 0.10);
+}
 .text-stats { font-family: 'Space Grotesk', sans-serif; }
 .font-display { font-family: 'Orbitron', sans-serif; }
 
@@ -237,13 +375,13 @@
 }
 
 @keyframes slideInLeft {
-  from { 
-    opacity: 0; 
-    transform: translateX(-50px); 
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
   }
-  to { 
-    opacity: 1; 
-    transform: translateX(0); 
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 
@@ -252,9 +390,11 @@
   .level-badge {
     width: 60px;
     height: 60px;
+    min-width: 60px;
+    min-height: 60px;
     font-size: 1.2rem;
   }
-  
+
   .btn-primary,
   .btn-secondary {
     padding: 0.6rem 1.5rem;
@@ -280,31 +420,39 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: white;
+  background: rgba(245, 247, 252, 0.96);
   cursor: pointer;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 0 10px rgba(188, 224, 255, 0.30),
+    0 0 18px rgba(220, 186, 92, 0.08);
   transition: all 0.2s ease;
 }
 
 .realm-music-player input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+  transform: scale(1.16);
+  box-shadow:
+    0 0 14px rgba(188, 224, 255, 0.40),
+    0 0 22px rgba(220, 186, 92, 0.10);
 }
 
 .realm-music-player input[type="range"]::-moz-range-thumb {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: white;
+  background: rgba(245, 247, 252, 0.96);
   cursor: pointer;
   border: none;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 0 10px rgba(188, 224, 255, 0.30),
+    0 0 18px rgba(220, 186, 92, 0.08);
   transition: all 0.2s ease;
 }
 
 .realm-music-player input[type="range"]::-moz-range-thumb:hover {
-  transform: scale(1.2);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+  transform: scale(1.16);
+  box-shadow:
+    0 0 14px rgba(188, 224, 255, 0.40),
+    0 0 22px rgba(220, 186, 92, 0.10);
 }
 
 /* Animated pulse for playing state */
@@ -314,13 +462,13 @@
     opacity: 1;
   }
   50% {
-    transform: scale(1.05);
-    opacity: 0.8;
+    transform: scale(1.035);
+    opacity: 0.88;
   }
 }
 
 .realm-music-player button:hover {
-  animation: music-pulse 1s ease-in-out infinite;
+  animation: music-pulse 1.2s ease-in-out infinite;
 }
 
 /* === MOBILE LAYOUT STABILITY PASS === */

@@ -2,23 +2,39 @@
 
 /* ===================================
    GLOBAL THEME TOKENS
+   Cosmic chrome foundation:
+   deep space, moon silver, ice blue, champagne gold.
    =================================== */
 
 :root {
-    --background: #14002a;
-    --foreground: #f0f0f0;
+    --background: #05070d;
+    --foreground: #eef3fa;
 
-    --accent-primary: #ff66cc;
-    --accent-secondary: rgba(0, 0, 0, 0.8);
-    --highlight: #ffd700;
+    --accent-primary: #bcdfff;
+    --accent-secondary: rgba(8, 11, 20, 0.86);
+    --highlight: #dcba5c;
 
     --cosmic-bg: rgba(8, 11, 20, 0.86);
     --cosmic-bg-soft: rgba(14, 18, 30, 0.72);
+    --cosmic-bg-glass: rgba(255, 255, 255, 0.045);
+
     --cosmic-border: rgba(226, 232, 240, 0.12);
     --cosmic-border-strong: rgba(245, 247, 252, 0.26);
+
     --cosmic-text: rgba(245, 247, 252, 0.94);
+    --cosmic-text-secondary: rgba(224, 231, 240, 0.80);
     --cosmic-text-muted: rgba(226, 232, 240, 0.72);
+
     --cosmic-gold: rgba(215, 190, 120, 0.96);
+    --cosmic-gold-soft: rgba(215, 190, 120, 0.16);
+
+    --cosmic-ice: rgba(188, 224, 255, 0.92);
+    --cosmic-ice-soft: rgba(130, 190, 255, 0.16);
+
+    --cosmic-violet: rgba(139, 92, 246, 0.72);
+    --cosmic-violet-soft: rgba(139, 92, 246, 0.14);
+
+    --cosmic-shadow: rgba(0, 0, 0, 0.28);
 }
 
 @theme inline {
@@ -30,7 +46,7 @@
 
 @media (prefers-color-scheme: dark) {
     :root {
-        --foreground: #ededed;
+        --foreground: #eef3fa;
     }
 }
 
@@ -39,7 +55,12 @@
    =================================== */
 
 html {
-    background: #05070d;
+    background:
+        radial-gradient(circle at top left, rgba(188, 224, 255, 0.045), transparent 34%),
+        radial-gradient(circle at bottom right, rgba(215, 190, 120, 0.035), transparent 30%),
+        #05070d;
+    max-width: 100%;
+    overflow-x: hidden;
 }
 
 body {
@@ -47,6 +68,22 @@ body {
     background: transparent;
     color: #d1d5db;
     font-family: 'Orbitron', Arial, sans-serif;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* ===================================
+   SELECTION / FOCUS
+   =================================== */
+
+::selection {
+    background: rgba(188, 224, 255, 0.24);
+    color: rgba(245, 247, 252, 0.98);
+}
+
+:focus-visible {
+    outline: 2px solid rgba(188, 224, 255, 0.68);
+    outline-offset: 3px;
 }
 
 /* ===================================
@@ -59,9 +96,11 @@ body {
     z-index: 50;
     border-bottom: 1px solid var(--cosmic-border);
     background:
-        linear-gradient(180deg,
-            rgba(8, 11, 20, 0.02),
-            rgba(8, 11, 20, 0.48));
+        linear-gradient(
+            180deg,
+            rgba(8, 11, 20, 0.18),
+            rgba(8, 11, 20, 0.62)
+        );
     backdrop-filter: blur(18px) saturate(130%);
     -webkit-backdrop-filter: blur(18px) saturate(130%);
     box-shadow:
@@ -100,10 +139,12 @@ body {
     justify-content: center;
     color: var(--cosmic-gold);
     background:
-        radial-gradient(circle at 35% 30%,
+        radial-gradient(
+            circle at 35% 30%,
             rgba(255, 255, 255, 0.18),
             rgba(215, 190, 120, 0.08) 38%,
-            rgba(8, 11, 20, 0.40));
+            rgba(8, 11, 20, 0.40)
+        );
     border: 1px solid rgba(232, 224, 203, 0.20);
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.12),
@@ -134,7 +175,12 @@ body {
 
 .cosmic-signout {
     border: 1px solid rgba(226, 232, 240, 0.16);
-    background: rgba(255, 255, 255, 0.045);
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.055),
+            rgba(188, 224, 255, 0.025)
+        );
     color: rgba(226, 232, 240, 0.82);
     border-radius: 999px;
     padding: 0.45rem 0.75rem;
@@ -145,13 +191,15 @@ body {
         color 0.2s ease,
         background 0.2s ease,
         border-color 0.2s ease,
-        transform 0.2s ease;
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 .cosmic-signout:hover {
     border-color: var(--cosmic-border-strong);
     color: rgba(245, 247, 252, 0.96);
     background: rgba(255, 255, 255, 0.075);
+    box-shadow: 0 0 12px rgba(188, 224, 255, 0.06);
 }
 
 .cosmic-profile-link {
@@ -163,17 +211,25 @@ body {
     justify-content: center;
     color: rgba(226, 232, 240, 0.86);
     border: 1px solid rgba(226, 232, 240, 0.14);
-    background: rgba(255, 255, 255, 0.045);
+    background:
+        radial-gradient(
+            circle at 35% 30%,
+            rgba(255, 255, 255, 0.10),
+            rgba(188, 224, 255, 0.035) 44%,
+            rgba(255, 255, 255, 0.025)
+        );
     transition:
         color 0.2s ease,
         background 0.2s ease,
-        border-color 0.2s ease;
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 .cosmic-profile-link:hover {
     color: rgba(245, 247, 252, 0.96);
     border-color: var(--cosmic-border-strong);
     background: rgba(255, 255, 255, 0.075);
+    box-shadow: 0 0 12px rgba(188, 224, 255, 0.06);
 }
 
 /* ===================================
@@ -186,9 +242,11 @@ body {
     z-index: 40;
     padding: 0.65rem 1rem calc(0.65rem + env(safe-area-inset-bottom));
     background:
-        linear-gradient(180deg,
-            rgba(8, 11, 20, 0.12),
-            rgba(8, 11, 20, 0.78));
+        linear-gradient(
+            180deg,
+            rgba(8, 11, 20, 0.10),
+            rgba(8, 11, 20, 0.82)
+        );
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
 }
@@ -202,7 +260,12 @@ body {
     padding: 0.45rem;
     border-radius: 999px;
     border: 1px solid var(--cosmic-border);
-    background: rgba(8, 11, 20, 0.58);
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.05),
+            rgba(8, 11, 20, 0.58)
+        );
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.06),
         0 10px 26px rgba(0, 0, 0, 0.24);
@@ -225,12 +288,14 @@ body {
     text-decoration: none;
     transition:
         color 0.2s ease,
-        background 0.2s ease;
+        background 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 .cosmic-bottom-link:hover {
     color: rgba(245, 247, 252, 0.96);
     background: rgba(255, 255, 255, 0.07);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 /* ===================================

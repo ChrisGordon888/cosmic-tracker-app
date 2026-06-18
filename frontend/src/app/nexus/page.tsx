@@ -104,6 +104,100 @@ const CURATED_PLAYLIST_ART_OVERRIDES: Record<string, string> = {
     'april-may-vault': '/april-may-vault.png',
 };
 
+const REALM_TINTS: Record<
+    RealmId,
+    {
+        accent: string;
+        soft: string;
+        border: string;
+        glow: string;
+        textShadow: string;
+    }
+> = {
+    303: {
+        accent: 'rgba(255, 93, 122, 0.92)',
+        soft: 'rgba(255, 93, 122, 0.16)',
+        border: 'rgba(255, 93, 122, 0.34)',
+        glow: 'rgba(255, 93, 122, 0.12)',
+        textShadow: '0 0 12px rgba(255, 93, 122, 0.20), 0 0 24px rgba(255, 93, 122, 0.10)',
+    },
+    202: {
+        accent: 'rgba(168, 132, 255, 0.94)',
+        soft: 'rgba(168, 132, 255, 0.16)',
+        border: 'rgba(168, 132, 255, 0.34)',
+        glow: 'rgba(168, 132, 255, 0.12)',
+        textShadow: '0 0 12px rgba(168, 132, 255, 0.22), 0 0 24px rgba(168, 132, 255, 0.10)',
+    },
+    101: {
+        accent: 'rgba(126, 211, 255, 0.94)',
+        soft: 'rgba(126, 211, 255, 0.16)',
+        border: 'rgba(126, 211, 255, 0.34)',
+        glow: 'rgba(126, 211, 255, 0.12)',
+        textShadow: '0 0 12px rgba(126, 211, 255, 0.22), 0 0 24px rgba(126, 211, 255, 0.10)',
+    },
+    55: {
+        accent: 'rgba(236, 201, 115, 0.94)',
+        soft: 'rgba(236, 201, 115, 0.16)',
+        border: 'rgba(236, 201, 115, 0.34)',
+        glow: 'rgba(236, 201, 115, 0.12)',
+        textShadow: '0 0 12px rgba(236, 201, 115, 0.20), 0 0 24px rgba(236, 201, 115, 0.10)',
+    },
+    44: {
+        accent: 'rgba(244, 171, 99, 0.94)',
+        soft: 'rgba(244, 171, 99, 0.16)',
+        border: 'rgba(244, 171, 99, 0.34)',
+        glow: 'rgba(244, 171, 99, 0.12)',
+        textShadow: '0 0 12px rgba(244, 171, 99, 0.20), 0 0 24px rgba(244, 171, 99, 0.10)',
+    },
+    0: {
+        accent: 'rgba(238, 243, 250, 0.94)',
+        soft: 'rgba(238, 243, 250, 0.12)',
+        border: 'rgba(238, 243, 250, 0.30)',
+        glow: 'rgba(238, 243, 250, 0.10)',
+        textShadow: '0 0 12px rgba(238, 243, 250, 0.18), 0 0 24px rgba(188, 224, 255, 0.08)',
+    },
+};
+
+const DEFAULT_REALM_TINT = {
+    accent: 'rgba(188, 224, 255, 0.92)',
+    soft: 'rgba(188, 224, 255, 0.14)',
+    border: 'rgba(188, 224, 255, 0.30)',
+    glow: 'rgba(188, 224, 255, 0.10)',
+    textShadow: '0 0 12px rgba(188, 224, 255, 0.18), 0 0 24px rgba(188, 224, 255, 0.08)',
+};
+
+function getRealmTint(realmId?: number | null) {
+    if (
+        realmId === 303 ||
+        realmId === 202 ||
+        realmId === 101 ||
+        realmId === 55 ||
+        realmId === 44 ||
+        realmId === 0
+    ) {
+        return REALM_TINTS[realmId];
+    }
+
+    return DEFAULT_REALM_TINT;
+}
+
+function getRealmIdFromAlignmentName(value?: string | null): RealmId | null {
+    if (!value) return null;
+
+    const numberMatch = value.match(/\((303|202|101|55|44|0)\)/);
+    if (numberMatch) {
+        return Number(numberMatch[1]) as RealmId;
+    }
+
+    const normalizedValue = value.toLowerCase();
+
+    const match = REALM_META.find((realm) =>
+        normalizedValue.includes(realm.name.toLowerCase())
+    );
+
+    return match ? (Number(match.id) as RealmId) : null;
+}
+
 
 function getModeLabel(mode: ExperienceMode) {
     if (mode === 'stay') return 'Stay';
@@ -339,6 +433,9 @@ export default function CosmicNexusHub() {
     }, [guidanceRealmId, guidanceModeContent]);
 
     const guidanceTrackLocked = guidanceTrack ? isTrackLocked(guidanceTrack) : false;
+    const guidanceRealmTint = getRealmTint(guidanceRealmId);
+    const moonRealmId = getRealmIdFromAlignmentName(realmAlignment?.primaryRealm);
+    const moonRealmTint = getRealmTint(moonRealmId);
 
     const handlePlayOrbitTrack = (track: { id: string }) => {
         const fullTrack = MUSIC_REGISTRY.find((musicTrack) => musicTrack.id === track.id);
@@ -714,7 +811,7 @@ export default function CosmicNexusHub() {
                     <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-4">
                         {isSignedIn ? (
                             <div
-                                className="glass-card nexus-panel p-5 fade-in"
+                                className="glass-card nexus-panel nexus-identity-card p-5 fade-in"
                                 style={{
                                     ...panelStyle,
                                     animationDelay: '0.12s',
@@ -787,7 +884,7 @@ export default function CosmicNexusHub() {
                             </div>
                         ) : (
                             <div
-                                className="glass-card nexus-panel p-5 fade-in xl:col-span-1"
+                                className="glass-card nexus-panel nexus-listener-card p-5 fade-in xl:col-span-1"
                                 style={{
                                     ...panelStyle,
                                     animationDelay: '0.12s',
@@ -856,7 +953,7 @@ export default function CosmicNexusHub() {
                         )}
 
                         <div
-                            className="glass-card nexus-panel p-5 fade-in"
+                            className="glass-card nexus-panel nexus-guided-entry p-5 fade-in"
                             style={{
                                 ...panelStyle,
                                 animationDelay: '0.14s',
@@ -872,12 +969,26 @@ export default function CosmicNexusHub() {
                                     {guidanceRealm && guidanceRealmContent && guidanceModeContent ? (
                                         <>
                                             <div className="flex flex-wrap items-center gap-2 mb-2">
-                                                <h3 className="text-2xl font-display text-glow">
+                                                <h3
+                                                    className="text-2xl font-display"
+                                                    style={{
+                                                        color: guidanceRealmTint.accent,
+                                                        textShadow: guidanceRealmTint.textShadow,
+                                                    }}
+                                                >
                                                     {guidanceRealmId !== null ? REALM_NAMES[guidanceRealmId] : 'Your Realm'}
                                                 </h3>
 
                                                 {guidanceMode && (
-                                                    <span className="px-2.5 py-1 rounded-full text-[10px] uppercase tracking-[0.14em] bg-white/6 border border-white/10 text-white/70">
+                                                    <span
+                                                        className="px-2.5 py-1 rounded-full text-[10px] uppercase tracking-[0.14em]"
+                                                        style={{
+                                                            background: guidanceRealmTint.soft,
+                                                            border: `1px solid ${guidanceRealmTint.border}`,
+                                                            color: guidanceRealmTint.accent,
+                                                            boxShadow: `0 0 14px ${guidanceRealmTint.glow}`,
+                                                        }}
+                                                    >
                                                         {getModeLabel(guidanceMode)}
                                                     </span>
                                                 )}
@@ -891,7 +1002,14 @@ export default function CosmicNexusHub() {
                                                 “{guidanceModeContent.reflectionPrompt}”
                                             </p>
 
-                                            <div className="rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-3 mb-4">
+                                            <div
+                                                className="rounded-2xl px-3 py-3 mb-4"
+                                                style={{
+                                                    border: `1px solid ${guidanceRealmTint.border}`,
+                                                    background: `linear-gradient(135deg, ${guidanceRealmTint.soft}, rgba(255,255,255,0.028))`,
+                                                    boxShadow: `inset 0 1px 0 rgba(255,255,255,0.06), 0 0 18px ${guidanceRealmTint.glow}`,
+                                                }}
+                                            >
                                                 <p className="text-[10px] uppercase tracking-[0.16em] text-muted mb-1">
                                                     Recommended track
                                                 </p>
@@ -968,7 +1086,7 @@ export default function CosmicNexusHub() {
                         </div>
 
                         <div
-                            className="glass-card nexus-panel p-5 fade-in"
+                            className="glass-card nexus-panel nexus-moon-card p-5 fade-in"
                             style={{
                                 ...panelStyle,
                                 animationDelay: '0.16s',
@@ -988,7 +1106,13 @@ export default function CosmicNexusHub() {
                                         {realmAlignment ? (
                                             <>
                                                 Aligned Realm:{' '}
-                                                <span className="text-glow font-medium">
+                                                <span
+                                                    className="font-medium"
+                                                    style={{
+                                                        color: moonRealmTint.accent,
+                                                        textShadow: moonRealmTint.textShadow,
+                                                    }}
+                                                >
                                                     {realmAlignment.primaryRealm}
                                                 </span>
                                             </>
@@ -1004,12 +1128,29 @@ export default function CosmicNexusHub() {
                             </p>
 
                             {realmAlignment?.primaryRealm && (
-                                <div className="rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-3 mb-3">
+                                <div
+                                    className="rounded-2xl px-3 py-3 mb-3"
+                                    style={{
+                                        border: `1px solid ${moonRealmTint.border}`,
+                                        background: `linear-gradient(135deg, ${moonRealmTint.soft}, rgba(255,255,255,0.028))`,
+                                        boxShadow: `inset 0 1px 0 rgba(255,255,255,0.06), 0 0 18px ${moonRealmTint.glow}`,
+                                    }}
+                                >
                                     <p className="text-[10px] uppercase tracking-[0.16em] text-muted mb-1">
                                         Today’s doorway
                                     </p>
                                     <p className="text-sm text-secondary">
-                                        Try <span className="text-glow font-medium">{realmAlignment.primaryRealm}</span> as today’s listening doorway.
+                                        Try{' '}
+                                        <span
+                                            className="font-medium"
+                                            style={{
+                                                color: moonRealmTint.accent,
+                                                textShadow: moonRealmTint.textShadow,
+                                            }}
+                                        >
+                                            {realmAlignment.primaryRealm}
+                                        </span>{' '}
+                                        as today’s listening doorway.
                                     </p>
                                 </div>
                             )}
@@ -1323,15 +1464,21 @@ export default function CosmicNexusHub() {
 
                                         if (!firstTrack) return null;
 
+                                        const collectionRealmId = Number(collection.realmId ?? firstTrack.realmId) as RealmId;
+                                        const collectionRealmTint = getRealmTint(collectionRealmId);
+                                        const collectionRealmLabel = collection.realmId
+                                            ? `Realm ${collection.realmId}`
+                                            : REALM_NAMES[collectionRealmId] ?? collectionTypeLabel;
+
                                         return (
                                             <div key={collection.id} className="curated-shelf-item">
                                                 <div
                                                     className="rounded-[24px] border border-white/10 bg-white/[0.03] overflow-hidden h-full flex flex-col min-w-0"
                                                     style={{
-                                                        borderColor: `${firstTrack.realmColor}26`,
+                                                        borderColor: collectionRealmTint.border,
                                                         background:
-                                                            'linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.018))',
-                                                        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+                                                            `radial-gradient(circle at top left, ${collectionRealmTint.glow}, transparent 34%), linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.018))`,
+                                                        boxShadow: `inset 0 1px 0 rgba(255,255,255,0.05), 0 0 18px ${collectionRealmTint.glow}`,
                                                     }}
                                                 >
                                                     <div
@@ -1339,8 +1486,8 @@ export default function CosmicNexusHub() {
                                                             position: 'relative',
                                                             aspectRatio: '1 / 0.76',
                                                             background: collectionArtwork
-                                                                ? `linear-gradient(180deg, rgba(8,10,18,0.06), rgba(8,10,18,0.52)), url(${collectionArtwork}) center/cover`
-                                                                : `radial-gradient(circle at top left, ${firstTrack.realmColor}24, rgba(255,255,255,0.03) 42%, rgba(9,11,20,0.82) 100%)`,
+                                                                ? `linear-gradient(180deg, rgba(8,10,18,0.00), rgba(8,10,18,0.42)), radial-gradient(circle at top left, ${collectionRealmTint.soft}, transparent 38%), url(${collectionArtwork}) center/cover`
+                                                                : `radial-gradient(circle at top left, ${collectionRealmTint.soft}, rgba(255,255,255,0.03) 42%, rgba(9,11,20,0.82) 100%)`,
                                                         }}
                                                     >
                                                         <div
@@ -1348,7 +1495,7 @@ export default function CosmicNexusHub() {
                                                                 position: 'absolute',
                                                                 inset: 0,
                                                                 background:
-                                                                    'linear-gradient(180deg, rgba(6,8,14,0.02) 0%, rgba(6,8,14,0.12) 42%, rgba(6,8,14,0.82) 100%)',
+                                                                    `linear-gradient(180deg, rgba(6,8,14,0.00) 0%, rgba(6,8,14,0.10) 42%, rgba(6,8,14,0.78) 100%), radial-gradient(circle at top left, ${collectionRealmTint.glow}, transparent 34%)`,
                                                             }}
                                                         />
 
@@ -1366,13 +1513,14 @@ export default function CosmicNexusHub() {
                                                             <span
                                                                 className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.16em]"
                                                                 style={{
-                                                                    background: 'rgba(8,10,18,0.42)',
-                                                                    border: '1px solid rgba(255,255,255,0.12)',
+                                                                    background: `linear-gradient(135deg, ${collectionRealmTint.soft}, rgba(8,10,18,0.46))`,
+                                                                    border: `1px solid ${collectionRealmTint.border}`,
                                                                     backdropFilter: 'blur(10px)',
-                                                                    color: 'rgba(255,255,255,0.92)',
+                                                                    color: collectionRealmTint.accent,
+                                                                    boxShadow: `0 0 14px ${collectionRealmTint.glow}`,
                                                                 }}
                                                             >
-                                                                {collection.realmId ? `Realm ${collection.realmId}` : collectionTypeLabel}
+                                                                {collectionRealmLabel}
                                                             </span>
 
                                                             <span
@@ -1381,16 +1529,20 @@ export default function CosmicNexusHub() {
                                                                     background:
                                                                         openCount < totalCount
                                                                             ? 'rgba(255,255,255,0.08)'
-                                                                            : `${firstTrack.realmColor}22`,
+                                                                            : 'rgba(220,186,92,0.13)',
                                                                     border:
                                                                         openCount < totalCount
                                                                             ? '1px solid rgba(255,255,255,0.12)'
-                                                                            : `1px solid ${firstTrack.realmColor}44`,
+                                                                            : '1px solid rgba(220,186,92,0.30)',
                                                                     backdropFilter: 'blur(10px)',
                                                                     color:
                                                                         openCount < totalCount
                                                                             ? 'rgba(255,255,255,0.82)'
-                                                                            : firstTrack.realmColor,
+                                                                            : 'rgba(236,220,174,0.92)',
+                                                                    boxShadow:
+                                                                        openCount < totalCount
+                                                                            ? 'none'
+                                                                            : '0 0 14px rgba(220,186,92,0.08)',
                                                                 }}
                                                             >
                                                                 {collectionTypeLabel}
@@ -1405,7 +1557,10 @@ export default function CosmicNexusHub() {
                                                                 bottom: 16,
                                                             }}
                                                         >
-                                                            <p className="text-[10px] uppercase tracking-[0.18em] text-white/70 mb-2">
+                                                            <p
+                                                                className="text-[10px] uppercase tracking-[0.18em] mb-2"
+                                                                style={{ color: collectionRealmTint.accent }}
+                                                            >
                                                                 {collectionMetaCopy}
                                                             </p>
 
@@ -1414,7 +1569,8 @@ export default function CosmicNexusHub() {
                                                                 style={{
                                                                     fontSize: '1.2rem',
                                                                     lineHeight: 1.05,
-                                                                    textShadow: '0 10px 28px rgba(0,0,0,0.32)',
+                                                                    color: 'rgba(255,255,255,0.95)',
+                                                                    textShadow: `0 10px 28px rgba(0,0,0,0.34), ${collectionRealmTint.textShadow}`,
                                                                 }}
                                                             >
                                                                 {collection.title}
@@ -1684,3 +1840,4 @@ export default function CosmicNexusHub() {
         </>
     );
 }
+
