@@ -13,6 +13,7 @@ interface OrbitTrack {
     isRealmAnchor?: boolean;
     isPublicPick?: boolean;
     vibe?: string[];
+    sortOrder?: number;
 }
 
 interface RealmOrbitCardProps {
@@ -90,12 +91,23 @@ export default function RealmOrbitCard({
     carouselMode = false,
     pathLabel,
 }: RealmOrbitCardProps) {
-    const visibleTracks = useMemo(() => tracks.slice(0, 8), [tracks]);
+    const sortedTracks = useMemo(() => {
+        return [...tracks].sort((a, b) => {
+            const aOrder = a.sortOrder ?? 999;
+            const bOrder = b.sortOrder ?? 999;
+
+            if (aOrder !== bOrder) return aOrder - bOrder;
+
+            return a.trackTitle.localeCompare(b.trackTitle);
+        });
+    }, [tracks]);
+
+    const orbitTracks = useMemo(() => sortedTracks.slice(0, 8), [sortedTracks]);
 
     const [cardSize, setCardSize] = useState(360);
     const [isMobile, setIsMobile] = useState(false);
     const [selectedTrackId, setSelectedTrackId] = useState<string | null>(
-        visibleTracks[0]?.id ?? null
+        sortedTracks[0]?.id ?? null
     );
 
     useEffect(() => {
@@ -113,15 +125,15 @@ export default function RealmOrbitCard({
     }, []);
 
     useEffect(() => {
-        if (currentTrackId && visibleTracks.some((track) => track.id === currentTrackId)) {
+        if (currentTrackId && sortedTracks.some((track) => track.id === currentTrackId)) {
             setSelectedTrackId(currentTrackId);
             return;
         }
 
-        if (visibleTracks.length > 0 && !selectedTrackId) {
-            setSelectedTrackId(visibleTracks[0].id);
+        if (sortedTracks.length > 0 && !selectedTrackId) {
+            setSelectedTrackId(sortedTracks[0].id);
         }
-    }, [currentTrackId, visibleTracks, selectedTrackId]);
+    }, [currentTrackId, sortedTracks, selectedTrackId]);
 
     const centerX = cardSize / 2;
     const centerY = isMobile ? cardSize * 0.45 : cardSize / 2;
@@ -132,9 +144,9 @@ export default function RealmOrbitCard({
     const outerRingSize = Math.round(cardSize * 0.78);
 
     const orbitNodes = useMemo(() => {
-        const trackCount = Math.max(visibleTracks.length, 1);
+        const trackCount = Math.max(orbitTracks.length, 1);
 
-        return visibleTracks.map((track, index) => {
+        return orbitTracks.map((track, index) => {
             const angle = (2 * Math.PI * index) / trackCount - Math.PI / 2;
             const point = polarToCartesian(centerX, centerY, orbitRadius, angle);
 
@@ -145,13 +157,13 @@ export default function RealmOrbitCard({
                 driftDelay: `${index * 0.6}s`,
             };
         });
-    }, [visibleTracks, centerX, centerY, orbitRadius]);
+    }, [orbitTracks, centerX, centerY, orbitRadius]);
 
     const selectedTrack =
-        visibleTracks.find((track) => track.id === selectedTrackId) ?? visibleTracks[0] ?? null;
+        sortedTracks.find((track) => track.id === selectedTrackId) ?? sortedTracks[0] ?? null;
 
     const selectedIsCurrent = selectedTrack?.id === currentTrackId;
-    const anchorTrack = visibleTracks.find(
+    const anchorTrack = sortedTracks.find(
         (track) => track.isRealmAnchor || track.role === 'anchor'
     );
     const selectedIsAnchor = Boolean(
@@ -173,7 +185,7 @@ export default function RealmOrbitCard({
         const miniSize = carouselMode ? 108 : 108;
         const miniCenter = miniSize / 2;
         const miniRadius = carouselMode ? 36 : 38;
-        const miniTracks = visibleTracks.slice(0, 5);
+        const miniTracks = orbitTracks.slice(0, 5);
 
         const miniNodes = miniTracks.map((track, index) => {
             const angle = (2 * Math.PI * index) / Math.max(miniTracks.length, 1) - Math.PI / 2;
@@ -391,9 +403,9 @@ export default function RealmOrbitCard({
                         )}
                     </div>
 
-                    {visibleTracks.length > 1 && (
+                    {sortedTracks.length > 1 && (
                         <div className="relative mt-4 flex gap-2 overflow-x-auto pb-1 w-full">
-                            {visibleTracks.map((track) => {
+                            {sortedTracks.map((track) => {
                                 const isSelected = selectedTrackId === track.id;
                                 const isCurrent = currentTrackId === track.id;
 
@@ -577,7 +589,7 @@ export default function RealmOrbitCard({
                     </h3>
 
                     <p className="text-xs text-white/55 mt-1">
-                        {visibleTracks.length} public track{visibleTracks.length === 1 ? '' : 's'} in orbit
+                        {orbitTracks.length} in orbit • {sortedTracks.length} total track{sortedTracks.length === 1 ? '' : 's'}
                     </p>
                 </div>
 
