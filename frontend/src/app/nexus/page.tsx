@@ -1,7 +1,7 @@
 'use client';
 
 import { useSession, signIn } from 'next-auth/react';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { useQuery, useMutation } from '@apollo/client';
 import { getTodayMoonPhase, getRealmMoonAlignment } from '@/lib/moonPhases';
@@ -9,12 +9,15 @@ import RealmBackground from '@/components/realm/RealmBackground';
 import { GET_ME, LOG_DAILY_LOGIN } from '@/graphql/realms';
 import { useMusicPlayer } from '@/hooks/useMusicPlayer';
 import {
-    MUSIC_REGISTRY,
+    CURRENT_FEATURED_RELEASE,
     FLAGSHIP_TRACKS,
-    PUBLIC_TRACKS,
+    MUSIC_REGISTRY,
     PUBLIC_THREE_PIECE_COLLECTIONS,
+    PUBLIC_TRACKS,
+    REALM_NAMES,
     VAULT_TRACKS,
-    getTracksByIds,
+    getCurrentReleaseTracks,
+    getTrackById,
 } from '@/lib/musicRegistry';
 import { REALM_STATE_MAP, type ExperienceMode, type RealmId } from '@/lib/realmStateMap';
 import { REALM_RESULT_CONTENT } from '@/lib/realmResultContent';
@@ -36,7 +39,7 @@ const REALM_META = [
         name: 'FRACTURED FRONTIER',
         number: '303',
         icon: '∴',
-        description: 'Chaos into form',
+        description: 'Where pressure becomes motion.',
         unlockRequirement: undefined,
     },
     {
@@ -44,7 +47,7 @@ const REALM_META = [
         name: 'THE VEIL',
         number: '202',
         icon: '◐',
-        description: 'Desire and mystery',
+        description: 'A nocturnal world of desire, temptation, and inner signal.',
         unlockRequirement: 'Complete Trials in Fractured Frontier',
     },
     {
@@ -52,7 +55,7 @@ const REALM_META = [
         name: 'MOONLIT ROADS',
         number: '101',
         icon: '☾',
-        description: 'Reflection and return',
+        description: 'For memory, softness, and finding your way back.',
         unlockRequirement: 'Complete Trials in The Veil',
     },
     {
@@ -60,7 +63,7 @@ const REALM_META = [
         name: 'SKYBOUND CITY',
         number: '55',
         icon: '△',
-        description: 'Power with direction',
+        description: 'Ambition, command, and the discipline to rise.',
         unlockRequirement: 'Complete Trials in Moonlit Roads',
     },
     {
@@ -68,7 +71,7 @@ const REALM_META = [
         name: 'ASTRAL BAZAAR',
         number: '44',
         icon: '◇',
-        description: 'Value and exchange',
+        description: 'Focus, worth, and the cost of what you choose.',
         unlockRequirement: 'Complete Trials in Skybound City',
     },
     {
@@ -76,15 +79,69 @@ const REALM_META = [
         name: 'INTERSIDDHI',
         number: '0',
         icon: '∞',
-        description: 'Alignment and source',
+        description: 'Return to center. Move from the highest signal.',
         unlockRequirement: 'Complete Trials in Astral Bazaar',
     },
 ];
+
+const RELEASE_UNLOCKS: Record<string, string> = {
+    'sin-do-over': '2026-06-29T00:00:00',
+    'sin-running-from-the-plug': '2026-07-14T00:00:00',
+    '101-hold-my-hand': '2026-07-29T00:00:00',
+    '303-in-the-deep': '2026-07-29T00:00:00',
+    '202-her-fantasy': '2026-07-29T00:00:00',
+    '202-siren': '2026-07-29T00:00:00',
+};
+
+const CURATED_PLAYLIST_ART_OVERRIDES: Record<string, string> = {
+    'realm-303-break-the-code': '/break-the-code.png',
+    'realm-202-dont-follow-the-siren': '/veil-signal.png',
+    'realm-101-hold-on-while-you-drift': '/hold-on-while-you-drift.png',
+    'realm-55-glory-and-command': '/glory-and-command.png',
+    'realm-44-price-of-focus': '/price-of-focus.png',
+    'realm-0-same-self-higher-form': '/same-self-higher-form.png',
+    'cosmic-featured-signal': '/featured-signal.png',
+    'april-may-vault': '/april-may-vault.png',
+};
 
 function getModeLabel(mode: ExperienceMode) {
     if (mode === 'stay') return 'Stay with this state';
     if (mode === 'move-through') return 'Move through this state';
     return 'Shift toward another state';
+}
+
+function formatUnlockDate(dateString?: string | null) {
+    if (!dateString) return null;
+
+    try {
+        return new Intl.DateTimeFormat('en-US', {
+            month: 'short',
+            day: 'numeric',
+        }).format(new Date(dateString));
+    } catch {
+        return null;
+    }
+}
+
+function getCollectionTypeLabel(totalCount: number, openCount: number) {
+    if (totalCount <= 1) return 'Signal';
+    if (openCount < totalCount) return 'Curated EP';
+    return 'Curated EP';
+}
+
+function getCollectionStatusCopy(totalCount: number, openCount: number) {
+    if (totalCount <= 1) {
+        return openCount > 0 ? 'Available now' : 'Coming soon';
+    }
+
+    return openCount < totalCount ? 'Rolling out' : 'Complete collection';
+}
+
+function getCollectionMetaCopy(totalCount: number) {
+    if (totalCount <= 1) return 'Featured track';
+    if (totalCount === 2) return 'Two-track capsule';
+    if (totalCount === 3) return 'Three-track EP';
+    return `${totalCount}-song collection`;
 }
 
 export default function CosmicNexusHub() {
@@ -93,11 +150,16 @@ export default function CosmicNexusHub() {
     const [realmAlignment, setRealmAlignment] = useState<any>(null);
     const [storedGuidance, setStoredGuidance] = useState<StoredRealmGuidance | null>(null);
 
-    const { playOrToggleTrack, currentTrack, isPlaying } = useMusicPlayer();
+    const [showJourneys, setShowJourneys] = useState(false);
+    const [showVault, setShowVault] = useState(false);
+    const [showArchive, setShowArchive] = useState(false);
+    const [showReleaseDetails, setShowReleaseDetails] = useState(false);
 
-    const flagshipTrack = FLAGSHIP_TRACKS[0] ?? null;
-    const publicThreePieceCollections = PUBLIC_THREE_PIECE_COLLECTIONS;
-    const vaultTrackCount = VAULT_TRACKS.length;
+    const soundtrackCarouselRef = useRef<HTMLDivElement | null>(null);
+
+    const curatedCarouselRef = useRef<HTMLDivElement | null>(null);
+
+    const { playOrToggleTrack, currentTrack, isPlaying } = useMusicPlayer();
 
     const { data: userData, loading: userLoading } = useQuery(GET_ME, {
         skip: !session,
@@ -145,6 +207,7 @@ export default function CosmicNexusHub() {
     const xpPercent = Math.min((userXP / safeXpToNext) * 100, 100);
     const currentStreak = user?.streaks?.currentStreak ?? 0;
     const unlockedRealms: number[] = user?.unlockedRealms ?? [303];
+    const completedSiddhis = user?.completedTrials?.filter((t: any) => t.isComplete).length ?? 0;
 
     const currentRealmName = (() => {
         if (!isSignedIn) return 'Listener Mode';
@@ -153,6 +216,39 @@ export default function CosmicNexusHub() {
         return meta?.name ?? 'None';
     })();
 
+    const currentRelease = CURRENT_FEATURED_RELEASE;
+    const currentReleaseTracks = useMemo(() => getCurrentReleaseTracks(), []);
+    const currentReleasePrimaryTrack = useMemo(() => {
+        if (!currentRelease?.primaryTrackId) return null;
+        return getTrackById(currentRelease.primaryTrackId) ?? null;
+    }, [currentRelease]);
+
+    const currentReleaseTrackIds = useMemo(
+        () => new Set(currentReleaseTracks.map((track) => track.id)),
+        [currentReleaseTracks]
+    );
+
+    const isTrackLocked = (track: any) => {
+        if (!track) return false;
+        if (!currentReleaseTrackIds.has(track.id)) return false;
+
+        const unlockDate = RELEASE_UNLOCKS[track.id];
+        if (!unlockDate) return false;
+
+        return new Date() < new Date(unlockDate);
+    };
+
+    const getTrackUnlockLabel = (track: any) => {
+        if (!track) return null;
+        return formatUnlockDate(RELEASE_UNLOCKS[track.id]);
+    };
+
+    const tryPlayTrack = (track: any) => {
+        if (!track) return;
+        if (isTrackLocked(track)) return;
+        void playOrToggleTrack(track);
+    };
+
     const getRealmProgress = (realmId: number): number => {
         const trials =
             user?.completedTrials?.filter((t: any) => t.realmId === realmId) ?? [];
@@ -160,16 +256,12 @@ export default function CosmicNexusHub() {
         return Math.floor((completed / 3) * 100);
     };
 
-    const isRealmUnlocked = (realmId: number): boolean =>
-        unlockedRealms.includes(realmId);
+    const isRealmUnlocked = (realmId: number): boolean => unlockedRealms.includes(realmId);
 
-    /**
-     * Public Realm Soundcards:
-     * These show each realm's public music portal.
-     *
-     * Curated Realm Journeys:
-     * These are separate three-song story/EP paths below the soundcards.
-     */
+    const visiblePublicTracks = useMemo(() => {
+        return PUBLIC_TRACKS.filter((track) => !isTrackLocked(track));
+    }, [currentReleaseTracks]);
+
     const groupedTracks = REALM_META.map((realm) => {
         const realmId = parseInt(realm.id);
 
@@ -177,7 +269,7 @@ export default function CosmicNexusHub() {
             ...realm,
             status: isRealmUnlocked(realmId) ? 'unlocked' : 'locked',
             progress: getRealmProgress(realmId),
-            tracks: PUBLIC_TRACKS.filter((track) => track.realmId === realmId),
+            tracks: visiblePublicTracks.filter((track) => track.realmId === realmId),
         };
     }).filter((realmGroup) => realmGroup.tracks.length > 0);
 
@@ -215,28 +307,84 @@ export default function CosmicNexusHub() {
             return;
         }
 
-        void playOrToggleTrack(fullTrack);
+        tryPlayTrack(fullTrack);
+    };
+
+    const flagshipTrack = FLAGSHIP_TRACKS[0] ?? null;
+    const publicThreePieceCollections = PUBLIC_THREE_PIECE_COLLECTIONS;
+    const vaultTrackCount = VAULT_TRACKS.length;
+
+    const guidanceTrackLocked = guidanceTrack ? isTrackLocked(guidanceTrack) : false;
+    const currentReleasePrimaryLocked = currentReleasePrimaryTrack
+        ? isTrackLocked(currentReleasePrimaryTrack)
+        : false;
+
+    const currentTimeline = currentRelease?.timeline ?? [];
+    const lockedReleaseCount = currentReleaseTracks.filter((track) => isTrackLocked(track)).length;
+    const availableReleaseCount = currentReleaseTracks.length - lockedReleaseCount;
+    const primaryUnlockLabel = currentReleasePrimaryTrack
+        ? getTrackUnlockLabel(currentReleasePrimaryTrack)
+        : null;
+    const releaseArtworkUrl = currentRelease?.coverArtUrl ?? null;
+    const featuredSignalArtwork =
+        CURATED_PLAYLIST_ART_OVERRIDES['cosmic-featured-signal'] ??
+        flagshipTrack?.artworkUrl ??
+        releaseArtworkUrl ??
+        null;
+    const vaultArtwork = CURATED_PLAYLIST_ART_OVERRIDES['april-may-vault'] ?? null;
+
+    const getCuratedCollectionArtwork = (collection: any) => {
+        return (
+            CURATED_PLAYLIST_ART_OVERRIDES[collection.id] ??
+            collection.artworkUrl ??
+            (collection.releaseProjectId === currentRelease?.id ? releaseArtworkUrl : null)
+        );
+    };
+
+    const panelStyle = {
+        borderRadius: '28px',
+        background: 'linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.026))',
+        boxShadow: '0 18px 50px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.05)',
+    };
+
+    const sectionStyle = {
+        borderRadius: '30px',
+        background: 'linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.022))',
+        boxShadow: '0 18px 56px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.05)',
     };
 
     if (status === 'loading' || (session && userLoading)) {
         return (
             <div className="min-h-screen grid place-items-center p-6 nexus-shell">
-                <div className="glass-card nexus-panel max-w-md text-center">
-                    <div className="mx-auto mb-4 w-12 h-12 rounded-full border border-white/15 grid place-items-center text-[#DCBA5C]">
+                <div
+                    className="glass-card nexus-panel max-w-md text-center"
+                    style={{
+                        padding: '2rem',
+                        borderRadius: '28px',
+                        background:
+                            'linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.035))',
+                        boxShadow:
+                            '0 20px 60px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.08)',
+                    }}
+                >
+                    <div
+                        className="mx-auto mb-4 w-12 h-12 rounded-full border border-white/15 grid place-items-center text-[#DCBA5C]"
+                        style={{
+                            background:
+                                'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.18), rgba(255,255,255,0.04) 55%, rgba(255,255,255,0.02) 100%)',
+                            boxShadow: '0 8px 28px rgba(0,0,0,0.24)',
+                        }}
+                    >
                         ✦
                     </div>
 
                     <p className="text-xs uppercase tracking-[0.22em] text-muted mb-2">
-                        Loading System
+                        Loading
                     </p>
 
-                    <h1 className="text-3xl font-display mb-3">
-                        Opening the Nexus
-                    </h1>
+                    <h1 className="text-3xl font-display mb-3">Opening the Nexus</h1>
 
-                    <p className="text-secondary">
-                        Syncing traveler data, realm progress, and music state.
-                    </p>
+                    <p className="text-secondary">Preparing your path.</p>
                 </div>
             </div>
         );
@@ -251,386 +399,596 @@ export default function CosmicNexusHub() {
             />
 
             <div className="min-h-screen pb-32 nexus-shell">
-                <div className="container mx-auto px-4 py-6 max-w-5xl nexus-container">
-                    <header className="text-center mb-8 fade-in nexus-hero">
-                        <h1 className="text-5xl md:text-6xl font-display mb-3">
+                <div className="container mx-auto px-4 py-6 md:py-8 max-w-5xl nexus-container">
+                    <header
+                        className="text-center mb-7 md:mb-8 fade-in nexus-hero"
+                        style={{
+                            paddingTop: '0.5rem',
+                        }}
+                    >
+                        <p
+                            className="text-xs uppercase tracking-[0.24em] text-muted mb-3"
+                            style={{ letterSpacing: '0.24em' }}
+                        >
+                            Current Release
+                        </p>
+
+                        <h1
+                            className="text-5xl md:text-6xl font-display mb-3"
+                            style={{
+                                letterSpacing: '-0.03em',
+                                textShadow: '0 10px 36px rgba(0,0,0,0.28)',
+                            }}
+                        >
                             COSMIC NEXUS
                         </h1>
 
-                        <p className="text-lg text-secondary">
-                            A public listening portal with a deeper progression path
-                        </p>
-
-                        <p className="text-sm text-muted mt-3 max-w-2xl mx-auto">
-                            Listen freely. Sign in when you want to save XP, complete realm paths,
-                            unlock progression, and build your traveler profile.
+                        <p className="text-lg text-secondary max-w-3xl mx-auto">
+                            Start with the active release, then move through the realm soundtracks, curated EPs, and find archive vaults as the worlds expand.
                         </p>
                     </header>
 
-                    {flagshipTrack && (
-                        <div
-                            className="glass-card nexus-panel nexus-featured-strip nexus-featured-signal p-5 mb-4 fade-in"
+                    {currentRelease && currentReleasePrimaryTrack && (
+                        <section
+                            id="current-release"
+                            className="glass-card nexus-panel p-5 md:p-7 mb-5 fade-in"
                             style={{
-                                animationDelay: '0.08s',
-                                borderColor: `${flagshipTrack.realmColor}44`,
-                                background: `linear-gradient(145deg, ${flagshipTrack.realmColor}16, rgba(255,255,255,0.045), rgba(8,10,18,0.62))`,
-                                boxShadow: `0 14px 36px ${flagshipTrack.realmColor}18`,
+                                ...sectionStyle,
+                                borderRadius: '34px',
                             }}
                         >
-                            <div className="flex flex-col md:flex-row md:items-center gap-4">
-                                <div
-                                    className="nexus-signal-mark shrink-0 mx-auto md:mx-0"
-                                    style={{
-                                        color: flagshipTrack.realmColor,
-                                        borderColor: `${flagshipTrack.realmColor}33`,
-                                        boxShadow: `0 0 18px ${flagshipTrack.realmColor}18`,
-                                    }}
-                                >
-                                    ◌
-                                </div>
-
-                                <div className="flex-1 text-center md:text-left min-w-0">
-                                    <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-2">
-                                        <p className="text-xs uppercase tracking-[0.2em] text-muted">
-                                            Featured Signal
-                                        </p>
-
-                                        <span
-                                            className="px-2 py-0.5 rounded-full text-[10px] uppercase tracking-[0.14em]"
+                            <div
+                                className="mx-auto text-center"
+                                style={{
+                                    maxWidth: '760px',
+                                }}
+                            >
+                                {releaseArtworkUrl ? (
+                                    <div className="mb-5 flex justify-center">
+                                        <img
+                                            src={releaseArtworkUrl}
+                                            alt={currentRelease.title}
                                             style={{
-                                                background: `${flagshipTrack.realmColor}18`,
-                                                border: `1px solid ${flagshipTrack.realmColor}38`,
-                                                color: flagshipTrack.realmColor,
+                                                width: 'min(260px, 72vw)',
+                                                aspectRatio: '1 / 1',
+                                                objectFit: 'cover',
+                                                borderRadius: '26px',
+                                                border: '1px solid rgba(255,255,255,0.12)',
+                                                boxShadow: '0 24px 60px rgba(0,0,0,0.32)',
+                                            }}
+                                        />
+                                    </div>
+                                ) : (
+                                    <div className="mb-5 flex justify-center">
+                                        <div
+                                            style={{
+                                                width: '220px',
+                                                aspectRatio: '1 / 1',
+                                                borderRadius: '26px',
+                                                display: 'grid',
+                                                placeItems: 'center',
+                                                fontSize: '1.7rem',
+                                                color: '#f2f5ff',
+                                                border: '1px solid rgba(255,255,255,0.12)',
+                                                background:
+                                                    'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.14), rgba(255,255,255,0.03) 58%), linear-gradient(145deg, rgba(20,24,36,0.94), rgba(10,12,22,0.95))',
+                                                boxShadow:
+                                                    '0 24px 54px rgba(0,0,0,0.34), inset 0 1px 0 rgba(255,255,255,0.08)',
                                             }}
                                         >
-                                            Realm {flagshipTrack.realmId} • {flagshipTrack.realmName}
-                                        </span>
-                                    </div>
-
-                                    <h2
-                                        className="text-2xl md:text-3xl font-display mb-2"
-                                        style={{ color: flagshipTrack.realmColor }}
-                                    >
-                                        {flagshipTrack.trackTitle}
-                                    </h2>
-
-                                    <p className="text-sm text-secondary max-w-2xl">
-                                        The current flagship entry point into the Cosmic Multiverse —
-                                        chosen to introduce the sound, visual world, and emotional signal of the app.
-                                    </p>
-
-                                    {flagshipTrack.vibe && (
-                                        <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-3">
-                                            {flagshipTrack.vibe.slice(0, 5).map((tag) => (
-                                                <span
-                                                    key={tag}
-                                                    className="px-2.5 py-1 rounded-full text-[11px]"
-                                                    style={{
-                                                        background: `${flagshipTrack.realmColor}14`,
-                                                        border: `1px solid ${flagshipTrack.realmColor}28`,
-                                                        color: flagshipTrack.realmColor,
-                                                    }}
-                                                >
-                                                    {tag}
-                                                </span>
-                                            ))}
+                                            ✦
                                         </div>
-                                    )}
+                                    </div>
+                                )}
+
+                                <div className="flex flex-wrap justify-center gap-2 mb-4">
+                                    <span
+                                        className="px-3 py-1.5 rounded-full text-[11px] uppercase tracking-[0.14em] bg-[#7c5cff22] border border-[#7c5cff44] text-[#cdb7ff]"
+                                        style={{ backdropFilter: 'blur(10px)' }}
+                                    >
+                                        {currentRelease.title}
+                                    </span>
+
+                                    <span
+                                        className="px-3 py-1.5 rounded-full text-[11px] uppercase tracking-[0.14em] bg-white/5 border border-white/10 text-secondary"
+                                        style={{ backdropFilter: 'blur(10px)' }}
+                                    >
+                                        {availableReleaseCount} available • {lockedReleaseCount} coming soon
+                                    </span>
                                 </div>
 
-                                <button
-                                    className="btn-primary w-full md:w-auto"
-                                    onClick={() => playOrToggleTrack(flagshipTrack)}
+                                <h2
+                                    className="text-4xl md:text-5xl font-display mb-2 text-glow"
                                     style={{
-                                        borderColor: `${flagshipTrack.realmColor}44`,
-                                        boxShadow: `0 0 16px ${flagshipTrack.realmColor}12`,
+                                        letterSpacing: '-0.03em',
+                                        lineHeight: 1.02,
                                     }}
                                 >
-                                    {currentTrack?.id === flagshipTrack.id
-                                        ? isPlaying
-                                            ? 'Pause Signal'
-                                            : 'Resume Signal'
-                                        : '▶ Play Signal'}
-                                </button>
-                            </div>
-                        </div>
-                    )}
+                                    {currentRelease.title}
+                                </h2>
 
-                    {isSignedIn ? (
-                        <div className="glass-card nexus-panel nexus-identity-card p-5 mb-4 fade-in" style={{ animationDelay: '0.12s' }}>
-                            <div className="flex flex-col md:flex-row items-center gap-5">
-                                <div className="level-badge">
-                                    <div className="flex flex-col items-center">
-                                        <span className="text-xs opacity-70">LVL</span>
-                                        <span>{userLevel}</span>
-                                    </div>
+                                <p className="text-base md:text-lg text-white/90 mb-2">
+                                    {currentReleasePrimaryTrack.trackTitle}
+                                </p>
+
+                                <p className="text-secondary text-sm md:text-base max-w-2xl mx-auto mb-5 leading-relaxed">
+                                    {currentReleasePrimaryLocked
+                                        ? `The lead track opens ${primaryUnlockLabel}.`
+                                        : 'Now playing in the Nexus.'}
+                                </p>
+
+                                <div className="flex flex-wrap justify-center gap-2.5 mb-5">
+                                    <button
+                                        className="btn-primary"
+                                        onClick={() => tryPlayTrack(currentReleasePrimaryTrack)}
+                                        disabled={currentReleasePrimaryLocked}
+                                        style={{
+                                            borderRadius: '999px',
+                                            boxShadow: '0 14px 28px rgba(0,0,0,0.2)',
+                                            opacity: currentReleasePrimaryLocked ? 0.55 : 1,
+                                            cursor: currentReleasePrimaryLocked ? 'not-allowed' : 'pointer',
+                                        }}
+                                    >
+                                        {currentReleasePrimaryLocked
+                                            ? `Opens ${primaryUnlockLabel}`
+                                            : currentTrack?.id === currentReleasePrimaryTrack.id && isPlaying
+                                                ? 'Pause Track'
+                                                : `▶ Play ${currentReleasePrimaryTrack.trackTitle}`}
+                                    </button>
+
+                                    <button
+                                        className="btn-secondary"
+                                        onClick={() => setShowReleaseDetails((prev) => !prev)}
+                                        style={{
+                                            borderRadius: '999px',
+                                            backdropFilter: 'blur(10px)',
+                                        }}
+                                    >
+                                        {showReleaseDetails ? 'Close Details' : 'Open Release'}
+                                    </button>
                                 </div>
 
-                                <div className="flex-1 text-center md:text-left">
-                                    <h2 className="text-xl font-display mb-2">
-                                        TRAVELER: {session.user?.name || 'Unknown'}
-                                    </h2>
+                                <div className="flex flex-wrap justify-center gap-2">
+                                    {currentTimeline.map((step) => (
+                                        <div
+                                            key={`${step.label}-${step.dateLabel}`}
+                                            className="px-3 py-2 rounded-2xl border text-[11px] uppercase tracking-[0.12em]"
+                                            style={{
+                                                borderColor:
+                                                    step.status === 'now'
+                                                        ? 'rgba(139,92,246,0.42)'
+                                                        : step.status === 'next'
+                                                            ? 'rgba(56,189,248,0.35)'
+                                                            : 'rgba(255,255,255,0.12)',
+                                                background:
+                                                    step.status === 'now'
+                                                        ? 'rgba(139,92,246,0.12)'
+                                                        : step.status === 'next'
+                                                            ? 'rgba(56,189,248,0.10)'
+                                                            : 'rgba(255,255,255,0.04)',
+                                                color: 'rgba(255,255,255,0.88)',
+                                            }}
+                                        >
+                                            <span className="block text-white/95">{step.label}</span>
+                                            <span className="text-white/65">{step.dateLabel}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
 
-                                    <div className="mb-2">
-                                        <div className="flex justify-between text-sm mb-1">
-                                            <span>Experience</span>
-                                            <span className="text-stats">
-                                                {userXP} / {safeXpToNext} XP
+                            {showReleaseDetails && (
+                                <div
+                                    className="mt-6 pt-5"
+                                    style={{
+                                        borderTop: '1px solid rgba(255,255,255,0.08)',
+                                    }}
+                                >
+                                    <div className="mx-auto" style={{ maxWidth: '920px' }}>
+                                        <div className="flex items-end justify-between gap-3 mb-4">
+                                            <div>
+                                                <p className="text-xs uppercase tracking-[0.18em] text-muted mb-1">
+                                                    Tracklist
+                                                </p>
+                                                <h3 className="text-2xl font-display">SIRENS in Neverland</h3>
+                                            </div>
+
+                                            <span className="text-xs text-muted">
+                                                {currentReleaseTracks.length} tracks
                                             </span>
                                         </div>
 
-                                        <div className="stat-bar">
-                                            <div
-                                                className="stat-bar-fill"
-                                                style={{ width: `${xpPercent}%` }}
-                                            />
+                                        <div className="space-y-2">
+                                            {currentReleaseTracks.map((track, index) => {
+                                                const locked = isTrackLocked(track);
+                                                const unlockLabel = getTrackUnlockLabel(track);
+
+                                                return (
+                                                    <div
+                                                        key={track.id}
+                                                        className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3"
+                                                        style={{
+                                                            borderColor: `${track.realmColor}28`,
+                                                            background:
+                                                                'linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))',
+                                                            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+                                                        }}
+                                                    >
+                                                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                                                            <div className="min-w-0">
+                                                                <div className="flex flex-wrap items-center gap-2 mb-1">
+                                                                    <span className="text-[10px] uppercase tracking-[0.18em] text-muted">
+                                                                        {String(index + 1).padStart(2, '0')}
+                                                                    </span>
+                                                                    <span className="text-[10px] uppercase tracking-[0.18em] text-muted">
+                                                                        {REALM_NAMES[track.realmId]}
+                                                                    </span>
+                                                                    <span
+                                                                        className="px-2 py-0.5 rounded-full text-[10px] uppercase tracking-[0.14em]"
+                                                                        style={{
+                                                                            background: locked
+                                                                                ? 'rgba(255,255,255,0.06)'
+                                                                                : `${track.realmColor}18`,
+                                                                            border: locked
+                                                                                ? '1px solid rgba(255,255,255,0.12)'
+                                                                                : `1px solid ${track.realmColor}38`,
+                                                                            color: locked ? 'rgba(255,255,255,0.72)' : track.realmColor,
+                                                                        }}
+                                                                    >
+                                                                        {locked ? 'soon' : 'open'}
+                                                                    </span>
+                                                                </div>
+
+                                                                <h4 className="text-lg font-display leading-tight">
+                                                                    {track.trackTitle}
+                                                                </h4>
+                                                                <p className="text-sm text-secondary">
+                                                                    {locked ? `Opens ${unlockLabel}` : 'Available now'}
+                                                                </p>
+                                                            </div>
+
+                                                            <button
+                                                                className="btn-secondary shrink-0"
+                                                                onClick={() => tryPlayTrack(track)}
+                                                                disabled={locked}
+                                                                style={{
+                                                                    borderRadius: '999px',
+                                                                    opacity: locked ? 0.55 : 1,
+                                                                    cursor: locked ? 'not-allowed' : 'pointer',
+                                                                    minWidth: '150px',
+                                                                }}
+                                                            >
+                                                                {locked ? `Opens ${unlockLabel}` : `▶ Play`}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </section>
+                    )}
+
+                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-4">
+                        {isSignedIn ? (
+                            <div
+                                className="glass-card nexus-panel p-5 fade-in"
+                                style={{
+                                    ...panelStyle,
+                                    animationDelay: '0.12s',
+                                }}
+                            >
+                                <div className="flex items-center gap-4 mb-4">
+                                    <div className="level-badge">
+                                        <div className="flex flex-col items-center">
+                                            <span className="text-xs opacity-70">LVL</span>
+                                            <span>{userLevel}</span>
                                         </div>
                                     </div>
 
-                                    <p className="text-sm text-muted">
-                                        Current Realm:{' '}
-                                        <span className="text-primary">{currentRealmName}</span>
-                                    </p>
+                                    <div className="min-w-0">
+                                        <p className="text-xs uppercase tracking-[0.18em] text-muted mb-1">
+                                            Traveler
+                                        </p>
+                                        <h2 className="text-xl font-display truncate">
+                                            {session.user?.name || 'Unknown'}
+                                        </h2>
+                                        <p className="text-sm text-muted">
+                                            Current Realm: <span className="text-primary">{currentRealmName}</span>
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="mb-3">
+                                    <div className="flex justify-between text-sm mb-1">
+                                        <span>Experience</span>
+                                        <span className="text-stats">
+                                            {userXP} / {safeXpToNext} XP
+                                        </span>
+                                    </div>
+
+                                    <div className="stat-bar">
+                                        <div className="stat-bar-fill" style={{ width: `${xpPercent}%` }} />
+                                    </div>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3 text-center">
                                     <div className="glass-card p-3">
-                                        <div className="text-xl font-display text-glow">
-                                            {currentStreak}
-                                        </div>
+                                        <div className="text-xl font-display text-glow">{currentStreak}</div>
                                         <div className="text-xs text-muted">Streak</div>
                                     </div>
 
                                     <div className="glass-card p-3">
-                                        <div className="text-xl font-display text-glow">
-                                            {user?.completedTrials?.filter((t: any) => t.isComplete).length ?? 0}
-                                        </div>
+                                        <div className="text-xl font-display text-glow">{completedSiddhis}</div>
                                         <div className="text-xs text-muted">Siddhis</div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    ) : (
-                        <div className="glass-card nexus-panel nexus-listener-card p-5 mb-4 fade-in" style={{ animationDelay: '0.12s' }}>
-                            <div className="flex flex-col md:flex-row md:items-center gap-5 text-center md:text-left">
-                                <div className="nexus-listener-mark shrink-0 mx-auto md:mx-0">♪</div>
-
-                                <div className="flex-1 text-center md:text-left">
-                                    <p className="text-xs uppercase tracking-[0.2em] text-muted mb-2">
-                                        Public Listener Mode
-                                    </p>
-
-                                    <h2 className="text-2xl font-display mb-2">
-                                        Explore the sound first
-                                    </h2>
-
-                                    <p className="text-sm text-secondary">
-                                        The Nexus is open for listening. Create an account when you want
-                                        to save progress, earn XP, complete trials, and unlock the deeper realm path.
-                                    </p>
-                                </div>
-
-                                <button onClick={() => signIn('github')} className="btn-primary shrink-0 w-full md:w-auto">
-                                    Sign in for Progress
+                        ) : (
+                            <div
+                                className="glass-card nexus-panel p-5 fade-in xl:col-span-1"
+                                style={{
+                                    ...panelStyle,
+                                    animationDelay: '0.12s',
+                                }}
+                            >
+                                <p className="text-xs uppercase tracking-[0.18em] text-muted mb-2">
+                                    Listener Mode
+                                </p>
+                                <h2 className="text-2xl font-display mb-2">Begin with the music</h2>
+                                <p className="text-sm text-secondary mb-4 leading-relaxed">
+                                    Sign in to save your path, unlock progression, and return to your realm.
+                                </p>
+                                <button
+                                    onClick={() => signIn('github')}
+                                    className="btn-primary w-full"
+                                    style={{ borderRadius: '999px' }}
+                                >
+                                    Sign In to Begin
                                 </button>
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    <div
-                        className="glass-card nexus-panel nexus-moon-card p-4 mb-4 fade-in"
-                        style={{ animationDelay: '0.16s' }}
-                    >
-                        <div className="nexus-moon-card-inner">
-                            {moonPhase && (
-                                <div className="nexus-moon-mark">
-                                    {moonPhase.icon}
-                                </div>
-                            )}
-
-                            <div className="nexus-moon-copy">
-                                {moonPhase && (
-                                    <p className="nexus-moon-title">
-                                        {moonPhase.phase}
-                                    </p>
-                                )}
-
-                                <div className="nexus-moon-alignment">
-                                    {realmAlignment && (
-                                        <>
-                                            Aligned Realm:{' '}
-                                            <span className="text-glow font-medium">
-                                                {realmAlignment.primaryRealm}
-                                            </span>
-                                        </>
-                                    )}
-                                </div>
-
-                                <Link
-                                    href="/find-your-realm"
-                                    className="nexus-moon-link text-glow hover:opacity-80 transition-opacity"
-                                >
-                                    Find Your Realm →
-                                </Link>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-5">
-                        <Link
-                            href="/find-your-realm"
-                            className="block fade-in"
-                            style={{ animationDelay: '0.2s' }}
+                        <div
+                            className="glass-card nexus-panel p-5 fade-in"
+                            style={{
+                                ...panelStyle,
+                                animationDelay: '0.14s',
+                            }}
                         >
-                            <div
-                                className="glass-card nexus-panel nexus-guided-entry p-5 h-full cursor-pointer transition-all hover:scale-[1.01]"
-                                style={{ boxShadow: '0 8px 28px rgba(120, 180, 255, 0.10)' }}
-                            >
-                                <div className="flex items-start gap-4">
-                                    <div className="nexus-signal-mark shrink-0">⌁</div>
-
-                                    <div className="flex-1">
-                                        <p className="text-xs text-secondary uppercase tracking-[0.18em] mb-2">
-                                            Guided Entry
-                                        </p>
-
-                                        <h3 className="text-2xl font-display mb-2 text-glow">
-                                            Find Your Realm
-                                        </h3>
-
-                                        <p className="text-secondary text-sm mb-3">
-                                            Match your current inner state to the right realm and soundtrack.
-                                        </p>
-
-                                        <div className="flex flex-wrap gap-2">
-                                            {['chaos', 'desire', 'reflection', 'power', 'value', 'alignment'].map((tag) => (
-                                                <span
-                                                    key={tag}
-                                                    className="px-2.5 py-1 rounded-full text-[11px] bg-white/5 border border-white/10"
-                                                >
-                                                    {tag}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </Link>
-
-                        <div className="glass-card nexus-panel nexus-todays-realm p-5 fade-in" style={{ animationDelay: '0.22s' }}>
-                            {guidanceRealm && guidanceRealmContent && guidanceModeContent ? (
-                                <div className="flex items-start gap-4">
-                                    <div
-                                        className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0"
-                                        style={{
-                                            background: `linear-gradient(135deg, ${guidanceRealm.color}22, ${guidanceRealm.color}55)`,
-                                            border: `1px solid ${guidanceRealm.color}55`,
-                                        }}
-                                    >
-                                        {guidanceRealm.icon}
-                                    </div>
-
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-xs text-secondary uppercase tracking-[0.18em] mb-2">
-                                            Today&apos;s Realm
-                                        </p>
-
-                                        <h3
-                                            className="text-2xl font-display mb-2 truncate"
-                                            style={{ color: guidanceRealm.color }}
-                                        >
-                                            {guidanceRealm.realmName}
-                                        </h3>
-
-                                        <p className="text-sm text-secondary mb-2 line-clamp-3">
-                                            {guidanceRealmContent.whyRealmFits}
-                                        </p>
-
-                                        <p className="text-xs text-muted mb-3 italic line-clamp-2">
-                                            “{guidanceModeContent.reflectionPrompt}”
-                                        </p>
-
-                                        <div className="text-xs text-muted mb-3">
-                                            Track:{' '}
-                                            <span className="text-secondary">
-                                                {guidanceModeContent.recommendedTrack}
+                            <div className="flex items-start gap-4">
+                                <div className="nexus-signal-mark shrink-0">⌁</div>
+                                <div className="min-w-0">
+                                    <p className="text-xs uppercase tracking-[0.18em] text-muted mb-2">
+                                        Guided Entry
+                                    </p>
+                                    <h3 className="text-2xl font-display mb-2 text-glow">Find Your Realm</h3>
+                                    <p className="text-secondary text-sm mb-3 leading-relaxed">
+                                        Answer from where you are. The Nexus will guide you toward the realm that fits your current energy.
+                                    </p>
+                                    <div className="flex flex-wrap gap-2 mb-4">
+                                        {['chaos', 'desire', 'reflection', 'power', 'value', 'alignment'].map((tag) => (
+                                            <span
+                                                key={tag}
+                                                className="px-2.5 py-1 rounded-full text-[11px] bg-white/5 border border-white/10"
+                                                style={{ backdropFilter: 'blur(10px)' }}
+                                            >
+                                                {tag}
                                             </span>
-                                            {guidanceMode && (
-                                                <>
-                                                    {' '}• Mode:{' '}
-                                                    <span className="text-secondary">
-                                                        {getModeLabel(guidanceMode)}
-                                                    </span>
-                                                </>
-                                            )}
-                                        </div>
-
-                                        <div className="flex flex-wrap gap-2">
-                                            {guidanceTrack && (
-                                                <button
-                                                    className="btn-secondary"
-                                                    onClick={() => playOrToggleTrack(guidanceTrack)}
-                                                >
-                                                    {currentTrack?.id === guidanceTrack.id
-                                                        ? isPlaying
-                                                            ? 'Pause'
-                                                            : 'Resume'
-                                                        : '▶ Play'}
-                                                </button>
-                                            )}
-
-                                            <Link href={isSignedIn ? guidanceRealm.route : '/auth'}>
-                                                <button className="btn-primary">
-                                                    {isSignedIn ? 'Enter →' : 'Save Progress →'}
-                                                </button>
-                                            </Link>
-                                        </div>
+                                        ))}
                                     </div>
-                                </div>
-                            ) : (
-                                <div>
-                                    <p className="text-xs text-secondary uppercase tracking-[0.18em] mb-2">
-                                        Today&apos;s Realm
-                                    </p>
-
-                                    <h3 className="text-2xl font-display mb-2 text-glow">
-                                        No guidance saved yet
-                                    </h3>
-
-                                    <p className="text-sm text-secondary mb-3">
-                                        Take realm alignment to get a suggested soundtrack, prompt, and realm.
-                                    </p>
-
-                                    <Link href="/find-your-realm">
-                                        <button className="btn-primary">Find My Realm →</button>
+                                    <Link
+                                        href="/find-your-realm"
+                                        className="btn-secondary inline-flex"
+                                        style={{ borderRadius: '999px' }}
+                                    >
+                                        Find Your Realm
                                     </Link>
                                 </div>
+                            </div>
+                        </div>
+
+                        <div
+                            className="glass-card nexus-panel p-5 fade-in"
+                            style={{
+                                ...panelStyle,
+                                animationDelay: '0.16s',
+                            }}
+                        >
+                            <p className="text-xs uppercase tracking-[0.18em] text-muted mb-2">
+                                Moon Alignment
+                            </p>
+
+                            <div className="flex items-center gap-3 mb-3">
+                                {moonPhase && <div className="nexus-moon-mark shrink-0">{moonPhase.icon}</div>}
+                                <div className="min-w-0">
+                                    <p className="text-lg font-display">
+                                        {moonPhase?.phase ?? 'Moon Loading'}
+                                    </p>
+                                    <p className="text-sm text-secondary">
+                                        {realmAlignment ? (
+                                            <>
+                                                Aligned Realm:{' '}
+                                                <span className="text-glow font-medium">
+                                                    {realmAlignment.primaryRealm}
+                                                </span>
+                                            </>
+                                        ) : (
+                                            'Reading alignment'
+                                        )}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {guidanceRealm && guidanceRealmContent && guidanceModeContent ? (
+                                <>
+                                    <p className="text-sm text-secondary mb-2 line-clamp-2 leading-relaxed">
+                                        {guidanceRealmContent.whyRealmFits}
+                                    </p>
+                                    <p className="text-xs text-muted italic mb-3 line-clamp-2">
+                                        “{guidanceModeContent.reflectionPrompt}”
+                                    </p>
+                                    <div className="text-xs text-muted mb-3">
+                                        Track:{' '}
+                                        <span className="text-secondary">
+                                            {guidanceModeContent.recommendedTrack}
+                                        </span>
+                                        {guidanceMode && (
+                                            <>
+                                                {' '}
+                                                • Mode:{' '}
+                                                <span className="text-secondary">
+                                                    {getModeLabel(guidanceMode)}
+                                                </span>
+                                            </>
+                                        )}
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                        {guidanceTrack && (
+                                            <button
+                                                className="btn-secondary"
+                                                onClick={() => tryPlayTrack(guidanceTrack)}
+                                                disabled={guidanceTrackLocked}
+                                                style={{
+                                                    borderRadius: '999px',
+                                                    opacity: guidanceTrackLocked ? 0.55 : 1,
+                                                    cursor: guidanceTrackLocked ? 'not-allowed' : 'pointer',
+                                                }}
+                                            >
+                                                {guidanceTrackLocked
+                                                    ? `Opens ${getTrackUnlockLabel(guidanceTrack)}`
+                                                    : currentTrack?.id === guidanceTrack.id && isPlaying
+                                                        ? 'Pause Track'
+                                                        : '▶ Play Track'}
+                                            </button>
+                                        )}
+                                        <Link
+                                            href={isSignedIn ? guidanceRealm.route : '/auth'}
+                                            className="btn-primary inline-flex"
+                                            style={{ borderRadius: '999px' }}
+                                        >
+                                            {isSignedIn ? 'Enter Realm' : 'Save Progress'}
+                                        </Link>
+                                    </div>
+                                </>
+                            ) : (
+                                <Link
+                                    href="/find-your-realm"
+                                    className="btn-primary inline-flex mt-1"
+                                    style={{ borderRadius: '999px' }}
+                                >
+                                    Find My Realm
+                                </Link>
                             )}
                         </div>
                     </div>
 
-                    <div className="glass-card nexus-panel nexus-soundtracks p-6 mb-5 fade-in" style={{ animationDelay: '0.26s' }}>
-                        <div className="flex items-center justify-between gap-4 mb-5">
+                    <section
+                        id="realm-soundtracks"
+                        className="glass-card nexus-panel nexus-soundtracks p-6 mb-5 fade-in"
+                        style={{
+                            ...sectionStyle,
+                            animationDelay: '0.24s',
+                        }}
+                    >
+                        <style jsx>{`
+        .realm-carousel {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .realm-carousel::-webkit-scrollbar {
+            display: none;
+        }
+
+        .realm-carousel-item {
+            flex: 0 0 86%;
+            scroll-snap-align: start;
+        }
+
+        @media (min-width: 768px) {
+            .realm-carousel-item {
+                flex-basis: calc((100% - 16px) / 2);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .realm-carousel-item {
+                flex-basis: calc((100% - 32px) / 3);
+            }
+        }
+    `}</style>
+
+                        <div className="flex items-start justify-between gap-4 mb-5">
                             <div>
                                 <h2 className="text-3xl font-display">
-                                    <span className="nexus-section-mark">♪</span> PUBLIC REALM SOUNDTRACKS
+                                    <span className="nexus-section-mark">♪</span> REALM SOUNDTRACKS
                                 </h2>
-
-                                <p className="text-secondary text-sm mt-1">
-                                    Explore each realm&apos;s public music portal.
-                                    Some worlds include extra public tracks beyond the curated three-song journey.
+                                <p className="text-secondary text-sm mt-1 leading-relaxed max-w-2xl">
+                                    The soundtrack library opens gradually as each release enters the world. Browse each realm in a single horizontal flow.
                                 </p>
+                            </div>
+
+                            <div className="hidden md:flex items-center gap-2 shrink-0">
+                                <button
+                                    type="button"
+                                    aria-label="Scroll soundtrack carousel left"
+                                    className="rounded-full border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 transition-all"
+                                    style={{
+                                        width: '38px',
+                                        height: '38px',
+                                        backdropFilter: 'blur(10px)',
+                                    }}
+                                    onClick={() =>
+                                        soundtrackCarouselRef.current?.scrollBy({
+                                            left: -340,
+                                            behavior: 'smooth',
+                                        })
+                                    }
+                                >
+                                    ←
+                                </button>
+
+                                <button
+                                    type="button"
+                                    aria-label="Scroll soundtrack carousel right"
+                                    className="rounded-full border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 transition-all"
+                                    style={{
+                                        width: '38px',
+                                        height: '38px',
+                                        backdropFilter: 'blur(10px)',
+                                    }}
+                                    onClick={() =>
+                                        soundtrackCarouselRef.current?.scrollBy({
+                                            left: 340,
+                                            behavior: 'smooth',
+                                        })
+                                    }
+                                >
+                                    →
+                                </button>
                             </div>
                         </div>
 
                         {groupedTracks.length > 0 ? (
-                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                            <div
+                                ref={soundtrackCarouselRef}
+                                className="realm-carousel flex gap-4 overflow-x-auto pb-2 pr-2"
+                                style={{
+                                    scrollSnapType: 'x mandatory',
+                                    WebkitOverflowScrolling: 'touch',
+                                }}
+                            >
                                 {groupedTracks.map((realmGroup) => {
                                     const realmId = parseInt(realmGroup.id);
                                     const pathUnlocked = isRealmUnlocked(realmId);
 
                                     return (
-                                        <div key={realmGroup.id} className="space-y-3">
+                                        <div
+                                            key={realmGroup.id}
+                                            className="realm-carousel-item"
+                                        >
                                             <RealmOrbitCard
                                                 realmId={realmGroup.id}
                                                 realmName={realmGroup.name}
@@ -646,18 +1004,15 @@ export default function CosmicNexusHub() {
                                                 isCurrentRealm={isSignedIn && realmId === user?.currentRealm}
                                                 isRecommended={guidanceRealmId !== null && realmId === guidanceRealmId}
                                                 compactOnMobile
-                                            />
-
-                                            <div className="nexus-path-note">
-                                                <span>Public Soundtrack Available</span>
-                                                <span>
-                                                    {isSignedIn
+                                                carouselMode
+                                                pathLabel={
+                                                    isSignedIn
                                                         ? pathUnlocked
-                                                            ? 'Realm Path Open'
-                                                            : 'Realm Path Locked'
-                                                        : 'Sign in to save progression'}
-                                                </span>
-                                            </div>
+                                                            ? 'Realm Open'
+                                                            : 'Realm Locked'
+                                                        : 'Sign in to save your path'
+                                                }
+                                            />
                                         </div>
                                     );
                                 })}
@@ -665,169 +1020,485 @@ export default function CosmicNexusHub() {
                         ) : (
                             <div className="quest-card opacity-70">
                                 <p className="text-sm text-muted text-center">
-                                    No public realm tracks available yet.
+                                    New realm tracks will appear here as the world opens.
                                 </p>
                             </div>
                         )}
-                    </div>
+                    </section>
 
-                    {publicThreePieceCollections.length > 0 && (
-                        <div
-                            className="glass-card nexus-panel nexus-soundtracks p-6 mb-5 fade-in"
-                            style={{ animationDelay: '0.28s' }}
+
+
+                    <section className="mb-5 fade-in" style={{ animationDelay: '0.28s' }}>
+                        <button
+                            className="glass-card nexus-panel w-full p-4 flex items-center justify-between text-left"
+                            onClick={() => setShowJourneys((prev) => !prev)}
+                            style={{
+                                ...sectionStyle,
+                                borderRadius: '26px',
+                            }}
                         >
-                            <div className="mb-5">
-                                <h2 className="text-3xl font-display">
-                                    <span className="nexus-section-mark">⌁</span> CURATED REALM JOURNEYS
-                                </h2>
-
-                                <p className="text-secondary text-sm mt-1">
-                                    Swipe through six three-song paths curated like mini-EPs — built for story,
-                                    visuals, and future rollout episodes.
+                            <div>
+                                <p className="text-xs uppercase tracking-[0.18em] text-muted mb-1">
+                                    Curated Listening
                                 </p>
+                                <h2 className="text-2xl font-display">
+                                    <span className="nexus-section-mark">⌁</span> CURATED EPS
+                                </h2>
                             </div>
+                            <span className="text-xl text-secondary">{showJourneys ? '−' : '+'}</span>
+                        </button>
 
-                            <div className="nexus-journey-scroll">
-                                {publicThreePieceCollections.map((collection) => {
-                                    const collectionTracks = getTracksByIds(collection.trackIds);
-                                    const firstTrack = collectionTracks[0] ?? null;
+                        {showJourneys && publicThreePieceCollections.length > 0 && (
+                            <div
+                                className="glass-card nexus-panel p-5 mt-3"
+                                style={{
+                                    ...sectionStyle,
+                                    borderRadius: '28px',
+                                }}
+                            >
+                                <style jsx>{`
+            .curated-shelf {
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
 
-                                    return (
-                                        <div
-                                            key={collection.id}
-                                            className="quest-card nexus-journey-card"
+            .curated-shelf::-webkit-scrollbar {
+                display: none;
+            }
+
+            .curated-shelf-item {
+                flex: 0 0 84%;
+                scroll-snap-align: start;
+            }
+
+            @media (min-width: 768px) {
+                .curated-shelf-item {
+                    flex-basis: 320px;
+                }
+            }
+
+            @media (min-width: 1280px) {
+                .curated-shelf-item {
+                    flex-basis: 340px;
+                }
+            }
+        `}</style>
+
+                                <div className="flex items-start justify-between gap-4 mb-4">
+                                    <div>
+                                        <p className="text-secondary text-sm leading-relaxed max-w-2xl">
+                                            Focused listening arcs built around artwork, mood, and sequence.
+                                        </p>
+                                    </div>
+
+                                    <div className="hidden md:flex items-center gap-2 shrink-0">
+                                        <button
+                                            type="button"
+                                            aria-label="Scroll curated EPs left"
+                                            className="rounded-full border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 transition-all"
                                             style={{
-                                                borderColor: firstTrack
-                                                    ? `${firstTrack.realmColor}33`
-                                                    : undefined,
+                                                width: '36px',
+                                                height: '36px',
+                                                backdropFilter: 'blur(10px)',
                                             }}
+                                            onClick={() =>
+                                                curatedCarouselRef.current?.scrollBy({
+                                                    left: -320,
+                                                    behavior: 'smooth',
+                                                })
+                                            }
                                         >
-                                            <div className="flex flex-col gap-3">
-                                                <div>
-                                                    <p
-                                                        className="text-xs uppercase tracking-[0.18em] mb-2"
+                                            ←
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            aria-label="Scroll curated EPs right"
+                                            className="rounded-full border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 transition-all"
+                                            style={{
+                                                width: '36px',
+                                                height: '36px',
+                                                backdropFilter: 'blur(10px)',
+                                            }}
+                                            onClick={() =>
+                                                curatedCarouselRef.current?.scrollBy({
+                                                    left: 320,
+                                                    behavior: 'smooth',
+                                                })
+                                            }
+                                        >
+                                            →
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div
+                                    ref={curatedCarouselRef}
+                                    className="curated-shelf flex gap-4 overflow-x-auto pb-1 pr-2"
+                                    style={{
+                                        scrollSnapType: 'x mandatory',
+                                        WebkitOverflowScrolling: 'touch',
+                                    }}
+                                >
+                                    {publicThreePieceCollections.map((collection) => {
+                                        const allCollectionTracks = collection.trackIds
+                                            .map((trackId) => getTrackById(trackId))
+                                            .filter(Boolean);
+
+                                        const previewTrack = allCollectionTracks
+                                            .filter((track) => !isTrackLocked(track))
+                                            .slice(0, 3);
+
+                                        const firstTrack = previewTrack[0] ?? allCollectionTracks[0] ?? null;
+                                        const leadTrack = previewTrack[0] ?? null;
+                                        const openCount = previewTrack.length;
+                                        const totalCount = allCollectionTracks.length;
+                                        const collectionArtwork = getCuratedCollectionArtwork(collection);
+                                        const collectionTypeLabel = getCollectionTypeLabel(totalCount, openCount);
+                                        const collectionStatusCopy = getCollectionStatusCopy(totalCount, openCount);
+                                        const collectionMetaCopy = getCollectionMetaCopy(totalCount);
+
+                                        if (!firstTrack) return null;
+
+                                        return (
+                                            <div key={collection.id} className="curated-shelf-item">
+                                                <div
+                                                    className="rounded-[24px] border border-white/10 bg-white/[0.03] overflow-hidden h-full"
+                                                    style={{
+                                                        borderColor: `${firstTrack.realmColor}26`,
+                                                        background:
+                                                            'linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.018))',
+                                                        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+                                                    }}
+                                                >
+                                                    <div
                                                         style={{
-                                                            color: firstTrack?.realmColor ?? undefined,
+                                                            position: 'relative',
+                                                            aspectRatio: '1 / 0.76',
+                                                            background: collectionArtwork
+                                                                ? `linear-gradient(180deg, rgba(8,10,18,0.06), rgba(8,10,18,0.52)), url(${collectionArtwork}) center/cover`
+                                                                : `radial-gradient(circle at top left, ${firstTrack.realmColor}24, rgba(255,255,255,0.03) 42%, rgba(9,11,20,0.82) 100%)`,
                                                         }}
                                                     >
-                                                        {collection.realmId
-                                                            ? `Realm ${collection.realmId}`
-                                                            : 'Collection'}
-                                                    </p>
+                                                        <div
+                                                            style={{
+                                                                position: 'absolute',
+                                                                inset: 0,
+                                                                background:
+                                                                    'linear-gradient(180deg, rgba(6,8,14,0.02) 0%, rgba(6,8,14,0.12) 42%, rgba(6,8,14,0.82) 100%)',
+                                                            }}
+                                                        />
 
-                                                    <h3 className="text-xl font-display mb-2">
-                                                        {collection.title}
-                                                    </h3>
-
-                                                    <p className="text-sm text-secondary mb-2">
-                                                        {collection.description}
-                                                    </p>
-
-                                                    <p className="text-xs text-muted line-clamp-3">
-                                                        {collection.story}
-                                                    </p>
-                                                </div>
-
-                                                <div className="space-y-2">
-                                                    {collectionTracks.map((track, index) => (
-                                                        <button
-                                                            key={track.id}
-                                                            type="button"
-                                                            onClick={() => playOrToggleTrack(track)}
-                                                            className="w-full flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-left transition-all hover:bg-white/[0.06]"
+                                                        <div
+                                                            style={{
+                                                                position: 'absolute',
+                                                                top: 12,
+                                                                left: 12,
+                                                                right: 12,
+                                                                display: 'flex',
+                                                                justifyContent: 'space-between',
+                                                                gap: 10,
+                                                            }}
                                                         >
-                                                            <div className="min-w-0">
-                                                                <p className="text-xs text-muted">
-                                                                    {String(index + 1).padStart(2, '0')}
-                                                                </p>
-
-                                                                <p className="text-sm text-secondary truncate">
-                                                                    {track.trackTitle}
-                                                                </p>
-                                                            </div>
+                                                            <span
+                                                                className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.16em]"
+                                                                style={{
+                                                                    background: 'rgba(8,10,18,0.42)',
+                                                                    border: '1px solid rgba(255,255,255,0.12)',
+                                                                    backdropFilter: 'blur(10px)',
+                                                                    color: 'rgba(255,255,255,0.92)',
+                                                                }}
+                                                            >
+                                                                {collection.realmId ? `Realm ${collection.realmId}` : collectionTypeLabel}
+                                                            </span>
 
                                                             <span
-                                                                className="text-xs shrink-0"
-                                                                style={{ color: track.realmColor }}
+                                                                className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.16em]"
+                                                                style={{
+                                                                    background:
+                                                                        openCount < totalCount
+                                                                            ? 'rgba(255,255,255,0.08)'
+                                                                            : `${firstTrack.realmColor}22`,
+                                                                    border:
+                                                                        openCount < totalCount
+                                                                            ? '1px solid rgba(255,255,255,0.12)'
+                                                                            : `1px solid ${firstTrack.realmColor}44`,
+                                                                    backdropFilter: 'blur(10px)',
+                                                                    color:
+                                                                        openCount < totalCount
+                                                                            ? 'rgba(255,255,255,0.82)'
+                                                                            : firstTrack.realmColor,
+                                                                }}
                                                             >
-                                                                {currentTrack?.id === track.id && isPlaying
-                                                                    ? 'Pause'
-                                                                    : 'Play'}
+                                                                {collectionTypeLabel}
                                                             </span>
-                                                        </button>
-                                                    ))}
+                                                        </div>
+
+                                                        <div
+                                                            style={{
+                                                                position: 'absolute',
+                                                                left: 16,
+                                                                right: 16,
+                                                                bottom: 16,
+                                                            }}
+                                                        >
+                                                            <p className="text-[10px] uppercase tracking-[0.18em] text-white/70 mb-2">
+                                                                {collectionMetaCopy}
+                                                            </p>
+
+                                                            <h3
+                                                                className="font-display mb-1.5"
+                                                                style={{
+                                                                    fontSize: '1.2rem',
+                                                                    lineHeight: 1.05,
+                                                                    textShadow: '0 10px 28px rgba(0,0,0,0.32)',
+                                                                }}
+                                                            >
+                                                                {collection.title}
+                                                            </h3>
+
+                                                            <p className="text-sm text-white/78 line-clamp-2 leading-relaxed">
+                                                                {collection.description}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="p-3.5">
+                                                        <div className="flex gap-2 overflow-x-auto pb-1 mb-3">
+                                                            {previewTrack.length > 0 ? (
+                                                                previewTrack.map((track) => (
+                                                                    <button
+                                                                        key={track!.id}
+                                                                        onClick={() => tryPlayTrack(track!)}
+                                                                        className="shrink-0 px-2.5 py-1.5 rounded-full text-[11px] border transition-all whitespace-nowrap"
+                                                                        style={{
+                                                                            borderColor:
+                                                                                currentTrack?.id === track!.id
+                                                                                    ? `${track!.realmColor}88`
+                                                                                    : `${track!.realmColor}22`,
+                                                                            background:
+                                                                                currentTrack?.id === track!.id
+                                                                                    ? `${track!.realmColor}22`
+                                                                                    : 'rgba(255,255,255,0.04)',
+                                                                            color:
+                                                                                currentTrack?.id === track!.id
+                                                                                    ? track!.realmColor
+                                                                                    : 'rgba(255,255,255,0.74)',
+                                                                        }}
+                                                                    >
+                                                                        {currentTrack?.id === track!.id && isPlaying ? '⏸ ' : '♪ '}
+                                                                        {track!.trackTitle}
+                                                                    </button>
+                                                                ))
+                                                            ) : (
+                                                                <div className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-secondary whitespace-nowrap">
+                                                                    Collection coming soon
+                                                                </div>
+                                                            )}
+                                                        </div>
+
+                                                        <div className="flex items-center justify-between gap-3 mb-2">
+                                                            <p className="text-[11px] text-muted uppercase tracking-[0.14em]">
+                                                                {collectionStatusCopy}
+                                                            </p>
+                                                            <p className="text-[11px] text-muted">
+                                                                {openCount}/{totalCount} open
+                                                            </p>
+                                                        </div>
+
+                                                        <p className="text-xs text-muted line-clamp-2 leading-relaxed mb-3">
+                                                            {collection.story}
+                                                        </p>
+
+                                                        {leadTrack && (
+                                                            <button
+                                                                className="btn-secondary w-full"
+                                                                onClick={() => tryPlayTrack(leadTrack)}
+                                                                style={{
+                                                                    borderRadius: '999px',
+                                                                }}
+                                                            >
+                                                                {currentTrack?.id === leadTrack.id && isPlaying
+                                                                    ? 'Pause Preview'
+                                                                    : `▶ Play Preview`}
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    )}
-
-                    <div
-                        className="glass-card nexus-panel nexus-external-strip p-4 mb-5 fade-in"
-                        style={{ animationDelay: '0.3s' }}
-                    >
-                        <div className="flex flex-col md:flex-row md:items-center gap-4">
-                            <div className="flex-1 text-center md:text-left">
-                                <p className="text-xs uppercase tracking-[0.2em] text-muted mb-1">
-                                    Vault Layer
-                                </p>
-
-                                <h3 className="text-lg font-display mb-1">
-                                    Deeper tracks staged for signed-in access
-                                </h3>
-
-                                <p className="text-sm text-secondary">
-                                    The public catalog introduces each realm through open soundcards and curated
-                                    three-song journeys. The vault currently holds {vaultTrackCount} demos,
-                                    experiments, older cuts, alternates, and private listening candidates as the catalog grows.
-                                </p>
-                            </div>
-
-                            {isSignedIn ? (
-                                <div className="text-sm text-glow text-center md:text-right">
-                                    Vault architecture active
+                                        );
+                                    })}
                                 </div>
-                            ) : (
-                                <button
-                                    onClick={() => signIn('github')}
-                                    className="btn-secondary w-full md:w-auto"
+                            </div>
+                        )}
+                    </section>
+
+                    <section className="grid grid-cols-1 xl:grid-cols-2 gap-4 fade-in" style={{ animationDelay: '0.32s' }}>
+                        <div>
+                            <button
+                                className="glass-card nexus-panel w-full p-4 flex items-center justify-between text-left mb-3"
+                                onClick={() => setShowVault((prev) => !prev)}
+                                style={{
+                                    ...sectionStyle,
+                                    borderRadius: '26px',
+                                }}
+                            >
+                                <div>
+                                    <p className="text-xs uppercase tracking-[0.2em] text-muted mb-1">
+                                        Archive
+                                    </p>
+                                    <h3 className="text-lg font-display">April–May Vault</h3>
+                                </div>
+                                <span className="text-xl text-secondary">{showVault ? '−' : '+'}</span>
+                            </button>
+
+                            {showVault && (
+                                <div
+                                    className="glass-card nexus-panel overflow-hidden"
+                                    style={{
+                                        ...sectionStyle,
+                                        borderRadius: '24px',
+                                    }}
                                 >
-                                    Sign in for Vault
-                                </button>
+                                    <div
+                                        style={{
+                                            position: 'relative',
+                                            minHeight: '220px',
+                                            background: vaultArtwork
+                                                ? `linear-gradient(180deg, rgba(8,10,18,0.04), rgba(8,10,18,0.56)), url(${vaultArtwork}) center/cover`
+                                                : 'linear-gradient(135deg, rgba(30,34,48,0.95), rgba(8,10,18,0.98))',
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                position: 'absolute',
+                                                inset: 0,
+                                                background:
+                                                    'linear-gradient(180deg, rgba(6,8,14,0.10) 0%, rgba(6,8,14,0.20) 30%, rgba(6,8,14,0.82) 100%)',
+                                            }}
+                                        />
+
+                                        <div className="relative p-5 md:p-6 flex flex-col justify-end min-h-[220px]">
+                                            <div className="flex flex-wrap gap-2 mb-3">
+                                                <span className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.16em] bg-white/10 border border-white/12 text-white/90">
+                                                    Archive
+                                                </span>
+                                                <span className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.16em] bg-white/6 border border-white/10 text-white/72">
+                                                    {vaultTrackCount} vault tracks
+                                                </span>
+                                            </div>
+
+                                            <h4 className="text-2xl md:text-3xl font-display mb-2 text-white">
+                                                April–May Vault
+                                            </h4>
+                                            <p className="text-sm md:text-base text-white/78 max-w-xl leading-relaxed">
+                                                A private archive from the April–May era — preserved as part of the Nexus timeline, separate from the main release path.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="p-5">
+                                        <p className="text-sm text-secondary leading-relaxed">
+                                            {vaultTrackCount} tracks live in this vault, held as a deeper cut of the journey rather than part of the main release sequence.
+                                        </p>
+                                    </div>
+                                </div>
                             )}
                         </div>
-                    </div>
 
-                    <div
-                        className="glass-card nexus-panel nexus-external-strip p-4 mb-5 fade-in"
-                        style={{ animationDelay: '0.32s' }}
-                    >
-                        <div className="flex flex-col md:flex-row md:items-center gap-4">
-                            <div className="flex-1 text-center md:text-left">
-                                <p className="text-xs uppercase tracking-[0.2em] text-muted mb-1">
-                                    External Listening
-                                </p>
+                        <div>
+                            <button
+                                className="glass-card nexus-panel w-full p-4 flex items-center justify-between text-left mb-3"
+                                onClick={() => setShowArchive((prev) => !prev)}
+                                style={{
+                                    ...sectionStyle,
+                                    borderRadius: '26px',
+                                }}
+                            >
+                                <div>
+                                    <p className="text-xs uppercase tracking-[0.2em] text-muted mb-1">
+                                        Featured Signal
+                                    </p>
+                                    <h3 className="text-lg font-display">
+                                        {flagshipTrack?.trackTitle ?? 'Featured Signal'}
+                                    </h3>
+                                </div>
+                                <span className="text-xl text-secondary">{showArchive ? '−' : '+'}</span>
+                            </button>
 
-                                <h3 className="text-lg font-display mb-1">
-                                    Playlist links coming soon
-                                </h3>
+                            {showArchive && (
+                                <div
+                                    className="glass-card nexus-panel overflow-hidden"
+                                    style={{
+                                        ...sectionStyle,
+                                        borderRadius: '24px',
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            position: 'relative',
+                                            minHeight: '220px',
+                                            background: featuredSignalArtwork
+                                                ? `linear-gradient(180deg, rgba(8,10,18,0.04), rgba(8,10,18,0.56)), url(${featuredSignalArtwork}) center/cover`
+                                                : 'linear-gradient(135deg, rgba(18,20,34,0.96), rgba(8,10,18,0.98))',
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                position: 'absolute',
+                                                inset: 0,
+                                                background:
+                                                    'linear-gradient(180deg, rgba(6,8,14,0.10) 0%, rgba(6,8,14,0.18) 30%, rgba(6,8,14,0.84) 100%)',
+                                            }}
+                                        />
 
-                                <p className="text-sm text-secondary">
-                                    Future links will connect each realm to YouTube, SoundCloud, Deezer,
-                                    and other listening spaces without replacing the in-app realm soundtracks.
-                                </p>
-                            </div>
+                                        <div className="relative p-5 md:p-6 flex flex-col justify-end min-h-[220px]">
+                                            <div className="flex flex-wrap gap-2 mb-3">
+                                                <span className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.16em] bg-white/10 border border-white/12 text-white/90">
+                                                    Featured signal
+                                                </span>
+                                                <span className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.16em] bg-white/6 border border-white/10 text-white/72">
+                                                    Direct entry
+                                                </span>
+                                            </div>
 
-                            <div className="nexus-external-mini-links">
-                                <span>YouTube</span>
-                                <span>SoundCloud</span>
-                                <span>Deezer</span>
-                            </div>
+                                            <h4 className="text-2xl md:text-3xl font-display mb-2 text-white">
+                                                {flagshipTrack?.trackTitle ?? 'Featured Signal'}
+                                            </h4>
+                                            <p className="text-sm md:text-base text-white/78 max-w-xl leading-relaxed">
+                                                A direct entry point into the Cosmic world — one track, one image, one clear doorway into the sound.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="p-5">
+                                        <p className="text-sm text-secondary mb-3 leading-relaxed">
+                                            This track stands on its own within the Nexus: a first door for new listeners and a quick return point for travelers.
+                                        </p>
+
+                                        {flagshipTrack && (
+                                            <button
+                                                className="btn-secondary"
+                                                onClick={() => tryPlayTrack(flagshipTrack)}
+                                                disabled={isTrackLocked(flagshipTrack)}
+                                                style={{
+                                                    borderRadius: '999px',
+                                                    opacity: isTrackLocked(flagshipTrack) ? 0.55 : 1,
+                                                    cursor: isTrackLocked(flagshipTrack) ? 'not-allowed' : 'pointer',
+                                                }}
+                                            >
+                                                {isTrackLocked(flagshipTrack)
+                                                    ? `Opens ${getTrackUnlockLabel(flagshipTrack)}`
+                                                    : currentTrack?.id === flagshipTrack.id && isPlaying
+                                                        ? 'Pause Track'
+                                                        : '▶ Play Track'}
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                    </div>
+                    </section>
                 </div>
             </div>
         </>

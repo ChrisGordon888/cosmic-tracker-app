@@ -9,18 +9,20 @@
  * - RealmSoundstage components
  * - Global mini player
  * - Music listening XP
- * - Future featured shelves, playlist lanes, vaults, and premium unlocks
+ * - Featured release / rollout modules
+ * - Future playlist lanes, vaults, premium unlocks, and seasonal projects
  *
  * CORE IDEA:
  * MUSIC_REGISTRY = every track and its metadata.
  * MUSIC_COLLECTIONS = curated experiences made from those tracks.
+ * FEATURED_RELEASES = the current release campaign layer.
  *
  * This lets the app support:
  * - 1 app-wide flagship song
  * - 6 realm anchors
- * - 18 public listening songs
+ * - public realm listening
  * - signed-in vault tracks
- * - future premium / supporter drops
+ * - current release campaigns (ex: SIRENS in Neverland)
  * - artwork and story-based EP/group concepts
  */
 
@@ -47,6 +49,18 @@ export type TrackStatus =
 
 export type TrackEnergy = 'low' | 'medium' | 'high';
 
+export type ReleaseProjectId = 'sirens-in-neverland';
+
+export type ReleasePhase =
+    | 'teaser'
+    | 'lead-single'
+    | 'second-single'
+    | 'ep-focus'
+    | 'ep-track'
+    | 'released';
+
+export type ReleaseStatus = 'building' | 'upcoming' | 'live' | 'archived';
+
 export type MusicCollectionType =
     | 'flagship'
     | 'realm-anchor-set'
@@ -54,7 +68,8 @@ export type MusicCollectionType =
     | 'vault'
     | 'premium'
     | 'season'
-    | 'episode';
+    | 'episode'
+    | 'release-project';
 
 export interface MusicTrack {
     id: string;
@@ -85,6 +100,16 @@ export interface MusicTrack {
     isPublicPick?: boolean;
     sortOrder?: number;
     notes?: string;
+
+    /**
+     * Release-layer metadata.
+     * Lets a track belong to both the realm system and a release campaign.
+     */
+    releaseProjectId?: ReleaseProjectId;
+    releasePhase?: ReleasePhase;
+    releasePriority?: number;
+    isUpcomingRelease?: boolean;
+    isCurrentReleaseFocus?: boolean;
 }
 
 export interface MusicCollection {
@@ -92,6 +117,7 @@ export interface MusicCollection {
     title: string;
     type: MusicCollectionType;
     realmId?: RealmId;
+    releaseProjectId?: ReleaseProjectId;
     description: string;
     story: string;
     trackIds: string[];
@@ -99,6 +125,27 @@ export interface MusicCollection {
     youtubeEpisodeTitle?: string;
     isActive: boolean;
     sortOrder: number;
+}
+
+export interface FeaturedReleaseConfig {
+    id: ReleaseProjectId;
+    title: string;
+    status: ReleaseStatus;
+    type: 'single' | 'ep';
+    description: string;
+    story: string;
+    coverArtUrl?: string;
+    primaryTrackId?: string;
+    collectionId?: string;
+    releaseWindow?: string;
+    ctaLabel: string;
+    ctaHref: string;
+    isCurrent: boolean;
+    timeline: {
+        label: string;
+        dateLabel: string;
+        status: 'done' | 'now' | 'next' | 'later';
+    }[];
 }
 
 export const REALM_COLORS: Record<RealmId, string> = {
@@ -134,6 +181,61 @@ function createTrack(track: Omit<MusicTrack, 'artist' | 'realmName' | 'realmColo
 }
 
 export const MUSIC_REGISTRY: MusicTrack[] = [
+    // =========================================================
+    // ACTIVE RELEASE LAYER — SIRENS IN NEVERLAND
+    // Tracks remain mapped to realms, but also belong to the
+    // current release project for Nexus / rollout surfacing.
+    // =========================================================
+
+    createTrack({
+        id: 'sin-do-over',
+        realmId: 202,
+        trackTitle: 'Do Over',
+        trackUrl: '/music/realms/202/doOver.mp3',
+        role: 'featured',
+        visibility: 'public',
+        status: 'needs-mix',
+        releaseBatch: 'sin-2026',
+        key: 'C#min',
+        bpm: 140,
+        energy: 'medium',
+        isFeatured: true,
+        isPublicPick: true,
+        sortOrder: 0,
+        vibe: ['hypnotic', 'oceanic', 'romantic', 'looping', 'haunted', 'melodic'],
+        bestUse: ['lead single', 'EP opener', 'release-world entry point'],
+        notes: 'Lead single and opening chapter for SIRENS in Neverland.',
+        releaseProjectId: 'sirens-in-neverland',
+        releasePhase: 'lead-single',
+        releasePriority: 1,
+        isUpcomingRelease: true,
+        isCurrentReleaseFocus: true,
+    }),
+
+    createTrack({
+        id: 'sin-running-from-the-plug',
+        realmId: 202,
+        trackTitle: 'Running From The Plug',
+        trackUrl: '/music/realms/202/runningFromThePlug.mp3',
+        role: 'featured',
+        visibility: 'public',
+        status: 'needs-mix',
+        releaseBatch: 'sin-2026',
+        key: 'Bmin',
+        bpm: 150,
+        energy: 'high',
+        isFeatured: true,
+        isPublicPick: true,
+        sortOrder: 1,
+        vibe: ['urgent', 'electric', 'dark', 'fast', 'melodic', 'dangerous'],
+        bestUse: ['second single', 'motion clip', 'contrast record'],
+        notes: 'Second single and energy-expansion chapter for SIRENS in Neverland.',
+        releaseProjectId: 'sirens-in-neverland',
+        releasePhase: 'second-single',
+        releasePriority: 2,
+        isUpcomingRelease: true,
+    }),
+
     // =========================================================
     // REALM 303 — FRACTURED FRONTIER
     // Chaos, pressure, rupture, survival, self-overcoming.
@@ -200,8 +302,7 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         sortOrder: 1,
         vibe: ['bouncy', 'spacious', 'hypnotic', 'wounded', 'self-overcoming'],
         bestUse: ['realm anchor', 'dark playlist opener', 'transition into freeFall'],
-        notes:
-            'Confronts programmed emotional patterns, clones, pain, healing, and surrender.',
+        notes: 'Confronts programmed emotional patterns, clones, pain, healing, and surrender.',
     }),
 
     createTrack({
@@ -221,8 +322,7 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         sortOrder: 2,
         vibe: ['dark', 'emotional', 'haunted', 'urgent', 'truth-seeking'],
         bestUse: ['Fractured Frontier featured track', 'dark visual teaser'],
-        notes:
-            'Fighting death, demons, distractions, self-sabotage, and searching for truth.',
+        notes: 'Fighting death, demons, distractions, self-sabotage, and searching for truth.',
     }),
 
     createTrack({
@@ -242,8 +342,7 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         sortOrder: 3,
         vibe: ['emotional', 'hard', 'powerful', 'traumatic', 'magical'],
         bestUse: ['high-energy social clip', 'performance record', 'realm anthem'],
-        notes:
-            'Turns trauma, opposition, rage, and violence into strength and self-trust.',
+        notes: 'Turns trauma, opposition, rage, and violence into strength and self-trust.',
     }),
 
     createTrack({
@@ -261,14 +360,13 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         sortOrder: 60,
         vibe: ['witty', 'arcade', 'combative', 'loop-breaking'],
         bestUse: ['game-coded realm track', 'trial-theme track', 'social clip'],
-        notes:
-            'High-energy battle/exploration feeling despite slower BPM. Arcade and loop-breaking themes.',
+        notes: 'High-energy battle/exploration feeling despite slower BPM. Arcade and loop-breaking themes.',
     }),
 
     createTrack({
         id: '303-in-the-deep',
         realmId: 303,
-        trackTitle: 'in the deep',
+        trackTitle: 'In The Deep',
         trackUrl: '/music/realms/303/in-the-deep.mp3',
         role: 'vault',
         visibility: 'signup',
@@ -280,8 +378,11 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         sortOrder: 70,
         vibe: ['dark', 'submerged', 'hard', 'heated', 'volatile'],
         bestUse: ['dark realm track', 'underground clip', 'intensity track'],
-        notes:
-            'Dark trap beat with submarine/deep pressure imagery, money/energy, and volatile magic.',
+        notes: 'Dark trap beat with submarine/deep pressure imagery, money/energy, and volatile magic.',
+        releaseProjectId: 'sirens-in-neverland',
+        releasePhase: 'ep-track',
+        releasePriority: 4,
+        isUpcomingRelease: true,
     }),
 
     // =========================================================
@@ -348,7 +449,7 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
     createTrack({
         id: '202-siren',
         realmId: 202,
-        trackTitle: 'siren',
+        trackTitle: 'Siren',
         trackUrl: '/music/realms/202/siren.mp3',
         role: 'flagship',
         visibility: 'public',
@@ -360,17 +461,20 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         isFeatured: true,
         isFlagship: true,
         isPublicPick: true,
-        sortOrder: 1,
+        sortOrder: 2,
         vibe: ['mysterious', 'dark', 'elegant', 'dangerous', 'dreamlike', 'cinematic'],
         bestUse: ['app flagship', 'visual teaser', 'music video candidate'],
-        notes:
-            'Siren warning energy, dreamlike danger, fake labels, water imagery, and money focus.',
+        notes: 'Siren warning energy, dreamlike danger, fake labels, water imagery, and money focus.',
+        releaseProjectId: 'sirens-in-neverland',
+        releasePhase: 'ep-track',
+        releasePriority: 6,
+        isUpcomingRelease: true,
     }),
 
     createTrack({
         id: '202-her-fantasy',
         realmId: 202,
-        trackTitle: 'her fantasy',
+        trackTitle: 'Her Fantasy',
         trackUrl: '/music/realms/202/her-fantasy.mp3',
         role: 'anchor',
         visibility: 'public',
@@ -382,11 +486,14 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         isFeatured: true,
         isRealmAnchor: true,
         isPublicPick: true,
-        sortOrder: 2,
+        sortOrder: 3,
         vibe: ['dreamy', 'romantic', 'numb', 'guitar-driven', 'emotional'],
         bestUse: ['Veil realm anchor', 'melodic trap playlist', 'social clip'],
-        notes:
-            'Fantasy vs reality, numb love, emotional overload, and romantic projection.',
+        notes: 'Fantasy vs reality, numb love, emotional overload, and romantic projection.',
+        releaseProjectId: 'sirens-in-neverland',
+        releasePhase: 'ep-track',
+        releasePriority: 5,
+        isUpcomingRelease: true,
     }),
 
     createTrack({
@@ -402,11 +509,29 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         bpm: 94,
         energy: 'low',
         isPublicPick: true,
-        sortOrder: 3,
+        sortOrder: 4,
         vibe: ['soft', 'melodic', 'futuristic', 'summery', 'romantic', 'mentally hazy'],
         bestUse: ['Veil playlist track', 'soft social clip', 'melodic mood-setter'],
-        notes:
-            'A million voices hook over a smooth futuristic summer/love atmosphere.',
+        notes: 'A million voices hook over a smooth futuristic summer/love atmosphere.',
+    }),
+
+    createTrack({
+        id: '202-personal',
+        realmId: 202,
+        trackTitle: 'Personal',
+        trackUrl: '/music/realms/202/personal.mp3',
+        role: 'public',
+        visibility: 'public',
+        status: 'demo',
+        releaseBatch: 'april-may-2026',
+        key: 'TBD',
+        bpm: undefined,
+        energy: 'medium',
+        isPublicPick: true,
+        sortOrder: 5,
+        vibe: ['intimate', 'melodic', 'emotional', 'shadowy', 'reflective'],
+        bestUse: ['Veil playlist track', 'emotional bridge', 'late-night listener entry'],
+        notes: 'An intimate Veil record for emotional projection, desire, memory, and the line between fantasy and truth.',
     }),
 
     createTrack({
@@ -424,8 +549,7 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         sortOrder: 80,
         vibe: ['pluggnb', 'spacious', 'floating', 'reflective', 'disconnected'],
         bestUse: ['future hook polish', 'Veil demo', 'playlist candidate'],
-        notes:
-            'Airplane mode as disconnect/reconnect metaphor. Needs lyric refinement.',
+        notes: 'Airplane mode as disconnect/reconnect metaphor. Needs lyric refinement.',
     }),
 
     // =========================================================
@@ -478,7 +602,7 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
     createTrack({
         id: '101-hold-my-hand',
         realmId: 101,
-        trackTitle: 'holdMyHand',
+        trackTitle: 'Hold My Hand',
         trackUrl: '/music/realms/101/holdMyHand.mp3',
         role: 'anchor',
         visibility: 'public',
@@ -493,8 +617,11 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         sortOrder: 1,
         vibe: ['tender', 'dreamy', 'smooth', 'healing', 'lush', 'grounding'],
         bestUse: ['Moonlit realm anchor', 'emotional entry point', 'fan-favorite candidate'],
-        notes:
-            'Healing and dreamy connection. Feels more Moonlit if grounding is central.',
+        notes: 'Healing and dreamy connection. Feels more Moonlit if grounding is central.',
+        releaseProjectId: 'sirens-in-neverland',
+        releasePhase: 'ep-track',
+        releasePriority: 3,
+        isUpcomingRelease: true,
     }),
 
     createTrack({
@@ -514,8 +641,7 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         sortOrder: 2,
         vibe: ['hopeful', 'emotional', 'soft', 'loving', 'guitar-driven', 'resilient'],
         bestUse: ['Moonlit featured track', 'reflective playlist anchor', 'motivational soft clip'],
-        notes:
-            'Pushing oneself a little further, trusting oneself, and keeping going.',
+        notes: 'Pushing oneself a little further, trusting oneself, and keeping going.',
     }),
 
     createTrack({
@@ -535,8 +661,7 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         sortOrder: 3,
         vibe: ['atmospheric', 'spacious', 'reflective', 'surrendering', 'drifting'],
         bestUse: ['emotional entry point', 'late-night playlist', 'transition track'],
-        notes:
-            'Surrendering into uncertainty and drifting with the current. Smooth transition from hardcoded.',
+        notes: 'Surrendering into uncertainty and drifting with the current. Smooth transition from hardcoded.',
     }),
 
     createTrack({
@@ -555,8 +680,7 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         sortOrder: 4,
         vibe: ['playful', 'mystical', 'arcade', 'forested', 'smooth', 'reflective'],
         bestUse: ['worldbuilding track', 'game-inspired clip', 'Moonlit side-path track'],
-        notes:
-            'Legend of Zelda / forest quest energy with sword-ogre imagery and reflective second verse.',
+        notes: 'Legend of Zelda / forest quest energy with sword-ogre imagery and reflective second verse.',
     }),
 
     createTrack({
@@ -574,8 +698,7 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         sortOrder: 70,
         vibe: ['drifting', 'redemptive', 'summery', 'anxious', 'reflective'],
         bestUse: ['rewrite candidate', 'late-night playlist', 'private vault'],
-        notes:
-            'Trying to get home and kicking out paranoia. Needs refinement.',
+        notes: 'Trying to get home and kicking out paranoia. Needs refinement.',
     }),
 
     createTrack({
@@ -593,8 +716,7 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         sortOrder: 80,
         vibe: ['raw', 'reflective', 'nostalgic', 'upbeat', 'wandering'],
         bestUse: ['private vault', 'future rewrite candidate', 'late-night demo'],
-        notes:
-            'Trauma awareness, outside wars, wandering, and SoundCloud-era energy. Needs work.',
+        notes: 'Trauma awareness, outside wars, wandering, and SoundCloud-era energy. Needs work.',
     }),
 
     createTrack({
@@ -612,8 +734,7 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         sortOrder: 90,
         vibe: ['nostalgic', 'soft', 'wavey', 'romantic', 'summery', 'imaginative'],
         bestUse: ['future emotional track', 'late-night playlist', 'private vault'],
-        notes:
-            'Soft guitar, summer night imagination, love, and overcoming doubt. Needs topic focus.',
+        notes: 'Soft guitar, summer night imagination, love, and overcoming doubt. Needs topic focus.',
     }),
 
     // =========================================================
@@ -686,8 +807,7 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         sortOrder: 1,
         vibe: ['anthemic', 'victorious', 'messy', 'human', 'celebratory', 'powerful'],
         bestUse: ['Skybound realm anchor', 'motivational clip', 'performance track'],
-        notes:
-            'Glory and power vs money/powder. Enjoying the moment while recognizing the energy behind things.',
+        notes: 'Glory and power vs money/powder. Enjoying the moment while recognizing the energy behind things.',
     }),
 
     // =========================================================
@@ -744,8 +864,7 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         sortOrder: 1,
         vibe: ['smooth', 'mysterious', 'suave', 'ambitious', 'coded', 'elegant'],
         bestUse: ['Astral realm anchor', 'playlist anchor', 'social clip'],
-        notes:
-            'Beautiful distraction / bot concept. Focus, rank, ambition, and temptation.',
+        notes: 'Beautiful distraction / bot concept. Focus, rank, ambition, and temptation.',
     }),
 
     createTrack({
@@ -765,8 +884,7 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         sortOrder: 2,
         vibe: ['bouncy', 'exotic', 'stylish', 'youthful', 'playful', 'smooth'],
         bestUse: ['Astral playlist track', 'lifestyle clip', 'stylish interlude'],
-        notes:
-            'Money, beautiful life, women, letting go of the past, and enjoying the moment.',
+        notes: 'Money, beautiful life, women, letting go of the past, and enjoying the moment.',
     }),
 
     // =========================================================
@@ -824,12 +942,37 @@ export const MUSIC_REGISTRY: MusicTrack[] = [
         sortOrder: 1,
         vibe: ['hypnotic', 'clean', 'nostalgic', 'self-aware', 'grounded', 'evolving'],
         bestUse: ['InterSiddhi realm anchor', 'introspective playlist', 'future polished fan favorite'],
-        notes:
-            'Same core self while upgrading, solving self, receiving blessings, and becoming more integrated.',
+        notes: 'Same core self while upgrading, solving self, receiving blessings, and becoming more integrated.',
     }),
 ];
 
 export const MUSIC_COLLECTIONS: MusicCollection[] = [
+    // =========================================================
+    // CURRENT RELEASE PROJECT
+    // =========================================================
+
+    {
+        id: 'sin-sirens-in-neverland',
+        title: 'SIRENS in Neverland',
+        type: 'release-project',
+        releaseProjectId: 'sirens-in-neverland',
+        description: 'A handmade oceanic scrapbook world of longing, repetition, fantasy, and fate.',
+        story:
+            'A six-song release arc where handwritten notes, paper fragments, and emotional memory slowly come to life — moving from repetition and intimacy into depth, fantasy, urgency, and siren-like pull.',
+        trackIds: [
+            'sin-do-over',
+            '101-hold-my-hand',
+            '303-in-the-deep',
+            '202-her-fantasy',
+            'sin-running-from-the-plug',
+            '202-siren',
+        ],
+        artworkUrl: '/sirensInNeverland.jpg',
+        youtubeEpisodeTitle: 'Building SIRENS in Neverland: the first COSMIC release world',
+        isActive: true,
+        sortOrder: 5,
+    },
+
     // =========================================================
     // APP-WIDE FLAGSHIP
     // =========================================================
@@ -994,6 +1137,51 @@ export const MUSIC_COLLECTIONS: MusicCollection[] = [
     },
 ];
 
+export const FEATURED_RELEASES: FeaturedReleaseConfig[] = [
+    {
+        id: 'sirens-in-neverland',
+        title: 'SIRENS in Neverland',
+        status: 'building',
+        type: 'ep',
+        description:
+            'The current COSMIC release world — an oceanic scrapbook EP built from longing, repetition, fantasy, and fate.',
+        story:
+            'This is the active release campaign for the current season, beginning with Do Over and expanding into a six-song world.',
+        coverArtUrl: '/sirensInNeverland.jpg',
+        primaryTrackId: 'sin-do-over',
+        collectionId: 'sin-sirens-in-neverland',
+        releaseWindow: 'June–July 2026',
+        ctaLabel: 'Enter SIN',
+        ctaHref: '/releases/sirens-in-neverland',
+        isCurrent: true,
+        timeline: [
+            {
+                label: 'Era Reveal',
+                dateLabel: 'Jun 14',
+                status: 'now',
+            },
+            {
+                label: 'Do Over',
+                dateLabel: 'Jun 29',
+                status: 'next',
+            },
+            {
+                label: 'Running From The Plug',
+                dateLabel: 'Jul 14',
+                status: 'later',
+            },
+            {
+                label: 'EP Drop',
+                dateLabel: 'Jul 29',
+                status: 'later',
+            },
+        ],
+    },
+];
+
+export const CURRENT_FEATURED_RELEASE =
+    FEATURED_RELEASES.find((release) => release.isCurrent) ?? null;
+
 export const FEATURED_TRACKS = MUSIC_REGISTRY.filter((track) => track.isFeatured);
 
 export const FLAGSHIP_TRACKS = MUSIC_REGISTRY.filter((track) => track.isFlagship);
@@ -1043,6 +1231,10 @@ export const PUBLIC_THREE_PIECE_COLLECTIONS = ACTIVE_MUSIC_COLLECTIONS.filter(
     (collection) => collection.type === 'public-three-piece'
 );
 
+export const RELEASE_PROJECT_COLLECTIONS = ACTIVE_MUSIC_COLLECTIONS.filter(
+    (collection) => collection.type === 'release-project'
+);
+
 export function getTrackById(trackId: string): MusicTrack | undefined {
     return MUSIC_REGISTRY.find((track) => track.id === trackId);
 }
@@ -1075,4 +1267,21 @@ export function getPublicTracksByRealm(realmId: RealmId): MusicTrack[] {
 
 export function getVaultTracksByRealm(realmId: RealmId): MusicTrack[] {
     return TRACKS_BY_REALM[realmId].filter((track) => track.visibility === 'signup');
+}
+
+export function getTracksByReleaseProject(projectId: ReleaseProjectId): MusicTrack[] {
+    return MUSIC_REGISTRY.filter((track) => track.releaseProjectId === projectId).sort(
+        (a, b) => (a.releasePriority ?? 999) - (b.releasePriority ?? 999)
+    );
+}
+
+export function getCurrentReleaseTracks(): MusicTrack[] {
+    if (!CURRENT_FEATURED_RELEASE) return [];
+    return getTracksByReleaseProject(CURRENT_FEATURED_RELEASE.id);
+}
+
+export function getFeaturedReleaseById(
+    releaseId: ReleaseProjectId
+): FeaturedReleaseConfig | undefined {
+    return FEATURED_RELEASES.find((release) => release.id === releaseId);
 }
