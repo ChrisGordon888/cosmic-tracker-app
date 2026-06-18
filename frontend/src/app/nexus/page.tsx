@@ -850,7 +850,7 @@ export default function CosmicNexusHub() {
                                         <>
                                             <div className="flex flex-wrap items-center gap-2 mb-2">
                                                 <h3 className="text-2xl font-display text-glow">
-                                                    {guidanceRealm.name}
+                                                    {guidanceRealmId !== null ? REALM_NAMES[guidanceRealmId] : 'Your Realm'}
                                                 </h3>
 
                                                 {guidanceMode && (
