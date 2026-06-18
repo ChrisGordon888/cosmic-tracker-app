@@ -340,7 +340,6 @@ export default function CosmicNexusHub() {
     const releaseArtworkUrl = currentRelease?.coverArtUrl ?? null;
     const featuredSignalArtwork =
         CURATED_PLAYLIST_ART_OVERRIDES['cosmic-featured-signal'] ??
-        flagshipTrack?.artworkUrl ??
         releaseArtworkUrl ??
         null;
     const vaultArtwork = CURATED_PLAYLIST_ART_OVERRIDES['april-may-vault'] ?? null;
