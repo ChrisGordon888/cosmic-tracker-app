@@ -13,11 +13,11 @@ import {
     FLAGSHIP_TRACKS,
     MUSIC_REGISTRY,
     PUBLIC_THREE_PIECE_COLLECTIONS,
-    PUBLIC_TRACKS,
     REALM_NAMES,
     VAULT_TRACKS,
     getCurrentReleaseTracks,
     getTrackById,
+    getTracksByCollection,
 } from '@/lib/musicRegistry';
 import { REALM_STATE_MAP, type ExperienceMode, type RealmId } from '@/lib/realmStateMap';
 import { REALM_RESULT_CONTENT } from '@/lib/realmResultContent';
@@ -104,10 +104,11 @@ const CURATED_PLAYLIST_ART_OVERRIDES: Record<string, string> = {
     'april-may-vault': '/april-may-vault.png',
 };
 
+
 function getModeLabel(mode: ExperienceMode) {
-    if (mode === 'stay') return 'Stay with this state';
-    if (mode === 'move-through') return 'Move through this state';
-    return 'Shift toward another state';
+    if (mode === 'stay') return 'Stay';
+    if (mode === 'move-through') return 'Move through';
+    return 'Shift';
 }
 
 function formatUnlockDate(dateString?: string | null) {
@@ -225,7 +226,10 @@ export default function CosmicNexusHub() {
 
     const isTrackLocked = (track: any) => {
         if (!track) return false;
+
         if (track.visibility === 'premium') return true;
+
+        if (!isSignedIn && track.visibility === 'signup') return true;
 
         const unlockDate = RELEASE_UNLOCKS[track.id];
         if (!unlockDate) return false;
@@ -235,14 +239,16 @@ export default function CosmicNexusHub() {
 
     const getTrackUnlockLabel = (track: any) => {
         if (!track) return null;
-        if (track.visibility === 'premium') return 'Premium';
 
         return formatUnlockDate(RELEASE_UNLOCKS[track.id]);
     };
 
     const getTrackLockLabel = (track: any) => {
         if (!track) return null;
-        if (track.visibility === 'premium') return 'Premium';
+
+        if (track.visibility === 'premium') return 'Premium Vault';
+
+        if (!isSignedIn && track.visibility === 'signup') return 'Join to unlock';
 
         const unlockLabel = getTrackUnlockLabel(track);
         return unlockLabel ? `Opens ${unlockLabel}` : null;
@@ -263,15 +269,27 @@ export default function CosmicNexusHub() {
 
     const isRealmUnlocked = (realmId: number): boolean => unlockedRealms.includes(realmId);
 
-    const nexusPublicTracks = useMemo(() => {
-        return [...PUBLIC_TRACKS].sort((a, b) => {
-            const aOrder = a.sortOrder ?? 999;
-            const bOrder = b.sortOrder ?? 999;
+    const isTrackCatalogVisible = (track: any) => {
+        if (!track) return false;
 
-            if (aOrder !== bOrder) return aOrder - bOrder;
+        return (
+            track.visibility === 'public' ||
+            track.visibility === 'signup' ||
+            track.visibility === 'premium'
+        );
+    };
 
-            return a.trackTitle.localeCompare(b.trackTitle);
-        });
+    const nexusVisibleTracks = useMemo(() => {
+        return MUSIC_REGISTRY
+            .filter(isTrackCatalogVisible)
+            .sort((a, b) => {
+                const aOrder = a.sortOrder ?? 999;
+                const bOrder = b.sortOrder ?? 999;
+
+                if (aOrder !== bOrder) return aOrder - bOrder;
+
+                return a.trackTitle.localeCompare(b.trackTitle);
+            });
     }, []);
 
     const groupedTracks = REALM_META.map((realm) => {
@@ -281,9 +299,14 @@ export default function CosmicNexusHub() {
             ...realm,
             status: isRealmUnlocked(realmId) ? 'unlocked' : 'locked',
             progress: getRealmProgress(realmId),
-            tracks: nexusPublicTracks.filter((track) => track.realmId === realmId),
+            tracks: nexusVisibleTracks.filter((track) => track.realmId === realmId),
         };
     }).filter((realmGroup) => realmGroup.tracks.length > 0);
+
+    const publicCatalogCount = nexusVisibleTracks.filter((track) => track.visibility === 'public').length;
+    const memberCatalogCount = nexusVisibleTracks.filter((track) => track.visibility === 'signup').length;
+    const premiumCatalogCount = nexusVisibleTracks.filter((track) => track.visibility === 'premium').length;
+    const releaseCatalogCount = currentReleaseTracks.length;
 
     const guidanceRealmId = storedGuidance?.realmId ?? null;
     const guidanceRealm = guidanceRealmId !== null ? REALM_STATE_MAP[guidanceRealmId] : null;
@@ -311,6 +334,8 @@ export default function CosmicNexusHub() {
         );
     }, [guidanceRealmId, guidanceModeContent]);
 
+    const guidanceTrackLocked = guidanceTrack ? isTrackLocked(guidanceTrack) : false;
+
     const handlePlayOrbitTrack = (track: { id: string }) => {
         const fullTrack = MUSIC_REGISTRY.find((musicTrack) => musicTrack.id === track.id);
 
@@ -324,9 +349,10 @@ export default function CosmicNexusHub() {
 
     const flagshipTrack = FLAGSHIP_TRACKS[0] ?? null;
     const publicThreePieceCollections = PUBLIC_THREE_PIECE_COLLECTIONS;
-    const vaultTrackCount = VAULT_TRACKS.length;
+    const vaultTracks = useMemo(() => getTracksByCollection('april-may-vault'), []);
+    const vaultTrackCount = vaultTracks.length;
+    const totalMemberVaultCount = VAULT_TRACKS.length;
 
-    const guidanceTrackLocked = guidanceTrack ? isTrackLocked(guidanceTrack) : false;
     const currentReleasePrimaryLocked = currentReleasePrimaryTrack
         ? isTrackLocked(currentReleasePrimaryTrack)
         : false;
@@ -435,7 +461,7 @@ export default function CosmicNexusHub() {
                         </h1>
 
                         <p className="text-lg text-secondary max-w-3xl mx-auto">
-                            Start with the active release, then move through the realm soundtracks, curated EPs, and find archive vaults as the worlds expand.
+                            Explore the world through music — play what is open now, preview what is coming, and follow the vault pieces as they evolve into releases, EPs, artwork, and deeper stories.
                         </p>
                     </header>
 
@@ -745,12 +771,57 @@ export default function CosmicNexusHub() {
                                 }}
                             >
                                 <p className="text-xs uppercase tracking-[0.18em] text-muted mb-2">
-                                    Listener Mode
+                                    Nexus Library
                                 </p>
                                 <h2 className="text-2xl font-display mb-2">Begin with the music</h2>
                                 <p className="text-sm text-secondary mb-4 leading-relaxed">
-                                    Sign in to save your path, unlock progression, and return to your realm.
+                                    The Nexus holds {nexusVisibleTracks.length} cataloged tracks across {groupedTracks.length} realms. Play what is open now, preview what is coming, and join to unlock the deeper path.
                                 </p>
+
+                                <div className="grid grid-cols-2 gap-2 mb-4">
+                                    <div className="rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-2">
+                                        <p className="text-lg font-display leading-none text-white">
+                                            {nexusVisibleTracks.length}
+                                        </p>
+                                        <p className="text-[10px] uppercase tracking-[0.14em] text-muted mt-1">
+                                            Total tracks
+                                        </p>
+                                    </div>
+
+                                    <div className="rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-2">
+                                        <p className="text-lg font-display leading-none text-white">
+                                            {publicCatalogCount}
+                                        </p>
+                                        <p className="text-[10px] uppercase tracking-[0.14em] text-muted mt-1">
+                                            Open / soon
+                                        </p>
+                                    </div>
+
+                                    <div className="rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-2">
+                                        <p className="text-lg font-display leading-none text-white">
+                                            {memberCatalogCount}
+                                        </p>
+                                        <p className="text-[10px] uppercase tracking-[0.14em] text-muted mt-1">
+                                            Join unlocks
+                                        </p>
+                                    </div>
+
+                                    <div className="rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-2">
+                                        <p className="text-lg font-display leading-none text-white">
+                                            {releaseCatalogCount}
+                                        </p>
+                                        <p className="text-[10px] uppercase tracking-[0.14em] text-muted mt-1">
+                                            Current release
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {premiumCatalogCount > 0 && (
+                                    <p className="text-xs text-muted mb-4">
+                                        {premiumCatalogCount} premium vault pieces are visible in the catalog.
+                                    </p>
+                                )}
+
                                 <button
                                     onClick={() => signIn('github')}
                                     className="btn-primary w-full"
@@ -772,30 +843,103 @@ export default function CosmicNexusHub() {
                                 <div className="nexus-signal-mark shrink-0">⌁</div>
                                 <div className="min-w-0">
                                     <p className="text-xs uppercase tracking-[0.18em] text-muted mb-2">
-                                        Guided Entry
+                                        Personal Path
                                     </p>
-                                    <h3 className="text-2xl font-display mb-2 text-glow">Find Your Realm</h3>
-                                    <p className="text-secondary text-sm mb-3 leading-relaxed">
-                                        Answer from where you are. The Nexus will guide you toward the realm that fits your current energy.
-                                    </p>
-                                    <div className="flex flex-wrap gap-2 mb-4">
-                                        {['chaos', 'desire', 'reflection', 'power', 'value', 'alignment'].map((tag) => (
-                                            <span
-                                                key={tag}
-                                                className="px-2.5 py-1 rounded-full text-[11px] bg-white/5 border border-white/10"
-                                                style={{ backdropFilter: 'blur(10px)' }}
+
+                                    {guidanceRealm && guidanceRealmContent && guidanceModeContent ? (
+                                        <>
+                                            <div className="flex flex-wrap items-center gap-2 mb-2">
+                                                <h3 className="text-2xl font-display text-glow">
+                                                    {guidanceRealm.name}
+                                                </h3>
+
+                                                {guidanceMode && (
+                                                    <span className="px-2.5 py-1 rounded-full text-[10px] uppercase tracking-[0.14em] bg-white/6 border border-white/10 text-white/70">
+                                                        {getModeLabel(guidanceMode)}
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            <p className="text-secondary text-sm mb-3 line-clamp-2 leading-relaxed">
+                                                {guidanceRealmContent.whyRealmFits}
+                                            </p>
+
+                                            <p className="text-xs text-muted italic mb-3 line-clamp-2">
+                                                “{guidanceModeContent.reflectionPrompt}”
+                                            </p>
+
+                                            <div className="rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-3 mb-4">
+                                                <p className="text-[10px] uppercase tracking-[0.16em] text-muted mb-1">
+                                                    Recommended track
+                                                </p>
+                                                <p className="text-sm text-secondary">
+                                                    {guidanceModeContent.recommendedTrack}
+                                                </p>
+                                            </div>
+
+                                            <div className="flex flex-wrap gap-2">
+                                                {guidanceTrack && (
+                                                    <button
+                                                        className="btn-secondary"
+                                                        onClick={() => tryPlayTrack(guidanceTrack)}
+                                                        disabled={guidanceTrackLocked}
+                                                        style={{
+                                                            borderRadius: '999px',
+                                                            opacity: guidanceTrackLocked ? 0.55 : 1,
+                                                            cursor: guidanceTrackLocked ? 'not-allowed' : 'pointer',
+                                                        }}
+                                                    >
+                                                        {guidanceTrackLocked
+                                                            ? getTrackLockLabel(guidanceTrack) ?? 'Locked'
+                                                            : currentTrack?.id === guidanceTrack.id && isPlaying
+                                                                ? 'Pause Track'
+                                                                : '▶ Play Track'}
+                                                    </button>
+                                                )}
+
+                                                <Link
+                                                    href={isSignedIn ? guidanceRealm.route : '/auth'}
+                                                    className="btn-primary inline-flex"
+                                                    style={{ borderRadius: '999px' }}
+                                                >
+                                                    {isSignedIn ? 'Enter Realm' : 'Save Progress'}
+                                                </Link>
+
+                                                <Link
+                                                    href="/find-your-realm"
+                                                    className="btn-secondary inline-flex"
+                                                    style={{ borderRadius: '999px' }}
+                                                >
+                                                    Retake
+                                                </Link>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <h3 className="text-2xl font-display mb-2 text-glow">Find Your Realm</h3>
+                                            <p className="text-secondary text-sm mb-3 leading-relaxed">
+                                                Answer from where you are. The Nexus will guide you toward the realm that fits your current energy.
+                                            </p>
+                                            <div className="flex flex-wrap gap-2 mb-4">
+                                                {['chaos', 'desire', 'reflection', 'power', 'value', 'alignment'].map((tag) => (
+                                                    <span
+                                                        key={tag}
+                                                        className="px-2.5 py-1 rounded-full text-[11px] bg-white/5 border border-white/10"
+                                                        style={{ backdropFilter: 'blur(10px)' }}
+                                                    >
+                                                        {tag}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                            <Link
+                                                href="/find-your-realm"
+                                                className="btn-secondary inline-flex"
+                                                style={{ borderRadius: '999px' }}
                                             >
-                                                {tag}
-                                            </span>
-                                        ))}
-                                    </div>
-                                    <Link
-                                        href="/find-your-realm"
-                                        className="btn-secondary inline-flex"
-                                        style={{ borderRadius: '999px' }}
-                                    >
-                                        Find Your Realm
-                                    </Link>
+                                                Find Your Realm
+                                            </Link>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -832,66 +976,28 @@ export default function CosmicNexusHub() {
                                 </div>
                             </div>
 
-                            {guidanceRealm && guidanceRealmContent && guidanceModeContent ? (
-                                <>
-                                    <p className="text-sm text-secondary mb-2 line-clamp-2 leading-relaxed">
-                                        {guidanceRealmContent.whyRealmFits}
+                            <p className="text-sm text-secondary mb-3 leading-relaxed">
+                                Today’s moon signal is an ambient current for the Nexus. Use it as a daily listening doorway, while your Find Your Realm result remains your personal path.
+                            </p>
+
+                            {realmAlignment?.primaryRealm && (
+                                <div className="rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-3 mb-3">
+                                    <p className="text-[10px] uppercase tracking-[0.16em] text-muted mb-1">
+                                        Today’s doorway
                                     </p>
-                                    <p className="text-xs text-muted italic mb-3 line-clamp-2">
-                                        “{guidanceModeContent.reflectionPrompt}”
+                                    <p className="text-sm text-secondary">
+                                        Start with <span className="text-glow font-medium">{realmAlignment.primaryRealm}</span>, then let the soundtrack pull you where it needs to.
                                     </p>
-                                    <div className="text-xs text-muted mb-3">
-                                        Track:{' '}
-                                        <span className="text-secondary">
-                                            {guidanceModeContent.recommendedTrack}
-                                        </span>
-                                        {guidanceMode && (
-                                            <>
-                                                {' '}
-                                                • Mode:{' '}
-                                                <span className="text-secondary">
-                                                    {getModeLabel(guidanceMode)}
-                                                </span>
-                                            </>
-                                        )}
-                                    </div>
-                                    <div className="flex flex-wrap gap-2">
-                                        {guidanceTrack && (
-                                            <button
-                                                className="btn-secondary"
-                                                onClick={() => tryPlayTrack(guidanceTrack)}
-                                                disabled={guidanceTrackLocked}
-                                                style={{
-                                                    borderRadius: '999px',
-                                                    opacity: guidanceTrackLocked ? 0.55 : 1,
-                                                    cursor: guidanceTrackLocked ? 'not-allowed' : 'pointer',
-                                                }}
-                                            >
-                                                {guidanceTrackLocked
-                                                    ? `Opens ${getTrackUnlockLabel(guidanceTrack)}`
-                                                    : currentTrack?.id === guidanceTrack.id && isPlaying
-                                                        ? 'Pause Track'
-                                                        : '▶ Play Track'}
-                                            </button>
-                                        )}
-                                        <Link
-                                            href={isSignedIn ? guidanceRealm.route : '/auth'}
-                                            className="btn-primary inline-flex"
-                                            style={{ borderRadius: '999px' }}
-                                        >
-                                            {isSignedIn ? 'Enter Realm' : 'Save Progress'}
-                                        </Link>
-                                    </div>
-                                </>
-                            ) : (
-                                <Link
-                                    href="/find-your-realm"
-                                    className="btn-primary inline-flex mt-1"
-                                    style={{ borderRadius: '999px' }}
-                                >
-                                    Find My Realm
-                                </Link>
+                                </div>
                             )}
+
+                            <Link
+                                href="/find-your-realm"
+                                className="btn-secondary inline-flex"
+                                style={{ borderRadius: '999px' }}
+                            >
+                                Find My Realm
+                            </Link>
                         </div>
                     </div>
 
@@ -948,7 +1054,7 @@ export default function CosmicNexusHub() {
                                     <span className="nexus-section-mark">♪</span> REALM SOUNDTRACKS
                                 </h2>
                                 <p className="text-secondary text-sm mt-1 leading-relaxed max-w-2xl">
-                                    Browse each realm in a single horizontal flow. Playable tracks populate the orbit, while locked releases remain visible in the full tracklist.
+                                    Each realm holds a living soundtrack. Play what is open now, preview what is coming, and enter the realm to go deeper.
                                 </p>
                             </div>
 
@@ -1433,7 +1539,10 @@ export default function CosmicNexusHub() {
                                                     Archive
                                                 </span>
                                                 <span className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.16em] bg-white/6 border border-white/10 text-white/72">
-                                                    {vaultTrackCount} vault tracks
+                                                    {vaultTrackCount} cataloged tracks
+                                                </span>
+                                                <span className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.16em] bg-white/6 border border-white/10 text-white/72">
+                                                    {totalMemberVaultCount} member vault items
                                                 </span>
                                             </div>
 
@@ -1441,14 +1550,14 @@ export default function CosmicNexusHub() {
                                                 April–May Vault
                                             </h4>
                                             <p className="text-sm md:text-base text-white/78 max-w-xl leading-relaxed">
-                                                A private archive from the April–May era — preserved as part of the Nexus timeline, separate from the main release path.
+                                                Demos, sketches, and unreleased ideas from the April–May creation window — the raw material behind future songs, EPs, artwork, and worlds.
                                             </p>
                                         </div>
                                     </div>
 
                                     <div className="p-5">
                                         <p className="text-sm text-secondary leading-relaxed">
-                                            {vaultTrackCount} tracks live in this vault, held as a deeper cut of the journey rather than part of the main release sequence.
+                                            {vaultTrackCount} cataloged vault tracks are currently attached to this creation window. Your raw folder has more ideas than the registry, so the next pass is choosing what becomes public, member-unlocked, release-ready, premium, or private.
                                         </p>
                                     </div>
                                 </div>
