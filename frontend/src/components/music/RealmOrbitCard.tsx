@@ -77,6 +77,24 @@ function getRealmStateTags(realmName: string): string[] {
     return ['realm', 'sound', 'navigation'];
 }
 
+function formatRealmDisplayName(realmName: string) {
+    return realmName
+        .toLowerCase()
+        .split(' ')
+        .filter(Boolean)
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+}
+
+function getCompactPathLabel(pathLabel?: string) {
+    if (!pathLabel) return null;
+
+    return pathLabel
+        .replace('soundtrack tracks', 'tracks')
+        .replace('soundtrack track', 'track')
+        .replace('Join to save', 'Join');
+}
+
 export default function RealmOrbitCard({
     realmName,
     realmIcon,
@@ -197,6 +215,8 @@ export default function RealmOrbitCard({
     );
 
     const realmTags = getRealmStateTags(realmName);
+    const realmDisplayName = formatRealmDisplayName(realmName);
+    const compactPathLabel = getCompactPathLabel(pathLabel);
     const clampedProgress = Math.max(0, Math.min(progress, 100));
 
     const handleTrackClick = (track: OrbitTrack) => {
@@ -223,7 +243,7 @@ export default function RealmOrbitCard({
             <button
                 key={track.id}
                 onClick={() => handleTrackClick(track)}
-                className="shrink-0 px-3 py-2 rounded-full text-[11px] border transition-all whitespace-nowrap"
+                className="shrink-0 px-2.5 py-1.5 rounded-full text-[11px] border transition-all whitespace-nowrap"
                 style={{
                     borderColor:
                         isSelected || isCurrent
@@ -256,9 +276,9 @@ export default function RealmOrbitCard({
     };
 
     if (carouselMode || (compactOnMobile && isMobile)) {
-        const miniSize = 108;
+        const miniSize = 96;
         const miniCenter = miniSize / 2;
-        const miniRadius = carouselMode ? 36 : 38;
+        const miniRadius = carouselMode ? 32 : 34;
         const miniTracks = orbitTracks.slice(0, 5);
 
         const miniNodes = miniTracks.map((track, index) => {
@@ -275,16 +295,16 @@ export default function RealmOrbitCard({
             <div
                 className="realm-orbit-card nexus-compact-orbit rounded-[28px] border p-4 relative overflow-hidden h-full"
                 style={{
-                    borderColor: `${realmColor}44`,
-                    background: `linear-gradient(145deg, ${realmColor}12, rgba(255,255,255,0.035), rgba(8,10,18,0.80))`,
-                    boxShadow: `0 10px 30px ${realmColor}14`,
-                    minHeight: carouselMode ? '396px' : undefined,
+                    borderColor: `${realmColor}36`,
+                    background: `linear-gradient(145deg, ${realmColor}0e, rgba(255,255,255,0.035), rgba(8,10,18,0.82))`,
+                    boxShadow: `0 10px 28px ${realmColor}10, inset 0 1px 0 rgba(255,255,255,0.055)`,
+                    minHeight: carouselMode ? '388px' : undefined,
                 }}
             >
                 <div
-                    className="absolute inset-0 pointer-events-none opacity-35"
+                    className="absolute inset-0 pointer-events-none opacity-28"
                     style={{
-                        background: `radial-gradient(circle at center, ${realmColor}18, transparent 58%)`,
+                        background: `radial-gradient(circle at 40% 30%, ${realmColor}16, transparent 58%)`,
                     }}
                 />
 
@@ -292,7 +312,7 @@ export default function RealmOrbitCard({
                     <div
                         className="grid items-center gap-4 min-w-0"
                         style={{
-                            gridTemplateColumns: `${miniSize + 6}px minmax(0, 1fr)`,
+                            gridTemplateColumns: `${miniSize + 2}px minmax(0, 1fr)`,
                         }}
                     >
                         <div className="flex items-center justify-center self-center">
@@ -401,7 +421,7 @@ export default function RealmOrbitCard({
                         </div>
 
                         <div className="min-w-0 self-center">
-                            <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                            <div className="flex flex-wrap items-center gap-2 mb-2">
                                 <p className="text-[9px] uppercase tracking-[0.18em] text-white/45">
                                     Realm Soundtrack
                                 </p>
@@ -420,30 +440,39 @@ export default function RealmOrbitCard({
                             </div>
 
                             <h3
-                                className="font-display leading-[0.94] line-clamp-2 mb-1"
+                                className="font-display leading-tight mb-2 uppercase"
                                 style={{
-                                    color: realmColor,
-                                    fontSize: carouselMode ? '1.72rem' : '1.55rem',
+                                    color: 'rgba(245,247,252,0.94)',
+                                    fontSize: carouselMode ? '1.12rem' : '1.2rem',
+                                    letterSpacing: '0.08em',
+                                    textShadow: `0 0 12px ${realmColor}22`,
                                 }}
                             >
-                                {realmName}
+                                {realmDisplayName}
                             </h3>
 
                             {selectedTrack ? (
                                 <>
+                                    <p className="text-[9px] uppercase tracking-[0.16em] text-white/38 mb-1">
+                                        Now playing
+                                    </p>
+
                                     <p
-                                        className="text-[1rem] truncate"
+                                        className="text-[1.02rem] truncate font-medium"
                                         style={{
                                             color: selectedTrackLocked
                                                 ? 'rgba(255,255,255,0.52)'
-                                                : 'rgba(255,255,255,0.92)',
+                                                : realmColor,
+                                            textShadow: selectedTrackLocked
+                                                ? 'none'
+                                                : `0 0 10px ${realmColor}22`,
                                         }}
                                     >
                                         {selectedTrackLocked ? '🔒 ' : ''}
                                         {selectedTrack.trackTitle}
                                     </p>
                                     <p className="text-xs text-white/55 truncate">
-                                        {selectedTrack.artist} • {selectedTrack.realmName}
+                                        {selectedTrack.artist}
                                     </p>
                                     {selectedTrackLocked && selectedTrackLockLabel && (
                                         <p className="text-[11px] text-white/42 truncate mt-1">
@@ -523,29 +552,30 @@ export default function RealmOrbitCard({
                         </div>
                     )}
 
-                    {pathLabel && (
+                    {compactPathLabel && (
                         <div className="mt-auto pt-4">
                             <div
                                 className="rounded-2xl border px-3 py-2.5 flex items-center justify-between gap-3"
                                 style={{
                                     borderColor: `${realmColor}22`,
-                                    background: 'rgba(255,255,255,0.03)',
+                                    background: 'rgba(255,255,255,0.026)',
                                 }}
                             >
-                                <span className="text-[10px] uppercase tracking-[0.16em] text-white/45 whitespace-nowrap">
+                                <span className="text-[10px] uppercase tracking-[0.16em] text-white/42 whitespace-nowrap">
                                     Soundtrack Path
                                 </span>
                                 <span
-                                    className="text-[11px] font-medium text-right"
+                                    className="text-[10px] font-medium text-right whitespace-nowrap"
                                     style={{
                                         color:
-                                            pathLabel.toLowerCase().includes('locked') ||
-                                                pathLabel.toLowerCase().includes('sign in')
+                                            compactPathLabel.toLowerCase().includes('locked') ||
+                                                compactPathLabel.toLowerCase().includes('join') ||
+                                                compactPathLabel.toLowerCase().includes('sign in')
                                                 ? 'rgba(255,255,255,0.58)'
                                                 : realmColor,
                                     }}
                                 >
-                                    {pathLabel}
+                                    {compactPathLabel}
                                 </span>
                             </div>
                         </div>
@@ -667,7 +697,7 @@ export default function RealmOrbitCard({
                     </div>
 
                     <h3 className="text-2xl font-display" style={{ color: realmColor }}>
-                        {realmName}
+                        {realmDisplayName}
                     </h3>
 
                     <p className="text-xs text-white/55 mt-1">
