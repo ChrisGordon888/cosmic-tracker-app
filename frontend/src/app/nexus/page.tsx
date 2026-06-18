@@ -905,30 +905,41 @@ export default function CosmicNexusHub() {
                     >
                         <style jsx>{`
         .realm-carousel {
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-        }
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    align-items: stretch;
+}
 
-        .realm-carousel::-webkit-scrollbar {
-            display: none;
-        }
+.realm-carousel::-webkit-scrollbar {
+    display: none;
+}
 
-        .realm-carousel-item {
-            flex: 0 0 86%;
-            scroll-snap-align: start;
-        }
+.realm-carousel-item {
+    flex: 0 0 86%;
+    scroll-snap-align: start;
+    min-width: 0;
+    max-width: 86%;
+    display: flex;
+}
+
+.realm-carousel-item > :global(*) {
+    width: 100%;
+    min-width: 0;
+}
 
         @media (min-width: 768px) {
-            .realm-carousel-item {
-                flex-basis: calc((100% - 16px) / 2);
-            }
-        }
+    .realm-carousel-item {
+        flex-basis: calc((100% - 16px) / 2);
+        max-width: calc((100% - 16px) / 2);
+    }
+}
 
-        @media (min-width: 1024px) {
-            .realm-carousel-item {
-                flex-basis: calc((100% - 32px) / 3);
-            }
-        }
+@media (min-width: 1024px) {
+    .realm-carousel-item {
+        flex-basis: calc((100% - 32px) / 3);
+        max-width: calc((100% - 32px) / 3);
+    }
+}
     `}</style>
 
                         <div className="flex items-start justify-between gap-4 mb-5">
@@ -1071,30 +1082,41 @@ export default function CosmicNexusHub() {
                             >
                                 <style jsx>{`
             .curated-shelf {
-                scrollbar-width: none;
-                -ms-overflow-style: none;
-            }
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    align-items: stretch;
+}
 
-            .curated-shelf::-webkit-scrollbar {
-                display: none;
-            }
+.curated-shelf::-webkit-scrollbar {
+    display: none;
+}
 
-            .curated-shelf-item {
-                flex: 0 0 84%;
-                scroll-snap-align: start;
-            }
+.curated-shelf-item {
+    flex: 0 0 84%;
+    scroll-snap-align: start;
+    min-width: 0;
+    max-width: 84%;
+    display: flex;
+}
 
-            @media (min-width: 768px) {
-                .curated-shelf-item {
-                    flex-basis: 320px;
-                }
-            }
+.curated-shelf-item > :global(*) {
+    width: 100%;
+    min-width: 0;
+}
 
-            @media (min-width: 1280px) {
-                .curated-shelf-item {
-                    flex-basis: 340px;
-                }
-            }
+           @media (min-width: 768px) {
+    .curated-shelf-item {
+        flex-basis: 320px;
+        max-width: 320px;
+    }
+}
+
+@media (min-width: 1280px) {
+    .curated-shelf-item {
+        flex-basis: 340px;
+        max-width: 340px;
+    }
+}
         `}</style>
 
                                 <div className="flex items-start justify-between gap-4 mb-4">
@@ -1176,7 +1198,7 @@ export default function CosmicNexusHub() {
                                         return (
                                             <div key={collection.id} className="curated-shelf-item">
                                                 <div
-                                                    className="rounded-[24px] border border-white/10 bg-white/[0.03] overflow-hidden h-full"
+                                                    className="rounded-[24px] border border-white/10 bg-white/[0.03] overflow-hidden h-full flex flex-col min-w-0"
                                                     style={{
                                                         borderColor: `${firstTrack.realmColor}26`,
                                                         background:
@@ -1276,8 +1298,8 @@ export default function CosmicNexusHub() {
                                                         </div>
                                                     </div>
 
-                                                    <div className="p-3.5">
-                                                        <div className="flex gap-2 overflow-x-auto pb-1 mb-3">
+                                                    <div className="p-3.5 flex flex-col flex-1 min-w-0">
+                                                        <div className="flex gap-2 overflow-x-auto pb-1 mb-3 min-w-0 max-w-full">
                                                             {allCollectionTracks.length > 0 ? (
                                                                 allCollectionTracks.map((track) => {
                                                                     const locked = isTrackLocked(track);
@@ -1339,7 +1361,7 @@ export default function CosmicNexusHub() {
 
                                                         {leadTrack && (
                                                             <button
-                                                                className="btn-secondary w-full"
+                                                                className="btn-secondary w-full mt-auto"
                                                                 onClick={() => tryPlayTrack(leadTrack)}
                                                                 style={{
                                                                     borderRadius: '999px',
