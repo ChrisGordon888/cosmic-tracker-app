@@ -107,14 +107,6 @@ export default function RealmOrbitCard({
         });
     }, [tracks]);
 
-    const orbitTracks = useMemo(() => sortedTracks.slice(0, 8), [sortedTracks]);
-
-    const [cardSize, setCardSize] = useState(360);
-    const [isMobile, setIsMobile] = useState(false);
-    const [selectedTrackId, setSelectedTrackId] = useState<string | null>(
-        sortedTracks[0]?.id ?? null
-    );
-
     const trackIsLocked = (track?: OrbitTrack | null) => {
         if (!track) return false;
         return isTrackLocked?.(track) ?? false;
@@ -124,6 +116,21 @@ export default function RealmOrbitCard({
         if (!track) return null;
         return getTrackLockLabel?.(track) ?? null;
     };
+
+    const playableTracks = useMemo(() => {
+        return sortedTracks.filter((track) => !trackIsLocked(track));
+    }, [sortedTracks, isTrackLocked]);
+
+    const orbitTracks = useMemo(() => {
+        return playableTracks.slice(0, 8);
+    }, [playableTracks]);
+
+    const [cardSize, setCardSize] = useState(360);
+    const [isMobile, setIsMobile] = useState(false);
+    const [selectedTrackId, setSelectedTrackId] = useState<string | null>(
+        playableTracks[0]?.id ?? sortedTracks[0]?.id ?? null
+    );
+
 
     useEffect(() => {
         const updateSize = () => {
@@ -146,9 +153,9 @@ export default function RealmOrbitCard({
         }
 
         if (sortedTracks.length > 0 && !selectedTrackId) {
-            setSelectedTrackId(sortedTracks[0].id);
+            setSelectedTrackId(playableTracks[0]?.id ?? sortedTracks[0].id);
         }
-    }, [currentTrackId, sortedTracks, selectedTrackId]);
+    }, [currentTrackId, sortedTracks, playableTracks, selectedTrackId]);
 
     const centerX = cardSize / 2;
     const centerY = isMobile ? cardSize * 0.45 : cardSize / 2;
@@ -664,7 +671,7 @@ export default function RealmOrbitCard({
                     </h3>
 
                     <p className="text-xs text-white/55 mt-1">
-                        {orbitTracks.length} in orbit • {sortedTracks.length} total track
+                        {orbitTracks.length} playable in orbit • {sortedTracks.length} total track
                         {sortedTracks.length === 1 ? '' : 's'}
                     </p>
                 </div>
@@ -789,9 +796,8 @@ export default function RealmOrbitCard({
                                 key={track.id}
                                 onClick={() => handleTrackClick(track)}
                                 onMouseEnter={() => handleSelectOnly(track)}
-                                className={`absolute rounded-full flex items-center justify-center transition-all hover:scale-110 ${
-                                    isCurrent && !locked ? 'orbit-node-active' : 'orbit-node-idle'
-                                }`}
+                                className={`absolute rounded-full flex items-center justify-center transition-all hover:scale-110 ${isCurrent && !locked ? 'orbit-node-active' : 'orbit-node-idle'
+                                    }`}
                                 style={{
                                     width: `${nodeSize}px`,
                                     height: `${nodeSize}px`,
@@ -804,15 +810,14 @@ export default function RealmOrbitCard({
                                             : isSelected
                                                 ? `radial-gradient(circle, ${realmColor}99, ${realmColor}44)`
                                                 : `radial-gradient(circle, ${realmColor}74, ${realmColor}30)`,
-                                    border: `1px solid ${
-                                        locked
+                                    border: `1px solid ${locked
                                             ? 'rgba(255,255,255,0.14)'
                                             : isCurrent
                                                 ? `${realmColor}ee`
                                                 : isSelected
                                                     ? `${realmColor}aa`
                                                     : `${realmColor}55`
-                                    }`,
+                                        }`,
                                     boxShadow: locked
                                         ? 'none'
                                         : isCurrent

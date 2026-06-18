@@ -223,14 +223,9 @@ export default function CosmicNexusHub() {
         return getTrackById(currentRelease.primaryTrackId) ?? null;
     }, [currentRelease]);
 
-    const currentReleaseTrackIds = useMemo(
-        () => new Set(currentReleaseTracks.map((track) => track.id)),
-        [currentReleaseTracks]
-    );
-
     const isTrackLocked = (track: any) => {
         if (!track) return false;
-        if (!currentReleaseTrackIds.has(track.id)) return false;
+        if (track.visibility === 'premium') return true;
 
         const unlockDate = RELEASE_UNLOCKS[track.id];
         if (!unlockDate) return false;
@@ -240,7 +235,17 @@ export default function CosmicNexusHub() {
 
     const getTrackUnlockLabel = (track: any) => {
         if (!track) return null;
+        if (track.visibility === 'premium') return 'Premium';
+
         return formatUnlockDate(RELEASE_UNLOCKS[track.id]);
+    };
+
+    const getTrackLockLabel = (track: any) => {
+        if (!track) return null;
+        if (track.visibility === 'premium') return 'Premium';
+
+        const unlockLabel = getTrackUnlockLabel(track);
+        return unlockLabel ? `Opens ${unlockLabel}` : null;
     };
 
     const tryPlayTrack = (track: any) => {
@@ -258,9 +263,16 @@ export default function CosmicNexusHub() {
 
     const isRealmUnlocked = (realmId: number): boolean => unlockedRealms.includes(realmId);
 
-    const visiblePublicTracks = useMemo(() => {
-        return PUBLIC_TRACKS.filter((track) => !isTrackLocked(track));
-    }, [currentReleaseTracks]);
+    const nexusPublicTracks = useMemo(() => {
+        return [...PUBLIC_TRACKS].sort((a, b) => {
+            const aOrder = a.sortOrder ?? 999;
+            const bOrder = b.sortOrder ?? 999;
+
+            if (aOrder !== bOrder) return aOrder - bOrder;
+
+            return a.trackTitle.localeCompare(b.trackTitle);
+        });
+    }, []);
 
     const groupedTracks = REALM_META.map((realm) => {
         const realmId = parseInt(realm.id);
@@ -269,7 +281,7 @@ export default function CosmicNexusHub() {
             ...realm,
             status: isRealmUnlocked(realmId) ? 'unlocked' : 'locked',
             progress: getRealmProgress(realmId),
-            tracks: visiblePublicTracks.filter((track) => track.realmId === realmId),
+            tracks: nexusPublicTracks.filter((track) => track.realmId === realmId),
         };
     }).filter((realmGroup) => realmGroup.tracks.length > 0);
 
@@ -328,6 +340,7 @@ export default function CosmicNexusHub() {
     const releaseArtworkUrl = currentRelease?.coverArtUrl ?? null;
     const featuredSignalArtwork =
         CURATED_PLAYLIST_ART_OVERRIDES['cosmic-featured-signal'] ??
+        flagshipTrack?.artworkUrl ??
         releaseArtworkUrl ??
         null;
     const vaultArtwork = CURATED_PLAYLIST_ART_OVERRIDES['april-may-vault'] ?? null;
@@ -925,7 +938,7 @@ export default function CosmicNexusHub() {
                                     <span className="nexus-section-mark">♪</span> REALM SOUNDTRACKS
                                 </h2>
                                 <p className="text-secondary text-sm mt-1 leading-relaxed max-w-2xl">
-                                    The soundtrack library opens gradually as each release enters the world. Browse each realm in a single horizontal flow.
+                                    Browse each realm in a single horizontal flow. Playable tracks populate the orbit, while locked releases remain visible in the full tracklist.
                                 </p>
                             </div>
 
@@ -1004,6 +1017,8 @@ export default function CosmicNexusHub() {
                                                 isRecommended={guidanceRealmId !== null && realmId === guidanceRealmId}
                                                 compactOnMobile
                                                 carouselMode
+                                                isTrackLocked={isTrackLocked}
+                                                getTrackLockLabel={getTrackLockLabel}
                                                 pathLabel={
                                                     isSignedIn
                                                         ? pathUnlocked
@@ -1144,13 +1159,13 @@ export default function CosmicNexusHub() {
                                             .map((trackId) => getTrackById(trackId))
                                             .filter(Boolean);
 
-                                        const previewTrack = allCollectionTracks
-                                            .filter((track) => !isTrackLocked(track))
-                                            .slice(0, 3);
+                                        const openCollectionTracks = allCollectionTracks.filter(
+                                            (track) => !isTrackLocked(track)
+                                        );
 
-                                        const firstTrack = previewTrack[0] ?? allCollectionTracks[0] ?? null;
-                                        const leadTrack = previewTrack[0] ?? null;
-                                        const openCount = previewTrack.length;
+                                        const firstTrack = openCollectionTracks[0] ?? allCollectionTracks[0] ?? null;
+                                        const leadTrack = openCollectionTracks[0] ?? null;
+                                        const openCount = openCollectionTracks.length;
                                         const totalCount = allCollectionTracks.length;
                                         const collectionArtwork = getCuratedCollectionArtwork(collection);
                                         const collectionTypeLabel = getCollectionTypeLabel(totalCount, openCount);
@@ -1264,31 +1279,45 @@ export default function CosmicNexusHub() {
 
                                                     <div className="p-3.5">
                                                         <div className="flex gap-2 overflow-x-auto pb-1 mb-3">
-                                                            {previewTrack.length > 0 ? (
-                                                                previewTrack.map((track) => (
-                                                                    <button
-                                                                        key={track!.id}
-                                                                        onClick={() => tryPlayTrack(track!)}
-                                                                        className="shrink-0 px-2.5 py-1.5 rounded-full text-[11px] border transition-all whitespace-nowrap"
-                                                                        style={{
-                                                                            borderColor:
-                                                                                currentTrack?.id === track!.id
+                                                            {allCollectionTracks.length > 0 ? (
+                                                                allCollectionTracks.map((track) => {
+                                                                    const locked = isTrackLocked(track);
+                                                                    const lockLabel = getTrackLockLabel(track);
+                                                                    const isCurrentTrack = currentTrack?.id === track!.id;
+
+                                                                    return (
+                                                                        <button
+                                                                            key={track!.id}
+                                                                            onClick={() => tryPlayTrack(track!)}
+                                                                            disabled={locked}
+                                                                            className="shrink-0 px-2.5 py-1.5 rounded-full text-[11px] border transition-all whitespace-nowrap"
+                                                                            style={{
+                                                                                borderColor: isCurrentTrack
                                                                                     ? `${track!.realmColor}88`
-                                                                                    : `${track!.realmColor}22`,
-                                                                            background:
-                                                                                currentTrack?.id === track!.id
+                                                                                    : locked
+                                                                                        ? 'rgba(255,255,255,0.10)'
+                                                                                        : `${track!.realmColor}22`,
+                                                                                background: isCurrentTrack
                                                                                     ? `${track!.realmColor}22`
-                                                                                    : 'rgba(255,255,255,0.04)',
-                                                                            color:
-                                                                                currentTrack?.id === track!.id
-                                                                                    ? track!.realmColor
-                                                                                    : 'rgba(255,255,255,0.74)',
-                                                                        }}
-                                                                    >
-                                                                        {currentTrack?.id === track!.id && isPlaying ? '⏸ ' : '♪ '}
-                                                                        {track!.trackTitle}
-                                                                    </button>
-                                                                ))
+                                                                                    : locked
+                                                                                        ? 'rgba(255,255,255,0.025)'
+                                                                                        : 'rgba(255,255,255,0.04)',
+                                                                                color: locked
+                                                                                    ? 'rgba(255,255,255,0.45)'
+                                                                                    : isCurrentTrack
+                                                                                        ? track!.realmColor
+                                                                                        : 'rgba(255,255,255,0.74)',
+                                                                                opacity: locked ? 0.72 : 1,
+                                                                                cursor: locked ? 'not-allowed' : 'pointer',
+                                                                            }}
+                                                                            title={locked && lockLabel ? lockLabel : track!.trackTitle}
+                                                                        >
+                                                                            {locked
+                                                                                ? `🔒 ${track!.trackTitle}${lockLabel ? ` • ${lockLabel}` : ''}`
+                                                                                : `${isCurrentTrack && isPlaying ? '⏸' : '♪'} ${track!.trackTitle}`}
+                                                                        </button>
+                                                                    );
+                                                                })
                                                             ) : (
                                                                 <div className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-secondary whitespace-nowrap">
                                                                     Collection coming soon
