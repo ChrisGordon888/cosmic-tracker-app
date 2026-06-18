@@ -269,6 +269,10 @@ export default function CosmicNexusHub() {
 
     const isRealmUnlocked = (realmId: number): boolean => unlockedRealms.includes(realmId);
 
+    const getRealmTrackCountLabel = (count: number) => {
+        return `${count} soundtrack track${count === 1 ? '' : 's'}`;
+    };
+
     const isTrackCatalogVisible = (track: any) => {
         if (!track) return false;
 
@@ -717,10 +721,26 @@ export default function CosmicNexusHub() {
                                 }}
                             >
                                 <div className="flex items-center gap-4 mb-4">
-                                    <div className="level-badge">
+                                    <div
+                                        className="shrink-0 grid place-items-center"
+                                        style={{
+                                            width: '86px',
+                                            height: '86px',
+                                            borderRadius: '999px',
+                                            border: '1px solid rgba(255,255,255,0.14)',
+                                            background:
+                                                'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.18), rgba(56,189,248,0.12) 38%, rgba(15,23,42,0.72) 100%)',
+                                            boxShadow:
+                                                '0 18px 38px rgba(0,0,0,0.26), inset 0 1px 0 rgba(255,255,255,0.12)',
+                                        }}
+                                    >
                                         <div className="flex flex-col items-center">
-                                            <span className="text-xs opacity-70">LVL</span>
-                                            <span>{userLevel}</span>
+                                            <span className="text-[10px] uppercase tracking-[0.18em] text-white/55">
+                                                Level
+                                            </span>
+                                            <span className="text-3xl font-display text-white leading-none">
+                                                {userLevel}
+                                            </span>
                                         </div>
                                     </div>
 
@@ -733,6 +753,9 @@ export default function CosmicNexusHub() {
                                         </h2>
                                         <p className="text-sm text-muted">
                                             Current Realm: <span className="text-primary">{currentRealmName}</span>
+                                        </p>
+                                        <p className="text-xs text-muted mt-1">
+                                            {nexusVisibleTracks.length} cataloged tracks • {memberCatalogCount} join unlocks
                                         </p>
                                     </div>
                                 </div>
@@ -752,12 +775,12 @@ export default function CosmicNexusHub() {
 
                                 <div className="grid grid-cols-2 gap-3 text-center">
                                     <div className="glass-card p-3">
-                                        <div className="text-xl font-display text-glow">{currentStreak}</div>
+                                        <div className="text-xl font-display text-white">{currentStreak}</div>
                                         <div className="text-xs text-muted">Streak</div>
                                     </div>
 
                                     <div className="glass-card p-3">
-                                        <div className="text-xl font-display text-glow">{completedSiddhis}</div>
+                                        <div className="text-xl font-display text-white">{completedSiddhis}</div>
                                         <div className="text-xs text-muted">Siddhis</div>
                                     </div>
                                 </div>
@@ -977,7 +1000,7 @@ export default function CosmicNexusHub() {
                             </div>
 
                             <p className="text-sm text-secondary mb-3 leading-relaxed">
-                                Today’s moon signal is an ambient current for the Nexus. Use it as a daily listening doorway, while your Find Your Realm result remains your personal path.
+                                The moon offers a daily realm to explore. Your Personal Path card is based on your realm result; this card is today’s sky signal.
                             </p>
 
                             {realmAlignment?.primaryRealm && (
@@ -986,7 +1009,7 @@ export default function CosmicNexusHub() {
                                         Today’s doorway
                                     </p>
                                     <p className="text-sm text-secondary">
-                                        Start with <span className="text-glow font-medium">{realmAlignment.primaryRealm}</span>, then let the soundtrack pull you where it needs to.
+                                        Try <span className="text-glow font-medium">{realmAlignment.primaryRealm}</span> as today’s listening doorway.
                                     </p>
                                 </div>
                             )}
@@ -1111,6 +1134,11 @@ export default function CosmicNexusHub() {
                                 {groupedTracks.map((realmGroup) => {
                                     const realmId = parseInt(realmGroup.id);
                                     const pathUnlocked = isRealmUnlocked(realmId);
+                                    const soundtrackPathLabel = isSignedIn
+                                        ? pathUnlocked
+                                            ? getRealmTrackCountLabel(realmGroup.tracks.length)
+                                            : `${getRealmTrackCountLabel(realmGroup.tracks.length)} • Realm Locked`
+                                        : `${getRealmTrackCountLabel(realmGroup.tracks.length)} • Join to save`;
 
                                     return (
                                         <div
@@ -1135,13 +1163,7 @@ export default function CosmicNexusHub() {
                                                 carouselMode
                                                 isTrackLocked={isTrackLocked}
                                                 getTrackLockLabel={getTrackLockLabel}
-                                                pathLabel={
-                                                    isSignedIn
-                                                        ? pathUnlocked
-                                                            ? 'Realm Open'
-                                                            : 'Realm Locked'
-                                                        : 'Sign in to save your path'
-                                                }
+                                                pathLabel={soundtrackPathLabel}
                                             />
                                         </div>
                                     );
