@@ -10,6 +10,7 @@ interface OrbitTrack {
     realmName: string;
     realmColor: string;
     role?: string;
+    visibility?: string;
     isRealmAnchor?: boolean;
     isPublicPick?: boolean;
     vibe?: string[];
@@ -34,8 +35,10 @@ interface RealmOrbitCardProps {
     compactOnMobile?: boolean;
     carouselMode?: boolean;
     pathLabel?: string;
-}
 
+    isTrackLocked?: (track: OrbitTrack) => boolean;
+    getTrackLockLabel?: (track: OrbitTrack) => string | null;
+}
 
 function getResponsiveOrbitSize() {
     if (typeof window === 'undefined') return 360;
@@ -90,6 +93,8 @@ export default function RealmOrbitCard({
     compactOnMobile = false,
     carouselMode = false,
     pathLabel,
+    isTrackLocked,
+    getTrackLockLabel,
 }: RealmOrbitCardProps) {
     const sortedTracks = useMemo(() => {
         return [...tracks].sort((a, b) => {
@@ -109,6 +114,16 @@ export default function RealmOrbitCard({
     const [selectedTrackId, setSelectedTrackId] = useState<string | null>(
         sortedTracks[0]?.id ?? null
     );
+
+    const trackIsLocked = (track?: OrbitTrack | null) => {
+        if (!track) return false;
+        return isTrackLocked?.(track) ?? false;
+    };
+
+    const getLockLabel = (track?: OrbitTrack | null) => {
+        if (!track) return null;
+        return getTrackLockLabel?.(track) ?? null;
+    };
 
     useEffect(() => {
         const updateSize = () => {
@@ -162,18 +177,28 @@ export default function RealmOrbitCard({
     const selectedTrack =
         sortedTracks.find((track) => track.id === selectedTrackId) ?? sortedTracks[0] ?? null;
 
+    const selectedTrackLocked = trackIsLocked(selectedTrack);
+    const selectedTrackLockLabel = getLockLabel(selectedTrack);
     const selectedIsCurrent = selectedTrack?.id === currentTrackId;
+
     const anchorTrack = sortedTracks.find(
         (track) => track.isRealmAnchor || track.role === 'anchor'
     );
+
     const selectedIsAnchor = Boolean(
         selectedTrack?.isRealmAnchor || selectedTrack?.role === 'anchor'
     );
+
     const realmTags = getRealmStateTags(realmName);
     const clampedProgress = Math.max(0, Math.min(progress, 100));
 
     const handleTrackClick = (track: OrbitTrack) => {
         setSelectedTrackId(track.id);
+
+        if (trackIsLocked(track)) {
+            return;
+        }
+
         onPlayTrack(track);
     };
 
@@ -181,8 +206,50 @@ export default function RealmOrbitCard({
         setSelectedTrackId(track.id);
     };
 
+    const renderTrackPill = (track: OrbitTrack) => {
+        const isSelected = selectedTrackId === track.id;
+        const isCurrent = currentTrackId === track.id;
+        const locked = trackIsLocked(track);
+        const lockLabel = getLockLabel(track);
+
+        return (
+            <button
+                key={track.id}
+                onClick={() => handleTrackClick(track)}
+                className="shrink-0 px-3 py-2 rounded-full text-[11px] border transition-all whitespace-nowrap"
+                style={{
+                    borderColor:
+                        isSelected || isCurrent
+                            ? `${realmColor}88`
+                            : locked
+                                ? 'rgba(255,255,255,0.10)'
+                                : `${realmColor}22`,
+                    background:
+                        isSelected || isCurrent
+                            ? `${realmColor}22`
+                            : locked
+                                ? 'rgba(255,255,255,0.025)'
+                                : 'rgba(255,255,255,0.04)',
+                    color:
+                        locked
+                            ? 'rgba(255,255,255,0.45)'
+                            : isSelected || isCurrent
+                                ? realmColor
+                                : 'rgba(255,255,255,0.72)',
+                    opacity: locked ? 0.72 : 1,
+                    cursor: locked ? 'not-allowed' : 'pointer',
+                }}
+                title={locked && lockLabel ? lockLabel : track.trackTitle}
+            >
+                {locked
+                    ? `🔒 ${track.trackTitle}${lockLabel ? ` • ${lockLabel}` : ''}`
+                    : `${isCurrent && isPlaying ? '⏸' : '♪'} ${track.trackTitle}`}
+            </button>
+        );
+    };
+
     if (carouselMode || (compactOnMobile && isMobile)) {
-        const miniSize = carouselMode ? 108 : 108;
+        const miniSize = 108;
         const miniCenter = miniSize / 2;
         const miniRadius = carouselMode ? 36 : 38;
         const miniTracks = orbitTracks.slice(0, 5);
@@ -259,18 +326,30 @@ export default function RealmOrbitCard({
                                         height: `${Math.round(miniSize * 0.36)}px`,
                                         left: `${miniCenter - Math.round(miniSize * 0.18)}px`,
                                         top: `${miniCenter - Math.round(miniSize * 0.18)}px`,
-                                        background: `radial-gradient(circle at 35% 35%, ${realmColor}, ${realmColor}88)`,
-                                        border: `1px solid ${realmColor}99`,
-                                        boxShadow: `0 0 16px ${realmColor}44`,
+                                        background: selectedTrackLocked
+                                            ? 'rgba(255,255,255,0.08)'
+                                            : `radial-gradient(circle at 35% 35%, ${realmColor}, ${realmColor}88)`,
+                                        border: selectedTrackLocked
+                                            ? '1px solid rgba(255,255,255,0.16)'
+                                            : `1px solid ${realmColor}99`,
+                                        boxShadow: selectedTrackLocked
+                                            ? 'none'
+                                            : `0 0 16px ${realmColor}44`,
+                                        cursor: selectedTrackLocked ? 'not-allowed' : 'pointer',
                                     }}
                                     aria-label={selectedTrack ? `Play ${selectedTrack.trackTitle}` : `Play ${realmName}`}
                                 >
-                                    {selectedIsCurrent && isPlaying ? '⏸' : realmIcon}
+                                    {selectedTrackLocked
+                                        ? '🔒'
+                                        : selectedIsCurrent && isPlaying
+                                            ? '⏸'
+                                            : realmIcon}
                                 </button>
 
                                 {miniNodes.map((track) => {
                                     const isCurrent = currentTrackId === track.id;
                                     const isSelected = selectedTrackId === track.id;
+                                    const locked = trackIsLocked(track);
 
                                     return (
                                         <button
@@ -283,21 +362,31 @@ export default function RealmOrbitCard({
                                                 left: `${track.x}px`,
                                                 top: `${track.y}px`,
                                                 transform: 'translate(-50%, -50%)',
-                                                background: isCurrent
-                                                    ? `radial-gradient(circle, ${realmColor}, ${realmColor}aa)`
-                                                    : isSelected
-                                                        ? `radial-gradient(circle, ${realmColor}aa, ${realmColor}44)`
-                                                        : `radial-gradient(circle, ${realmColor}66, ${realmColor}22)`,
-                                                border: `1px solid ${isCurrent || isSelected ? `${realmColor}aa` : `${realmColor}44`
+                                                background: locked
+                                                    ? 'rgba(255,255,255,0.07)'
+                                                    : isCurrent
+                                                        ? `radial-gradient(circle, ${realmColor}, ${realmColor}aa)`
+                                                        : isSelected
+                                                            ? `radial-gradient(circle, ${realmColor}aa, ${realmColor}44)`
+                                                            : `radial-gradient(circle, ${realmColor}66, ${realmColor}22)`,
+                                                border: `1px solid ${locked
+                                                    ? 'rgba(255,255,255,0.14)'
+                                                    : isCurrent || isSelected
+                                                        ? `${realmColor}aa`
+                                                        : `${realmColor}44`
                                                     }`,
-                                                boxShadow: isCurrent
-                                                    ? `0 0 12px ${realmColor}66`
-                                                    : `0 0 6px ${realmColor}22`,
+                                                boxShadow: locked
+                                                    ? 'none'
+                                                    : isCurrent
+                                                        ? `0 0 12px ${realmColor}66`
+                                                        : `0 0 6px ${realmColor}22`,
+                                                opacity: locked ? 0.62 : 1,
+                                                cursor: locked ? 'not-allowed' : 'pointer',
                                             }}
                                             title={track.trackTitle}
-                                            aria-label={`Play ${track.trackTitle}`}
+                                            aria-label={locked ? `${track.trackTitle} locked` : `Play ${track.trackTitle}`}
                                         >
-                                            {isCurrent && isPlaying ? 'Ⅱ' : '♪'}
+                                            {locked ? '🔒' : isCurrent && isPlaying ? 'Ⅱ' : '♪'}
                                         </button>
                                     );
                                 })}
@@ -335,12 +424,25 @@ export default function RealmOrbitCard({
 
                             {selectedTrack ? (
                                 <>
-                                    <p className="text-[1rem] text-white/92 truncate">
+                                    <p
+                                        className="text-[1rem] truncate"
+                                        style={{
+                                            color: selectedTrackLocked
+                                                ? 'rgba(255,255,255,0.52)'
+                                                : 'rgba(255,255,255,0.92)',
+                                        }}
+                                    >
+                                        {selectedTrackLocked ? '🔒 ' : ''}
                                         {selectedTrack.trackTitle}
                                     </p>
                                     <p className="text-xs text-white/55 truncate">
                                         {selectedTrack.artist} • {selectedTrack.realmName}
                                     </p>
+                                    {selectedTrackLocked && selectedTrackLockLabel && (
+                                        <p className="text-[11px] text-white/42 truncate mt-1">
+                                            {selectedTrackLockLabel}
+                                        </p>
+                                    )}
                                 </>
                             ) : (
                                 <p className="text-xs text-white/55">
@@ -372,17 +474,22 @@ export default function RealmOrbitCard({
                         <button
                             onClick={() => selectedTrack && handleTrackClick(selectedTrack)}
                             className="btn-secondary text-sm"
+                            disabled={selectedTrackLocked}
                             style={{
                                 minHeight: '50px',
                                 padding: '0.72rem 0.95rem',
                                 borderRadius: '999px',
+                                opacity: selectedTrackLocked ? 0.55 : 1,
+                                cursor: selectedTrackLocked ? 'not-allowed' : 'pointer',
                             }}
                         >
-                            {selectedIsCurrent && isPlaying
-                                ? 'Pause'
-                                : selectedIsCurrent
-                                    ? 'Resume'
-                                    : 'Play'}
+                            {selectedTrackLocked
+                                ? selectedTrackLockLabel ?? 'Locked'
+                                : selectedIsCurrent && isPlaying
+                                    ? 'Pause'
+                                    : selectedIsCurrent
+                                        ? 'Resume'
+                                        : 'Play'}
                         </button>
 
                         {realmRoute && isUnlocked ? (
@@ -405,38 +512,7 @@ export default function RealmOrbitCard({
 
                     {sortedTracks.length > 1 && (
                         <div className="relative mt-4 flex gap-2 overflow-x-auto pb-1 w-full">
-                            {sortedTracks.map((track) => {
-                                const isSelected = selectedTrackId === track.id;
-                                const isCurrent = currentTrackId === track.id;
-
-                                return (
-                                    <button
-                                        key={track.id}
-                                        onClick={() => {
-                                            setSelectedTrackId(track.id);
-                                            onPlayTrack(track);
-                                        }}
-                                        className="shrink-0 px-2.5 py-1.5 rounded-full text-[11px] border transition-all whitespace-nowrap"
-                                        style={{
-                                            borderColor:
-                                                isSelected || isCurrent
-                                                    ? `${realmColor}88`
-                                                    : `${realmColor}22`,
-                                            background:
-                                                isSelected || isCurrent
-                                                    ? `${realmColor}22`
-                                                    : 'rgba(255,255,255,0.04)',
-                                            color:
-                                                isSelected || isCurrent
-                                                    ? realmColor
-                                                    : 'rgba(255,255,255,0.68)',
-                                        }}
-                                    >
-                                        {isCurrent && isPlaying ? '⏸ ' : '♪ '}
-                                        {track.trackTitle}
-                                    </button>
-                                );
-                            })}
+                            {sortedTracks.map(renderTrackPill)}
                         </div>
                     )}
 
@@ -472,7 +548,6 @@ export default function RealmOrbitCard({
         );
     }
 
-
     return (
         <div
             className="realm-orbit-card rounded-3xl border p-4 md:p-6 relative overflow-hidden"
@@ -483,78 +558,78 @@ export default function RealmOrbitCard({
             }}
         >
             <style jsx>{`
-        @keyframes orbitSpinSlow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
+                @keyframes orbitSpinSlow {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
 
-        @keyframes orbitSpinReverse {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(-360deg); }
-        }
+                @keyframes orbitSpinReverse {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(-360deg); }
+                }
 
-        @keyframes nodeFloat {
-          0%, 100% { transform: translate(-50%, -50%); }
-          50% { transform: translate(-50%, calc(-50% - 4px)); }
-        }
+                @keyframes nodeFloat {
+                    0%, 100% { transform: translate(-50%, -50%); }
+                    50% { transform: translate(-50%, calc(-50% - 4px)); }
+                }
 
-        @keyframes nodePulse {
-          0%, 100% {
-            transform: translate(-50%, -50%) scale(1);
-            box-shadow: 0 0 24px ${realmColor}88;
-          }
-          50% {
-            transform: translate(-50%, -50%) scale(1.08);
-            box-shadow: 0 0 34px ${realmColor}cc;
-          }
-        }
+                @keyframes nodePulse {
+                    0%, 100% {
+                        transform: translate(-50%, -50%) scale(1);
+                        box-shadow: 0 0 24px ${realmColor}88;
+                    }
+                    50% {
+                        transform: translate(-50%, -50%) scale(1.08);
+                        box-shadow: 0 0 34px ${realmColor}cc;
+                    }
+                }
 
-        @keyframes corePulse {
-          0%, 100% {
-            box-shadow:
-              0 0 30px ${realmColor}66,
-              0 0 60px ${realmColor}18;
-          }
-          50% {
-            box-shadow:
-              0 0 42px ${realmColor}99,
-              0 0 72px ${realmColor}22;
-          }
-        }
+                @keyframes corePulse {
+                    0%, 100% {
+                        box-shadow:
+                            0 0 30px ${realmColor}66,
+                            0 0 60px ${realmColor}18;
+                    }
+                    50% {
+                        box-shadow:
+                            0 0 42px ${realmColor}99,
+                            0 0 72px ${realmColor}22;
+                    }
+                }
 
-        .orbit-ring-slow {
-          animation: orbitSpinSlow 36s linear infinite;
-          transform-origin: center center;
-        }
+                .orbit-ring-slow {
+                    animation: orbitSpinSlow 36s linear infinite;
+                    transform-origin: center center;
+                }
 
-        .orbit-ring-reverse {
-          animation: orbitSpinReverse 52s linear infinite;
-          transform-origin: center center;
-        }
+                .orbit-ring-reverse {
+                    animation: orbitSpinReverse 52s linear infinite;
+                    transform-origin: center center;
+                }
 
-        .orbit-node-idle {
-          animation: nodeFloat 4.8s ease-in-out infinite;
-        }
+                .orbit-node-idle {
+                    animation: nodeFloat 4.8s ease-in-out infinite;
+                }
 
-        .orbit-node-active {
-          animation: nodePulse 2.2s ease-in-out infinite;
-        }
+                .orbit-node-active {
+                    animation: nodePulse 2.2s ease-in-out infinite;
+                }
 
-        .realm-core-pulse {
-          animation: corePulse 4s ease-in-out infinite;
-        }
+                .realm-core-pulse {
+                    animation: corePulse 4s ease-in-out infinite;
+                }
 
-        @media (max-width: 480px) {
-          .orbit-node-idle,
-          .orbit-node-active,
-          .realm-core-pulse,
-          .orbit-ring-slow,
-          .orbit-ring-reverse {
-            animation-duration: 0s;
-            animation-name: none;
-          }
-        }
-      `}</style>
+                @media (max-width: 480px) {
+                    .orbit-node-idle,
+                    .orbit-node-active,
+                    .realm-core-pulse,
+                    .orbit-ring-slow,
+                    .orbit-ring-reverse {
+                        animation-duration: 0s;
+                        animation-name: none;
+                    }
+                }
+            `}</style>
 
             <div
                 className="absolute inset-0 pointer-events-none opacity-50"
@@ -589,7 +664,8 @@ export default function RealmOrbitCard({
                     </h3>
 
                     <p className="text-xs text-white/55 mt-1">
-                        {orbitTracks.length} in orbit • {sortedTracks.length} total track{sortedTracks.length === 1 ? '' : 's'}
+                        {orbitTracks.length} in orbit • {sortedTracks.length} total track
+                        {sortedTracks.length === 1 ? '' : 's'}
                     </p>
                 </div>
 
@@ -658,6 +734,7 @@ export default function RealmOrbitCard({
                         {orbitNodes.map((track) => {
                             const isCurrent = currentTrackId === track.id;
                             const isSelected = selectedTrackId === track.id;
+                            const locked = trackIsLocked(track);
 
                             return (
                                 <line
@@ -667,15 +744,17 @@ export default function RealmOrbitCard({
                                     x2={track.x}
                                     y2={track.y}
                                     stroke={
-                                        isCurrent
-                                            ? `${realmColor}ee`
-                                            : isSelected
-                                                ? `${realmColor}99`
-                                                : `${realmColor}4d`
+                                        locked
+                                            ? 'rgba(255,255,255,0.18)'
+                                            : isCurrent
+                                                ? `${realmColor}ee`
+                                                : isSelected
+                                                    ? `${realmColor}99`
+                                                    : `${realmColor}4d`
                                     }
                                     strokeWidth={isCurrent ? 2.6 : isSelected ? 1.9 : 1.2}
                                     strokeLinecap="round"
-                                    opacity={isCurrent ? 1 : isSelected ? 0.82 : 0.58}
+                                    opacity={locked ? 0.42 : isCurrent ? 1 : isSelected ? 0.82 : 0.58}
                                 />
                             );
                         })}
@@ -703,42 +782,53 @@ export default function RealmOrbitCard({
                         const isCurrent = currentTrackId === track.id;
                         const isCurrentAndPlaying = isCurrent && isPlaying;
                         const isSelected = selectedTrackId === track.id;
+                        const locked = trackIsLocked(track);
 
                         return (
                             <button
                                 key={track.id}
                                 onClick={() => handleTrackClick(track)}
                                 onMouseEnter={() => handleSelectOnly(track)}
-                                className={`absolute rounded-full flex items-center justify-center transition-all hover:scale-110 ${isCurrent ? 'orbit-node-active' : 'orbit-node-idle'
-                                    }`}
+                                className={`absolute rounded-full flex items-center justify-center transition-all hover:scale-110 ${
+                                    isCurrent && !locked ? 'orbit-node-active' : 'orbit-node-idle'
+                                }`}
                                 style={{
                                     width: `${nodeSize}px`,
                                     height: `${nodeSize}px`,
                                     left: `${track.x}px`,
                                     top: `${track.y}px`,
-                                    background: isCurrent
-                                        ? `radial-gradient(circle, ${realmColor}, ${realmColor}dd)`
-                                        : isSelected
-                                            ? `radial-gradient(circle, ${realmColor}99, ${realmColor}44)`
-                                            : `radial-gradient(circle, ${realmColor}74, ${realmColor}30)`,
-                                    border: `1px solid ${isCurrent
-                                        ? `${realmColor}ee`
-                                        : isSelected
-                                            ? `${realmColor}aa`
-                                            : `${realmColor}55`
-                                        }`,
-                                    boxShadow: isCurrent
-                                        ? `0 0 24px ${realmColor}88`
-                                        : isSelected
-                                            ? `0 0 18px ${realmColor}55`
-                                            : `0 0 12px ${realmColor}22`,
+                                    background: locked
+                                        ? 'rgba(255,255,255,0.07)'
+                                        : isCurrent
+                                            ? `radial-gradient(circle, ${realmColor}, ${realmColor}dd)`
+                                            : isSelected
+                                                ? `radial-gradient(circle, ${realmColor}99, ${realmColor}44)`
+                                                : `radial-gradient(circle, ${realmColor}74, ${realmColor}30)`,
+                                    border: `1px solid ${
+                                        locked
+                                            ? 'rgba(255,255,255,0.14)'
+                                            : isCurrent
+                                                ? `${realmColor}ee`
+                                                : isSelected
+                                                    ? `${realmColor}aa`
+                                                    : `${realmColor}55`
+                                    }`,
+                                    boxShadow: locked
+                                        ? 'none'
+                                        : isCurrent
+                                            ? `0 0 24px ${realmColor}88`
+                                            : isSelected
+                                                ? `0 0 18px ${realmColor}55`
+                                                : `0 0 12px ${realmColor}22`,
                                     animationDelay: isCurrent ? '0s' : track.driftDelay,
+                                    opacity: locked ? 0.62 : 1,
+                                    cursor: locked ? 'not-allowed' : 'pointer',
                                 }}
-                                title={track.trackTitle}
-                                aria-label={`Play ${track.trackTitle}`}
+                                title={locked ? getLockLabel(track) ?? `${track.trackTitle} locked` : track.trackTitle}
+                                aria-label={locked ? `${track.trackTitle} locked` : `Play ${track.trackTitle}`}
                             >
                                 <span className="text-base">
-                                    {isCurrentAndPlaying ? 'Ⅱ' : isCurrent ? '▶' : '♪'}
+                                    {locked ? '🔒' : isCurrentAndPlaying ? 'Ⅱ' : isCurrent ? '▶' : '♪'}
                                 </span>
                             </button>
                         );
@@ -774,14 +864,28 @@ export default function RealmOrbitCard({
                                                 Realm Anchor
                                             </span>
                                         )}
+
+                                        {selectedTrackLocked && (
+                                            <span className="px-2 py-1 rounded-full text-[10px] uppercase tracking-[0.14em] bg-white/5 border border-white/10 text-white/55">
+                                                {selectedTrackLockLabel ?? 'Locked'}
+                                            </span>
+                                        )}
                                     </div>
 
                                     <p
                                         className="font-display text-xl truncate"
-                                        style={{ color: selectedIsCurrent ? realmColor : 'white' }}
+                                        style={{
+                                            color: selectedTrackLocked
+                                                ? 'rgba(255,255,255,0.55)'
+                                                : selectedIsCurrent
+                                                    ? realmColor
+                                                    : 'white',
+                                        }}
                                     >
+                                        {selectedTrackLocked ? '🔒 ' : ''}
                                         {selectedTrack.trackTitle}
                                     </p>
+
                                     <p className="text-sm text-secondary truncate mb-3">
                                         {selectedTrack.artist} • {selectedTrack.realmName}
                                     </p>
@@ -803,11 +907,13 @@ export default function RealmOrbitCard({
                                     </div>
 
                                     <p className="text-xs text-white/60">
-                                        {selectedIsCurrent && isPlaying
-                                            ? 'Now resonating in this realm.'
-                                            : selectedIsCurrent
-                                                ? 'Paused in orbit. Resume whenever you are ready.'
-                                                : 'Selected in orbit. Play this track to enter through its energy.'}
+                                        {selectedTrackLocked
+                                            ? selectedTrackLockLabel ?? 'This track is locked for now.'
+                                            : selectedIsCurrent && isPlaying
+                                                ? 'Now resonating in this realm.'
+                                                : selectedIsCurrent
+                                                    ? 'Paused in orbit. Resume whenever you are ready.'
+                                                    : 'Selected in orbit. Play this track to enter through its energy.'}
                                     </p>
                                 </div>
 
@@ -815,12 +921,19 @@ export default function RealmOrbitCard({
                                     <button
                                         onClick={() => handleTrackClick(selectedTrack)}
                                         className="btn-secondary w-full md:w-auto"
+                                        disabled={selectedTrackLocked}
+                                        style={{
+                                            opacity: selectedTrackLocked ? 0.55 : 1,
+                                            cursor: selectedTrackLocked ? 'not-allowed' : 'pointer',
+                                        }}
                                     >
-                                        {selectedIsCurrent && isPlaying
-                                            ? 'Pause'
-                                            : selectedIsCurrent
-                                                ? 'Resume'
-                                                : 'Play Selected'}
+                                        {selectedTrackLocked
+                                            ? selectedTrackLockLabel ?? 'Locked'
+                                            : selectedIsCurrent && isPlaying
+                                                ? 'Pause'
+                                                : selectedIsCurrent
+                                                    ? 'Resume'
+                                                    : 'Play Selected'}
                                     </button>
                                 </div>
                             </div>
@@ -897,6 +1010,30 @@ export default function RealmOrbitCard({
                                     )}
                                 </div>
                             </div>
+
+                            {sortedTracks.length > 1 && (
+                                <div
+                                    className="rounded-2xl border px-4 py-4"
+                                    style={{
+                                        borderColor: `${realmColor}22`,
+                                        background: 'rgba(255,255,255,0.025)',
+                                    }}
+                                >
+                                    <div className="flex items-center justify-between gap-3 mb-3">
+                                        <p className="text-xs uppercase tracking-[0.18em] text-white/60">
+                                            Full Realm Tracklist
+                                        </p>
+
+                                        <p className="text-[11px] text-white/45">
+                                            {sortedTracks.length} tracks
+                                        </p>
+                                    </div>
+
+                                    <div className="flex gap-2 overflow-x-auto pb-1">
+                                        {sortedTracks.map(renderTrackPill)}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     ) : (
                         <p className="text-sm text-secondary">

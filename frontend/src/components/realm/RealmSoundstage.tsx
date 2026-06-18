@@ -1,7 +1,7 @@
 'use client';
 
 import RealmOrbitCard from '@/components/music/RealmOrbitCard';
-import { MUSIC_REGISTRY, getPublicTracksByRealm } from '@/lib/musicRegistry';
+import { MUSIC_REGISTRY } from '@/lib/musicRegistry';
 import type { RealmId } from '@/lib/realmStateMap';
 import { useMusicPlayer } from '@/hooks/useMusicPlayer';
 
@@ -26,6 +26,46 @@ interface RealmSoundstageProps {
     compactOnMobile?: boolean;
 }
 
+const RELEASE_UNLOCKS: Record<string, string> = {
+    'sin-do-over': '2026-06-29T00:00:00',
+    'sin-running-from-the-plug': '2026-07-14T00:00:00',
+    '101-hold-my-hand': '2026-07-29T00:00:00',
+    '303-in-the-deep': '2026-07-29T00:00:00',
+    '202-her-fantasy': '2026-07-29T00:00:00',
+    '202-siren': '2026-07-29T00:00:00',
+};
+
+function formatUnlockDate(dateString?: string | null) {
+    if (!dateString) return null;
+
+    try {
+        return new Intl.DateTimeFormat('en-US', {
+            month: 'short',
+            day: 'numeric',
+        }).format(new Date(dateString));
+    } catch {
+        return null;
+    }
+}
+
+function isTrackLocked(track: { id: string; visibility?: string }) {
+    if (track.visibility === 'premium') return true;
+
+    const unlockDate = RELEASE_UNLOCKS[track.id];
+    if (!unlockDate) return false;
+
+    return new Date() < new Date(unlockDate);
+}
+
+function getTrackLockLabel(track: { id: string; visibility?: string }) {
+    if (track.visibility === 'premium') return 'Premium';
+
+    const unlockDate = RELEASE_UNLOCKS[track.id];
+    const unlockLabel = formatUnlockDate(unlockDate);
+
+    return unlockLabel ? `Opens ${unlockLabel}` : null;
+}
+
 export default function RealmSoundstage({
     realmId,
     realmName,
@@ -42,7 +82,22 @@ export default function RealmSoundstage({
 }: RealmSoundstageProps) {
     const { playOrToggleTrack, currentTrack, isPlaying } = useMusicPlayer();
 
-    const realmTracks = getPublicTracksByRealm(realmId);
+    const realmTracks = MUSIC_REGISTRY
+        .filter((track) => track.realmId === realmId)
+        .filter(
+            (track) =>
+                track.visibility === 'public' ||
+                track.visibility === 'signup' ||
+                track.visibility === 'premium'
+        )
+        .sort((a, b) => {
+            const aOrder = a.sortOrder ?? 999;
+            const bOrder = b.sortOrder ?? 999;
+
+            if (aOrder !== bOrder) return aOrder - bOrder;
+
+            return a.trackTitle.localeCompare(b.trackTitle);
+        });
 
     if (realmTracks.length === 0) {
         return (
@@ -54,9 +109,13 @@ export default function RealmSoundstage({
     }
 
     const featuredTrack =
-        realmTracks.find((track) => track.isRealmAnchor) ??
-        realmTracks.find((track) => track.isPublicPick) ??
+        realmTracks.find((track) => !isTrackLocked(track) && track.isRealmAnchor) ??
+        realmTracks.find((track) => !isTrackLocked(track) && track.isPublicPick) ??
+        realmTracks.find((track) => !isTrackLocked(track)) ??
         realmTracks[0];
+
+    const featuredTrackLocked = isTrackLocked(featuredTrack);
+    const featuredTrackLockLabel = getTrackLockLabel(featuredTrack);
     const isFeaturedSelected = currentTrack?.id === featuredTrack.id;
 
     const handlePlayOrbitTrack = (track: { id: string }) => {
@@ -67,7 +126,17 @@ export default function RealmSoundstage({
             return;
         }
 
+        if (isTrackLocked(fullTrack)) {
+            return;
+        }
+
         void playOrToggleTrack(fullTrack);
+    };
+
+    const handlePlayFeaturedTrack = () => {
+        if (featuredTrackLocked) return;
+
+        void playOrToggleTrack(featuredTrack);
     };
 
     return (
@@ -77,7 +146,10 @@ export default function RealmSoundstage({
                     Realm Soundstage
                 </p>
 
-                <h2 className="text-2xl md:text-3xl font-display mb-3" style={{ color: realmColor }}>
+                <h2
+                    className="text-2xl md:text-3xl font-display mb-3"
+                    style={{ color: realmColor }}
+                >
                     {realmName}
                 </h2>
 
@@ -100,6 +172,8 @@ export default function RealmSoundstage({
                 isCurrentRealm={isCurrentRealm}
                 isRecommended={isRecommended}
                 compactOnMobile={compactOnMobile}
+                isTrackLocked={isTrackLocked}
+                getTrackLockLabel={getTrackLockLabel}
             />
 
             <div
@@ -112,9 +186,17 @@ export default function RealmSoundstage({
             >
                 <div className="flex flex-col lg:flex-row lg:items-center gap-4">
                     <div className="flex-1 min-w-0">
-                        <p className="text-xs uppercase tracking-[0.18em] text-white/60 mb-2">
-                            Featured Entry
-                        </p>
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                            <p className="text-xs uppercase tracking-[0.18em] text-white/60">
+                                Featured Entry
+                            </p>
+
+                            {featuredTrackLocked && (
+                                <span className="px-2.5 py-1 rounded-full text-[10px] uppercase tracking-[0.14em] bg-white/5 border border-white/10 text-white/55">
+                                    {featuredTrackLockLabel ?? 'Locked'}
+                                </span>
+                            )}
+                        </div>
 
                         <div className="flex items-center gap-3 mb-2">
                             <div
@@ -123,33 +205,53 @@ export default function RealmSoundstage({
                                     background: `radial-gradient(circle, ${realmColor}66, ${realmColor}22)`,
                                     border: `1px solid ${realmColor}55`,
                                     boxShadow: `0 0 12px ${realmColor}22`,
+                                    opacity: featuredTrackLocked ? 0.52 : 1,
                                 }}
                             >
-                                ✦
+                                {featuredTrackLocked ? '🔒' : '✦'}
                             </div>
 
                             <div className="min-w-0">
-                                <p className="font-display text-lg truncate" style={{ color: realmColor }}>
+                                <p
+                                    className="font-display text-lg truncate"
+                                    style={{
+                                        color: featuredTrackLocked
+                                            ? 'rgba(255,255,255,0.55)'
+                                            : realmColor,
+                                    }}
+                                >
                                     {featuredTrack.trackTitle}
                                 </p>
-                                <p className="text-sm text-secondary truncate">{featuredTrack.artist}</p>
+                                <p className="text-sm text-secondary truncate">
+                                    {featuredTrack.artist}
+                                </p>
                             </div>
                         </div>
 
                         <p className="text-sm text-secondary max-w-2xl">
                             Start here for the clearest first entry into{' '}
-                            <span style={{ color: realmColor }}>{realmName}</span>. This is the anchor
-                            track for the realm’s emotional atmosphere.
+                            <span style={{ color: realmColor }}>{realmName}</span>. The full
+                            realm soundtrack can still be explored through the tracklist.
                         </p>
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-3 shrink-0">
-                        <button className="btn-secondary" onClick={() => playOrToggleTrack(featuredTrack)}>
-                            {isFeaturedSelected
-                                ? isPlaying
-                                    ? 'Pause Track'
-                                    : 'Resume Track'
-                                : '▶ Play Track'}
+                        <button
+                            className="btn-secondary"
+                            onClick={handlePlayFeaturedTrack}
+                            disabled={featuredTrackLocked}
+                            style={{
+                                opacity: featuredTrackLocked ? 0.55 : 1,
+                                cursor: featuredTrackLocked ? 'not-allowed' : 'pointer',
+                            }}
+                        >
+                            {featuredTrackLocked
+                                ? featuredTrackLockLabel ?? 'Locked'
+                                : isFeaturedSelected
+                                  ? isPlaying
+                                      ? 'Pause Track'
+                                      : 'Resume Track'
+                                  : '▶ Play Track'}
                         </button>
                     </div>
                 </div>
@@ -160,7 +262,8 @@ export default function RealmSoundstage({
                     Listening Intention
                 </p>
                 <p className="text-sm text-secondary">
-                    Let the music tell you whether this realm matches your current inner state before going deeper.
+                    Let the music tell you whether this realm matches your current inner state
+                    before going deeper.
                 </p>
             </div>
         </div>
