@@ -351,7 +351,14 @@ export default function CosmicNexusHub() {
     const tryPlayTrack = (track: any) => {
         if (!track) return;
         if (isTrackLocked(track)) return;
-        void playOrToggleTrack(track);
+
+        const flowQueue =
+            nexusPlayableFlowTracks.length > 0 ? nexusPlayableFlowTracks : [track];
+
+        void playOrToggleTrack(track, flowQueue, {
+            source: 'nexus',
+            label: 'Nexus flow',
+        });
     };
 
     const getRealmProgress = (realmId: number): number => {
@@ -389,6 +396,33 @@ export default function CosmicNexusHub() {
                 return a.trackTitle.localeCompare(b.trackTitle);
             });
     }, []);
+
+    const nexusPlayableFlowTracks = useMemo(() => {
+        return nexusVisibleTracks
+            .filter((track) => Boolean(track.trackUrl) && !isTrackLocked(track))
+            .sort((a, b) => {
+                const aRealmIndex = REALM_META.findIndex(
+                    (realm) => Number(realm.id) === a.realmId
+                );
+                const bRealmIndex = REALM_META.findIndex(
+                    (realm) => Number(realm.id) === b.realmId
+                );
+
+                const safeARealmIndex = aRealmIndex === -1 ? 999 : aRealmIndex;
+                const safeBRealmIndex = bRealmIndex === -1 ? 999 : bRealmIndex;
+
+                if (safeARealmIndex !== safeBRealmIndex) {
+                    return safeARealmIndex - safeBRealmIndex;
+                }
+
+                const aOrder = a.sortOrder ?? 999;
+                const bOrder = b.sortOrder ?? 999;
+
+                if (aOrder !== bOrder) return aOrder - bOrder;
+
+                return a.trackTitle.localeCompare(b.trackTitle);
+            });
+    }, [nexusVisibleTracks, isSignedIn]);
 
     const groupedTracks = REALM_META.map((realm) => {
         const realmId = parseInt(realm.id);
@@ -1305,6 +1339,9 @@ export default function CosmicNexusHub() {
                                                 isTrackLocked={isTrackLocked}
                                                 getTrackLockLabel={getTrackLockLabel}
                                                 pathLabel={soundtrackPathLabel}
+                                                flowTracks={nexusPlayableFlowTracks}
+                                                flowSource="nexus"
+                                                flowLabel="Nexus flow"
                                             />
                                         </div>
                                     );
@@ -1840,4 +1877,3 @@ export default function CosmicNexusHub() {
         </>
     );
 }
-

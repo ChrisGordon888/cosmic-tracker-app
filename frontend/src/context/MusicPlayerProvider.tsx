@@ -11,7 +11,6 @@ import React, {
 } from 'react';
 import { useMutation } from '@apollo/client';
 import { LOG_MUSIC_LISTEN } from '@/graphql/realms';
-import { MUSIC_REGISTRY } from '@/lib/musicRegistry';
 
 export interface MusicTrack {
   id: string;
@@ -25,6 +24,20 @@ export interface MusicTrack {
   sortOrder?: number;
 }
 
+export type MusicQueueSource =
+  | 'track'
+  | 'nexus'
+  | 'realm'
+  | 'collection'
+  | 'release'
+  | 'vault'
+  | 'catalog';
+
+export interface MusicQueueOptions {
+  source?: MusicQueueSource;
+  label?: string;
+}
+
 interface MusicPlayerContextValue {
   currentTrack: MusicTrack | null;
   isPlaying: boolean;
@@ -35,15 +48,29 @@ interface MusicPlayerContextValue {
 
   queue: MusicTrack[];
   queueLength: number;
+  queueSource: MusicQueueSource;
+  queueLabel: string;
   isShuffleEnabled: boolean;
   isContinuousEnabled: boolean;
   hasNextTrack: boolean;
   hasPreviousTrack: boolean;
 
-  playTrack: (track: MusicTrack, queueOverride?: MusicTrack[]) => Promise<void>;
-  playOrToggleTrack: (track: MusicTrack, queueOverride?: MusicTrack[]) => Promise<void>;
-  playQueue: (tracks: MusicTrack[], startTrackId?: string) => Promise<void>;
-  setQueue: (tracks: MusicTrack[]) => void;
+  playTrack: (
+    track: MusicTrack,
+    queueOverride?: MusicTrack[],
+    queueOptions?: MusicQueueOptions
+  ) => Promise<void>;
+  playOrToggleTrack: (
+    track: MusicTrack,
+    queueOverride?: MusicTrack[],
+    queueOptions?: MusicQueueOptions
+  ) => Promise<void>;
+  playQueue: (
+    tracks: MusicTrack[],
+    startTrackId?: string,
+    queueOptions?: MusicQueueOptions
+  ) => Promise<void>;
+  setQueue: (tracks: MusicTrack[], queueOptions?: MusicQueueOptions) => void;
   clearQueue: () => void;
   playNext: () => Promise<void>;
   playPrevious: () => Promise<void>;
@@ -60,22 +87,6 @@ interface MusicPlayerContextValue {
 
 const MusicPlayerContext = createContext<MusicPlayerContextValue | null>(null);
 
-function toMusicTrack(track: any): MusicTrack | null {
-  if (!track?.id || !track?.trackUrl || !track?.trackTitle) return null;
-
-  return {
-    id: track.id,
-    trackUrl: track.trackUrl,
-    trackTitle: track.trackTitle,
-    artist: track.artist,
-    realmName: track.realmName,
-    realmColor: track.realmColor,
-    realmId: track.realmId,
-    visibility: track.visibility,
-    sortOrder: track.sortOrder,
-  };
-}
-
 function dedupeTracks(tracks: MusicTrack[]) {
   const seen = new Set<string>();
 
@@ -87,26 +98,21 @@ function dedupeTracks(tracks: MusicTrack[]) {
   });
 }
 
-function getPlayableCatalogQueue() {
-  return dedupeTracks(
-    MUSIC_REGISTRY
-      .map(toMusicTrack)
-      .filter((track): track is MusicTrack => Boolean(track))
-      .filter((track) => track.visibility !== 'premium')
-      .sort((a, b) => {
-        const aOrder = a.sortOrder ?? 999;
-        const bOrder = b.sortOrder ?? 999;
+function getDefaultQueueLabel(source: MusicQueueSource, queueLength: number) {
+  if (queueLength <= 1) return 'Track flow';
 
-        if (aOrder !== bOrder) return aOrder - bOrder;
+  if (source === 'realm') return 'Realm flow';
+  if (source === 'collection') return 'Collection flow';
+  if (source === 'release') return 'Release flow';
+  if (source === 'vault') return 'Vault flow';
+  if (source === 'nexus') return 'Nexus flow';
+  if (source === 'catalog') return 'Catalog flow';
 
-        return a.trackTitle.localeCompare(b.trackTitle);
-      })
-  );
+  return 'Track flow';
 }
 
 function getSequentialNextTrack(queue: MusicTrack[], currentTrackId?: string | null) {
-  if (queue.length === 0) return null;
-  if (queue.length === 1) return queue[0];
+  if (queue.length <= 1) return null;
 
   const currentIndex = queue.findIndex((track) => track.id === currentTrackId);
 
@@ -116,8 +122,7 @@ function getSequentialNextTrack(queue: MusicTrack[], currentTrackId?: string | n
 }
 
 function getSequentialPreviousTrack(queue: MusicTrack[], currentTrackId?: string | null) {
-  if (queue.length === 0) return null;
-  if (queue.length === 1) return queue[0];
+  if (queue.length <= 1) return null;
 
   const currentIndex = queue.findIndex((track) => track.id === currentTrackId);
 
@@ -131,8 +136,7 @@ function getShuffleTrack(
   currentTrackId?: string | null,
   recentlyPlayedIds: string[] = []
 ) {
-  if (queue.length === 0) return null;
-  if (queue.length === 1) return queue[0];
+  if (queue.length <= 1) return null;
 
   const recentSet = new Set(recentlyPlayedIds);
 
@@ -145,7 +149,7 @@ function getShuffleTrack(
       ? freshCandidates
       : queue.filter((track) => track.id !== currentTrackId);
 
-  if (candidates.length === 0) return queue[0];
+  if (candidates.length === 0) return null;
 
   const randomIndex = Math.floor(Math.random() * candidates.length);
   return candidates[randomIndex];
@@ -166,12 +170,16 @@ export function MusicPlayerProvider({
   const [isExpanded, setIsExpanded] = useState(false);
 
   const [queue, setQueueState] = useState<MusicTrack[]>([]);
+  const [queueSource, setQueueSource] = useState<MusicQueueSource>('track');
+  const [queueLabelState, setQueueLabelState] = useState('Track flow');
   const [isShuffleEnabled, setIsShuffleEnabled] = useState(false);
   const [isContinuousEnabled, setIsContinuousEnabled] = useState(true);
 
   const currentTrackRef = useRef<MusicTrack | null>(null);
   const queueRef = useRef<MusicTrack[]>([]);
   const recentlyPlayedIdsRef = useRef<string[]>([]);
+  const queueSourceRef = useRef<MusicQueueSource>('track');
+  const queueLabelRef = useRef('Track flow');
   const isShuffleEnabledRef = useRef(false);
   const isContinuousEnabledRef = useRef(true);
   const handleTrackEndedRef = useRef<(() => void) | null>(null);
@@ -181,12 +189,42 @@ export function MusicPlayerProvider({
   // Prevent duplicate listen logs for the same track during a single page session.
   const loggedListenIdsRef = useRef<Set<string>>(new Set());
 
-  const catalogQueue = useMemo(() => getPlayableCatalogQueue(), []);
+  const activeQueue = useMemo(() => {
+    if (queue.length > 0) return queue;
+    return currentTrack ? [currentTrack] : [];
+  }, [queue, currentTrack]);
 
-  const activeQueue = queue.length > 0 ? queue : catalogQueue;
   const queueLength = activeQueue.length;
-  const hasNextTrack = queueLength > 1 || Boolean(currentTrack && queueLength === 1);
-  const hasPreviousTrack = hasNextTrack;
+  const queueLabel =
+    queueLabelState || getDefaultQueueLabel(queueSource, queueLength);
+  const hasNextTrack = queueLength > 1;
+  const hasPreviousTrack = queueLength > 1;
+
+  const syncQueueMeta = useCallback(
+    (source: MusicQueueSource, label?: string, nextQueueLength = 0) => {
+      const nextLabel = label || getDefaultQueueLabel(source, nextQueueLength);
+
+      setQueueSource(source);
+      setQueueLabelState(nextLabel);
+      queueSourceRef.current = source;
+      queueLabelRef.current = nextLabel;
+    },
+    []
+  );
+
+  const replaceQueue = useCallback(
+    (tracks: MusicTrack[], queueOptions?: MusicQueueOptions) => {
+      const nextQueue = dedupeTracks(tracks);
+      const nextSource = queueOptions?.source ?? 'track';
+
+      setQueueState(nextQueue);
+      queueRef.current = nextQueue;
+      syncQueueMeta(nextSource, queueOptions?.label, nextQueue.length);
+
+      return nextQueue;
+    },
+    [syncQueueMeta]
+  );
 
   useEffect(() => {
     currentTrackRef.current = currentTrack;
@@ -195,6 +233,14 @@ export function MusicPlayerProvider({
   useEffect(() => {
     queueRef.current = queue;
   }, [queue]);
+
+  useEffect(() => {
+    queueSourceRef.current = queueSource;
+  }, [queueSource]);
+
+  useEffect(() => {
+    queueLabelRef.current = queueLabel;
+  }, [queueLabel]);
 
   useEffect(() => {
     isShuffleEnabledRef.current = isShuffleEnabled;
@@ -214,8 +260,30 @@ export function MusicPlayerProvider({
   }, []);
 
   const getActiveQueue = useCallback(() => {
-    return queueRef.current.length > 0 ? queueRef.current : catalogQueue;
-  }, [catalogQueue]);
+    if (queueRef.current.length > 0) return queueRef.current;
+
+    return currentTrackRef.current ? [currentTrackRef.current] : [];
+  }, []);
+
+  const ensureTrackQueue = useCallback(
+    (track: MusicTrack) => {
+      const currentQueue = queueRef.current;
+
+      if (currentQueue.length > 0) {
+        const trackIsInQueue = currentQueue.some(
+          (queueTrack) => queueTrack.id === track.id
+        );
+
+        if (trackIsInQueue) return currentQueue;
+      }
+
+      return replaceQueue([track], {
+        source: 'track',
+        label: 'Track flow',
+      });
+    },
+    [replaceQueue]
+  );
 
   const startTrack = useCallback(
     async (track: MusicTrack) => {
@@ -247,44 +315,62 @@ export function MusicPlayerProvider({
     [markRecentlyPlayed]
   );
 
-  const setQueue = useCallback((tracks: MusicTrack[]) => {
-    setQueueState(dedupeTracks(tracks));
-  }, []);
+  const setQueue = useCallback(
+    (tracks: MusicTrack[], queueOptions?: MusicQueueOptions) => {
+      replaceQueue(tracks, queueOptions);
+    },
+    [replaceQueue]
+  );
 
   const clearQueue = useCallback(() => {
     setQueueState([]);
-  }, []);
+    queueRef.current = [];
+
+    if (currentTrackRef.current) {
+      syncQueueMeta('track', 'Track flow', 1);
+      return;
+    }
+
+    syncQueueMeta('track', 'No flow', 0);
+  }, [syncQueueMeta]);
 
   const playTrack = useCallback(
-    async (track: MusicTrack, queueOverride?: MusicTrack[]) => {
+    async (
+      track: MusicTrack,
+      queueOverride?: MusicTrack[],
+      queueOptions?: MusicQueueOptions
+    ) => {
       if (queueOverride && queueOverride.length > 0) {
-        setQueueState(dedupeTracks(queueOverride));
+        replaceQueue(queueOverride, queueOptions);
+      } else {
+        ensureTrackQueue(track);
       }
 
       await startTrack(track);
     },
-    [startTrack]
+    [ensureTrackQueue, replaceQueue, startTrack]
   );
 
   const playQueue = useCallback(
-    async (tracks: MusicTrack[], startTrackId?: string) => {
-      const nextQueue = dedupeTracks(tracks);
+    async (
+      tracks: MusicTrack[],
+      startTrackId?: string,
+      queueOptions?: MusicQueueOptions
+    ) => {
+      const nextQueue = replaceQueue(tracks, queueOptions);
       if (nextQueue.length === 0) return;
-
-      setQueueState(nextQueue);
-      queueRef.current = nextQueue;
 
       const firstTrack =
         nextQueue.find((track) => track.id === startTrackId) ?? nextQueue[0];
 
       await startTrack(firstTrack);
     },
-    [startTrack]
+    [replaceQueue, startTrack]
   );
 
   const playNext = useCallback(async () => {
     const nextQueue = getActiveQueue();
-    if (nextQueue.length === 0) return;
+    if (nextQueue.length <= 1) return;
 
     const nextTrack = isShuffleEnabledRef.current
       ? getShuffleTrack(
@@ -309,7 +395,7 @@ export function MusicPlayerProvider({
     }
 
     const nextQueue = getActiveQueue();
-    if (nextQueue.length === 0) return;
+    if (nextQueue.length <= 1) return;
 
     const previousTrack = isShuffleEnabledRef.current
       ? getShuffleTrack(
@@ -325,14 +411,18 @@ export function MusicPlayerProvider({
   }, [getActiveQueue, startTrack]);
 
   const playOrToggleTrack = useCallback(
-    async (track: MusicTrack, queueOverride?: MusicTrack[]) => {
+    async (
+      track: MusicTrack,
+      queueOverride?: MusicTrack[],
+      queueOptions?: MusicQueueOptions
+    ) => {
       const audio = audioRef.current;
       if (!audio) return;
 
       if (queueOverride && queueOverride.length > 0) {
-        const nextQueue = dedupeTracks(queueOverride);
-        setQueueState(nextQueue);
-        queueRef.current = nextQueue;
+        replaceQueue(queueOverride, queueOptions);
+      } else {
+        ensureTrackQueue(track);
       }
 
       const isSameTrack = currentTrackRef.current?.id === track.id;
@@ -356,7 +446,7 @@ export function MusicPlayerProvider({
         setIsPlaying(false);
       }
     },
-    [markRecentlyPlayed, startTrack]
+    [ensureTrackQueue, markRecentlyPlayed, replaceQueue, startTrack]
   );
 
   const togglePlayPause = useCallback(async () => {
@@ -415,7 +505,9 @@ export function MusicPlayerProvider({
 
   useEffect(() => {
     handleTrackEndedRef.current = () => {
-      if (isContinuousEnabledRef.current) {
+      const nextQueue = getActiveQueue();
+
+      if (isContinuousEnabledRef.current && nextQueue.length > 1) {
         void playNext();
         return;
       }
@@ -428,7 +520,7 @@ export function MusicPlayerProvider({
         audio.currentTime = 0;
       }
     };
-  }, [playNext]);
+  }, [getActiveQueue, playNext]);
 
   useEffect(() => {
     const audio = new Audio();
@@ -518,6 +610,8 @@ export function MusicPlayerProvider({
 
       queue: activeQueue,
       queueLength,
+      queueSource,
+      queueLabel,
       isShuffleEnabled,
       isContinuousEnabled,
       hasNextTrack,
@@ -549,6 +643,8 @@ export function MusicPlayerProvider({
       isExpanded,
       activeQueue,
       queueLength,
+      queueSource,
+      queueLabel,
       isShuffleEnabled,
       isContinuousEnabled,
       hasNextTrack,

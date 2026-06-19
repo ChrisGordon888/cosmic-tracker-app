@@ -8,6 +8,10 @@ function formatTime(time: number) {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
 
+function formatQueueCount(queueLength: number) {
+    return `${queueLength} ${queueLength === 1 ? 'track' : 'tracks'}`;
+}
+
 export default function MiniPlayer() {
     const {
         currentTrack,
@@ -19,6 +23,7 @@ export default function MiniPlayer() {
         isShuffleEnabled,
         isContinuousEnabled,
         queueLength,
+        queueLabel,
         hasNextTrack,
         hasPreviousTrack,
         togglePlayPause,
@@ -35,6 +40,8 @@ export default function MiniPlayer() {
 
     const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
     const realmColor = currentTrack.realmColor || '#BCDFFF';
+    const flowLabel = queueLabel || 'Track flow';
+    const queueCopy = formatQueueCount(queueLength);
 
     return (
         <div
@@ -108,13 +115,15 @@ export default function MiniPlayer() {
                         disabled={!hasPreviousTrack}
                         className="rounded-full border border-white/10 bg-white/[0.045] px-3 py-2 text-xs text-white/75 transition-all hover:bg-white/10 disabled:opacity-35 disabled:cursor-not-allowed"
                         aria-label="Play previous track"
+                        title={hasPreviousTrack ? 'Previous track' : 'No previous track in this flow yet'}
                     >
                         ‹‹
                     </button>
 
                     <button
                         onClick={toggleShuffle}
-                        className="rounded-full border px-3 py-2 text-xs transition-all"
+                        disabled={queueLength <= 1}
+                        className="rounded-full border px-3 py-2 text-xs transition-all disabled:opacity-35 disabled:cursor-not-allowed"
                         style={{
                             borderColor: isShuffleEnabled ? `${realmColor}66` : 'rgba(255,255,255,0.10)',
                             background: isShuffleEnabled ? `${realmColor}18` : 'rgba(255,255,255,0.045)',
@@ -122,13 +131,15 @@ export default function MiniPlayer() {
                         }}
                         aria-pressed={isShuffleEnabled}
                         aria-label={isShuffleEnabled ? 'Turn shuffle off' : 'Turn shuffle on'}
+                        title={queueLength > 1 ? 'Shuffle this flow' : 'Shuffle needs a flow with multiple tracks'}
                     >
                         Shuffle
                     </button>
 
                     <button
                         onClick={toggleContinuous}
-                        className="rounded-full border px-3 py-2 text-xs transition-all"
+                        disabled={queueLength <= 1}
+                        className="rounded-full border px-3 py-2 text-xs transition-all disabled:opacity-35 disabled:cursor-not-allowed"
                         style={{
                             borderColor: isContinuousEnabled ? `${realmColor}66` : 'rgba(255,255,255,0.10)',
                             background: isContinuousEnabled ? `${realmColor}18` : 'rgba(255,255,255,0.045)',
@@ -136,6 +147,7 @@ export default function MiniPlayer() {
                         }}
                         aria-pressed={isContinuousEnabled}
                         aria-label={isContinuousEnabled ? 'Turn continuous play off' : 'Turn continuous play on'}
+                        title={queueLength > 1 ? 'Continuous play for this flow' : 'Flow needs multiple tracks'}
                     >
                         Flow
                     </button>
@@ -145,6 +157,7 @@ export default function MiniPlayer() {
                         disabled={!hasNextTrack}
                         className="rounded-full border border-white/10 bg-white/[0.045] px-3 py-2 text-xs text-white/75 transition-all hover:bg-white/10 disabled:opacity-35 disabled:cursor-not-allowed"
                         aria-label="Play next track"
+                        title={hasNextTrack ? 'Next track' : 'No next track in this flow yet'}
                     >
                         ››
                     </button>
@@ -162,7 +175,7 @@ export default function MiniPlayer() {
                             </p>
 
                             <p className="text-xs text-white/45 mt-1">
-                                {queueLength} available in flow • Shuffle {isShuffleEnabled ? 'on' : 'off'} • Flow {isContinuousEnabled ? 'on' : 'off'}
+                                {flowLabel} • {queueCopy} • Shuffle {isShuffleEnabled ? 'on' : 'off'} • Flow {isContinuousEnabled ? 'on' : 'off'}
                             </p>
                         </div>
 

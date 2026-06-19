@@ -2,13 +2,16 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useMusicPlayer } from '@/hooks/useMusicPlayer';
 
 interface OrbitTrack {
     id: string;
+    trackUrl?: string;
     trackTitle: string;
     artist: string;
     realmName: string;
     realmColor: string;
+    realmId: number;
     role?: string;
     visibility?: string;
     isRealmAnchor?: boolean;
@@ -38,6 +41,15 @@ interface RealmOrbitCardProps {
 
     isTrackLocked?: (track: OrbitTrack) => boolean;
     getTrackLockLabel?: (track: OrbitTrack) => string | null;
+
+    /**
+     * Optional override for the player queue.
+     * Use this when a card should start a broader flow, such as Nexus-wide playback,
+     * instead of staying limited to the current realm.
+     */
+    flowTracks?: OrbitTrack[];
+    flowSource?: 'track' | 'nexus' | 'realm' | 'collection' | 'release' | 'vault' | 'catalog';
+    flowLabel?: string;
 }
 
 function getResponsiveOrbitSize() {
@@ -113,7 +125,12 @@ export default function RealmOrbitCard({
     pathLabel,
     isTrackLocked,
     getTrackLockLabel,
+    flowTracks,
+    flowSource = 'realm',
+    flowLabel,
 }: RealmOrbitCardProps) {
+    const { playOrToggleTrack } = useMusicPlayer();
+
     const sortedTracks = useMemo(() => {
         return [...tracks].sort((a, b) => {
             const aOrder = a.sortOrder ?? 999;
@@ -219,6 +236,52 @@ export default function RealmOrbitCard({
     const compactPathLabel = getCompactPathLabel(pathLabel);
     const clampedProgress = Math.max(0, Math.min(progress, 100));
 
+    const realmPlayableFlowQueue = useMemo(() => {
+        return playableTracks.filter(
+            (track): track is OrbitTrack & { trackUrl: string } => Boolean(track.trackUrl)
+        );
+    }, [playableTracks]);
+
+    const activeFlowQueue = useMemo(() => {
+        const sourceTracks =
+            flowTracks && flowTracks.length > 0 ? flowTracks : realmPlayableFlowQueue;
+
+        return sourceTracks.filter(
+            (track): track is OrbitTrack & { trackUrl: string } =>
+                Boolean(track.trackUrl) && !trackIsLocked(track)
+        );
+    }, [flowTracks, realmPlayableFlowQueue, isTrackLocked]);
+
+    const activeFlowOptions = useMemo(
+        () => ({
+            source: flowSource,
+            label:
+                flowLabel ||
+                (flowSource === 'nexus' ? 'Nexus flow' : `${realmDisplayName} flow`),
+        }),
+        [flowLabel, flowSource, realmDisplayName]
+    );
+
+    const playTrackInActiveFlow = async (track: OrbitTrack) => {
+        if (trackIsLocked(track)) return;
+
+        if (!track.trackUrl) {
+            onPlayTrack(track);
+            return;
+        }
+
+        const queue =
+            activeFlowQueue.length > 0
+                ? activeFlowQueue
+                : [track as OrbitTrack & { trackUrl: string }];
+
+        await playOrToggleTrack(
+            track as OrbitTrack & { trackUrl: string },
+            queue,
+            activeFlowOptions
+        );
+    };
+
     const handleTrackClick = (track: OrbitTrack) => {
         setSelectedTrackId(track.id);
 
@@ -226,7 +289,7 @@ export default function RealmOrbitCard({
             return;
         }
 
-        onPlayTrack(track);
+        void playTrackInActiveFlow(track);
     };
 
     const handleSelectOnly = (track: OrbitTrack) => {
