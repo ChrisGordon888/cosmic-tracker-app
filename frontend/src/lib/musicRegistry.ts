@@ -149,12 +149,12 @@ export interface FeaturedReleaseConfig {
 }
 
 export const REALM_COLORS: Record<RealmId, string> = {
-    303: '#FF4D6D',
-    202: '#8B5CF6',
-    101: '#38BDF8',
-    55: '#FACC15',
-    44: '#10B981',
-    0: '#E5E7EB',
+    303: '#FF5D7A',
+    202: '#A884FF',
+    101: '#7ED3FF',
+    55: '#ECC973',
+    44: '#F4AB63',
+    0: '#EEF3FA',
 };
 
 export const REALM_NAMES: Record<RealmId, string> = {

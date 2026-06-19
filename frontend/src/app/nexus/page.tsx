@@ -21,6 +21,7 @@ import {
 } from '@/lib/musicRegistry';
 import { REALM_STATE_MAP, type ExperienceMode, type RealmId } from '@/lib/realmStateMap';
 import { REALM_RESULT_CONTENT } from '@/lib/realmResultContent';
+import { getRealmTheme } from '@/lib/realmTheme';
 import RealmOrbitCard from '@/components/music/RealmOrbitCard';
 import '@/styles/realmShared.css';
 import '@/styles/nexus.css';
@@ -104,81 +105,8 @@ const CURATED_PLAYLIST_ART_OVERRIDES: Record<string, string> = {
     'april-may-vault': '/april-may-vault.png',
 };
 
-const REALM_TINTS: Record<
-    RealmId,
-    {
-        accent: string;
-        soft: string;
-        border: string;
-        glow: string;
-        textShadow: string;
-    }
-> = {
-    303: {
-        accent: 'rgba(255, 93, 122, 0.92)',
-        soft: 'rgba(255, 93, 122, 0.16)',
-        border: 'rgba(255, 93, 122, 0.34)',
-        glow: 'rgba(255, 93, 122, 0.12)',
-        textShadow: '0 0 12px rgba(255, 93, 122, 0.20), 0 0 24px rgba(255, 93, 122, 0.10)',
-    },
-    202: {
-        accent: 'rgba(168, 132, 255, 0.94)',
-        soft: 'rgba(168, 132, 255, 0.16)',
-        border: 'rgba(168, 132, 255, 0.34)',
-        glow: 'rgba(168, 132, 255, 0.12)',
-        textShadow: '0 0 12px rgba(168, 132, 255, 0.22), 0 0 24px rgba(168, 132, 255, 0.10)',
-    },
-    101: {
-        accent: 'rgba(126, 211, 255, 0.94)',
-        soft: 'rgba(126, 211, 255, 0.16)',
-        border: 'rgba(126, 211, 255, 0.34)',
-        glow: 'rgba(126, 211, 255, 0.12)',
-        textShadow: '0 0 12px rgba(126, 211, 255, 0.22), 0 0 24px rgba(126, 211, 255, 0.10)',
-    },
-    55: {
-        accent: 'rgba(236, 201, 115, 0.94)',
-        soft: 'rgba(236, 201, 115, 0.16)',
-        border: 'rgba(236, 201, 115, 0.34)',
-        glow: 'rgba(236, 201, 115, 0.12)',
-        textShadow: '0 0 12px rgba(236, 201, 115, 0.20), 0 0 24px rgba(236, 201, 115, 0.10)',
-    },
-    44: {
-        accent: 'rgba(244, 171, 99, 0.94)',
-        soft: 'rgba(244, 171, 99, 0.16)',
-        border: 'rgba(244, 171, 99, 0.34)',
-        glow: 'rgba(244, 171, 99, 0.12)',
-        textShadow: '0 0 12px rgba(244, 171, 99, 0.20), 0 0 24px rgba(244, 171, 99, 0.10)',
-    },
-    0: {
-        accent: 'rgba(238, 243, 250, 0.94)',
-        soft: 'rgba(238, 243, 250, 0.12)',
-        border: 'rgba(238, 243, 250, 0.30)',
-        glow: 'rgba(238, 243, 250, 0.10)',
-        textShadow: '0 0 12px rgba(238, 243, 250, 0.18), 0 0 24px rgba(188, 224, 255, 0.08)',
-    },
-};
-
-const DEFAULT_REALM_TINT = {
-    accent: 'rgba(188, 224, 255, 0.92)',
-    soft: 'rgba(188, 224, 255, 0.14)',
-    border: 'rgba(188, 224, 255, 0.30)',
-    glow: 'rgba(188, 224, 255, 0.10)',
-    textShadow: '0 0 12px rgba(188, 224, 255, 0.18), 0 0 24px rgba(188, 224, 255, 0.08)',
-};
-
 function getRealmTint(realmId?: number | null) {
-    if (
-        realmId === 303 ||
-        realmId === 202 ||
-        realmId === 101 ||
-        realmId === 55 ||
-        realmId === 44 ||
-        realmId === 0
-    ) {
-        return REALM_TINTS[realmId];
-    }
-
-    return DEFAULT_REALM_TINT;
+    return getRealmTheme(realmId);
 }
 
 function getRealmIdFromAlignmentName(value?: string | null): RealmId | null {
@@ -773,16 +701,17 @@ export default function CosmicNexusHub() {
                                             {currentReleaseTracks.map((track, index) => {
                                                 const locked = isTrackLocked(track);
                                                 const unlockLabel = getTrackUnlockLabel(track);
+                                                const trackTheme = getRealmTheme(track.realmId);
 
                                                 return (
                                                     <div
                                                         key={track.id}
                                                         className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3"
                                                         style={{
-                                                            borderColor: `${track.realmColor}28`,
+                                                            borderColor: trackTheme.border,
                                                             background:
-                                                                'linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))',
-                                                            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)',
+                                                                `radial-gradient(circle at top left, ${trackTheme.glow}, transparent 34%), linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))`,
+                                                            boxShadow: `inset 0 1px 0 rgba(255,255,255,0.04), 0 0 12px ${trackTheme.glow}`,
                                                         }}
                                                     >
                                                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
@@ -799,11 +728,11 @@ export default function CosmicNexusHub() {
                                                                         style={{
                                                                             background: locked
                                                                                 ? 'rgba(255,255,255,0.06)'
-                                                                                : `${track.realmColor}18`,
+                                                                                : trackTheme.soft,
                                                                             border: locked
                                                                                 ? '1px solid rgba(255,255,255,0.12)'
-                                                                                : `1px solid ${track.realmColor}38`,
-                                                                            color: locked ? 'rgba(255,255,255,0.72)' : track.realmColor,
+                                                                                : `1px solid ${trackTheme.border}`,
+                                                                            color: locked ? 'rgba(255,255,255,0.72)' : trackTheme.accent,
                                                                         }}
                                                                     >
                                                                         {locked ? 'soon' : 'open'}
@@ -1626,6 +1555,7 @@ export default function CosmicNexusHub() {
                                                                     const locked = isTrackLocked(track);
                                                                     const lockLabel = getTrackLockLabel(track);
                                                                     const isCurrentTrack = currentTrack?.id === track!.id;
+                                                                    const trackTheme = getRealmTheme(track!.realmId);
 
                                                                     return (
                                                                         <button
@@ -1635,19 +1565,19 @@ export default function CosmicNexusHub() {
                                                                             className="shrink-0 px-2.5 py-1.5 rounded-full text-[11px] border transition-all whitespace-nowrap"
                                                                             style={{
                                                                                 borderColor: isCurrentTrack
-                                                                                    ? `${track!.realmColor}88`
+                                                                                    ? trackTheme.border
                                                                                     : locked
                                                                                         ? 'rgba(255,255,255,0.10)'
-                                                                                        : `${track!.realmColor}22`,
+                                                                                        : trackTheme.border,
                                                                                 background: isCurrentTrack
-                                                                                    ? `${track!.realmColor}22`
+                                                                                    ? trackTheme.soft
                                                                                     : locked
                                                                                         ? 'rgba(255,255,255,0.025)'
                                                                                         : 'rgba(255,255,255,0.04)',
                                                                                 color: locked
                                                                                     ? 'rgba(255,255,255,0.45)'
                                                                                     : isCurrentTrack
-                                                                                        ? track!.realmColor
+                                                                                        ? trackTheme.accent
                                                                                         : 'rgba(255,255,255,0.74)',
                                                                                 opacity: locked ? 0.72 : 1,
                                                                                 cursor: locked ? 'not-allowed' : 'pointer',

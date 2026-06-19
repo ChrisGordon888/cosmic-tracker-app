@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useMusicPlayer } from '@/hooks/useMusicPlayer';
+import { getRealmTheme } from '@/lib/realmTheme';
 
 interface OrbitTrack {
     id: string;
@@ -110,7 +111,7 @@ function getCompactPathLabel(pathLabel?: string) {
 export default function RealmOrbitCard({
     realmName,
     realmIcon,
-    realmColor,
+    realmColor: fallbackRealmColor,
     tracks,
     currentTrackId,
     isPlaying = false,
@@ -236,6 +237,13 @@ export default function RealmOrbitCard({
     const compactPathLabel = getCompactPathLabel(pathLabel);
     const clampedProgress = Math.max(0, Math.min(progress, 100));
 
+    const themeRealmId = selectedTrack?.realmId ?? Number(realmId);
+    const realmTheme = getRealmTheme(themeRealmId);
+    const realmColor = realmTheme.accent || fallbackRealmColor;
+    const realmSoft = realmTheme.soft;
+    const realmBorder = realmTheme.border;
+    const realmGlow = realmTheme.glow;
+
     const realmPlayableFlowQueue = useMemo(() => {
         return playableTracks.filter(
             (track): track is OrbitTrack & { trackUrl: string } => Boolean(track.trackUrl)
@@ -310,13 +318,13 @@ export default function RealmOrbitCard({
                 style={{
                     borderColor:
                         isSelected || isCurrent
-                            ? `${realmColor}88`
+                            ? realmColor
                             : locked
                                 ? 'rgba(255,255,255,0.10)'
-                                : `${realmColor}22`,
+                                : realmSoft,
                     background:
                         isSelected || isCurrent
-                            ? `${realmColor}22`
+                            ? realmSoft
                             : locked
                                 ? 'rgba(255,255,255,0.025)'
                                 : 'rgba(255,255,255,0.04)',
@@ -358,16 +366,16 @@ export default function RealmOrbitCard({
             <div
                 className="realm-orbit-card nexus-compact-orbit rounded-[28px] border p-4 relative overflow-hidden h-full"
                 style={{
-                    borderColor: `${realmColor}36`,
-                    background: `linear-gradient(145deg, ${realmColor}0e, rgba(255,255,255,0.035), rgba(8,10,18,0.82))`,
-                    boxShadow: `0 10px 28px ${realmColor}10, inset 0 1px 0 rgba(255,255,255,0.055)`,
+                    borderColor: realmBorder,
+                    background: `radial-gradient(circle at top left, ${realmSoft}, transparent 46%), linear-gradient(145deg, rgba(255,255,255,0.035), rgba(8,10,18,0.82))`,
+                    boxShadow: `0 10px 28px ${realmGlow}, inset 0 1px 0 rgba(255,255,255,0.055)`,
                     minHeight: carouselMode ? '388px' : undefined,
                 }}
             >
                 <div
                     className="absolute inset-0 pointer-events-none opacity-28"
                     style={{
-                        background: `radial-gradient(circle at 40% 30%, ${realmColor}16, transparent 58%)`,
+                        background: `radial-gradient(circle at 40% 30%, ${realmGlow}, transparent 58%)`,
                     }}
                 />
 
@@ -386,14 +394,62 @@ export default function RealmOrbitCard({
                                 <div
                                     className="absolute rounded-full"
                                     style={{
-                                        width: `${miniSize - 22}px`,
-                                        height: `${miniSize - 22}px`,
-                                        left: `${miniCenter - (miniSize - 22) / 2}px`,
-                                        top: `${miniCenter - (miniSize - 22) / 2}px`,
-                                        border: `1px dashed ${realmColor}44`,
-                                        boxShadow: `0 0 12px ${realmColor}18`,
+                                        width: `${miniSize - 14}px`,
+                                        height: `${miniSize - 14}px`,
+                                        left: `${miniCenter - (miniSize - 14) / 2}px`,
+                                        top: `${miniCenter - (miniSize - 14) / 2}px`,
+                                        border: `1px solid ${realmBorder}`,
+                                        boxShadow: `0 0 14px ${realmGlow}`,
+                                        opacity: 0.55,
                                     }}
                                 />
+
+                                <div
+                                    className="absolute rounded-full"
+                                    style={{
+                                        width: `${miniSize - 32}px`,
+                                        height: `${miniSize - 32}px`,
+                                        left: `${miniCenter - (miniSize - 32) / 2}px`,
+                                        top: `${miniCenter - (miniSize - 32) / 2}px`,
+                                        border: `1px dashed ${realmBorder}`,
+                                        boxShadow: `0 0 10px ${realmGlow}`,
+                                        opacity: 0.72,
+                                    }}
+                                />
+
+                                <svg
+                                    className="absolute inset-0 pointer-events-none"
+                                    width={miniSize}
+                                    height={miniSize}
+                                    viewBox={`0 0 ${miniSize} ${miniSize}`}
+                                    aria-hidden="true"
+                                >
+                                    {miniNodes.map((track) => {
+                                        const isCurrent = currentTrackId === track.id;
+                                        const isSelected = selectedTrackId === track.id;
+                                        const locked = trackIsLocked(track);
+
+                                        return (
+                                            <line
+                                                key={`mini-line-${track.id}`}
+                                                x1={miniCenter}
+                                                y1={miniCenter}
+                                                x2={track.x}
+                                                y2={track.y}
+                                                stroke={
+                                                    locked
+                                                        ? 'rgba(255,255,255,0.16)'
+                                                        : isCurrent || isSelected
+                                                            ? realmColor
+                                                            : realmBorder
+                                                }
+                                                strokeWidth={isCurrent ? 1.6 : isSelected ? 1.35 : 1}
+                                                strokeLinecap="round"
+                                                opacity={locked ? 0.22 : isCurrent ? 0.72 : isSelected ? 0.58 : 0.34}
+                                            />
+                                        );
+                                    })}
+                                </svg>
 
                                 <div
                                     className="absolute rounded-full"
@@ -402,9 +458,9 @@ export default function RealmOrbitCard({
                                         height: `${Math.round(miniSize * 0.5)}px`,
                                         left: `${miniCenter - Math.round(miniSize * 0.25)}px`,
                                         top: `${miniCenter - Math.round(miniSize * 0.25)}px`,
-                                        background: `radial-gradient(circle at 35% 35%, ${realmColor}88, ${realmColor}33)`,
-                                        border: `1px solid ${realmColor}66`,
-                                        boxShadow: `0 0 14px ${realmColor}28`,
+                                        background: `radial-gradient(circle at 35% 35%, ${realmColor}, ${realmSoft})`,
+                                        border: `1px solid ${realmBorder}`,
+                                        boxShadow: `0 0 14px ${realmGlow}`,
                                     }}
                                 />
 
@@ -418,13 +474,13 @@ export default function RealmOrbitCard({
                                         top: `${miniCenter - Math.round(miniSize * 0.18)}px`,
                                         background: selectedTrackLocked
                                             ? 'rgba(255,255,255,0.08)'
-                                            : `radial-gradient(circle at 35% 35%, ${realmColor}, ${realmColor}88)`,
+                                            : `radial-gradient(circle at 35% 35%, ${realmColor}, ${realmSoft})`,
                                         border: selectedTrackLocked
                                             ? '1px solid rgba(255,255,255,0.16)'
-                                            : `1px solid ${realmColor}99`,
+                                            : `1px solid ${realmBorder}`,
                                         boxShadow: selectedTrackLocked
                                             ? 'none'
-                                            : `0 0 16px ${realmColor}44`,
+                                            : `0 0 16px ${realmGlow}`,
                                         cursor: selectedTrackLocked ? 'not-allowed' : 'pointer',
                                     }}
                                     aria-label={selectedTrack ? `Play ${selectedTrack.trackTitle}` : `Play ${realmName}`}
@@ -455,21 +511,21 @@ export default function RealmOrbitCard({
                                                 background: locked
                                                     ? 'rgba(255,255,255,0.07)'
                                                     : isCurrent
-                                                        ? `radial-gradient(circle, ${realmColor}, ${realmColor}aa)`
+                                                        ? `radial-gradient(circle, ${realmColor}, ${realmSoft})`
                                                         : isSelected
-                                                            ? `radial-gradient(circle, ${realmColor}aa, ${realmColor}44)`
-                                                            : `radial-gradient(circle, ${realmColor}66, ${realmColor}22)`,
+                                                            ? `radial-gradient(circle, ${realmColor}, ${realmSoft})`
+                                                            : `radial-gradient(circle, ${realmColor}, ${realmSoft})`,
                                                 border: `1px solid ${locked
                                                     ? 'rgba(255,255,255,0.14)'
                                                     : isCurrent || isSelected
-                                                        ? `${realmColor}aa`
-                                                        : `${realmColor}44`
+                                                        ? realmColor
+                                                        : realmBorder
                                                     }`,
                                                 boxShadow: locked
                                                     ? 'none'
                                                     : isCurrent
-                                                        ? `0 0 12px ${realmColor}66`
-                                                        : `0 0 6px ${realmColor}22`,
+                                                        ? `0 0 12px ${realmGlow}`
+                                                        : `0 0 6px ${realmGlow}`,
                                                 opacity: locked ? 0.62 : 1,
                                                 cursor: locked ? 'not-allowed' : 'pointer',
                                             }}
@@ -508,7 +564,7 @@ export default function RealmOrbitCard({
                                     color: 'rgba(245,247,252,0.94)',
                                     fontSize: carouselMode ? '1.12rem' : '1.2rem',
                                     letterSpacing: '0.08em',
-                                    textShadow: `0 0 12px ${realmColor}22`,
+                                    textShadow: realmTheme.textShadow,
                                 }}
                             >
                                 {realmDisplayName}
@@ -528,7 +584,7 @@ export default function RealmOrbitCard({
                                                 : realmColor,
                                             textShadow: selectedTrackLocked
                                                 ? 'none'
-                                                : `0 0 10px ${realmColor}22`,
+                                                : realmTheme.textShadow,
                                         }}
                                     >
                                         {selectedTrackLocked ? '🔒 ' : ''}
@@ -562,8 +618,8 @@ export default function RealmOrbitCard({
                                 className="h-full rounded-full"
                                 style={{
                                     width: `${clampedProgress}%`,
-                                    background: `linear-gradient(90deg, ${realmColor}88, ${realmColor})`,
-                                    boxShadow: `0 0 10px ${realmColor}33`,
+                                    background: `linear-gradient(90deg, ${realmSoft}, ${realmColor})`,
+                                    boxShadow: `0 0 10px ${realmGlow}`,
                                 }}
                             />
                         </div>
@@ -620,7 +676,7 @@ export default function RealmOrbitCard({
                             <div
                                 className="rounded-2xl border px-3 py-2.5 flex items-center justify-between gap-3"
                                 style={{
-                                    borderColor: `${realmColor}22`,
+                                    borderColor: realmSoft,
                                     background: 'rgba(255,255,255,0.026)',
                                 }}
                             >
@@ -652,9 +708,9 @@ export default function RealmOrbitCard({
         <div
             className="realm-orbit-card rounded-3xl border p-4 md:p-6 relative overflow-hidden"
             style={{
-                borderColor: `${realmColor}55`,
-                background: 'rgba(255,255,255,0.03)',
-                boxShadow: `0 8px 30px ${realmColor}18`,
+                borderColor: realmBorder,
+                background: `radial-gradient(circle at top left, ${realmSoft}, transparent 44%), rgba(255,255,255,0.03)`,
+                boxShadow: `0 8px 30px ${realmGlow}, inset 0 1px 0 rgba(255,255,255,0.05)`,
             }}
         >
             <style jsx>{`
@@ -676,24 +732,24 @@ export default function RealmOrbitCard({
                 @keyframes nodePulse {
                     0%, 100% {
                         transform: translate(-50%, -50%) scale(1);
-                        box-shadow: 0 0 24px ${realmColor}88;
+                        box-shadow: 0 0 24px ${realmGlow};
                     }
                     50% {
                         transform: translate(-50%, -50%) scale(1.08);
-                        box-shadow: 0 0 34px ${realmColor}cc;
+                        box-shadow: 0 0 34px ${realmGlow};
                     }
                 }
 
                 @keyframes corePulse {
                     0%, 100% {
                         box-shadow:
-                            0 0 30px ${realmColor}66,
-                            0 0 60px ${realmColor}18;
+                            0 0 30px ${realmGlow},
+                            0 0 60px ${realmGlow};
                     }
                     50% {
                         box-shadow:
-                            0 0 42px ${realmColor}99,
-                            0 0 72px ${realmColor}22;
+                            0 0 42px ${realmGlow},
+                            0 0 72px ${realmGlow};
                     }
                 }
 
@@ -734,7 +790,7 @@ export default function RealmOrbitCard({
             <div
                 className="absolute inset-0 pointer-events-none opacity-50"
                 style={{
-                    background: `radial-gradient(circle at center, ${realmColor}20 0%, transparent 62%)`,
+                    background: `radial-gradient(circle at center, ${realmGlow} 0%, transparent 62%)`,
                 }}
             />
 
@@ -749,8 +805,8 @@ export default function RealmOrbitCard({
                             <span
                                 className="px-2 py-0.5 rounded-full text-[10px] uppercase tracking-[0.14em]"
                                 style={{
-                                    background: `${realmColor}18`,
-                                    border: `1px solid ${realmColor}38`,
+                                    background: realmSoft,
+                                    border: `1px solid ${realmBorder}`,
                                     color: realmColor,
                                 }}
                             >
@@ -784,8 +840,8 @@ export default function RealmOrbitCard({
                             height: `${innerRingSize}px`,
                             left: `${centerX - innerRingSize / 2}px`,
                             top: `${centerY - innerRingSize / 2}px`,
-                            border: `1.5px dashed ${realmColor}48`,
-                            boxShadow: `0 0 16px ${realmColor}20`,
+                            border: `1.5px dashed ${realmBorder}`,
+                            boxShadow: `0 0 16px ${realmGlow}`,
                         }}
                     >
                         <div
@@ -795,8 +851,8 @@ export default function RealmOrbitCard({
                                 height: '18px',
                                 top: '-9px',
                                 left: 'calc(50% - 9px)',
-                                background: `radial-gradient(circle, ${realmColor}dd, ${realmColor}22)`,
-                                boxShadow: `0 0 18px ${realmColor}aa`,
+                                background: `radial-gradient(circle, ${realmColor}, ${realmSoft})`,
+                                boxShadow: `0 0 18px ${realmGlow}`,
                             }}
                         />
                     </div>
@@ -808,8 +864,8 @@ export default function RealmOrbitCard({
                             height: `${outerRingSize}px`,
                             left: `${centerX - outerRingSize / 2}px`,
                             top: `${centerY - outerRingSize / 2}px`,
-                            border: `1px dashed ${realmColor}30`,
-                            boxShadow: `0 0 12px ${realmColor}14`,
+                            border: `1px dashed ${realmBorder}`,
+                            boxShadow: `0 0 12px ${realmGlow}`,
                         }}
                     >
                         <div
@@ -819,8 +875,8 @@ export default function RealmOrbitCard({
                                 height: '14px',
                                 top: '-7px',
                                 left: 'calc(50% - 7px)',
-                                background: `radial-gradient(circle, ${realmColor}aa, ${realmColor}18)`,
-                                boxShadow: `0 0 14px ${realmColor}66`,
+                                background: `radial-gradient(circle, ${realmColor}, ${realmSoft})`,
+                                boxShadow: `0 0 14px ${realmGlow}`,
                             }}
                         />
                     </div>
@@ -847,10 +903,10 @@ export default function RealmOrbitCard({
                                         locked
                                             ? 'rgba(255,255,255,0.18)'
                                             : isCurrent
-                                                ? `${realmColor}ee`
+                                                ? realmColor
                                                 : isSelected
-                                                    ? `${realmColor}99`
-                                                    : `${realmColor}4d`
+                                                    ? realmBorder
+                                                    : realmBorder
                                     }
                                     strokeWidth={isCurrent ? 2.6 : isSelected ? 1.9 : 1.2}
                                     strokeLinecap="round"
@@ -867,9 +923,9 @@ export default function RealmOrbitCard({
                             height: `${centerSize}px`,
                             left: `${centerX - centerSize / 2}px`,
                             top: `${centerY - centerSize / 2}px`,
-                            background: `radial-gradient(circle at 35% 35%, ${realmColor}, ${realmColor}bb 52%, ${realmColor}55 100%)`,
-                            boxShadow: `0 0 30px ${realmColor}66`,
-                            border: `1px solid ${realmColor}99`,
+                            background: `radial-gradient(circle at 35% 35%, ${realmColor}, ${realmSoft} 100%)`,
+                            boxShadow: `0 0 30px ${realmGlow}`,
+                            border: `1px solid ${realmBorder}`,
                         }}
                     >
                         <div className="text-2xl mb-1">{realmIcon}</div>
@@ -899,25 +955,25 @@ export default function RealmOrbitCard({
                                     background: locked
                                         ? 'rgba(255,255,255,0.07)'
                                         : isCurrent
-                                            ? `radial-gradient(circle, ${realmColor}, ${realmColor}dd)`
+                                            ? `radial-gradient(circle, ${realmColor}, ${realmSoft})`
                                             : isSelected
-                                                ? `radial-gradient(circle, ${realmColor}99, ${realmColor}44)`
-                                                : `radial-gradient(circle, ${realmColor}74, ${realmColor}30)`,
+                                                ? `radial-gradient(circle, ${realmColor}, ${realmSoft})`
+                                                : `radial-gradient(circle, ${realmColor}, ${realmSoft})`,
                                     border: `1px solid ${locked
                                             ? 'rgba(255,255,255,0.14)'
                                             : isCurrent
-                                                ? `${realmColor}ee`
+                                                ? realmColor
                                                 : isSelected
-                                                    ? `${realmColor}aa`
-                                                    : `${realmColor}55`
+                                                    ? realmColor
+                                                    : realmBorder
                                         }`,
                                     boxShadow: locked
                                         ? 'none'
                                         : isCurrent
-                                            ? `0 0 24px ${realmColor}88`
+                                            ? `0 0 24px ${realmGlow}`
                                             : isSelected
-                                                ? `0 0 18px ${realmColor}55`
-                                                : `0 0 12px ${realmColor}22`,
+                                                ? `0 0 18px ${realmGlow}`
+                                                : `0 0 12px ${realmGlow}`,
                                     animationDelay: isCurrent ? '0s' : track.driftDelay,
                                     opacity: locked ? 0.62 : 1,
                                     cursor: locked ? 'not-allowed' : 'pointer',
@@ -936,9 +992,9 @@ export default function RealmOrbitCard({
                 <div
                     className="mt-3 md:mt-5 rounded-2xl border p-4 min-w-0"
                     style={{
-                        borderColor: `${realmColor}33`,
-                        background: `${realmColor}10`,
-                        boxShadow: selectedIsCurrent ? `0 0 18px ${realmColor}18` : 'none',
+                        borderColor: realmBorder,
+                        background: realmSoft,
+                        boxShadow: selectedIsCurrent ? `0 0 18px ${realmGlow}` : 'none',
                     }}
                 >
                     {selectedTrack ? (
@@ -954,8 +1010,8 @@ export default function RealmOrbitCard({
                                             <span
                                                 className="px-2 py-1 rounded-full text-[10px] uppercase tracking-[0.14em]"
                                                 style={{
-                                                    background: `${realmColor}22`,
-                                                    border: `1px solid ${realmColor}55`,
+                                                    background: realmSoft,
+                                                    border: `1px solid ${realmBorder}`,
                                                     color: realmColor,
                                                 }}
                                             >
@@ -994,8 +1050,8 @@ export default function RealmOrbitCard({
                                                 key={tag}
                                                 className="px-2.5 py-1 rounded-full text-[11px]"
                                                 style={{
-                                                    background: `${realmColor}18`,
-                                                    border: `1px solid ${realmColor}33`,
+                                                    background: realmSoft,
+                                                    border: `1px solid ${realmBorder}`,
                                                     color: realmColor,
                                                 }}
                                             >
@@ -1039,7 +1095,7 @@ export default function RealmOrbitCard({
                             <div
                                 className="rounded-2xl border px-4 py-4"
                                 style={{
-                                    borderColor: `${realmColor}26`,
+                                    borderColor: realmBorder,
                                     background: 'rgba(255,255,255,0.03)',
                                 }}
                             >
@@ -1090,8 +1146,8 @@ export default function RealmOrbitCard({
                                                     width: `${clampedProgress}%`,
                                                     height: '100%',
                                                     borderRadius: '9999px',
-                                                    background: `linear-gradient(90deg, ${realmColor}88, ${realmColor}, rgba(255,220,120,0.88))`,
-                                                    boxShadow: `0 0 12px ${realmColor}44`,
+                                                    background: `linear-gradient(90deg, ${realmSoft}, ${realmColor}, rgba(255,220,120,0.72))`,
+                                                    boxShadow: `0 0 12px ${realmGlow}`,
                                                 }}
                                             />
                                         </div>
@@ -1113,7 +1169,7 @@ export default function RealmOrbitCard({
                                 <div
                                     className="rounded-2xl border px-4 py-4"
                                     style={{
-                                        borderColor: `${realmColor}22`,
+                                        borderColor: realmSoft,
                                         background: 'rgba(255,255,255,0.025)',
                                     }}
                                 >

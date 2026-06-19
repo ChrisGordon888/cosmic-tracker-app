@@ -1,6 +1,7 @@
 'use client';
 
 import { useMusicPlayer } from '@/hooks/useMusicPlayer';
+import { getRealmTheme } from '@/lib/realmTheme';
 
 function formatTime(time: number) {
     const minutes = Math.floor(time / 60);
@@ -39,7 +40,11 @@ export default function MiniPlayer() {
     if (!currentTrack) return null;
 
     const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
-    const realmColor = currentTrack.realmColor || '#BCDFFF';
+    const realmTheme = getRealmTheme(currentTrack.realmId);
+    const realmColor = realmTheme.accent;
+    const realmSoft = realmTheme.soft;
+    const realmBorder = realmTheme.border;
+    const realmGlow = realmTheme.glow;
     const flowLabel = queueLabel || 'Track flow';
     const queueCopy = formatQueueCount(queueLength);
 
@@ -47,9 +52,9 @@ export default function MiniPlayer() {
         <div
             className={`cosmic-mini-player ${isExpanded ? 'is-expanded' : 'is-collapsed'} fixed z-[9999] rounded-2xl border backdrop-blur-xl shadow-2xl right-4 w-[340px] max-w-[calc(100vw-2rem)] max-[640px]:w-auto max-[640px]:rounded-2xl`}
             style={{
-                background: 'rgba(8, 10, 20, 0.9)',
-                borderColor: `${realmColor}55`,
-                boxShadow: `0 12px 40px ${realmColor}33`,
+                background: `radial-gradient(circle at top left, ${realmSoft}, transparent 42%), rgba(8, 10, 20, 0.9)`,
+                borderColor: realmBorder,
+                boxShadow: `0 12px 40px ${realmGlow}, inset 0 1px 0 rgba(255,255,255,0.06)`,
             }}
         >
             <div className="cosmic-mini-player-inner p-4">
@@ -58,7 +63,9 @@ export default function MiniPlayer() {
                         onClick={togglePlayPause}
                         className="mini-player-play-button w-12 h-12 rounded-full text-xl flex items-center justify-center shrink-0"
                         style={{
-                            background: `linear-gradient(135deg, ${realmColor}, ${realmColor}cc)`,
+                            background: `linear-gradient(135deg, ${realmColor}, ${realmSoft})`,
+                            border: `1px solid ${realmBorder}`,
+                            boxShadow: `0 0 18px ${realmGlow}`,
                         }}
                         aria-label={isPlaying ? 'Pause current track' : 'Play current track'}
                     >
@@ -66,7 +73,13 @@ export default function MiniPlayer() {
                     </button>
 
                     <div className="mini-player-copy flex-1 min-w-0">
-                        <p className="text-sm font-semibold truncate" style={{ color: realmColor }}>
+                        <p
+                            className="text-sm font-semibold truncate"
+                            style={{
+                                color: realmColor,
+                                textShadow: realmTheme.textShadow,
+                            }}
+                        >
                             {currentTrack.trackTitle}
                         </p>
 
@@ -98,7 +111,8 @@ export default function MiniPlayer() {
                             className="h-full rounded-full"
                             style={{
                                 width: `${progress}%`,
-                                background: `linear-gradient(90deg, ${realmColor}, ${realmColor}cc)`,
+                                background: `linear-gradient(90deg, ${realmColor}, ${realmSoft})`,
+                                boxShadow: `0 0 12px ${realmGlow}`,
                             }}
                         />
                     </div>
@@ -125,9 +139,10 @@ export default function MiniPlayer() {
                         disabled={queueLength <= 1}
                         className="rounded-full border px-3 py-2 text-xs transition-all disabled:opacity-35 disabled:cursor-not-allowed"
                         style={{
-                            borderColor: isShuffleEnabled ? `${realmColor}66` : 'rgba(255,255,255,0.10)',
-                            background: isShuffleEnabled ? `${realmColor}18` : 'rgba(255,255,255,0.045)',
+                            borderColor: isShuffleEnabled ? realmBorder : 'rgba(255,255,255,0.10)',
+                            background: isShuffleEnabled ? realmSoft : 'rgba(255,255,255,0.045)',
                             color: isShuffleEnabled ? realmColor : 'rgba(255,255,255,0.72)',
+                            boxShadow: isShuffleEnabled ? `0 0 12px ${realmGlow}` : 'none',
                         }}
                         aria-pressed={isShuffleEnabled}
                         aria-label={isShuffleEnabled ? 'Turn shuffle off' : 'Turn shuffle on'}
@@ -141,9 +156,10 @@ export default function MiniPlayer() {
                         disabled={queueLength <= 1}
                         className="rounded-full border px-3 py-2 text-xs transition-all disabled:opacity-35 disabled:cursor-not-allowed"
                         style={{
-                            borderColor: isContinuousEnabled ? `${realmColor}66` : 'rgba(255,255,255,0.10)',
-                            background: isContinuousEnabled ? `${realmColor}18` : 'rgba(255,255,255,0.045)',
+                            borderColor: isContinuousEnabled ? realmBorder : 'rgba(255,255,255,0.10)',
+                            background: isContinuousEnabled ? realmSoft : 'rgba(255,255,255,0.045)',
                             color: isContinuousEnabled ? realmColor : 'rgba(255,255,255,0.72)',
+                            boxShadow: isContinuousEnabled ? `0 0 12px ${realmGlow}` : 'none',
                         }}
                         aria-pressed={isContinuousEnabled}
                         aria-label={isContinuousEnabled ? 'Turn continuous play off' : 'Turn continuous play on'}
