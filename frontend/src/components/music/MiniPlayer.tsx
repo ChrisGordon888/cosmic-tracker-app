@@ -16,7 +16,16 @@ export default function MiniPlayer() {
         duration,
         volume,
         isExpanded,
+        isShuffleEnabled,
+        isContinuousEnabled,
+        queueLength,
+        hasNextTrack,
+        hasPreviousTrack,
         togglePlayPause,
+        playNext,
+        playPrevious,
+        toggleShuffle,
+        toggleContinuous,
         seekTo,
         setVolume,
         toggleExpanded,
@@ -25,7 +34,7 @@ export default function MiniPlayer() {
     if (!currentTrack) return null;
 
     const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
-    const realmColor = currentTrack.realmColor || '#00D4FF';
+    const realmColor = currentTrack.realmColor || '#BCDFFF';
 
     return (
         <div
@@ -44,6 +53,7 @@ export default function MiniPlayer() {
                         style={{
                             background: `linear-gradient(135deg, ${realmColor}, ${realmColor}cc)`,
                         }}
+                        aria-label={isPlaying ? 'Pause current track' : 'Play current track'}
                     >
                         {isPlaying ? '⏸' : '▶️'}
                     </button>
@@ -92,6 +102,54 @@ export default function MiniPlayer() {
                     </div>
                 </div>
 
+                <div className="mt-3 flex items-center justify-between gap-2">
+                    <button
+                        onClick={playPrevious}
+                        disabled={!hasPreviousTrack}
+                        className="rounded-full border border-white/10 bg-white/[0.045] px-3 py-2 text-xs text-white/75 transition-all hover:bg-white/10 disabled:opacity-35 disabled:cursor-not-allowed"
+                        aria-label="Play previous track"
+                    >
+                        ‹‹
+                    </button>
+
+                    <button
+                        onClick={toggleShuffle}
+                        className="rounded-full border px-3 py-2 text-xs transition-all"
+                        style={{
+                            borderColor: isShuffleEnabled ? `${realmColor}66` : 'rgba(255,255,255,0.10)',
+                            background: isShuffleEnabled ? `${realmColor}18` : 'rgba(255,255,255,0.045)',
+                            color: isShuffleEnabled ? realmColor : 'rgba(255,255,255,0.72)',
+                        }}
+                        aria-pressed={isShuffleEnabled}
+                        aria-label={isShuffleEnabled ? 'Turn shuffle off' : 'Turn shuffle on'}
+                    >
+                        Shuffle
+                    </button>
+
+                    <button
+                        onClick={toggleContinuous}
+                        className="rounded-full border px-3 py-2 text-xs transition-all"
+                        style={{
+                            borderColor: isContinuousEnabled ? `${realmColor}66` : 'rgba(255,255,255,0.10)',
+                            background: isContinuousEnabled ? `${realmColor}18` : 'rgba(255,255,255,0.045)',
+                            color: isContinuousEnabled ? realmColor : 'rgba(255,255,255,0.72)',
+                        }}
+                        aria-pressed={isContinuousEnabled}
+                        aria-label={isContinuousEnabled ? 'Turn continuous play off' : 'Turn continuous play on'}
+                    >
+                        Flow
+                    </button>
+
+                    <button
+                        onClick={playNext}
+                        disabled={!hasNextTrack}
+                        className="rounded-full border border-white/10 bg-white/[0.045] px-3 py-2 text-xs text-white/75 transition-all hover:bg-white/10 disabled:opacity-35 disabled:cursor-not-allowed"
+                        aria-label="Play next track"
+                    >
+                        ››
+                    </button>
+                </div>
+
                 {isExpanded && (
                     <div className="mini-player-expanded mt-4 border-t border-white/10 pt-4">
                         <div className="mb-3">
@@ -101,6 +159,10 @@ export default function MiniPlayer() {
 
                             <p className="text-sm text-white/90">
                                 Realm {currentTrack.realmId} • {currentTrack.realmName}
+                            </p>
+
+                            <p className="text-xs text-white/45 mt-1">
+                                {queueLength} available in flow • Shuffle {isShuffleEnabled ? 'on' : 'off'} • Flow {isContinuousEnabled ? 'on' : 'off'}
                             </p>
                         </div>
 
