@@ -19,10 +19,12 @@ import {
     UNLOCK_REALM,
 } from '@/graphql/realms';
 import { REALM_44_PUZZLES } from '@/lib/realmPuzzles';
+import { getRealmTheme } from '@/lib/realmTheme';
 
 const REALM_ID = 44;
 const NEXT_REALM_ID = 0;
-const REALM_COLOR = '#10B981';
+const REALM_THEME = getRealmTheme(REALM_ID);
+const REALM_COLOR = REALM_THEME.accent;
 const PREVIOUS_REALM_ID = 55;
 
 export default function Realm44() {
@@ -422,7 +424,7 @@ export default function Realm44() {
                                                 </div>
 
                                                 {trial1?.isComplete ? (
-                                                    <div className="text-green-400 font-bold">✓ Complete</div>
+                                                    <div className="font-bold" style={{ color: REALM_COLOR }}>✓ Complete</div>
                                                 ) : !trial1 ? (
                                                     <button
                                                         className="btn-primary"
@@ -500,7 +502,7 @@ export default function Realm44() {
                                                         </div>
 
                                                         {trial2?.isComplete ? (
-                                                            <div className="text-green-400 font-bold">✓ Complete</div>
+                                                            <div className="font-bold" style={{ color: REALM_COLOR }}>✓ Complete</div>
                                                         ) : !trial2 ? (
                                                             <button
                                                                 className="btn-primary"
@@ -579,7 +581,7 @@ export default function Realm44() {
                                                         </div>
 
                                                         {trial3?.isComplete ? (
-                                                            <div className="text-green-400 font-bold">✓ Complete</div>
+                                                            <div className="font-bold" style={{ color: REALM_COLOR }}>✓ Complete</div>
                                                         ) : !trial3 ? (
                                                             <button
                                                                 className="btn-primary"
