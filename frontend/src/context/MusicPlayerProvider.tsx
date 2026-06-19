@@ -178,6 +178,7 @@ export function MusicPlayerProvider({
   const currentTrackRef = useRef<MusicTrack | null>(null);
   const queueRef = useRef<MusicTrack[]>([]);
   const recentlyPlayedIdsRef = useRef<string[]>([]);
+  const playbackHistoryRef = useRef<MusicTrack[]>([]);
   const queueSourceRef = useRef<MusicQueueSource>('track');
   const queueLabelRef = useRef('Track flow');
   const isShuffleEnabledRef = useRef(false);
@@ -259,6 +260,30 @@ export function MusicPlayerProvider({
     recentlyPlayedIdsRef.current = nextRecent;
   }, []);
 
+  const pushCurrentTrackToHistory = useCallback((nextTrackId?: string | null) => {
+    const current = currentTrackRef.current;
+
+    if (!current || current.id === nextTrackId) return;
+
+    const nextHistory = [
+      current,
+      ...playbackHistoryRef.current.filter((track) => track.id !== current.id),
+    ].slice(0, 24);
+
+    playbackHistoryRef.current = nextHistory;
+  }, []);
+
+  const popPreviousHistoryTrack = useCallback(() => {
+    const [previousTrack, ...remainingHistory] = playbackHistoryRef.current;
+    playbackHistoryRef.current = remainingHistory;
+
+    return previousTrack ?? null;
+  }, []);
+
+  const clearPlaybackHistory = useCallback(() => {
+    playbackHistoryRef.current = [];
+  }, []);
+
   const getActiveQueue = useCallback(() => {
     if (queueRef.current.length > 0) return queueRef.current;
 
@@ -325,6 +350,7 @@ export function MusicPlayerProvider({
   const clearQueue = useCallback(() => {
     setQueueState([]);
     queueRef.current = [];
+    clearPlaybackHistory();
 
     if (currentTrackRef.current) {
       syncQueueMeta('track', 'Track flow', 1);
@@ -332,7 +358,7 @@ export function MusicPlayerProvider({
     }
 
     syncQueueMeta('track', 'No flow', 0);
-  }, [syncQueueMeta]);
+  }, [clearPlaybackHistory, syncQueueMeta]);
 
   const playTrack = useCallback(
     async (
@@ -346,9 +372,10 @@ export function MusicPlayerProvider({
         ensureTrackQueue(track);
       }
 
+      pushCurrentTrackToHistory(track.id);
       await startTrack(track);
     },
-    [ensureTrackQueue, replaceQueue, startTrack]
+    [ensureTrackQueue, pushCurrentTrackToHistory, replaceQueue, startTrack]
   );
 
   const playQueue = useCallback(
@@ -363,9 +390,10 @@ export function MusicPlayerProvider({
       const firstTrack =
         nextQueue.find((track) => track.id === startTrackId) ?? nextQueue[0];
 
+      clearPlaybackHistory();
       await startTrack(firstTrack);
     },
-    [replaceQueue, startTrack]
+    [clearPlaybackHistory, replaceQueue, startTrack]
   );
 
   const playNext = useCallback(async () => {
@@ -382,8 +410,9 @@ export function MusicPlayerProvider({
 
     if (!nextTrack) return;
 
+    pushCurrentTrackToHistory(nextTrack.id);
     await startTrack(nextTrack);
-  }, [getActiveQueue, startTrack]);
+  }, [getActiveQueue, pushCurrentTrackToHistory, startTrack]);
 
   const playPrevious = useCallback(async () => {
     const audio = audioRef.current;
@@ -394,21 +423,25 @@ export function MusicPlayerProvider({
       return;
     }
 
+    const previousHistoryTrack = popPreviousHistoryTrack();
+
+    if (previousHistoryTrack) {
+      await startTrack(previousHistoryTrack);
+      return;
+    }
+
     const nextQueue = getActiveQueue();
     if (nextQueue.length <= 1) return;
 
-    const previousTrack = isShuffleEnabledRef.current
-      ? getShuffleTrack(
-          nextQueue,
-          currentTrackRef.current?.id,
-          recentlyPlayedIdsRef.current
-        )
-      : getSequentialPreviousTrack(nextQueue, currentTrackRef.current?.id);
+    const previousTrack = getSequentialPreviousTrack(
+      nextQueue,
+      currentTrackRef.current?.id
+    );
 
     if (!previousTrack) return;
 
     await startTrack(previousTrack);
-  }, [getActiveQueue, startTrack]);
+  }, [getActiveQueue, popPreviousHistoryTrack, startTrack]);
 
   const playOrToggleTrack = useCallback(
     async (
@@ -440,13 +473,14 @@ export function MusicPlayerProvider({
           return;
         }
 
+        pushCurrentTrackToHistory(track.id);
         await startTrack(track);
       } catch (error) {
         console.error('Failed to play or toggle track:', error);
         setIsPlaying(false);
       }
     },
-    [ensureTrackQueue, markRecentlyPlayed, replaceQueue, startTrack]
+    [ensureTrackQueue, markRecentlyPlayed, pushCurrentTrackToHistory, replaceQueue, startTrack]
   );
 
   const togglePlayPause = useCallback(async () => {
