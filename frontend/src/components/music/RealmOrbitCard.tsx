@@ -109,6 +109,7 @@ function getCompactPathLabel(pathLabel?: string) {
 }
 
 export default function RealmOrbitCard({
+    realmId,
     realmName,
     realmIcon,
     realmColor: fallbackRealmColor,
