@@ -3,17 +3,20 @@
 import { useSession } from 'next-auth/react';
 import { useQuery } from '@apollo/client';
 import Link from 'next/link';
+import Image from 'next/image';
 import { GET_ME } from '@/graphql/realms';
+import { getRealmTheme } from '@/lib/realmTheme';
 import '@/styles/realmShared.css';
 import '@/styles/nexus.css';
+import '@/styles/profile.css';
 
 const REALM_META: Record<number, { name: string; mark: string; color: string }> = {
-    303: { name: 'Fractured Frontier', mark: '∴', color: '#FF4D6D' },
-    202: { name: 'The Veil', mark: '◐', color: '#8B5CF6' },
-    101: { name: 'Moonlit Roads', mark: '☾', color: '#38BDF8' },
-    55: { name: 'Skybound City', mark: '△', color: '#FACC15' },
-    44: { name: 'Astral Bazaar', mark: '◇', color: '#10B981' },
-    0: { name: 'InterSiddhi', mark: '∞', color: '#F5F5F5' },
+    303: { name: 'Fractured Frontier', mark: '∴', color: getRealmTheme(303).accent },
+    202: { name: 'The Veil', mark: '◐', color: getRealmTheme(202).accent },
+    101: { name: 'Moonlit Roads', mark: '☾', color: getRealmTheme(101).accent },
+    55: { name: 'Skybound City', mark: '△', color: getRealmTheme(55).accent },
+    44: { name: 'Astral Bazaar', mark: '◇', color: getRealmTheme(44).accent },
+    0: { name: 'InterSiddhi', mark: '∞', color: getRealmTheme(0).accent },
 };
 
 const REALM_ORDER = [303, 202, 101, 55, 44, 0];
@@ -209,9 +212,9 @@ export default function ProfilePage() {
     ];
 
     return (
-        <div className="min-h-screen pb-32 nexus-shell">
+        <div className="min-h-screen pb-32 nexus-shell profile-shell">
             <div className="container mx-auto px-4 py-8 max-w-5xl nexus-container">
-                <header className="text-center mb-8 fade-in">
+                <header className="text-center mb-8 fade-in nexus-hero">
                     <p className="text-xs uppercase tracking-[0.24em] text-muted mb-3">
                         Traveler System
                     </p>
@@ -227,10 +230,14 @@ export default function ProfilePage() {
                     <div className="flex flex-col lg:flex-row items-center gap-6">
                         <div className="relative shrink-0">
                             {avatarUrl ? (
-                                <img
+                                <Image
                                     src={avatarUrl}
                                     alt={user?.name ?? 'Traveler'}
+                                    width={96}
+                                    height={96}
                                     className="h-24 w-24 rounded-full border object-cover"
+                                    sizes="96px"
+                                    priority
                                     style={{
                                         borderColor: 'rgba(220, 186, 92, 0.34)',
                                         boxShadow: '0 0 28px rgba(220, 186, 92, 0.10)',

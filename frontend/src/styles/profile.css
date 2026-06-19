@@ -1,0 +1,198 @@
+/* ===================================
+   PROFILE PAGE POLISH
+   Chrome / moon silver / ice blue / champagne gold.
+   Replaces older neon cyan / magenta profile styling.
+   =================================== */
+
+.profile-shell {
+    color: var(--nexus-silver);
+}
+
+.profile-shell .nexus-hero h1 {
+    color: rgba(238, 243, 250, 0.96);
+    text-shadow:
+        0 0 10px rgba(255, 255, 255, 0.12),
+        0 0 22px rgba(130, 190, 255, 0.10),
+        0 16px 42px rgba(0, 0, 0, 0.32);
+}
+
+.profile-shell .nexus-hero p {
+    color: rgba(224, 231, 240, 0.82);
+}
+
+.profile-shell .profile-hero-card,
+.profile-shell .profile-stat-card,
+.profile-shell .profile-map-card,
+.profile-shell .profile-activity-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-shell .profile-hero-card::before,
+.profile-shell .profile-stat-card::before,
+.profile-shell .profile-map-card::before,
+.profile-shell .profile-activity-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at top left, rgba(188, 224, 255, 0.075), transparent 34%),
+        radial-gradient(circle at bottom right, rgba(220, 186, 92, 0.055), transparent 32%);
+    opacity: 0.9;
+}
+
+.profile-shell .profile-hero-card > *,
+.profile-shell .profile-stat-card > *,
+.profile-shell .profile-map-card > *,
+.profile-shell .profile-activity-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+.profile-shell .profile-avatar-ring {
+    border-color: rgba(220, 186, 92, 0.34);
+    box-shadow:
+        0 0 28px rgba(220, 186, 92, 0.10),
+        inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+
+.profile-shell .profile-level-orb {
+    background:
+        radial-gradient(circle at 35% 30%,
+            rgba(255, 255, 255, 0.14),
+            rgba(220, 186, 92, 0.12) 42%,
+            rgba(8, 11, 20, 0.74));
+    color: var(--nexus-gold);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.10),
+        0 0 18px rgba(220, 186, 92, 0.12);
+}
+
+.profile-shell .profile-realm-card {
+    transition:
+        border-color 0.22s ease,
+        box-shadow 0.22s ease,
+        transform 0.22s ease,
+        background 0.22s ease;
+}
+
+.profile-shell .profile-realm-card:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.10),
+        0 12px 26px rgba(0, 0, 0, 0.22),
+        0 0 14px rgba(130, 190, 255, 0.06);
+}
+
+.profile-shell .profile-list-panel {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(220, 186, 92, 0.34) rgba(255, 255, 255, 0.04);
+}
+
+.profile-shell .profile-list-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.profile-shell .profile-list-panel::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 999px;
+}
+
+.profile-shell .profile-list-panel::-webkit-scrollbar-thumb {
+    background: rgba(220, 186, 92, 0.34);
+    border-radius: 999px;
+}
+
+/* Legacy profile classes kept safe in case older widgets still render them. */
+.profile-page {
+    color: var(--nexus-silver);
+    font-family: 'Orbitron', Arial, sans-serif;
+}
+
+.profile-page h1,
+.profile-page h2,
+.profile-page h2.mood-header {
+    color: rgba(238, 243, 250, 0.96);
+    text-shadow:
+        0 0 10px rgba(255, 255, 255, 0.12),
+        0 0 18px rgba(130, 190, 255, 0.10);
+}
+
+.profile-page p {
+    color: rgba(224, 231, 240, 0.82);
+}
+
+.profile-page .highlight {
+    color: var(--nexus-gold);
+    text-shadow: 0 0 10px rgba(220, 186, 92, 0.16);
+}
+
+.profile-page .error-text {
+    color: rgba(255, 93, 122, 0.92);
+    font-weight: bold;
+}
+
+.sacred-entry,
+.mood-entry,
+.quest-entry {
+    background:
+        linear-gradient(145deg,
+            rgba(255, 255, 255, 0.06),
+            rgba(205, 215, 230, 0.03) 42%,
+            rgba(14, 20, 34, 0.54));
+    border: 1px solid rgba(214, 224, 235, 0.16);
+    border-radius: 1rem;
+    padding: 1rem 1.5rem;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 10px 24px rgba(0, 0, 0, 0.18);
+    transition:
+        transform 0.24s ease,
+        box-shadow 0.24s ease,
+        border-color 0.24s ease;
+}
+
+.sacred-entry:hover,
+.mood-entry:hover,
+.quest-entry:hover {
+    transform: translateY(-2px);
+    border-color: rgba(228, 236, 244, 0.26);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        0 14px 30px rgba(0, 0, 0, 0.22),
+        0 0 14px rgba(130, 190, 255, 0.08);
+}
+
+.profile-page button {
+    background:
+        linear-gradient(135deg,
+            rgba(255, 255, 255, 0.06),
+            rgba(205, 215, 228, 0.03) 44%,
+            rgba(14, 20, 32, 0.44));
+    border: 1px solid rgba(214, 224, 235, 0.14);
+    color: rgba(232, 238, 246, 0.92);
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    font-weight: bold;
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.profile-page button:hover {
+    transform: translateY(-1px);
+    border-color: rgba(220, 186, 92, 0.30);
+    background: rgba(255, 255, 255, 0.075);
+}
+
+@media (max-width: 768px) {
+    .profile-shell .profile-realm-card:hover,
+    .sacred-entry:hover,
+    .mood-entry:hover,
+    .quest-entry:hover,
+    .profile-page button:hover {
+        transform: none;
+    }
+}

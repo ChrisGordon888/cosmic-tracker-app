@@ -3,15 +3,17 @@
 import { useSession } from 'next-auth/react';
 import { useQuery } from '@apollo/client';
 import Link from 'next/link';
+import Image from 'next/image';
 import { GET_LEADERBOARD, GET_ME } from '@/graphql/realms';
 import '@/styles/realmShared.css';
 import '@/styles/nexus.css';
+import '@/styles/leaderboard.css';
 
 function getRankDisplay(rank: number): { symbol: string; label: string; color: string } {
   if (rank === 1) return { symbol: 'I', label: 'First', color: '#DCBA5C' };
-  if (rank === 2) return { symbol: 'II', label: 'Second', color: '#C9D3DF' };
-  if (rank === 3) return { symbol: 'III', label: 'Third', color: '#B8895A' };
-  return { symbol: `${rank}`, label: `Rank ${rank}`, color: '#A0A0B0' };
+  if (rank === 2) return { symbol: 'II', label: 'Second', color: '#DCE8F2' };
+  if (rank === 3) return { symbol: 'III', label: 'Third', color: '#F4AB63' };
+  return { symbol: `${rank}`, label: `Rank ${rank}`, color: '#BCDFFF' };
 }
 
 function getTravelerTitle(level: number): string {
@@ -33,10 +35,13 @@ function Avatar({
 }) {
   if (image) {
     return (
-      <img
+      <Image
         src={image}
         alt={name ?? 'Traveler'}
+        width={44}
+        height={44}
         className="h-11 w-11 rounded-full border object-cover shrink-0"
+        sizes="44px"
         style={{
           borderColor: isMe ? 'rgba(220,186,92,0.55)' : 'rgba(255,255,255,0.14)',
         }}
@@ -121,9 +126,9 @@ export default function LeaderboardPage() {
   const topEntries = entries.slice(0, 3);
 
   return (
-    <div className="min-h-screen pb-32 nexus-shell">
+    <div className="min-h-screen pb-32 nexus-shell leaderboard-shell">
       <div className="container mx-auto px-4 py-8 max-w-5xl nexus-container">
-        <header className="text-center mb-8 fade-in">
+        <header className="text-center mb-8 fade-in nexus-hero">
           <p className="text-xs uppercase tracking-[0.24em] text-muted mb-3">
             Traveler Rankings
           </p>
