@@ -70,11 +70,11 @@ export default function FindYourRealmPage() {
         [selectedAnswers]
     );
 
-    const recommendedRealm = recommendedRealmId
+    const recommendedRealm = recommendedRealmId !== null
         ? REALM_STATE_MAP[recommendedRealmId]
         : null;
 
-    const realmResult = recommendedRealmId
+    const realmResult = recommendedRealmId !== null
         ? REALM_RESULT_CONTENT[recommendedRealmId]
         : null;
 
@@ -82,7 +82,7 @@ export default function FindYourRealmPage() {
         realmResult?.modeVariants[experienceMode] ?? null;
 
     const suggestedTrack = useMemo(() => {
-        if (!recommendedRealmId || !modeContent) return null;
+        if (recommendedRealmId === null || !modeContent) return null;
 
         return (
             MUSIC_REGISTRY.find(
@@ -133,7 +133,7 @@ export default function FindYourRealmPage() {
             return;
         }
 
-        if (recommendedRealmId) {
+        if (recommendedRealmId !== null) {
             const suggestedMode = REALM_RESULT_CONTENT[recommendedRealmId].defaultMode;
             const suggestedContent =
                 REALM_RESULT_CONTENT[recommendedRealmId].modeVariants[suggestedMode];
@@ -171,7 +171,7 @@ export default function FindYourRealmPage() {
     const handleModeSelect = (mode: ExperienceMode) => {
         setExperienceMode(mode);
 
-        if (recommendedRealmId) {
+        if (recommendedRealmId !== null) {
             const nextModeContent = REALM_RESULT_CONTENT[recommendedRealmId].modeVariants[mode];
 
             saveRealmAlignment(

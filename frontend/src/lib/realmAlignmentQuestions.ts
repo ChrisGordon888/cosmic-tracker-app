@@ -13,11 +13,21 @@ export interface RealmAlignmentQuestion {
 }
 
 /**
- * Realm Alignment v1
- * Simple weighted scoring:
- * - each answer gives points to one or more realms
- * - highest score wins
- * - ties are resolved by display order on the page logic side
+ * Realm Alignment v2
+ *
+ * Weighted scoring model:
+ * - each answer gives a primary realm strong weight
+ * - most answers also give secondary / tertiary weights for nuance
+ * - the page resolves the highest score into a recommended realm
+ * - ties are resolved by REALM_DISPLAY_ORDER in the page logic
+ *
+ * Realm meanings:
+ * - 303: pressure, rupture, activation, survival, raw motion
+ * - 202: desire, fog, mystery, attachment, hidden truth
+ * - 101: reflection, grief, memory, spaciousness, integration
+ * - 55: ambition, command, power, elevation, disciplined action
+ * - 44: discernment, value, decision, exchange, what deserves energy
+ * - 0: center, gratitude, wholeness, blessing, reconnection, alignment
  */
 export const REALM_ALIGNMENT_QUESTIONS: RealmAlignmentQuestion[] = [
   {
@@ -27,32 +37,32 @@ export const REALM_ALIGNMENT_QUESTIONS: RealmAlignmentQuestion[] = [
       {
         label: 'Pressure / chaos',
         description: 'Everything feels sharp, unstable, or demanding.',
-        realmWeights: { 303: 3, 55: 1 },
+        realmWeights: { 303: 4, 55: 2, 202: 1 },
       },
       {
         label: 'Longing / confusion',
         description: 'You feel pulled, uncertain, or emotionally foggy.',
-        realmWeights: { 202: 3, 101: 1 },
+        realmWeights: { 202: 4, 101: 2, 44: 1 },
       },
       {
         label: 'Reflection / heaviness',
         description: 'You need room to process, grieve, or understand.',
-        realmWeights: { 101: 3, 202: 1 },
+        realmWeights: { 101: 4, 202: 2, 0: 1 },
       },
       {
         label: 'Ambition / readiness',
         description: 'You want to rise, act, and direct your energy.',
-        realmWeights: { 55: 3, 303: 1 },
+        realmWeights: { 55: 4, 303: 2, 44: 1 },
       },
       {
         label: 'Discernment / decision-making',
         description: 'You are evaluating what deserves your energy.',
-        realmWeights: { 44: 3, 101: 1 },
+        realmWeights: { 44: 4, 202: 2, 101: 1 },
       },
       {
         label: 'Alignment / gratitude',
         description: 'You want to return to center and what is essential.',
-        realmWeights: { 0: 3, 101: 1 },
+        realmWeights: { 0: 4, 101: 2, 44: 1 },
       },
     ],
   },
@@ -63,27 +73,33 @@ export const REALM_ALIGNMENT_QUESTIONS: RealmAlignmentQuestion[] = [
     options: [
       {
         label: 'Strength',
-        realmWeights: { 303: 2, 55: 2 },
+        description: 'You need backbone, resilience, and the force to keep moving.',
+        realmWeights: { 303: 3, 55: 3, 0: 1 },
       },
       {
         label: 'Clarity',
-        realmWeights: { 202: 1, 44: 3 },
+        description: 'You need to separate signal from noise and see what is true.',
+        realmWeights: { 44: 4, 202: 2, 101: 1 },
       },
       {
         label: 'Space',
-        realmWeights: { 101: 3, 0: 1 },
+        description: 'You need quiet, breath, and emotional room.',
+        realmWeights: { 101: 4, 0: 2, 202: 1 },
       },
       {
         label: 'Power',
-        realmWeights: { 55: 3, 303: 1 },
+        description: 'You need confidence, command, and forward charge.',
+        realmWeights: { 55: 4, 303: 2, 44: 1 },
       },
       {
         label: 'Discernment',
-        realmWeights: { 44: 3, 202: 1 },
+        description: 'You need to choose what is worthy and stop leaking energy.',
+        realmWeights: { 44: 4, 202: 2, 55: 1 },
       },
       {
         label: 'Return to center',
-        realmWeights: { 0: 3, 101: 1 },
+        description: 'You need to remember who you are beneath the noise.',
+        realmWeights: { 0: 4, 101: 2, 44: 1 },
       },
     ],
   },
@@ -94,27 +110,33 @@ export const REALM_ALIGNMENT_QUESTIONS: RealmAlignmentQuestion[] = [
     options: [
       {
         label: 'Fractured',
-        realmWeights: { 303: 3 },
+        description: 'Parts of you feel scattered, pressured, or on edge.',
+        realmWeights: { 303: 4, 202: 1, 101: 1 },
       },
       {
         label: 'Foggy',
-        realmWeights: { 202: 3 },
+        description: 'You can feel something, but the meaning is not fully clear.',
+        realmWeights: { 202: 4, 101: 2, 44: 1 },
       },
       {
         label: 'Quiet',
-        realmWeights: { 101: 2, 0: 1 },
+        description: 'You feel inward, soft, and in need of gentler pacing.',
+        realmWeights: { 101: 4, 0: 2, 202: 1 },
       },
       {
         label: 'Rising',
-        realmWeights: { 55: 3 },
+        description: 'Something in you wants to build, move, lead, or be seen.',
+        realmWeights: { 55: 4, 303: 2, 44: 1 },
       },
       {
         label: 'Evaluating',
-        realmWeights: { 44: 3 },
+        description: 'You are reviewing options, patterns, worth, and direction.',
+        realmWeights: { 44: 4, 202: 2, 101: 1 },
       },
       {
         label: 'Whole',
-        realmWeights: { 0: 3 },
+        description: 'You feel connected to gratitude, faith, or a deeper center.',
+        realmWeights: { 0: 4, 101: 2, 55: 1 },
       },
     ],
   },
@@ -125,27 +147,33 @@ export const REALM_ALIGNMENT_QUESTIONS: RealmAlignmentQuestion[] = [
     options: [
       {
         label: 'Raw and activating',
-        realmWeights: { 303: 3, 55: 1 },
+        description: 'Something intense enough to move pressure through the body.',
+        realmWeights: { 303: 4, 55: 2, 202: 1 },
       },
       {
         label: 'Hypnotic and mysterious',
-        realmWeights: { 202: 3 },
+        description: 'Something nocturnal, seductive, strange, or emotionally magnetic.',
+        realmWeights: { 202: 4, 101: 1, 44: 1 },
       },
       {
         label: 'Reflective and spacious',
-        realmWeights: { 101: 3, 0: 1 },
+        description: 'Something wide enough to think, feel, remember, and breathe.',
+        realmWeights: { 101: 4, 0: 2, 202: 1 },
       },
       {
         label: 'Commanding and elevated',
-        realmWeights: { 55: 3 },
+        description: 'Something that makes you stand taller and move with authority.',
+        realmWeights: { 55: 4, 303: 1, 44: 1 },
       },
       {
         label: 'Rich and selective',
-        realmWeights: { 44: 3 },
+        description: 'Something focused, refined, valuable, and intentional.',
+        realmWeights: { 44: 4, 55: 1, 202: 1 },
       },
       {
         label: 'Peaceful and luminous',
-        realmWeights: { 0: 3 },
+        description: 'Something that clears the field and reconnects you to center.',
+        realmWeights: { 0: 4, 101: 2, 44: 1 },
       },
     ],
   },
@@ -156,27 +184,33 @@ export const REALM_ALIGNMENT_QUESTIONS: RealmAlignmentQuestion[] = [
     options: [
       {
         label: 'Survive / face it',
-        realmWeights: { 303: 3 },
+        description: 'Meet the pressure directly and get through the moment.',
+        realmWeights: { 303: 4, 55: 1, 0: 1 },
       },
       {
         label: 'Understand what is true',
-        realmWeights: { 202: 2, 44: 2 },
+        description: 'Look beneath the surface and name what is actually happening.',
+        realmWeights: { 202: 3, 44: 3, 101: 1 },
       },
       {
         label: 'Process and integrate',
-        realmWeights: { 101: 3, 0: 1 },
+        description: 'Give the experience somewhere to land inside you.',
+        realmWeights: { 101: 4, 0: 2, 202: 1 },
       },
       {
         label: 'Rise and act',
-        realmWeights: { 55: 3 },
+        description: 'Turn intention into motion, discipline, and visible action.',
+        realmWeights: { 55: 4, 303: 2, 44: 1 },
       },
       {
         label: 'Choose wisely',
-        realmWeights: { 44: 3 },
+        description: 'Protect your energy and select the path with real value.',
+        realmWeights: { 44: 4, 202: 1, 55: 1 },
       },
       {
         label: 'Reconnect and align',
-        realmWeights: { 0: 3 },
+        description: 'Come back to your center, your gratitude, and your highest signal.',
+        realmWeights: { 0: 4, 101: 2, 44: 1 },
       },
     ],
   },

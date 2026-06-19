@@ -14,40 +14,49 @@ export interface RealmResultContent {
   modeVariants: Record<ExperienceMode, ModeVariantContent>;
 }
 
+/**
+ * Realm Result Content v2
+ *
+ * This file controls the language, recommended track, reflection prompt,
+ * and mode guidance that appears after the Find Your Realm alignment flow.
+ *
+ * The quiz scoring lives in realmAlignmentQuestions.ts.
+ * This file answers: “Now that a realm was selected, how should it speak?”
+ */
 export const REALM_RESULT_CONTENT: Record<RealmId, RealmResultContent> = {
   303: {
     defaultMode: 'move-through',
     resultStatement:
-      'This realm often appears when life feels sharp, unstable, demanding, coded, or like something inside you is being forced to break open.',
+      'Fractured Frontier appears when pressure is no longer background noise — it is asking to become motion, strength, and direct contact with what is real.',
     whyRealmFits:
-      'You may be carrying pressure, chaos, conflict, or survival energy. Fractured Frontier helps you recognize the pattern, meet the pressure, and find force inside the fracture.',
+      'Your answers point toward activation, intensity, survival energy, or a sense that something is breaking open. This realm does not ask you to pretend you are calm. It helps you meet the pressure without being consumed by it, then turn the fracture into force.',
     modeVariants: {
       stay: {
         recommendedTrack: 'hardcoded',
         whyMusicFits:
-          'This track sits inside the feeling of being programmed by pain, pressure, and old patterns without rushing the listener out of it too quickly.',
+          'This track holds the feeling of being shaped by pressure, pain, and old programming. It lets the listener stay close to the pattern long enough to recognize it.',
         reflectionPrompt:
-          'What pattern keeps repeating — and what is it trying to teach me before I break it?',
+          'What pattern keeps repeating — and what is it trying to show me before I break it?',
         modeDescription:
-          'Stay with the intensity long enough to understand the code behind the pressure.',
+          'Stay with Fractured Frontier when the intensity needs to be witnessed before it can be redirected.',
       },
       'move-through': {
         recommendedTrack: 'hardcoded',
         whyMusicFits:
-          'This track carries the sound of recognizing internal programming, confronting pain, and beginning to move through it with awareness.',
+          'This track carries the sound of pressure becoming awareness. It gives the fracture a rhythm so the energy can move instead of staying trapped inside the body.',
         reflectionPrompt:
           'What am I fighting right now — and what strength is this pressure trying to force out of me?',
         modeDescription:
-          'Use this realm to process pressure and begin turning fracture into directed movement.',
+          'Move through Fractured Frontier by turning raw charge into conscious direction.',
       },
       shift: {
         recommendedTrack: 'HardWay',
         whyMusicFits:
-          'This track keeps the edge of Fractured Frontier but pushes the energy toward power, retaliation, self-trust, and momentum.',
+          'This track keeps the edge of 303 but pushes it toward confidence, retaliation, self-trust, and momentum.',
         reflectionPrompt:
           'What would shift if I stopped reacting and started directing this energy?',
         modeDescription:
-          'Shift from raw fracture into agency by turning pressure into command.',
+          'Shift through Fractured Frontier when you are ready to move from survival mode into agency.',
       },
     },
   },
@@ -55,36 +64,36 @@ export const REALM_RESULT_CONTENT: Record<RealmId, RealmResultContent> = {
   202: {
     defaultMode: 'move-through',
     resultStatement:
-      'This realm often appears when you feel pulled by longing, confusion, fantasy, projection, or hidden emotional truth.',
+      'The Veil appears when desire, fantasy, confusion, or hidden truth is pulling your attention beneath the surface.',
     whyRealmFits:
-      'The Veil helps you sit with mystery, desire, emotional fog, and fantasy without forcing false certainty too early.',
+      'Your answers point toward emotional fog, longing, mystery, projection, or the sense that something is true but not fully visible yet. The Veil helps you stay close to the feeling without mistaking every feeling for the final truth.',
     modeVariants: {
       stay: {
         recommendedTrack: 'voices',
         whyMusicFits:
-          'This track supports the softer mental haze of The Veil — the feeling of many thoughts, signals, and emotions moving at once.',
+          'This track supports the mental haze of The Veil — the feeling of many signals, thoughts, and emotional echoes moving at once.',
         reflectionPrompt:
           'What feeling am I being asked not to run from?',
         modeDescription:
-          'Stay with the fog long enough to hear what it is trying to say.',
+          'Stay with The Veil when the fog needs listening before it needs answers.',
       },
       'move-through': {
         recommendedTrack: 'her fantasy',
         whyMusicFits:
-          'This track captures fantasy, projection, numbness, romance, and emotional overload while still keeping forward motion.',
+          'This track captures fantasy, projection, desire, numbness, romance, and emotional overload while still keeping forward motion.',
         reflectionPrompt:
           'What feels true beneath the fantasy — and what part of me is projecting instead of seeing clearly?',
         modeDescription:
-          'Move through illusion by staying close to what feels emotionally true.',
+          'Move through The Veil by separating emotional truth from illusion without becoming cold or disconnected.',
       },
       shift: {
-        recommendedTrack: 'Night Light',
+        recommendedTrack: 'siren',
         whyMusicFits:
-          'This track holds the mystery of The Veil while giving the listener a softer light to follow out of the fog.',
+          'This track keeps the hypnotic pull of The Veil while making the attraction itself visible. It helps the listener notice what is calling them and decide whether it is guidance or temptation.',
         reflectionPrompt:
-          'What am I ready to see more clearly now?',
+          'What am I ready to see clearly now, even if part of me still wants the illusion?',
         modeDescription:
-          'Shift from seduction, projection, and emotional fog toward clearer awareness.',
+          'Shift through The Veil when you are ready to move from projection into clearer awareness.',
       },
     },
   },
@@ -92,9 +101,9 @@ export const REALM_RESULT_CONTENT: Record<RealmId, RealmResultContent> = {
   101: {
     defaultMode: 'stay',
     resultStatement:
-      'This realm often appears when you need room for reflection, healing, memory, distance, softness, or emotional integration.',
+      'Moonlit Roads appears when your system needs space, memory, softness, and a slower way back into motion.',
     whyRealmFits:
-      'Moonlit Roads offers movement without pressure and helps you understand what is surfacing at a gentler pace.',
+      'Your answers point toward reflection, heaviness, quiet, grief, tenderness, or the need to process without pressure. Moonlit Roads gives the inner world room to breathe so healing can move at a human pace.',
     modeVariants: {
       stay: {
         recommendedTrack: 'holdMyHand',
@@ -103,7 +112,7 @@ export const REALM_RESULT_CONTENT: Record<RealmId, RealmResultContent> = {
         reflectionPrompt:
           'What am I still carrying that needs gentleness instead of speed?',
         modeDescription:
-          'Stay here when the wisest next step is reflection, softness, and emotional grounding.',
+          'Stay with Moonlit Roads when the wisest next move is not force, but presence.',
       },
       'move-through': {
         recommendedTrack: 'little further',
@@ -112,7 +121,7 @@ export const REALM_RESULT_CONTENT: Record<RealmId, RealmResultContent> = {
         reflectionPrompt:
           'What part of me is ready to go a little further without abandoning my softness?',
         modeDescription:
-          'Move through this realm by letting reflection become trust and forward motion.',
+          'Move through Moonlit Roads by letting reflection become trust, breath, and steady forward motion.',
       },
       shift: {
         recommendedTrack: 'freeFall',
@@ -121,7 +130,7 @@ export const REALM_RESULT_CONTENT: Record<RealmId, RealmResultContent> = {
         reflectionPrompt:
           'What would help me surrender without losing myself?',
         modeDescription:
-          'Shift from reflection into release, trust, and motion through uncertainty.',
+          'Shift through Moonlit Roads when reflection is ready to become release.',
       },
     },
   },
@@ -129,36 +138,36 @@ export const REALM_RESULT_CONTENT: Record<RealmId, RealmResultContent> = {
   55: {
     defaultMode: 'move-through',
     resultStatement:
-      'This realm often appears when you need ambition, discipline, confidence, command, manifestation, and upward movement.',
+      'Skybound City appears when power, ambition, discipline, visibility, or command wants to become real action.',
     whyRealmFits:
-      'Skybound City helps you turn rising energy into focused, intentional power.',
+      'Your answers point toward rising energy, confidence, strength, power, or the desire to act with more authority. Skybound City helps you turn that charge into structure, direction, and visible momentum.',
     modeVariants: {
       stay: {
         recommendedTrack: 'Glory n Power',
         whyMusicFits:
-          'This track locks into victory, embodiment, confidence, and the feeling of enjoying power while recognizing the energy behind it.',
+          'This track locks into victory, embodiment, confidence, and the feeling of owning power without apologizing for it.',
         reflectionPrompt:
           'What power am I already holding that I have not fully owned?',
         modeDescription:
-          'Stay here when you need to stabilize confidence, command, and upward energy.',
+          'Stay with Skybound City when confidence needs to stabilize before the next move.',
       },
       'move-through': {
         recommendedTrack: 'Glory n Power',
         whyMusicFits:
-          'This track embodies momentum, celebration, ambition, and the messy human charge of stepping into power.',
+          'This track embodies momentum, celebration, ambition, and the human charge of stepping into power.',
         reflectionPrompt:
           'Where is my energy leaking — and what would happen if I directed it fully?',
         modeDescription:
-          'Move through this realm by turning rising energy into deliberate action.',
+          'Move through Skybound City by turning rising energy into deliberate action.',
       },
       shift: {
         recommendedTrack: 'Bank',
         whyMusicFits:
-          'This track keeps the Skybound money-motion feeling and turns ambition into a more focused external move.',
+          'This track keeps the Skybound money-motion feeling and turns ambition into a more concrete external move.',
         reflectionPrompt:
           'What is the next concrete move that would make this power real?',
         modeDescription:
-          'Shift from inner power into visible manifestation and practical momentum.',
+          'Shift through Skybound City when inner power is ready to become structure, output, and visible momentum.',
       },
     },
   },
@@ -166,18 +175,18 @@ export const REALM_RESULT_CONTENT: Record<RealmId, RealmResultContent> = {
   44: {
     defaultMode: 'move-through',
     resultStatement:
-      'This realm often appears when you are deciding what is worth your energy, attention, time, loyalty, or devotion.',
+      'Astral Bazaar appears when you are weighing value — what deserves your time, attention, loyalty, money, devotion, or energy.',
     whyRealmFits:
-      'Astral Bazaar helps you clarify value, boundaries, temptation, focus, and the quality of your exchanges.',
+      'Your answers point toward evaluation, clarity, discernment, boundaries, temptation, or decision-making. Astral Bazaar helps you see what is truly valuable and what only looks valuable from a distance.',
     modeVariants: {
       stay: {
         recommendedTrack: '13933',
         whyMusicFits:
-          'This track captures the elegant temptation of distraction while still holding the ambition and focus needed to stay clean.',
+          'This track captures the elegant tension of temptation and focus — the feeling of staying clean while distractions ask for your attention.',
         reflectionPrompt:
-          'What am I currently overvaluing — and why?',
+          'What am I currently overvaluing — and what is it costing me?',
         modeDescription:
-          'Stay here when discernment matters more than speed.',
+          'Stay with Astral Bazaar when discernment matters more than speed.',
       },
       'move-through': {
         recommendedTrack: 'Golden Tickets',
@@ -186,7 +195,7 @@ export const REALM_RESULT_CONTENT: Record<RealmId, RealmResultContent> = {
         reflectionPrompt:
           'What in my life is truly valuable — and what only looks valuable from a distance?',
         modeDescription:
-          'Move through this realm by clarifying worth and choosing more wisely.',
+          'Move through Astral Bazaar by clarifying worth and choosing with cleaner focus.',
       },
       shift: {
         recommendedTrack: 'new jazz',
@@ -195,7 +204,7 @@ export const REALM_RESULT_CONTENT: Record<RealmId, RealmResultContent> = {
         reflectionPrompt:
           'What deserves my energy next, now that I see more clearly?',
         modeDescription:
-          'Shift from evaluation into chosen movement, taste, and aligned enjoyment.',
+          'Shift through Astral Bazaar when evaluation is ready to become chosen movement.',
       },
     },
   },
@@ -203,9 +212,9 @@ export const REALM_RESULT_CONTENT: Record<RealmId, RealmResultContent> = {
   0: {
     defaultMode: 'stay',
     resultStatement:
-      'This realm often appears when you need alignment, blessing, stillness, completion, and return to what is essential.',
+      'InterSiddhi appears when the deepest signal is not to push harder, but to return to center, gratitude, wholeness, and what is already essential.',
     whyRealmFits:
-      'InterSiddhi helps you reconnect with what is already whole beneath striving, confusion, and performance.',
+      'Your answers point toward alignment, gratitude, peace, return, faith, wholeness, or reconnecting with your highest signal. InterSiddhi helps you remember the part of you that is already whole beneath striving, confusion, and performance.',
     modeVariants: {
       stay: {
         recommendedTrack: 'same person',
@@ -214,7 +223,7 @@ export const REALM_RESULT_CONTENT: Record<RealmId, RealmResultContent> = {
         reflectionPrompt:
           'What part of me is already whole, even while I am still becoming?',
         modeDescription:
-          'Stay here when you need to receive, settle, and reconnect with what is already whole.',
+          'Stay with InterSiddhi when you need to receive, settle, and reconnect with what is already whole.',
       },
       'move-through': {
         recommendedTrack: 'Walking Forward',
@@ -223,7 +232,7 @@ export const REALM_RESULT_CONTENT: Record<RealmId, RealmResultContent> = {
         reflectionPrompt:
           'What returns me to myself most quickly when I drift away?',
         modeDescription:
-          'Move through this realm by letting stillness become alignment in motion.',
+          'Move through InterSiddhi by letting stillness become aligned motion.',
       },
       shift: {
         recommendedTrack: 'Feel Blessed',
@@ -232,7 +241,7 @@ export const REALM_RESULT_CONTENT: Record<RealmId, RealmResultContent> = {
         reflectionPrompt:
           'What would I do next if I moved from wholeness instead of lack?',
         modeDescription:
-          'Shift from recovery into aligned forward movement without losing center.',
+          'Shift through InterSiddhi when recovery is ready to become blessed forward movement.',
       },
     },
   },

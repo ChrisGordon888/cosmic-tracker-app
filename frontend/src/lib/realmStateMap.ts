@@ -18,26 +18,46 @@ export interface RealmStateInfo {
   shiftDescription: string;
 }
 
+/**
+ * Realm State Map v2
+ *
+ * This file is the stable identity registry for each realm:
+ * - name / number / icon / route
+ * - color signature
+ * - core state language
+ * - mode descriptions used across realm guidance surfaces
+ *
+ * Keep this file broad and foundational.
+ * The quiz scoring lives in realmAlignmentQuestions.ts.
+ * The detailed result copy and recommended tracks live in realmResultContent.ts.
+ */
 export const REALM_STATE_MAP: Record<RealmId, RealmStateInfo> = {
   303: {
     realmId: 303,
     realmName: 'Fractured Frontier',
     realmNumber: '303',
     icon: '∴',
-    color: '#FF4D6D',
+    color: '#FF5D7A',
     route: '/realms/303',
     journeyStage: 'fracture',
-    helpsWith: ['chaos', 'pressure', 'overwhelm', 'conflict', 'survival', 'raw activation'],
+    helpsWith: [
+      'pressure',
+      'chaos',
+      'survival energy',
+      'raw activation',
+      'conflict',
+      'breaking patterns',
+    ],
     thisRealmIsFor:
-      'When life feels unstable, sharp, demanding, or like something is breaking open.',
+      'When life feels sharp, unstable, demanding, or like something inside you is being forced to break open.',
     whyEnterIt:
-      'To face pressure honestly and find force inside the fracture.',
+      'To meet pressure honestly, understand the code inside the chaos, and turn fracture into directed force.',
     stayDescription:
-      'Stay here if you need music and atmosphere that meet your chaos honestly.',
+      'Stay here when the intensity needs to be witnessed before it can be redirected.',
     moveThroughDescription:
-      'Choose this if you want to work through pressure and find strength inside instability.',
+      'Move through this realm when you want to process pressure and convert raw charge into strength.',
     shiftDescription:
-      'Choose this if you want to begin moving from fracture toward power, clarity, or integration.',
+      'Shift through this realm when you are ready to move from survival mode into agency, command, or integration.',
   },
 
   202: {
@@ -45,20 +65,27 @@ export const REALM_STATE_MAP: Record<RealmId, RealmStateInfo> = {
     realmName: 'The Veil',
     realmNumber: '202',
     icon: '◐',
-    color: '#8B5CF6',
+    color: '#A884FF',
     route: '/realms/202',
     journeyStage: 'veil',
-    helpsWith: ['desire', 'confusion', 'seduction', 'projection', 'intuition', 'hidden truth'],
+    helpsWith: [
+      'desire',
+      'confusion',
+      'projection',
+      'emotional fog',
+      'intuition',
+      'hidden truth',
+    ],
     thisRealmIsFor:
-      'When you feel pulled by longing, illusion, fear, fantasy, or mystery.',
+      'When you feel pulled by longing, fantasy, mystery, attachment, or something emotionally true that has not fully revealed itself.',
     whyEnterIt:
-      'To move through emotional fog and listen for what is true beneath the pull.',
+      'To move through illusion without becoming numb, and listen for the truth beneath the pull.',
     stayDescription:
-      'Stay here if you need to sit with mystery, longing, and what has not yet become clear.',
+      'Stay here when the fog needs listening before it needs answers.',
     moveThroughDescription:
-      'Choose this if you want to move through confusion and listen for deeper truth.',
+      'Move through this realm when you want to separate emotional truth from projection, fantasy, or fear.',
     shiftDescription:
-      'Choose this if you want to move from emotional fog toward reflection, discernment, or source.',
+      'Shift through this realm when you are ready to move from seduction or uncertainty toward clearer awareness.',
   },
 
   101: {
@@ -66,20 +93,27 @@ export const REALM_STATE_MAP: Record<RealmId, RealmStateInfo> = {
     realmName: 'Moonlit Roads',
     realmNumber: '101',
     icon: '☾',
-    color: '#38BDF8',
+    color: '#7ED3FF',
     route: '/realms/101',
     journeyStage: 'reflection',
-    helpsWith: ['reflection', 'grief', 'late-night processing', 'integration', 'distance', 'calm movement'],
+    helpsWith: [
+      'reflection',
+      'grief',
+      'memory',
+      'softness',
+      'integration',
+      'calm movement',
+    ],
     thisRealmIsFor:
-      'When you need space to think, feel, travel inward, or make peace with what has been.',
+      'When you need space to think, feel, remember, heal, travel inward, or make peace with what has been.',
     whyEnterIt:
-      'To slow down, reflect, and let the road reveal what is ready to be understood.',
+      'To slow down without stopping, give the inner world room to breathe, and let the road reveal what is ready to be understood.',
     stayDescription:
-      'Stay here if you need calm, reflection, and music that gives your inner world room.',
+      'Stay here when the wisest next move is presence, softness, and emotional grounding.',
     moveThroughDescription:
-      'Choose this if you want to process what you are carrying and integrate it gently.',
+      'Move through this realm when you want to process what you are carrying and keep going without abandoning your softness.',
     shiftDescription:
-      'Choose this if you want to move from reflection toward power, discernment, or alignment.',
+      'Shift through this realm when reflection is ready to become release, trust, or aligned motion.',
   },
 
   55: {
@@ -87,20 +121,27 @@ export const REALM_STATE_MAP: Record<RealmId, RealmStateInfo> = {
     realmName: 'Skybound City',
     realmNumber: '55',
     icon: '△',
-    color: '#FACC15',
+    color: '#ECC973',
     route: '/realms/55',
     journeyStage: 'power',
-    helpsWith: ['ambition', 'self-command', 'discipline', 'manifestation', 'confidence', 'upward movement'],
+    helpsWith: [
+      'ambition',
+      'self-command',
+      'discipline',
+      'confidence',
+      'manifestation',
+      'upward movement',
+    ],
     thisRealmIsFor:
-      'When you need to reclaim your power, direct your energy, and act with intention.',
+      'When you need to reclaim your power, direct your energy, act with intention, and turn potential into visible motion.',
     whyEnterIt:
-      'To remember that vision without command goes nowhere, and power begins within.',
+      'To remember that vision needs command, and power becomes real when it is structured into action.',
     stayDescription:
-      'Stay here if you want to amplify ambition, discipline, and command.',
+      'Stay here when confidence needs to stabilize and you need to remember the power you already hold.',
     moveThroughDescription:
-      'Choose this if you want to turn scattered force into directed power.',
+      'Move through this realm when you want to turn scattered force into discipline, direction, and momentum.',
     shiftDescription:
-      'Choose this if you want to rise from activation into mastery, value, or aligned action.',
+      'Shift through this realm when inner power is ready to become output, structure, value, or aligned action.',
   },
 
   44: {
@@ -108,20 +149,27 @@ export const REALM_STATE_MAP: Record<RealmId, RealmStateInfo> = {
     realmName: 'Astral Bazaar',
     realmNumber: '44',
     icon: '◇',
-    color: '#10B981',
+    color: '#F4AB63',
     route: '/realms/44',
     journeyStage: 'value',
-    helpsWith: ['discernment', 'value', 'boundaries', 'reciprocity', 'wise exchange', 'temptation'],
+    helpsWith: [
+      'discernment',
+      'value',
+      'boundaries',
+      'reciprocity',
+      'temptation',
+      'wise exchange',
+    ],
     thisRealmIsFor:
-      'When you are deciding what is worth your energy, attention, time, or devotion.',
+      'When you are deciding what deserves your time, attention, loyalty, money, devotion, or energy.',
     whyEnterIt:
-      'To learn the difference between glitter and value, transaction and sacred exchange.',
+      'To learn the difference between glitter and value, transaction and sacred exchange, distraction and true opportunity.',
     stayDescription:
-      'Stay here if you need to evaluate, discern, and listen for what is truly worth your energy.',
+      'Stay here when discernment matters more than speed and you need to evaluate what is truly worth your energy.',
     moveThroughDescription:
-      'Choose this if you want to clarify boundaries and make wiser exchanges.',
+      'Move through this realm when you want to clarify value, strengthen boundaries, and make wiser exchanges.',
     shiftDescription:
-      'Choose this if you want to move from temptation or confusion toward value and integrity.',
+      'Shift through this realm when evaluation is ready to become chosen movement, taste, and integrity.',
   },
 
   0: {
@@ -129,20 +177,27 @@ export const REALM_STATE_MAP: Record<RealmId, RealmStateInfo> = {
     realmName: 'InterSiddhi',
     realmNumber: '0',
     icon: '∞',
-    color: '#F5F5F5',
+    color: '#EEF3FA',
     route: '/realms/0',
     journeyStage: 'source',
-    helpsWith: ['blessing', 'alignment', 'integration', 'stillness', 'completion', 'source connection'],
+    helpsWith: [
+      'alignment',
+      'gratitude',
+      'stillness',
+      'integration',
+      'completion',
+      'source connection',
+    ],
     thisRealmIsFor:
-      'When you need to return to what is essential, whole, and already within.',
+      'When you need to return to what is essential, whole, blessed, and already alive beneath the noise.',
     whyEnterIt:
-      'To reconnect with the deeper self beneath striving, confusion, and performance.',
+      'To reconnect with the deeper self beneath striving, confusion, performance, and the feeling that you have to become worthy.',
     stayDescription:
-      'Stay here if you need stillness, blessing, and reconnection to what is essential.',
+      'Stay here when you need to receive, settle, and reconnect with what is already whole.',
     moveThroughDescription:
-      'Choose this if you want to integrate what you have been moving through and return to center.',
+      'Move through this realm when you want stillness to become aligned motion.',
     shiftDescription:
-      'Choose this if you want to move toward alignment, wholeness, and source.',
+      'Shift through this realm when recovery is ready to become gratitude, coherence, and blessed forward movement.',
   },
 };
 

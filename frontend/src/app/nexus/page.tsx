@@ -1714,13 +1714,13 @@ export default function CosmicNexusHub() {
                                         <div className="relative p-5 md:p-6 flex flex-col justify-end min-h-[220px]">
                                             <div className="flex flex-wrap gap-2 mb-3">
                                                 <span className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.16em] bg-white/10 border border-white/12 text-white/90">
-                                                    Archive
+                                                    Listening Vault
                                                 </span>
                                                 <span className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.16em] bg-white/6 border border-white/10 text-white/72">
-                                                    {vaultTrackCount} cataloged tracks
+                                                    {vaultTrackCount} songs & sketches
                                                 </span>
                                                 <span className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.16em] bg-white/6 border border-white/10 text-white/72">
-                                                    {totalMemberVaultCount} member vault items
+                                                    Member preview
                                                 </span>
                                             </div>
 
@@ -1728,14 +1728,14 @@ export default function CosmicNexusHub() {
                                                 April–May Vault
                                             </h4>
                                             <p className="text-sm md:text-base text-white/78 max-w-xl leading-relaxed">
-                                                Demos, sketches, and unreleased ideas from the April–May creation window — the raw material behind future songs, EPs, artwork, and worlds.
+                                                A private listening room for the April–May sessions — early songs, sketches, and unreleased moments from the world before they fully open.
                                             </p>
                                         </div>
                                     </div>
 
                                     <div className="p-5">
                                         <p className="text-sm text-secondary leading-relaxed">
-                                            {vaultTrackCount} cataloged vault tracks are currently attached to this creation window. Your raw folder has more ideas than the registry, so the next pass is choosing what becomes public, member-unlocked, release-ready, premium, or private.
+                                            Step inside a quieter corner of the Nexus. These pieces show the sound in motion — some are early sparks, some are closer to release, and all of them trace the path from first idea to finished world.
                                         </p>
                                     </div>
                                 </div>
