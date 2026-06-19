@@ -3,6 +3,7 @@
 import { useSession, signIn } from 'next-auth/react';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useQuery, useMutation } from '@apollo/client';
 import { getTodayMoonPhase, getRealmMoonAlignment } from '@/lib/moonPhases';
 import RealmBackground from '@/components/realm/RealmBackground';
@@ -350,7 +351,7 @@ export default function CosmicNexusHub() {
 
                 return a.trackTitle.localeCompare(b.trackTitle);
             });
-    }, [nexusVisibleTracks, isSignedIn]);
+    }, [nexusVisibleTracks, isSignedIn, isTrackLocked]);
 
     const groupedTracks = REALM_META.map((realm) => {
         const realmId = parseInt(realm.id);
@@ -414,7 +415,6 @@ export default function CosmicNexusHub() {
     const publicThreePieceCollections = PUBLIC_THREE_PIECE_COLLECTIONS;
     const vaultTracks = useMemo(() => getTracksByCollection('april-may-vault'), []);
     const vaultTrackCount = vaultTracks.length;
-    const totalMemberVaultCount = VAULT_TRACKS.length;
 
     const currentReleasePrimaryLocked = currentReleasePrimaryTrack
         ? isTrackLocked(currentReleasePrimaryTrack)
@@ -545,11 +545,16 @@ export default function CosmicNexusHub() {
                             >
                                 {releaseArtworkUrl ? (
                                     <div className="mb-5 flex justify-center">
-                                        <img
+                                        <Image
                                             src={releaseArtworkUrl}
                                             alt={currentRelease.title}
+                                            width={260}
+                                            height={260}
+                                            priority
+                                            sizes="(max-width: 768px) 72vw, 260px"
                                             style={{
                                                 width: 'min(260px, 72vw)',
+                                                height: 'auto',
                                                 aspectRatio: '1 / 1',
                                                 objectFit: 'cover',
                                                 borderRadius: '26px',

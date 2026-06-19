@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useMusicPlayer } from '@/hooks/useMusicPlayer';
 import { getRealmTheme } from '@/lib/realmTheme';
@@ -143,19 +143,25 @@ export default function RealmOrbitCard({
         });
     }, [tracks]);
 
-    const trackIsLocked = (track?: OrbitTrack | null) => {
-        if (!track) return false;
-        return isTrackLocked?.(track) ?? false;
-    };
+    const trackIsLocked = useCallback(
+        (track?: OrbitTrack | null) => {
+            if (!track) return false;
+            return isTrackLocked?.(track) ?? false;
+        },
+        [isTrackLocked]
+    );
 
-    const getLockLabel = (track?: OrbitTrack | null) => {
-        if (!track) return null;
-        return getTrackLockLabel?.(track) ?? null;
-    };
+    const getLockLabel = useCallback(
+        (track?: OrbitTrack | null) => {
+            if (!track) return null;
+            return getTrackLockLabel?.(track) ?? null;
+        },
+        [getTrackLockLabel]
+    );
 
     const playableTracks = useMemo(() => {
         return sortedTracks.filter((track) => !trackIsLocked(track));
-    }, [sortedTracks, isTrackLocked]);
+    }, [sortedTracks, trackIsLocked]);
 
     const orbitTracks = useMemo(() => {
         return playableTracks.slice(0, 8);
@@ -258,7 +264,7 @@ export default function RealmOrbitCard({
             (track): track is OrbitTrack & { trackUrl: string } =>
                 Boolean(track.trackUrl) && !trackIsLocked(track)
         );
-    }, [flowTracks, realmPlayableFlowQueue, isTrackLocked]);
+    }, [flowTracks, realmPlayableFlowQueue, trackIsLocked]);
 
     const activeFlowOptions = useMemo(
         () => ({
