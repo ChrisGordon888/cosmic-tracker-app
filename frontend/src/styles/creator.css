@@ -1,0 +1,415 @@
+/* ===================================
+   CREATOR DASHBOARD V2
+   Minimal creator OS / private command console.
+   Distinct from release page + signal board.
+   =================================== */
+
+.creator-console-shell {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr);
+    color: rgba(238, 243, 250, 0.94);
+    background:
+        radial-gradient(circle at 12% 10%, rgba(220, 186, 92, 0.10), transparent 28%),
+        radial-gradient(circle at 84% 18%, rgba(59, 167, 216, 0.10), transparent 32%),
+        linear-gradient(180deg, #05070d, #070b14 46%, #05070d);
+}
+
+.creator-console-rail {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    border-right: 1px solid rgba(214, 224, 235, 0.10);
+    background:
+        linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015)),
+        rgba(5, 7, 13, 0.74);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.25rem 0.7rem;
+    gap: 1rem;
+}
+
+.creator-console-mark {
+    width: 3rem;
+    height: 3rem;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(220, 186, 92, 0.28);
+    border-radius: 1rem;
+    color: rgba(243, 231, 209, 0.92);
+    font-family: 'Orbitron', Arial, sans-serif;
+    font-weight: 800;
+    background:
+        radial-gradient(circle at 35% 30%, rgba(255,255,255,0.12), rgba(220,186,92,0.08), rgba(8,11,20,0.62));
+    box-shadow: 0 0 22px rgba(220, 186, 92, 0.08);
+}
+
+.creator-console-rail-lines {
+    display: grid;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.creator-console-rail-lines span {
+    width: 0.35rem;
+    height: 0.35rem;
+    border-radius: 999px;
+    background: rgba(188, 224, 255, 0.38);
+}
+
+.creator-console-rail p {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    margin: auto 0 0;
+    color: rgba(224, 231, 240, 0.42);
+    font-size: 0.7rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+}
+
+.creator-console {
+    width: min(100%, 1180px);
+    margin: 0 auto;
+    padding: 2.1rem 1.2rem 5rem;
+}
+
+.creator-console-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 1rem;
+    align-items: stretch;
+    margin-bottom: 1rem;
+}
+
+.creator-console-header > div:first-child,
+.creator-console-status,
+.creator-console-topline article,
+.creator-console-panel,
+.creator-console-footer {
+    border: 1px solid rgba(214, 224, 235, 0.13);
+    background:
+        linear-gradient(145deg, rgba(255,255,255,0.06), rgba(205,215,230,0.025), rgba(14,20,34,0.48));
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        0 16px 42px rgba(0,0,0,0.22);
+    backdrop-filter: blur(14px) saturate(125%);
+    -webkit-backdrop-filter: blur(14px) saturate(125%);
+}
+
+.creator-console-header > div:first-child,
+.creator-console-status,
+.creator-console-topline article,
+.creator-console-panel,
+.creator-console-footer {
+    border-radius: 1.35rem;
+    padding: 1rem;
+}
+
+.creator-console-kicker {
+    margin: 0;
+    color: rgba(188, 224, 255, 0.68);
+    font-size: 0.68rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+}
+
+.creator-console-header h1 {
+    margin: 0.45rem 0 0.65rem;
+    color: rgba(245, 247, 252, 0.96);
+    font-family: 'Orbitron', Arial, sans-serif;
+    font-size: clamp(2rem, 6vw, 4.75rem);
+    line-height: 0.92;
+    letter-spacing: 0.045em;
+    text-transform: uppercase;
+}
+
+.creator-console-header p,
+.creator-console-note,
+.creator-console-footer p {
+    margin: 0;
+    color: rgba(224, 231, 240, 0.68);
+    line-height: 1.62;
+}
+
+.creator-console-status {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.creator-console-status span,
+.creator-console-status em {
+    color: rgba(188, 224, 255, 0.66);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-style: normal;
+}
+
+.creator-console-status strong {
+    margin: 0.45rem 0;
+    color: rgba(243, 231, 209, 0.90);
+    font-family: 'Orbitron', Arial, sans-serif;
+    font-size: 1.2rem;
+    line-height: 1.18;
+    text-transform: uppercase;
+}
+
+.creator-console-topline {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.creator-console-topline article span,
+.creator-console-focus p {
+    display: block;
+    color: rgba(188, 224, 255, 0.58);
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.creator-console-topline article strong {
+    display: block;
+    margin: 0.35rem 0 0.25rem;
+    color: rgba(245, 247, 252, 0.94);
+    font-family: 'Orbitron', Arial, sans-serif;
+    text-transform: uppercase;
+}
+
+.creator-console-topline article p {
+    margin: 0;
+    color: rgba(224, 231, 240, 0.62);
+    font-size: 0.82rem;
+}
+
+.creator-console-grid {
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr 0.8fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.creator-console-grid-bottom {
+    grid-template-columns: 1.2fr 0.8fr;
+}
+
+.creator-console-wide {
+    min-width: 0;
+}
+
+.creator-console-panel h2 {
+    margin: 0.35rem 0 0.9rem;
+    color: rgba(245, 247, 252, 0.94);
+    font-family: 'Orbitron', Arial, sans-serif;
+    font-size: 1.05rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.creator-console-action-list,
+.creator-console-phases,
+.creator-console-links,
+.creator-console-track-strip,
+.creator-console-pill-list {
+    display: grid;
+    gap: 0.62rem;
+}
+
+.creator-console-action-list div {
+    display: flex;
+    gap: 0.65rem;
+    align-items: center;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 0.9rem;
+    padding: 0.7rem;
+    background: rgba(255,255,255,0.032);
+}
+
+.creator-console-action-list span {
+    width: 0.7rem;
+    height: 0.7rem;
+    flex: 0 0 auto;
+    border-radius: 999px;
+    border: 1px solid rgba(220, 186, 92, 0.36);
+    box-shadow: 0 0 12px rgba(220,186,92,0.12);
+}
+
+.creator-console-action-list p,
+.creator-console-phases p,
+.creator-console-track-strip p {
+    margin: 0;
+    color: rgba(224, 231, 240, 0.70);
+    font-size: 0.83rem;
+    line-height: 1.45;
+}
+
+.creator-console-focus {
+    margin-top: 0.8rem;
+    border: 1px solid rgba(220, 186, 92, 0.16);
+    border-radius: 0.95rem;
+    padding: 0.8rem;
+    background: rgba(220, 186, 92, 0.045);
+}
+
+.creator-console-focus strong {
+    display: block;
+    margin-top: 0.35rem;
+    color: rgba(243, 231, 209, 0.90);
+    line-height: 1.45;
+    font-size: 0.9rem;
+}
+
+.creator-console-phases div {
+    display: grid;
+    grid-template-columns: 4.8rem minmax(0, 1fr);
+    gap: 0.65rem;
+    align-items: center;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 0.9rem;
+    padding: 0.62rem;
+    background: rgba(255,255,255,0.032);
+}
+
+.creator-console-phases span {
+    color: rgba(243, 231, 209, 0.82);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.creator-console-phases strong {
+    display: block;
+    color: rgba(245, 247, 252, 0.90);
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.creator-console-links a {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 0.9rem;
+    padding: 0.72rem;
+    color: rgba(238, 243, 250, 0.88);
+    background: rgba(255,255,255,0.034);
+    text-decoration: none;
+    font-family: 'Orbitron', Arial, sans-serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.creator-console-links a:hover {
+    transform: translateY(-1px);
+    border-color: rgba(188, 224, 255, 0.24);
+}
+
+.creator-console-note {
+    margin-top: 0.8rem;
+    font-size: 0.8rem;
+}
+
+.creator-console-track-strip {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.creator-console-track-strip div {
+    min-height: 8rem;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 1rem;
+    padding: 0.75rem;
+    background: rgba(255,255,255,0.032);
+}
+
+.creator-console-track-strip span {
+    color: rgba(243, 231, 209, 0.78);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.creator-console-track-strip strong {
+    display: block;
+    margin: 0.55rem 0;
+    color: rgba(245, 247, 252, 0.92);
+    font-family: 'Orbitron', Arial, sans-serif;
+    font-size: 0.78rem;
+    line-height: 1.25;
+    text-transform: uppercase;
+}
+
+.creator-console-pill-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.creator-console-pill-list span {
+    border: 1px solid rgba(188,224,255,0.13);
+    border-radius: 999px;
+    padding: 0.42rem 0.58rem;
+    color: rgba(224, 231, 240, 0.72);
+    background: rgba(255,255,255,0.036);
+    font-size: 0.72rem;
+}
+
+.creator-console-footer {
+    margin-top: 0.5rem;
+    font-size: 0.82rem;
+}
+
+@media (max-width: 1040px) {
+    .creator-console-grid,
+    .creator-console-grid-bottom,
+    .creator-console-header,
+    .creator-console-topline {
+        grid-template-columns: 1fr;
+    }
+
+    .creator-console-track-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 720px) {
+    .creator-console-shell {
+        grid-template-columns: 1fr;
+    }
+
+    .creator-console-rail {
+        position: relative;
+        height: auto;
+        flex-direction: row;
+        justify-content: space-between;
+        border-right: 0;
+        border-bottom: 1px solid rgba(214, 224, 235, 0.10);
+    }
+
+    .creator-console-rail-lines {
+        display: flex;
+        margin-top: 0;
+    }
+
+    .creator-console-rail p {
+        writing-mode: initial;
+        transform: none;
+        margin: 0;
+    }
+
+    .creator-console {
+        padding-top: 1rem;
+    }
+}
+
+@media (max-width: 520px) {
+    .creator-console-track-strip {
+        grid-template-columns: 1fr;
+    }
+}
