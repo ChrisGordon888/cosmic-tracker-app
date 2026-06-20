@@ -1,26 +1,71 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import {
+  getSirensAssetById,
   sirensRelease,
   sirensRolloutDates,
   sirensTracks,
+  type SirensAsset,
 } from '@/lib/releases/sirensInNeverland';
 import '@/styles/sirensRelease.css';
+
+function isDisplayReadyAsset(asset: SirensAsset | null) {
+  return Boolean(asset?.src && asset.status !== 'needed');
+}
+
+function ReleaseCover() {
+  const coverAsset = getSirensAssetById(sirensRelease.coverAssetId);
+
+  if (isDisplayReadyAsset(coverAsset) && coverAsset?.src) {
+    return (
+      <div className="sirens-release-cover sirens-release-cover-has-image">
+        <Image
+          src={coverAsset.src}
+          alt={coverAsset.alt}
+          fill
+          priority
+          sizes="(max-width: 900px) 100vw, 42vw"
+          className="sirens-release-cover-image"
+        />
+        <div className="sirens-release-cover-sheen" />
+        <div className="sirens-release-cover-title">
+          <span>{sirensRelease.artist.displayName}</span>
+          <strong>SIRENS</strong>
+          <em>in Neverland</em>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="sirens-release-cover" aria-label="SIRENS in Neverland cover placeholder">
+      <div className="sirens-release-cover-moon" />
+      <div className="sirens-release-cover-title">
+        <span>{sirensRelease.artist.displayName}</span>
+        <strong>SIRENS</strong>
+        <em>in Neverland</em>
+      </div>
+    </div>
+  );
+}
+
+function TrackAssetBadge({ assetId }: { assetId?: string }) {
+  const asset = getSirensAssetById(assetId);
+
+  if (!asset) {
+    return <span>Asset not assigned</span>;
+  }
+
+  return <span>{asset.status === 'needed' ? 'Visual needed' : `Visual ${asset.status}`}</span>;
+}
 
 export default function SirensReleasePage() {
   const leadSingle = sirensTracks.find((track) => track.status === 'focus-single');
   const secondSingle = sirensTracks.find((track) => track.status === 'second-single');
-
   return (
     <main className="sirens-release-shell">
       <section className="sirens-release-hero">
-        <div className="sirens-release-cover" aria-label="SIRENS in Neverland cover placeholder">
-          <div className="sirens-release-cover-moon" />
-          <div className="sirens-release-cover-title">
-            <span>{sirensRelease.artist}</span>
-            <strong>SIRENS</strong>
-            <em>in Neverland</em>
-          </div>
-        </div>
+        <ReleaseCover />
 
         <div className="sirens-release-copy">
           <p className="sirens-release-kicker">{sirensRelease.releaseType} Release World</p>
@@ -65,6 +110,7 @@ export default function SirensReleasePage() {
                   <div className="sirens-track-meta">
                     <span>{track.role}</span>
                     <span>{track.realmName}</span>
+                    <TrackAssetBadge assetId={track.coverAssetId} />
                   </div>
                 </div>
               </div>

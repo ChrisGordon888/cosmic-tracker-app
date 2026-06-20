@@ -457,3 +457,23 @@
         padding: 0 0.8rem;
     }
 }
+
+/* sirensRelease.css */
+.sirens-release-cover-has-image {
+    background: #03050a;
+}
+
+.sirens-release-cover-image {
+    object-fit: cover;
+    z-index: 0;
+}
+
+.sirens-release-cover-sheen {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+        linear-gradient(180deg, rgba(3,5,10,0.06), rgba(3,5,10,0.48)),
+        radial-gradient(circle at 50% 20%, rgba(243,231,209,0.15), transparent 28%);
+    pointer-events: none;
+}

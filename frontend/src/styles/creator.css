@@ -413,3 +413,100 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* creator.css */
+.creator-asset-monitor {
+    border: 1px solid rgba(214, 224, 235, 0.12);
+    border-radius: 1.2rem;
+    padding: 1rem;
+    background:
+        radial-gradient(circle at top left, rgba(126, 211, 255, 0.06), transparent 32%),
+        linear-gradient(145deg, rgba(255,255,255,0.055), rgba(205,215,230,0.022), rgba(14,20,34,0.48));
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.075),
+        0 12px 28px rgba(0, 0, 0, 0.18);
+}
+
+.creator-asset-monitor-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.85rem;
+}
+
+.creator-asset-monitor-head h3 {
+    margin: 0.4rem 0 0;
+    color: rgba(245, 247, 252, 0.95);
+    font-family: 'Orbitron', Arial, sans-serif;
+    text-transform: uppercase;
+}
+
+.creator-asset-monitor-head > span {
+    border: 1px solid rgba(188, 224, 255, 0.13);
+    border-radius: 999px;
+    padding: 0.38rem 0.58rem;
+    color: rgba(224, 231, 240, 0.72);
+    background: rgba(255, 255, 255, 0.04);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.creator-asset-status-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.55rem;
+}
+
+.creator-asset-status-grid div,
+.creator-asset-mini-list div {
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 0.9rem;
+    background: rgba(255,255,255,0.035);
+}
+
+.creator-asset-status-grid div {
+    padding: 0.7rem;
+    display: grid;
+    gap: 0.35rem;
+}
+
+.creator-asset-status-grid span,
+.creator-asset-mini-list span {
+    color: rgba(188, 224, 255, 0.62);
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.creator-asset-status-grid strong {
+    color: rgba(245, 247, 252, 0.94);
+    font-family: 'Orbitron', Arial, sans-serif;
+    font-size: 1.4rem;
+}
+
+.creator-asset-mini-list {
+    display: grid;
+    gap: 0.45rem;
+    margin-top: 0.75rem;
+}
+
+.creator-asset-mini-list div {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.58rem 0.65rem;
+}
+
+.creator-asset-mini-list p {
+    margin: 0;
+    color: rgba(224, 231, 240, 0.74);
+    font-size: 0.78rem;
+}
+
+@media (max-width: 720px) {
+    .creator-asset-status-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}

@@ -1,16 +1,49 @@
 import type { CSSProperties } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import {
+  getSirensAssetById,
   sirensBoardPins,
   sirensDoOverClips,
   sirensMinimumViableRollout,
   sirensRelease,
   sirensRolloutDates,
   sirensSecondSingleClips,
+  type SirensAsset,
 } from '@/lib/releases/sirensInNeverland';
 import '@/styles/signalBoard.css';
 
 type BoardPin = (typeof sirensBoardPins)[number];
+
+function isDisplayReadyAsset(asset: SirensAsset | null) {
+  return Boolean(asset?.src && asset.status !== 'needed');
+}
+
+function BoardPinVisual({ pin }: { pin: BoardPin }) {
+  const asset = getSirensAssetById(pin.assetId);
+
+  if (!isDisplayReadyAsset(asset) || !asset?.src) {
+    if (!pin.assetId) return null;
+
+    return (
+      <div className="signal-board-pin-asset signal-board-pin-asset-needed">
+        <span>{asset?.status ?? 'needed'}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="signal-board-pin-asset">
+      <Image
+        src={asset.src}
+        alt={asset.alt}
+        fill
+        sizes="220px"
+        className="signal-board-pin-image"
+      />
+    </div>
+  );
+}
 
 function BoardPinCard({ pin }: { pin: BoardPin }) {
   const style = {
@@ -22,6 +55,7 @@ function BoardPinCard({ pin }: { pin: BoardPin }) {
   const content = (
     <>
       <div className="signal-board-pin-cap" />
+      <BoardPinVisual pin={pin} />
       <p className="signal-board-pin-eyebrow">{pin.eyebrow}</p>
       <h2>{pin.title}</h2>
       <p>{pin.body}</p>
@@ -51,12 +85,13 @@ export default function SirensSignalBoardPage() {
         <p className="signal-board-kicker">Cosmic Release Board</p>
         <h1>SIRENS Signal Board</h1>
         <p>
-          A living tack board for {sirensRelease.title} — the six-track EP world,
-          DoOver rollout, moon timing, content clips, and realm portals mapped inside the Cosmic Nexus.
+          A living signal wall for {sirensRelease.title} — the six-track EP world,
+          DoOver rollout, moon timing, content clips, assets, and realm portals mapped inside the Cosmic Nexus.
         </p>
 
         <div className="signal-board-actions">
           <Link href="/releases/sirens-in-neverland">Release Page</Link>
+          <Link href="/creator">Creator Console</Link>
           <Link href="/nexus">Enter Nexus</Link>
         </div>
       </section>

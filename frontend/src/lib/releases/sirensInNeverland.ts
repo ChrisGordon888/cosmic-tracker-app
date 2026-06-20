@@ -1,60 +1,93 @@
-export type ReleasePhase = 'era-reveal' | 'lead-single' | 'second-single' | 'ep-drop';
+import {
+  createReleaseWorldPacket,
+  getLiveReleaseLinks,
+  getReleaseAssetById,
+  getReleaseAssetsByTrack,
+  getReleaseAssetsByUsage,
+  getReleaseLinkById,
+  getReleaseTrackBySlug,
+  getReleaseTracksByRealm,
+  type ReleaseAsset,
+  type ReleaseBoardPin,
+  type ReleaseClipPlan,
+  type ReleaseLink,
+  type ReleasePhase,
+  type ReleaseRolloutDate,
+  type ReleaseTheme,
+  type ReleaseTrack,
+  type ReleaseWorld,
+  type ReleaseWorldPacket,
+} from './releaseWorld.types';
 
-export interface SirensTrack {
-  number: string;
-  slug: string;
-  title: string;
-  displayTitle: string;
-  role: string;
-  realmId: 303 | 202 | 101 | 55 | 44 | 0;
-  realmName: string;
-  status: 'focus-single' | 'second-single' | 'ep-track' | 'post-drop-focus';
-  note: string;
-  contentAngle: string;
-}
+export type {
+  ReleaseAsset,
+  ReleaseBoardPin,
+  ReleaseClipPlan,
+  ReleaseLink,
+  ReleasePhase,
+  ReleaseRolloutDate,
+  ReleaseTheme,
+  ReleaseTrack,
+  ReleaseWorld,
+  ReleaseWorldPacket,
+};
 
-export interface SirensRolloutDate {
-  date: string;
-  label: string;
-  phase: ReleasePhase;
-  title: string;
-  goal: string;
-  publicAction: string;
-  creatorAction: string;
-}
+export type SirensTrack = ReleaseTrack;
+export type SirensRolloutDate = ReleaseRolloutDate;
+export type SirensClipPlan = ReleaseClipPlan;
+export type SirensAsset = ReleaseAsset;
+export type SirensReleaseLink = ReleaseLink;
+export type SirensBoardPin = ReleaseBoardPin;
 
-export interface SirensClipPlan {
-  id: string;
-  title: string;
-  purpose: string;
-  visualDirection: string;
-  timing: string;
-}
+export const sirensTheme: ReleaseTheme = {
+  id: 'sirens-in-neverland-theme',
+  name: 'Midnight Signal Wall',
+  description:
+    'A cosmic, sleek, oceanic visual system with smoked graphite surfaces, ice-blue signal glow, champagne accents, and tactile scrapbook artifacts.',
+  palette: {
+    background: '#03050A',
+    surface: '#11161F',
+    primary: '#7ED3FF',
+    secondary: '#A884FF',
+    accent: '#DCBA5C',
+    text: '#EEF3FA',
+    muted: '#9CA8B8',
+  },
+  visualKeywords: [
+    'cosmic signal wall',
+    'oceanic shimmer',
+    'midnight graphite',
+    'holographic tape',
+    'scrapbook artifacts',
+    'chrome pins',
+    'moon cadence',
+    'siren mythology',
+  ],
+};
 
-export interface SirensBoardPin {
-  id: string;
-  kind: 'center' | 'realm' | 'track' | 'moon' | 'visual' | 'hook' | 'action' | 'portal';
-  eyebrow: string;
-  title: string;
-  body: string;
-  meta?: string;
-  href?: string;
-  x: number;
-  y: number;
-  rotate?: number;
-}
-
-export const sirensRelease = {
+export const sirensRelease: ReleaseWorld = {
+  id: 'sirens-in-neverland',
+  slug: 'sirens-in-neverland',
   title: 'SIRENS in Neverland',
-  artist: 'COSMIC',
+  artist: {
+    artistId: 'cosmic',
+    artistSlug: 'cosmic',
+    artistName: 'Cosmic',
+    displayName: 'COSMIC',
+    tagline: 'World-building melodic artist and creator.',
+  },
   subtitle: 'The first EP world in the Cosmic Nexus.',
   status: 'Rollout in progress',
   releaseType: 'EP1',
   trackCount: 6,
   currentFocus: 'DoOver',
-  secondSingle: 'running from the plug',
+  secondFocus: 'running from the plug',
   fullDrop: 'July 29',
-  moonPhaseSource: 'https://www.timeanddate.com/moon/phases/',
+  themeId: sirensTheme.id,
+  coverAssetId: 'sin-ep-cover',
+  boardHeroAssetId: 'sin-board-texture',
+  focusSingleCoverAssetId: 'doover-cover',
+  secondSingleCoverAssetId: 'running-from-the-plug-cover',
   oneLineSummary:
     'Reveal the world on June 14, make DoOver the emotional front door on June 29, use running from the plug on July 14 to expand the energy and tension, then drop SIRENS in Neverland on July 29 as the full emotional universe.',
   story:
@@ -82,9 +115,9 @@ export const sirensRelease = {
     'I was tryna do this over, she told me do it over',
     'Like could you do this over, baby come get over this',
   ],
-} as const;
+};
 
-export const sirensTracks: SirensTrack[] = [
+export const sirensTracks: ReleaseTrack[] = [
   {
     number: '01',
     slug: 'doover',
@@ -96,6 +129,8 @@ export const sirensTracks: SirensTrack[] = [
     status: 'focus-single',
     note: 'The clearest entry point into EP1: immediate, replayable, hypnotic, and emotionally direct.',
     contentAngle: 'Hero hook, do-over loop, opening door to the world.',
+    coverAssetId: 'doover-cover',
+    primaryClipAssetId: 'doover-hero-hook-thumb',
   },
   {
     number: '02',
@@ -108,6 +143,7 @@ export const sirensTracks: SirensTrack[] = [
     status: 'post-drop-focus',
     note: 'The soft emotional anchor for closeness, tenderness, trust, and memory.',
     contentAngle: 'Intimate performance, healing line, human presence.',
+    coverAssetId: 'holdmyhand-cover',
   },
   {
     number: '03',
@@ -120,6 +156,7 @@ export const sirensTracks: SirensTrack[] = [
     status: 'ep-track',
     note: 'The listener sinks deeper into the emotional water of the EP world.',
     contentAngle: 'Water visuals, submerged feeling, late-night reflection.',
+    coverAssetId: 'in-the-deep-cover',
   },
   {
     number: '04',
@@ -132,6 +169,7 @@ export const sirensTracks: SirensTrack[] = [
     status: 'ep-track',
     note: 'Fantasy, projection, desire, and the moment the mirror starts talking back.',
     contentAngle: 'Dream collage, torn notes, beauty with danger underneath.',
+    coverAssetId: 'her-fantasy-cover',
   },
   {
     number: '05',
@@ -144,6 +182,8 @@ export const sirensTracks: SirensTrack[] = [
     status: 'second-single',
     note: 'The second single widens the world with motion, urgency, contrast, and edge.',
     contentAngle: 'Movement, escape, nighttime tension, high-energy hook.',
+    coverAssetId: 'running-from-the-plug-cover',
+    primaryClipAssetId: 'running-from-the-plug-hook-thumb',
   },
   {
     number: '06',
@@ -156,10 +196,11 @@ export const sirensTracks: SirensTrack[] = [
     status: 'post-drop-focus',
     note: 'The haunting signature identity of the EP — beautiful, dangerous, impossible to ignore.',
     contentAngle: 'Mythic warning, title symbolism, haunting post-drop lane.',
+    coverAssetId: 'siren-cover',
   },
 ];
 
-export const sirensRolloutDates: SirensRolloutDate[] = [
+export const sirensRolloutDates: ReleaseRolloutDate[] = [
   {
     date: 'June 14',
     label: 'Era reveal',
@@ -198,13 +239,16 @@ export const sirensRolloutDates: SirensRolloutDate[] = [
   },
 ];
 
-export const sirensDoOverClips: SirensClipPlan[] = [
+export const sirensDoOverClips: ReleaseClipPlan[] = [
   {
     id: 'doover-hero-hook',
     title: 'Hero hook visual',
     purpose: 'Release-day lead visual and main trailer moment.',
     visualDirection: 'Strongest hook section, ocean shimmer, scrapbook title fragments, cleanest visual identity.',
     timing: 'Release day and pinned repost.',
+    connectedTrackSlug: 'doover',
+    assetId: 'doover-hero-hook-thumb',
+    status: 'needed',
   },
   {
     id: 'doover-performance',
@@ -212,6 +256,8 @@ export const sirensDoOverClips: SirensClipPlan[] = [
     purpose: 'Artist presence and emotional delivery.',
     visualDirection: 'Close-up or turned-away silhouette, intimate framing, less promo and more feeling.',
     timing: '2–4 days after release.',
+    connectedTrackSlug: 'doover',
+    status: 'needed',
   },
   {
     id: 'doover-lyric-scrapbook',
@@ -219,6 +265,9 @@ export const sirensDoOverClips: SirensClipPlan[] = [
     purpose: 'Push the SIN world visually.',
     visualDirection: 'Handwritten words, torn notes, repeated phrases, crossed-out lines, wave textures.',
     timing: '5–7 days after release.',
+    connectedTrackSlug: 'doover',
+    assetId: 'doover-lyric-note',
+    status: 'needed',
   },
   {
     id: 'doover-alt-emotional',
@@ -226,6 +275,8 @@ export const sirensDoOverClips: SirensClipPlan[] = [
     purpose: 'Softer cinematic connection.',
     visualDirection: 'A quieter visual, less clutter, more reflective and human.',
     timing: 'Week two support.',
+    connectedTrackSlug: 'doover',
+    status: 'needed',
   },
   {
     id: 'doover-replay',
@@ -233,16 +284,21 @@ export const sirensDoOverClips: SirensClipPlan[] = [
     purpose: 'Short, punchy repost asset.',
     visualDirection: 'The most repeatable section in a tighter edit.',
     timing: 'After the song has a few days to breathe.',
+    connectedTrackSlug: 'doover',
+    status: 'needed',
   },
 ];
 
-export const sirensSecondSingleClips: SirensClipPlan[] = [
+export const sirensSecondSingleClips: ReleaseClipPlan[] = [
   {
     id: 'plug-high-energy',
     title: 'High-energy hook clip',
     purpose: 'Fastest, strongest entry point for the second single.',
     visualDirection: 'Movement-driven, urgent, nighttime, more edge than DoOver.',
     timing: 'Release day.',
+    connectedTrackSlug: 'running-from-the-plug',
+    assetId: 'running-from-the-plug-hook-thumb',
+    status: 'needed',
   },
   {
     id: 'plug-motion-escape',
@@ -250,6 +306,8 @@ export const sirensSecondSingleClips: SirensClipPlan[] = [
     purpose: 'Translate the running energy into the visual world.',
     visualDirection: 'Drift, escape, streetlight, current, wire, and movement symbolism.',
     timing: '2–3 days after release.',
+    connectedTrackSlug: 'running-from-the-plug',
+    status: 'needed',
   },
   {
     id: 'plug-performance',
@@ -257,6 +315,8 @@ export const sirensSecondSingleClips: SirensClipPlan[] = [
     purpose: 'Bring more attitude and rhythm emphasis.',
     visualDirection: 'More direct performance, sharper edits, stronger contrast.',
     timing: 'First week after release.',
+    connectedTrackSlug: 'running-from-the-plug',
+    status: 'needed',
   },
   {
     id: 'plug-world-collage',
@@ -264,6 +324,8 @@ export const sirensSecondSingleClips: SirensClipPlan[] = [
     purpose: 'Show the EP is bigger than two singles.',
     visualDirection: 'Scrapbook fragments from all of EP1, symbols from multiple tracks, broader mythology.',
     timing: 'Bridge into EP week.',
+    connectedTrackSlug: 'running-from-the-plug',
+    status: 'needed',
   },
   {
     id: 'plug-ep-trailer',
@@ -271,10 +333,132 @@ export const sirensSecondSingleClips: SirensClipPlan[] = [
     purpose: 'Transition from second single into the full EP identity.',
     visualDirection: 'Hint at unreleased songs and the completed emotional universe.',
     timing: 'Final week before EP.',
+    connectedTrackSlug: 'running-from-the-plug',
+    assetId: 'sin-trailer-thumb',
+    status: 'needed',
   },
 ];
 
-export const sirensBoardPins: SirensBoardPin[] = [
+export const sirensAssets: ReleaseAsset[] = [
+  {
+    id: 'sin-ep-cover',
+    kind: 'cover',
+    title: 'SIRENS in Neverland EP cover',
+    description: 'Primary EP cover artwork for the full SIRENS in Neverland release.',
+    src: '/images/releases/sirens-in-neverland/ep-cover.jpg',
+    alt: 'SIRENS in Neverland EP cover artwork',
+    status: 'needed',
+    usage: ['release-page', 'signal-board', 'social-content'],
+  },
+  {
+    id: 'doover-cover',
+    kind: 'single-cover',
+    title: 'DoOver single cover',
+    description: 'Lead single artwork and main visual entry point for the EP world.',
+    src: '/images/releases/sirens-in-neverland/doover-cover.jpg',
+    alt: 'DoOver single cover artwork',
+    status: 'needed',
+    connectedTrackSlug: 'doover',
+    usage: ['release-page', 'signal-board', 'creator-dashboard', 'social-content'],
+  },
+  {
+    id: 'running-from-the-plug-cover',
+    kind: 'single-cover',
+    title: 'running from the plug single cover',
+    description: 'Second single artwork with more movement, tension, and edge.',
+    src: '/images/releases/sirens-in-neverland/running-from-the-plug-cover.jpg',
+    alt: 'running from the plug single cover artwork',
+    status: 'needed',
+    connectedTrackSlug: 'running-from-the-plug',
+    usage: ['release-page', 'signal-board', 'creator-dashboard', 'social-content'],
+  },
+  {
+    id: 'sin-board-texture',
+    kind: 'board-texture',
+    title: 'Cosmic signal wall texture',
+    description: 'A dark oceanic / cosmic texture for the Signal Board background or hero treatment.',
+    src: '/images/releases/sirens-in-neverland/signal-board-texture.jpg',
+    alt: 'Dark cosmic ocean texture for the SIRENS Signal Board',
+    status: 'needed',
+    usage: ['signal-board'],
+  },
+  {
+    id: 'doover-lyric-note',
+    kind: 'lyric-note',
+    title: 'DoOver handwritten lyric note',
+    description: 'Handwritten or scrapbook lyric card using the repeatable DoOver hook.',
+    src: '/images/releases/sirens-in-neverland/doover-lyric-note.jpg',
+    alt: 'Handwritten DoOver lyric note',
+    status: 'needed',
+    connectedTrackSlug: 'doover',
+    usage: ['signal-board', 'social-content'],
+  },
+  {
+    id: 'doover-hero-hook-thumb',
+    kind: 'clip-thumbnail',
+    title: 'DoOver hero hook thumbnail',
+    description: 'Thumbnail or still for the main DoOver hook visual.',
+    src: '/images/releases/sirens-in-neverland/doover-hero-hook-thumb.jpg',
+    alt: 'DoOver hero hook visual thumbnail',
+    status: 'needed',
+    connectedTrackSlug: 'doover',
+    usage: ['release-page', 'signal-board', 'creator-dashboard', 'social-content'],
+  },
+  {
+    id: 'running-from-the-plug-hook-thumb',
+    kind: 'clip-thumbnail',
+    title: 'running from the plug hook thumbnail',
+    description: 'Thumbnail or still for the second single high-energy hook clip.',
+    src: '/images/releases/sirens-in-neverland/running-from-the-plug-hook-thumb.jpg',
+    alt: 'running from the plug hook clip thumbnail',
+    status: 'needed',
+    connectedTrackSlug: 'running-from-the-plug',
+    usage: ['release-page', 'signal-board', 'creator-dashboard', 'social-content'],
+  },
+  {
+    id: 'sin-trailer-thumb',
+    kind: 'trailer',
+    title: 'EP trailer thumbnail',
+    description: 'Main short trailer or visualizer still for the full EP drop.',
+    src: '/images/releases/sirens-in-neverland/ep-trailer-thumb.jpg',
+    alt: 'SIRENS in Neverland EP trailer thumbnail',
+    status: 'needed',
+    usage: ['release-page', 'signal-board', 'social-content'],
+  },
+];
+
+export const sirensReleaseLinks: ReleaseLink[] = [
+  {
+    id: 'doover-streaming',
+    label: 'DoOver streaming link',
+    href: '',
+    status: 'pending',
+    usage: 'streaming',
+  },
+  {
+    id: 'running-from-the-plug-streaming',
+    label: 'running from the plug streaming link',
+    href: '',
+    status: 'pending',
+    usage: 'streaming',
+  },
+  {
+    id: 'sirens-ep-streaming',
+    label: 'SIRENS in Neverland EP streaming link',
+    href: '',
+    status: 'pending',
+    usage: 'streaming',
+  },
+  {
+    id: 'timeanddate-moon-phases',
+    label: 'Moon phase schedule source',
+    href: 'https://www.timeanddate.com/moon/phases/',
+    status: 'live',
+    usage: 'external',
+  },
+];
+
+export const sirensBoardPins: ReleaseBoardPin[] = [
   {
     id: 'sin-core',
     kind: 'center',
@@ -283,6 +467,7 @@ export const sirensBoardPins: SirensBoardPin[] = [
     body: 'A six-track oceanic scrapbook world: longing, fantasy, motion, temptation, warning signs, and one more chance.',
     meta: 'July 29',
     href: '/releases/sirens-in-neverland',
+    assetId: 'sin-ep-cover',
     x: 50,
     y: 46,
     rotate: -1,
@@ -294,6 +479,8 @@ export const sirensBoardPins: SirensBoardPin[] = [
     title: 'DoOver',
     body: 'The emotional front door: “I was tryna do this over, she told me do it over.”',
     meta: 'June 29',
+    assetId: 'doover-cover',
+    connectedTrackSlug: 'doover',
     x: 28,
     y: 48,
     rotate: 2,
@@ -305,6 +492,8 @@ export const sirensBoardPins: SirensBoardPin[] = [
     title: 'running from the plug',
     body: 'The world gains urgency, edge, motion, and danger — contrast after the softness.',
     meta: 'July 14',
+    assetId: 'running-from-the-plug-cover',
+    connectedTrackSlug: 'running-from-the-plug',
     x: 73,
     y: 48,
     rotate: -3,
@@ -363,6 +552,7 @@ export const sirensBoardPins: SirensBoardPin[] = [
     title: 'Ocean / Scrapbook / Shimmer',
     body: 'Waves, handwritten notes, title fragments, reflective shimmer, silhouettes, cream paper, warning rose.',
     meta: 'SIN palette',
+    assetId: 'sin-board-texture',
     x: 18,
     y: 77,
     rotate: 4,
@@ -374,6 +564,8 @@ export const sirensBoardPins: SirensBoardPin[] = [
     title: 'Do it over',
     body: '“Like could you do this over, baby come get over this.” Keep this as the repeatable anchor.',
     meta: 'Clip anchor',
+    assetId: 'doover-lyric-note',
+    connectedTrackSlug: 'doover',
     x: 82,
     y: 77,
     rotate: -2,
@@ -389,10 +581,43 @@ export const sirensMinimumViableRollout = [
   'June 29 release post',
 ] as const;
 
-export function getSirensTrackBySlug(slug: string) {
-  return sirensTracks.find((track) => track.slug === slug) ?? null;
+export const sirensReleaseWorldPacket: ReleaseWorldPacket = createReleaseWorldPacket({
+  world: sirensRelease,
+  theme: sirensTheme,
+  tracks: sirensTracks,
+  rolloutDates: sirensRolloutDates,
+  primaryClips: sirensDoOverClips,
+  secondaryClips: sirensSecondSingleClips,
+  assets: sirensAssets,
+  links: sirensReleaseLinks,
+  boardPins: sirensBoardPins,
+  minimumViableRollout: sirensMinimumViableRollout,
+});
+
+export function getSirensAssetById(id?: string) {
+  return getReleaseAssetById(sirensReleaseWorldPacket, id);
 }
 
-export function getSirensTracksByRealm(realmId: SirensTrack['realmId']) {
-  return sirensTracks.filter((track) => track.realmId === realmId);
+export function getSirensAssetsByUsage(usage: ReleaseAsset['usage'][number]) {
+  return getReleaseAssetsByUsage(sirensReleaseWorldPacket, usage);
+}
+
+export function getSirensAssetsByTrack(slug: string) {
+  return getReleaseAssetsByTrack(sirensReleaseWorldPacket, slug);
+}
+
+export function getSirensReleaseLinkById(id: string) {
+  return getReleaseLinkById(sirensReleaseWorldPacket, id);
+}
+
+export function getSirensLiveReleaseLinks() {
+  return getLiveReleaseLinks(sirensReleaseWorldPacket);
+}
+
+export function getSirensTrackBySlug(slug: string) {
+  return getReleaseTrackBySlug(sirensReleaseWorldPacket, slug);
+}
+
+export function getSirensTracksByRealm(realmId: NonNullable<ReleaseTrack['realmId']>) {
+  return getReleaseTracksByRealm(sirensReleaseWorldPacket, realmId);
 }
