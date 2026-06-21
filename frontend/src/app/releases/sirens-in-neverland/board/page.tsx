@@ -3,8 +3,66 @@
 import type { CSSProperties, PointerEvent } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { gql, useMutation, useQuery } from '@apollo/client';
 import { sirensBoardPins, sirensRelease, sirensTracks } from '@/lib/releases/sirensInNeverland';
 import '@/styles/signalBoard.css';
+
+const SIRENS_RELEASE_WORLD_ID = '6a374e55d57265c6788eb357';
+const STORAGE_KEY = 'cosmic:sirens-signal-board:v10';
+
+const GET_BOARD_ARTIFACTS = gql`
+  query GetBoardArtifacts($releaseWorldId: ID!) {
+    getBoardArtifacts(releaseWorldId: $releaseWorldId) {
+      id
+      kind
+      eyebrow
+      title
+      body
+      meta
+      href
+      connectedTrackSlug
+      position {
+        x
+        y
+        rotate
+      }
+      style {
+        color
+        size
+        layer
+      }
+      isGenerated
+      isUserCreated
+    }
+  }
+`;
+
+const SAVE_BOARD_ARTIFACTS = gql`
+  mutation SaveBoardArtifacts($releaseWorldId: ID!, $artifacts: [BoardArtifactInput!]!) {
+    saveBoardArtifacts(releaseWorldId: $releaseWorldId, artifacts: $artifacts) {
+      id
+      kind
+      eyebrow
+      title
+      body
+      meta
+      href
+      connectedTrackSlug
+      position {
+        x
+        y
+        rotate
+      }
+      style {
+        color
+        size
+        layer
+      }
+      isGenerated
+      isUserCreated
+    }
+  }
+`;
 
 type ArtifactKind =
   | 'center'
@@ -18,7 +76,8 @@ type ArtifactKind =
   | 'cover'
   | 'note'
   | 'image'
-  | 'lyric';
+  | 'lyric'
+  | 'asset';
 
 type ArtifactColor = 'cream' | 'sky' | 'violet' | 'gold' | 'rose' | 'mint' | 'graphite';
 type ArtifactSize = 'sm' | 'md' | 'lg' | 'xl';
@@ -38,6 +97,7 @@ interface BoardArtifact {
   color?: ArtifactColor;
   size?: ArtifactSize;
   layer?: number;
+  isGenerated?: boolean;
   isUserCreated?: boolean;
 }
 
@@ -46,7 +106,28 @@ interface StoredBoardState {
   artifacts: BoardArtifact[];
 }
 
-const STORAGE_KEY = 'cosmic:sirens-signal-board:v10';
+interface MongoBoardArtifact {
+  id: string;
+  kind: ArtifactKind;
+  eyebrow?: string | null;
+  title: string;
+  body?: string | null;
+  meta?: string | null;
+  href?: string | null;
+  connectedTrackSlug?: string | null;
+  position: {
+    x: number;
+    y: number;
+    rotate: number;
+  };
+  style: {
+    color: ArtifactColor;
+    size: ArtifactSize;
+    layer: number;
+  };
+  isGenerated: boolean;
+  isUserCreated: boolean;
+}
 
 const colorOptions: Array<{ value: ArtifactColor; label: string }> = [
   { value: 'cream', label: 'Cream' },
@@ -98,6 +179,8 @@ function getInitialArtifacts(boardColor: ArtifactColor = 'cream'): BoardArtifact
       color: boardColor,
       size: getStarterSize(pin.kind),
       layer: getStarterLayer(pin.kind),
+      isGenerated: true,
+      isUserCreated: false,
     })),
     {
       id: 'ep-cover-stack',
@@ -112,6 +195,8 @@ function getInitialArtifacts(boardColor: ArtifactColor = 'cream'): BoardArtifact
       color: boardColor,
       size: 'xl',
       layer: 8,
+      isGenerated: true,
+      isUserCreated: false,
     },
     {
       id: 'hook-theme-map',
@@ -126,6 +211,8 @@ function getInitialArtifacts(boardColor: ArtifactColor = 'cream'): BoardArtifact
       color: boardColor,
       size: 'lg',
       layer: 4,
+      isGenerated: true,
+      isUserCreated: false,
     },
   ];
 }
@@ -133,6 +220,48 @@ function getInitialArtifacts(boardColor: ArtifactColor = 'cream'): BoardArtifact
 function getTrackTitle(slug?: string) {
   if (!slug) return 'Release world';
   return sirensTracks.find((track) => track.slug === slug)?.displayTitle ?? slug;
+}
+
+function mapMongoArtifact(artifact: MongoBoardArtifact): BoardArtifact {
+  return {
+    id: artifact.id,
+    kind: artifact.kind,
+    eyebrow: artifact.eyebrow ?? '',
+    title: artifact.title,
+    body: artifact.body ?? '',
+    meta: artifact.meta ?? '',
+    href: artifact.href ?? '',
+    connectedTrackSlug: artifact.connectedTrackSlug ?? '',
+    x: artifact.position.x,
+    y: artifact.position.y,
+    rotate: artifact.position.rotate,
+    color: artifact.style.color ?? 'cream',
+    size: artifact.style.size ?? 'md',
+    layer: artifact.style.layer ?? 4,
+    isGenerated: artifact.isGenerated,
+    isUserCreated: artifact.isUserCreated,
+  };
+}
+
+function mapArtifactToInput(artifact: BoardArtifact) {
+  return {
+    id: artifact.id,
+    kind: artifact.kind,
+    eyebrow: artifact.eyebrow,
+    title: artifact.title,
+    body: artifact.body,
+    meta: artifact.meta ?? '',
+    href: artifact.href ?? '',
+    connectedTrackSlug: artifact.connectedTrackSlug ?? '',
+    x: artifact.x,
+    y: artifact.y,
+    rotate: artifact.rotate ?? 0,
+    color: artifact.color ?? 'cream',
+    size: artifact.size ?? 'md',
+    layer: artifact.layer ?? 4,
+    isGenerated: artifact.isGenerated ?? false,
+    isUserCreated: artifact.isUserCreated ?? true,
+  };
 }
 
 function getStoredBoardState(): StoredBoardState {
@@ -290,7 +419,10 @@ function BoardArtifactCard({
 export default function SirensSignalBoardPage() {
   const boardRef = useRef<HTMLElement | null>(null);
   const controlsRef = useRef<HTMLElement | null>(null);
+
   const [hasHydrated, setHasHydrated] = useState(false);
+  const [hasLoadedCloudBoard, setHasLoadedCloudBoard] = useState(false);
+  const [saveMessage, setSaveMessage] = useState('Cloud board not saved this session.');
 
   const [boardColor, setBoardColor] = useState<ArtifactColor>('cream');
   const [artifacts, setArtifacts] = useState<BoardArtifact[]>(() => getInitialArtifacts('cream'));
@@ -308,6 +440,15 @@ export default function SirensSignalBoardPage() {
   const [noteTitle, setNoteTitle] = useState('');
   const [noteBody, setNoteBody] = useState('');
 
+  const { data, loading, error, refetch } = useQuery(GET_BOARD_ARTIFACTS, {
+    variables: {
+      releaseWorldId: SIRENS_RELEASE_WORLD_ID,
+    },
+    fetchPolicy: 'cache-and-network',
+  });
+
+  const [saveBoardArtifacts, { loading: isSaving }] = useMutation(SAVE_BOARD_ARTIFACTS);
+
   useEffect(() => {
     const storedState = getStoredBoardState();
     setBoardColor(storedState.boardColor);
@@ -315,6 +456,22 @@ export default function SirensSignalBoardPage() {
     setSelectedColor(storedState.boardColor);
     setHasHydrated(true);
   }, []);
+
+  useEffect(() => {
+    const cloudArtifacts = data?.getBoardArtifacts as MongoBoardArtifact[] | undefined;
+
+    if (!cloudArtifacts || cloudArtifacts.length === 0 || hasLoadedCloudBoard) return;
+
+    const mappedArtifacts = cloudArtifacts.map(mapMongoArtifact);
+    const firstColor = mappedArtifacts[0]?.color ?? 'cream';
+
+    setArtifacts(mappedArtifacts);
+    setBoardColor(firstColor);
+    setSelectedColor(firstColor);
+    setSelectedArtifactId(mappedArtifacts[0]?.id ?? null);
+    setHasLoadedCloudBoard(true);
+    setSaveMessage(`Loaded ${mappedArtifacts.length} artifacts from MongoDB.`);
+  }, [data, hasLoadedCloudBoard]);
 
   useEffect(() => {
     if (!hasHydrated) return;
@@ -428,6 +585,7 @@ export default function SirensSignalBoardPage() {
         color: selectedColor,
         size: selectedSize,
         layer: selectedLayer,
+        isGenerated: false,
         isUserCreated: true,
       },
     ]);
@@ -435,6 +593,7 @@ export default function SirensSignalBoardPage() {
     setSelectedArtifactId(id);
     setHookTitle('');
     setHookDescription('');
+    setSaveMessage('Unsaved changes. Save to Cloud when ready.');
   }
 
   function addNoteArtifact() {
@@ -458,6 +617,7 @@ export default function SirensSignalBoardPage() {
         color: selectedColor,
         size: selectedSize,
         layer: selectedLayer,
+        isGenerated: false,
         isUserCreated: true,
       },
     ]);
@@ -465,6 +625,7 @@ export default function SirensSignalBoardPage() {
     setSelectedArtifactId(id);
     setNoteTitle('');
     setNoteBody('');
+    setSaveMessage('Unsaved changes. Save to Cloud when ready.');
   }
 
   function applyStarterBoardColor(nextColor: ArtifactColor) {
@@ -480,17 +641,53 @@ export default function SirensSignalBoardPage() {
             }
       )
     );
+    setSaveMessage('Unsaved changes. Save to Cloud when ready.');
   }
 
   function deleteArtifact(id: string) {
     setArtifacts((current) => current.filter((artifact) => artifact.id !== id));
     if (selectedArtifactId === id) setSelectedArtifactId(null);
+    setSaveMessage('Unsaved changes. Save to Cloud when ready.');
   }
 
   function resetBoard() {
     const resetArtifacts = getInitialArtifacts(boardColor);
     setArtifacts(resetArtifacts);
     setSelectedArtifactId(null);
+    setSaveMessage('Local board reset. Save to Cloud only if you want to replace the cloud board.');
+  }
+
+  async function handleSaveToCloud() {
+    try {
+      setSaveMessage('Saving board to MongoDB...');
+
+      const result = await saveBoardArtifacts({
+        variables: {
+          releaseWorldId: SIRENS_RELEASE_WORLD_ID,
+          artifacts: artifacts.map(mapArtifactToInput),
+        },
+      });
+
+      const savedArtifacts = result.data?.saveBoardArtifacts as MongoBoardArtifact[] | undefined;
+
+      if (savedArtifacts?.length) {
+        const mappedArtifacts = savedArtifacts.map(mapMongoArtifact);
+        setArtifacts(mappedArtifacts);
+        setSelectedArtifactId(mappedArtifacts[0]?.id ?? null);
+        setSaveMessage(`Saved ${mappedArtifacts.length} artifacts to MongoDB.`);
+      } else {
+        setSaveMessage('Board saved, but no artifacts were returned.');
+      }
+    } catch (saveError) {
+      const message = saveError instanceof Error ? saveError.message : 'Unknown save error.';
+      setSaveMessage(`Save failed: ${message}`);
+    }
+  }
+
+  async function handleReloadCloudBoard() {
+    setHasLoadedCloudBoard(false);
+    setSaveMessage('Reloading cloud board...');
+    await refetch();
   }
 
   function scrollToBoard() {
@@ -511,10 +708,34 @@ export default function SirensSignalBoardPage() {
           colors, sizes, layers, hooks, notes, and themes.
         </p>
 
+        <div className="signal-board-cloud-bar">
+          <div>
+            <span>Mongo status</span>
+            <strong>
+              {loading
+                ? 'Loading cloud board...'
+                : error
+                  ? 'Cloud load error'
+                  : hasLoadedCloudBoard
+                    ? 'Cloud board loaded'
+                    : 'Local board ready'}
+            </strong>
+          </div>
+          <p>{error ? error.message : saveMessage}</p>
+          <div className="signal-board-cloud-actions">
+            <button type="button" onClick={handleReloadCloudBoard}>
+              Reload Cloud Board
+            </button>
+            <button type="button" onClick={handleSaveToCloud} disabled={isSaving}>
+              {isSaving ? 'Saving...' : 'Save to Cloud'}
+            </button>
+          </div>
+        </div>
+
         <div className="signal-board-hero-actions">
           <nav className="signal-board-switch-links" aria-label="Page navigation">
             <Link href="/releases/sirens-in-neverland">Release Page</Link>
-            <Link href="/creator">Creator Console</Link>
+            <Link href="/creator/projects">Project Library</Link>
           </nav>
 
           <div className="signal-board-focus-actions" aria-label="Board view controls">
@@ -545,29 +766,29 @@ export default function SirensSignalBoardPage() {
             className="signal-board-frame"
             aria-label="Interactive SIRENS in Neverland signal board"
           >
-          <div className="signal-board-frame-glow" />
-          <div className="signal-board-texture" />
-          <div className="signal-board-thread signal-board-thread-a" />
-          <div className="signal-board-thread signal-board-thread-b" />
-          <div className="signal-board-thread signal-board-thread-c" />
-          <div className="signal-board-thread signal-board-thread-d" />
-          <div className="signal-board-thread signal-board-thread-e" />
+            <div className="signal-board-frame-glow" />
+            <div className="signal-board-texture" />
+            <div className="signal-board-thread signal-board-thread-a" />
+            <div className="signal-board-thread signal-board-thread-b" />
+            <div className="signal-board-thread signal-board-thread-c" />
+            <div className="signal-board-thread signal-board-thread-d" />
+            <div className="signal-board-thread signal-board-thread-e" />
 
-          {artifacts.map((artifact) => (
-            <BoardArtifactCard
-              key={artifact.id}
-              artifact={artifact}
-              isSelected={artifact.id === selectedArtifactId}
-              onPointerDown={handleArtifactPointerDown}
-              onDelete={deleteArtifact}
-              onLayerNudge={nudgeLayer}
-            />
-          ))}
+            {artifacts.map((artifact) => (
+              <BoardArtifactCard
+                key={artifact.id}
+                artifact={artifact}
+                isSelected={artifact.id === selectedArtifactId}
+                onPointerDown={handleArtifactPointerDown}
+                onDelete={deleteArtifact}
+                onLayerNudge={nudgeLayer}
+              />
+            ))}
           </section>
         </div>
 
         <div className="signal-board-stage-footer">
-          <span>Board-first workspace</span>
+          <span>{artifacts.length} artifacts loaded</span>
           <button type="button" onClick={scrollToControls}>
             Scroll to controls
           </button>
@@ -593,7 +814,10 @@ export default function SirensSignalBoardPage() {
           <div>
             <p className="signal-board-panel-kicker">Danger zone</p>
             <strong>Reset the local board</strong>
-            <span>This clears the current local layout and rebuilds the starter board using the selected starter color.</span>
+            <span>
+              This clears the current local layout and rebuilds the starter board using the
+              selected starter color. It will not overwrite MongoDB unless you click Save to Cloud.
+            </span>
           </div>
           <button type="button" onClick={resetBoard}>
             Reset Board
@@ -633,9 +857,12 @@ export default function SirensSignalBoardPage() {
                   Color
                   <select
                     value={selectedArtifact.color ?? 'cream'}
-                    onChange={(event) =>
-                      updateArtifact(selectedArtifact.id, { color: event.target.value as ArtifactColor })
-                    }
+                    onChange={(event) => {
+                      updateArtifact(selectedArtifact.id, {
+                        color: event.target.value as ArtifactColor,
+                      });
+                      setSaveMessage('Unsaved changes. Save to Cloud when ready.');
+                    }}
                   >
                     {colorOptions.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -649,9 +876,12 @@ export default function SirensSignalBoardPage() {
                   Size
                   <select
                     value={selectedArtifact.size ?? 'md'}
-                    onChange={(event) =>
-                      updateArtifact(selectedArtifact.id, { size: event.target.value as ArtifactSize })
-                    }
+                    onChange={(event) => {
+                      updateArtifact(selectedArtifact.id, {
+                        size: event.target.value as ArtifactSize,
+                      });
+                      setSaveMessage('Unsaved changes. Save to Cloud when ready.');
+                    }}
                   >
                     {sizeOptions.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -665,7 +895,12 @@ export default function SirensSignalBoardPage() {
                   Layer
                   <select
                     value={selectedArtifact.layer ?? 4}
-                    onChange={(event) => updateArtifact(selectedArtifact.id, { layer: Number(event.target.value) })}
+                    onChange={(event) => {
+                      updateArtifact(selectedArtifact.id, {
+                        layer: Number(event.target.value),
+                      });
+                      setSaveMessage('Unsaved changes. Save to Cloud when ready.');
+                    }}
                   >
                     {layerOptions.map((layer) => (
                       <option key={layer} value={layer}>
@@ -823,7 +1058,9 @@ export default function SirensSignalBoardPage() {
         {artifacts.map((artifact) => (
           <article
             key={`mobile-${artifact.id}`}
-            className={`signal-board-pin signal-board-pin-${artifact.kind} signal-board-pin-color-${artifact.color ?? 'cream'} signal-board-pin-size-${artifact.size ?? 'md'}`}
+            className={`signal-board-pin signal-board-pin-${artifact.kind} signal-board-pin-color-${
+              artifact.color ?? 'cream'
+            } signal-board-pin-size-${artifact.size ?? 'md'}`}
           >
             <p className="signal-board-pin-eyebrow">{artifact.eyebrow}</p>
             <h2>{artifact.title}</h2>
