@@ -1,581 +1,1119 @@
 /* ===================================
-   SIRENS SIGNAL BOARD V3
-   Cosmic signal wall:
-   smoked graphite board, metallic frame, holographic tape,
-   warm paper artifacts, chrome pins, constellation threads.
+   SIRENS SIGNAL BOARD V10
+   Full replacement: persisted local board, board-first stage, safer controls.
    =================================== */
 
 .signal-board-shell {
     min-height: 100vh;
-    padding: 2.75rem 1rem 8rem;
     color: rgba(238, 243, 250, 0.94);
     background:
-        radial-gradient(circle at 12% 10%, rgba(126, 211, 255, 0.17), transparent 28%),
-        radial-gradient(circle at 86% 12%, rgba(168, 132, 255, 0.13), transparent 28%),
-        radial-gradient(circle at 52% 92%, rgba(255, 93, 122, 0.08), transparent 34%),
-        radial-gradient(circle at 50% 44%, rgba(220, 186, 92, 0.045), transparent 38%),
-        linear-gradient(180deg, #03050a 0%, #07111f 46%, #03050a 100%);
+        radial-gradient(circle at 12% 10%, rgba(126, 211, 255, 0.14), transparent 28%),
+        radial-gradient(circle at 82% 16%, rgba(168, 132, 255, 0.13), transparent 30%),
+        radial-gradient(circle at 45% 105%, rgba(220, 186, 92, 0.10), transparent 38%),
+        linear-gradient(180deg, #03050a 0%, #07101c 48%, #03050a 100%);
     overflow-x: hidden;
 }
 
 .signal-board-hero {
-    width: min(100%, 940px);
-    margin: 0 auto 1.5rem;
+    width: min(100%, 1180px);
+    margin: 0 auto;
+    padding: clamp(2.3rem, 6vw, 4.5rem) 1rem 1.5rem;
     text-align: center;
-    color: rgba(238, 243, 250, 0.94);
 }
 
 .signal-board-kicker,
 .signal-board-panel-kicker,
 .signal-board-pin-eyebrow {
     margin: 0;
+    color: rgba(126, 211, 255, 0.78);
     font-size: 0.68rem;
     letter-spacing: 0.22em;
     text-transform: uppercase;
 }
 
-.signal-board-kicker,
-.signal-board-panel-kicker {
-    color: rgba(188, 224, 255, 0.76);
-}
-
 .signal-board-hero h1 {
-    margin: 0.48rem 0 0.75rem;
+    margin: 0.55rem 0 0.9rem;
+    color: rgba(245, 247, 252, 0.96);
     font-family: 'Orbitron', Arial, sans-serif;
-    font-size: clamp(2.25rem, 7vw, 5.2rem);
+    font-size: clamp(2.9rem, 8vw, 7.2rem);
     line-height: 0.9;
-    letter-spacing: 0.055em;
+    letter-spacing: 0.045em;
     text-transform: uppercase;
-    color: rgba(245, 247, 252, 0.98);
-    text-shadow:
-        0 0 12px rgba(255, 255, 255, 0.13),
-        0 0 30px rgba(126, 211, 255, 0.18),
-        0 18px 48px rgba(0, 0, 0, 0.38);
 }
 
-.signal-board-hero > p:last-of-type {
-    width: min(100%, 760px);
+.signal-board-hero > p:not(.signal-board-kicker) {
+    max-width: 790px;
     margin: 0 auto;
-    color: rgba(224, 231, 240, 0.80);
+    color: rgba(224, 231, 240, 0.72);
     line-height: 1.72;
 }
 
-.signal-board-actions {
+.signal-board-switch-links {
     display: flex;
-    flex-wrap: wrap;
     justify-content: center;
-    gap: 0.75rem;
-    margin-top: 1.25rem;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    margin-top: 1.35rem;
 }
 
-.signal-board-actions a {
-    border: 1px solid rgba(214, 224, 235, 0.18);
+.signal-board-switch-links a,
+.signal-board-stage-actions button,
+.signal-board-toolbox-card button,
+.signal-board-reset-zone button {
+    border: 1px solid rgba(243, 231, 209, 0.20);
     border-radius: 999px;
-    padding: 0.72rem 1rem;
-    color: rgba(238, 243, 250, 0.93);
-    background:
-        linear-gradient(
-            135deg,
-            rgba(255, 255, 255, 0.08),
-            rgba(126, 211, 255, 0.04),
-            rgba(8, 11, 20, 0.54)
-        );
+    min-height: 2.55rem;
+    padding: 0.68rem 0.9rem;
+    color: rgba(238, 243, 250, 0.90);
+    background: rgba(255, 255, 255, 0.055);
+    cursor: pointer;
     text-decoration: none;
-    font-size: 0.76rem;
-    letter-spacing: 0.12em;
+    font: inherit;
+    font-size: 0.74rem;
+    letter-spacing: 0.11em;
     text-transform: uppercase;
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.10),
-        0 10px 26px rgba(0,0,0,0.20);
-    transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
 
-.signal-board-actions a:hover {
-    transform: translateY(-2px);
-    border-color: rgba(126, 211, 255, 0.42);
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.12),
-        0 0 20px rgba(126, 211, 255, 0.13);
+.signal-board-switch-links a:hover,
+.signal-board-stage-actions button:hover,
+.signal-board-toolbox-card button:hover {
+    transform: translateY(-1px);
+    border-color: rgba(126, 211, 255, 0.36);
+    background: rgba(126, 211, 255, 0.08);
 }
 
-/* Main cosmic board surface */
+/* Board-first stage */
+.signal-board-stage,
+.signal-board-controls {
+    width: min(100%, 1480px);
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.signal-board-stage {
+    padding-bottom: 0.5rem;
+}
+
+.signal-board-stage-header,
+.signal-board-controls-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.85rem;
+}
+
+.signal-board-stage-header h2,
+.signal-board-controls-heading h2 {
+    margin: 0.3rem 0 0;
+    color: rgba(245, 247, 252, 0.95);
+    font-family: 'Orbitron', Arial, sans-serif;
+    font-size: clamp(1.4rem, 3vw, 2.4rem);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.signal-board-stage-header > p,
+.signal-board-controls-heading > p {
+    max-width: 520px;
+    margin: 0;
+    color: rgba(224, 231, 240, 0.64);
+    font-size: 0.9rem;
+    line-height: 1.55;
+}
+
+.signal-board-stage-actions {
+    display: flex;
+    justify-content: center;
+    gap: 0.65rem;
+    margin: 1rem auto 0;
+}
+
+.signal-board-stage-actions button {
+    min-height: 2.35rem;
+    padding: 0.62rem 0.82rem;
+    opacity: 0.86;
+}
+
+/* Board */
 .signal-board-frame {
     position: relative;
-    width: min(100%, 1180px);
-    height: min(76vw, 760px);
-    min-height: 680px;
-    margin: 0 auto;
-    border: 1px solid rgba(214, 224, 235, 0.22);
-    border-radius: 1.85rem;
-    background:
-        radial-gradient(circle at 20% 18%, rgba(126, 211, 255, 0.10), transparent 27%),
-        radial-gradient(circle at 76% 35%, rgba(168, 132, 255, 0.09), transparent 30%),
-        radial-gradient(circle at 62% 80%, rgba(255, 93, 122, 0.055), transparent 25%),
-        radial-gradient(circle at 50% 50%, rgba(220, 186, 92, 0.04), transparent 38%),
-        repeating-linear-gradient(
-            35deg,
-            rgba(255, 255, 255, 0.018) 0 1px,
-            transparent 1px 8px
-        ),
-        linear-gradient(145deg, rgba(17, 22, 31, 0.98), rgba(8, 12, 20, 0.99) 54%, rgba(20, 15, 17, 0.98));
-    box-shadow:
-        inset 0 0 0 1px rgba(255,255,255,0.08),
-        inset 0 0 86px rgba(0,0,0,0.38),
-        0 0 0 10px rgba(220, 186, 92, 0.045),
-        0 30px 92px rgba(0,0,0,0.42);
+    min-height: min(980px, 88vh);
+    border: 1px solid rgba(214, 224, 235, 0.18);
+    border-radius: 2rem;
     overflow: hidden;
+    background:
+        radial-gradient(circle at 50% 42%, rgba(126, 211, 255, 0.12), transparent 36%),
+        radial-gradient(circle at 20% 18%, rgba(168, 132, 255, 0.12), transparent 26%),
+        linear-gradient(135deg, rgba(255,255,255,0.055), rgba(9, 14, 25, 0.94));
+    box-shadow:
+        0 0 0 1px rgba(255,255,255,0.05),
+        0 0 0 10px rgba(255,255,255,0.018),
+        0 34px 90px rgba(0,0,0,0.34),
+        0 0 120px rgba(126,211,255,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.12),
+        inset 0 0 90px rgba(126,211,255,0.045);
+    touch-action: none;
 }
 
 .signal-board-frame::before {
     content: '';
     position: absolute;
-    inset: 1rem;
-    border-radius: 1.1rem;
-    border: 1px solid rgba(214, 224, 235, 0.08);
+    inset: 0.85rem;
+    z-index: 1;
+    border: 1px solid rgba(238, 243, 250, 0.08);
+    border-radius: 1.45rem;
     pointer-events: none;
     box-shadow:
-        inset 0 0 0 1px rgba(220, 186, 92, 0.04),
-        0 0 28px rgba(126, 211, 255, 0.035);
+        inset 0 0 24px rgba(126,211,255,0.05),
+        0 0 30px rgba(0,0,0,0.18);
 }
 
-.signal-board-frame::after {
-    content: 'SIRENS / SIGNAL MAP / MOON CADENCE / EP1';
+.signal-board-frame-glow {
     position: absolute;
-    right: 1.6rem;
-    bottom: 1.2rem;
-    color: rgba(238, 243, 250, 0.16);
-    font-family: 'Orbitron', Arial, sans-serif;
-    font-size: 0.68rem;
-    letter-spacing: 0.22em;
-    pointer-events: none;
+    inset: -20%;
+    z-index: 0;
+    background:
+        radial-gradient(circle at 50% 50%, rgba(126,211,255,0.12), transparent 35%),
+        conic-gradient(from 180deg, transparent, rgba(168,132,255,0.06), transparent, rgba(220,186,92,0.06), transparent);
+    filter: blur(22px);
+    opacity: 0.65;
 }
 
-/* Star dust, plotting grid, celestial noise */
 .signal-board-texture {
     position: absolute;
     inset: 0;
-    pointer-events: none;
-    opacity: 0.82;
-    background:
-        radial-gradient(circle, rgba(255,255,255,0.34) 0 1px, transparent 1.2px),
-        radial-gradient(circle, rgba(126,211,255,0.24) 0 1px, transparent 1.2px),
-        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px),
-        linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px);
-    background-size: 43px 43px, 67px 67px, 42px 42px, 42px 42px;
-    background-position: 0 0, 19px 28px, 0 0, 0 0;
-    mix-blend-mode: screen;
+    z-index: 1;
+    opacity: 0.52;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px),
+        radial-gradient(circle at 25% 35%, rgba(255,255,255,0.08) 0 1px, transparent 1px),
+        radial-gradient(circle at 70% 62%, rgba(126,211,255,0.12) 0 1px, transparent 1px);
+    background-size: 76px 76px, 76px 76px, 42px 42px, 54px 54px;
 }
 
-/* Thread map: red, blue, gold signals */
 .signal-board-thread {
     position: absolute;
-    height: 2px;
+    height: 1px;
     transform-origin: left center;
+    z-index: 2;
+    background: linear-gradient(90deg, transparent, rgba(126, 211, 255, 0.42), transparent);
+    box-shadow: 0 0 14px rgba(126, 211, 255, 0.18);
+}
+
+.signal-board-thread-a { width: 44%; left: 28%; top: 48%; transform: rotate(-17deg); }
+.signal-board-thread-b { width: 46%; left: 28%; top: 49%; transform: rotate(16deg); }
+.signal-board-thread-c { width: 38%; left: 20%; top: 31%; transform: rotate(21deg); }
+.signal-board-thread-d { width: 42%; left: 50%; top: 19%; transform: rotate(100deg); }
+.signal-board-thread-e { width: 40%; left: 42%; top: 78%; transform: rotate(-7deg); }
+
+/* Controls below board */
+.signal-board-controls {
+    padding-top: 2.8rem;
+    padding-bottom: 4rem;
+}
+
+.signal-board-control-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.85rem;
+    margin-bottom: 0.85rem;
+}
+
+.signal-board-create-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+}
+
+.signal-board-toolbox-card,
+.signal-board-reset-zone {
+    border: 1px solid rgba(214, 224, 235, 0.12);
+    border-radius: 1.2rem;
+    padding: 0.95rem;
     background:
-        linear-gradient(90deg, rgba(255, 93, 122, 0.76), rgba(126, 211, 255, 0.44));
+        radial-gradient(circle at top left, rgba(126, 211, 255, 0.08), transparent 34%),
+        linear-gradient(145deg, rgba(255,255,255,0.065), rgba(7, 11, 20, 0.74));
     box-shadow:
-        0 0 8px rgba(255, 93, 122, 0.22),
-        0 0 15px rgba(126, 211, 255, 0.10);
-    pointer-events: none;
-    opacity: 0.78;
-    z-index: 1;
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        0 16px 38px rgba(0,0,0,0.20);
+    backdrop-filter: blur(14px) saturate(125%);
 }
 
-.signal-board-thread::after {
-    content: '';
-    position: absolute;
-    inset: -3px 0;
-    background: repeating-linear-gradient(
-        90deg,
-        rgba(255,255,255,0.26) 0 3px,
-        transparent 3px 11px
-    );
-    opacity: 0.26;
+.signal-board-reset-zone {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin: 0 0 0.85rem;
+    border-color: rgba(244, 121, 148, 0.16);
+    background:
+        radial-gradient(circle at top left, rgba(244, 121, 148, 0.08), transparent 36%),
+        linear-gradient(145deg, rgba(255,255,255,0.055), rgba(7, 11, 20, 0.70));
 }
 
-.signal-board-thread-a { left: 21%; top: 27%; width: 34%; transform: rotate(19deg); }
-.signal-board-thread-b { left: 50%; top: 18%; width: 31%; transform: rotate(18deg); background: linear-gradient(90deg, rgba(220,186,92,0.70), rgba(126,211,255,0.38)); }
-.signal-board-thread-c { left: 31%; top: 53%; width: 32%; transform: rotate(-12deg); }
-.signal-board-thread-d { left: 52%; top: 54%; width: 28%; transform: rotate(19deg); background: linear-gradient(90deg, rgba(126,211,255,0.58), rgba(168,132,255,0.48)); }
-.signal-board-thread-e { left: 51%; top: 67%; width: 24%; transform: rotate(83deg); background: linear-gradient(90deg, rgba(220,186,92,0.64), rgba(255,93,122,0.48)); }
+.signal-board-reset-zone strong {
+    display: block;
+    margin: 0.25rem 0;
+    color: rgba(245, 247, 252, 0.92);
+    font-family: 'Orbitron', Arial, sans-serif;
+    font-size: 0.9rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
 
-/* Artifact cards: paper + glass hybrid */
+.signal-board-reset-zone span {
+    display: block;
+    color: rgba(224, 231, 240, 0.62);
+    font-size: 0.78rem;
+    line-height: 1.45;
+}
+
+.signal-board-reset-zone button {
+    flex: 0 0 auto;
+    border-color: rgba(244, 121, 148, 0.24);
+    color: rgba(255, 220, 228, 0.92);
+    background: rgba(244, 121, 148, 0.06);
+}
+
+.signal-board-reset-zone button:hover {
+    background: rgba(244, 121, 148, 0.12);
+    border-color: rgba(244, 121, 148, 0.40);
+}
+
+.signal-board-selected-card {
+    border-color: rgba(126, 211, 255, 0.20);
+}
+
+.signal-board-toolbox-card h2 {
+    margin: 0.35rem 0 0.8rem;
+    color: rgba(245, 247, 252, 0.94);
+    font-family: 'Orbitron', Arial, sans-serif;
+    font-size: 0.96rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.signal-board-toolbox-card label {
+    display: grid;
+    gap: 0.4rem;
+    margin-bottom: 0.7rem;
+    color: rgba(188, 224, 255, 0.66);
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.signal-board-toolbox-card input,
+.signal-board-toolbox-card select,
+.signal-board-toolbox-card textarea {
+    width: 100%;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 0.85rem;
+    padding: 0.7rem;
+    color: rgba(238, 243, 250, 0.90);
+    background: rgba(255,255,255,0.055);
+    outline: none;
+    font: inherit;
+    font-size: 0.82rem;
+    letter-spacing: normal;
+    text-transform: none;
+    resize: vertical;
+}
+
+.signal-board-toolbox-card input:focus,
+.signal-board-toolbox-card select:focus,
+.signal-board-toolbox-card textarea:focus {
+    border-color: rgba(126, 211, 255, 0.36);
+    box-shadow: 0 0 0 3px rgba(126, 211, 255, 0.08);
+}
+
+.signal-board-toolbox-card button {
+    width: 100%;
+}
+
+.signal-board-tool-note {
+    margin: 0.4rem 0 0;
+    color: rgba(224, 231, 240, 0.62);
+    font-size: 0.78rem;
+    line-height: 1.5;
+}
+
+.signal-board-style-row,
+.signal-board-size-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin-bottom: 0.75rem;
+}
+
+.signal-board-swatch,
+.signal-board-size-row button {
+    width: auto !important;
+    min-height: 2.1rem !important;
+    padding: 0.48rem 0.58rem !important;
+    font-size: 0.62rem !important;
+}
+
+.signal-board-swatch {
+    color: rgba(20, 25, 34, 0.82) !important;
+}
+
+.signal-board-swatch-cream { background: #f4e8c9 !important; }
+.signal-board-swatch-sky { background: #bfe8ff !important; }
+.signal-board-swatch-violet { background: #d9ccff !important; }
+.signal-board-swatch-gold { background: #edcf78 !important; }
+.signal-board-swatch-rose { background: #f2c1cf !important; }
+.signal-board-swatch-mint { background: #ccefd9 !important; }
+.signal-board-swatch-graphite {
+    background: #242c3b !important;
+    color: rgba(245,247,252,0.9) !important;
+}
+
+.signal-board-swatch.is-active,
+.signal-board-size-row button.is-active {
+    outline: 2px solid rgba(126, 211, 255, 0.72);
+    outline-offset: 2px;
+}
+
+.signal-board-theme-map {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.signal-board-theme-map div {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.8rem;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 0.85rem;
+    padding: 0.6rem;
+    background: rgba(255,255,255,0.035);
+}
+
+.signal-board-theme-map span {
+    color: rgba(224, 231, 240, 0.70);
+    font-size: 0.78rem;
+}
+
+.signal-board-theme-map strong {
+    color: rgba(243, 231, 209, 0.86);
+    font-family: 'Orbitron', Arial, sans-serif;
+}
+
+/* Artifacts */
 .signal-board-pin {
     position: absolute;
     left: var(--pin-x);
     top: var(--pin-y);
-    width: 228px;
-    min-height: 145px;
-    transform: translate(-50%, -50%) rotate(var(--pin-rotate));
-    border: 1px solid rgba(214, 224, 235, 0.22);
-    border-radius: 0.92rem;
-    padding: 1.1rem 1rem 1rem;
-    color: rgba(39, 34, 30, 0.92);
+    z-index: calc(10 + var(--pin-layer));
+    border: 1px solid rgba(28, 35, 48, 0.13);
+    border-radius: 1rem;
+    padding: 0.85rem;
+    color: rgba(29, 34, 44, 0.84);
     text-decoration: none;
-    background:
-        radial-gradient(circle at 12% 8%, rgba(255,255,255,0.64), transparent 24%),
-        linear-gradient(180deg, rgba(255, 253, 238, 0.94), rgba(236, 223, 194, 0.91));
+    cursor: grab;
+    user-select: none;
+    -webkit-user-drag: none;
     box-shadow:
-        0 1px 0 rgba(255,255,255,0.58) inset,
-        0 12px 24px rgba(0,0,0,0.26),
-        0 0 18px rgba(126,211,255,0.035);
+        0 18px 36px rgba(0,0,0,0.22),
+        inset 0 1px 0 rgba(255,255,255,0.38);
+    transform: translate(-50%, -50%) rotate(var(--pin-rotate));
     transition:
-        transform 0.22s ease,
-        box-shadow 0.22s ease,
-        filter 0.22s ease,
-        border-color 0.22s ease;
-    z-index: 2;
+        box-shadow 0.18s ease,
+        border-color 0.18s ease,
+        transform 0.18s ease;
 }
 
-.signal-board-pin::before {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: -0.68rem;
-    width: 4.4rem;
-    height: 1.14rem;
-    transform: translateX(-50%) rotate(-2deg);
-    border: 1px solid rgba(255, 255, 255, 0.24);
-    border-radius: 0.2rem;
-    background:
-        linear-gradient(90deg, rgba(255,255,255,0.18), rgba(188, 224, 255, 0.30), rgba(220,186,92,0.20), rgba(255,255,255,0.12));
+.signal-board-pin:active {
+    cursor: grabbing;
+    z-index: 100;
     box-shadow:
-        0 2px 8px rgba(0,0,0,0.16),
-        0 0 16px rgba(126,211,255,0.08);
-    opacity: 0.90;
-    backdrop-filter: blur(4px);
+        0 26px 54px rgba(0,0,0,0.32),
+        0 0 32px rgba(126, 211, 255, 0.16),
+        inset 0 1px 0 rgba(255,255,255,0.40);
 }
 
-.signal-board-pin::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    border-radius: inherit;
-    background:
-        radial-gradient(circle at 16% 18%, rgba(0,0,0,0.04), transparent 10%),
-        radial-gradient(circle at 82% 78%, rgba(0,0,0,0.032), transparent 14%),
-        linear-gradient(90deg, transparent, rgba(255,255,255,0.22) 48%, transparent 52%);
-    opacity: 0.46;
+.signal-board-pin.is-selected {
+    outline: 2px solid rgba(126, 211, 255, 0.62);
+    outline-offset: 4px;
 }
 
-.signal-board-pin:hover {
-    transform: translate(-50%, -50%) rotate(var(--pin-rotate)) translateY(-5px) scale(1.015);
-    border-color: rgba(126, 211, 255, 0.38);
-    box-shadow:
-        0 1px 0 rgba(255,255,255,0.62) inset,
-        0 16px 28px rgba(0,0,0,0.30),
-        0 0 24px rgba(126,211,255,0.10);
-    filter: saturate(1.05);
+.signal-board-pin-user {
+    outline: 1px solid rgba(126, 211, 255, 0.26);
+}
+
+.signal-board-pin-center {
+    z-index: 99 !important;
 }
 
 .signal-board-pin-cap {
     position: absolute;
-    top: 0.52rem;
-    right: 0.58rem;
-    width: 0.76rem;
-    height: 0.76rem;
+    top: 0.46rem;
+    left: 50%;
+    width: 0.7rem;
+    height: 0.7rem;
+    transform: translateX(-50%);
     border-radius: 999px;
     background:
-        radial-gradient(circle at 34% 30%, #fff 0 8%, rgba(220, 232, 242, 0.98) 22%, rgba(126, 211, 255, 0.70) 54%, rgba(8, 17, 31, 0.90) 100%);
-    box-shadow:
-        0 1px 2px rgba(0,0,0,0.36),
-        0 0 14px rgba(126, 211, 255, 0.30);
-    z-index: 3;
+        radial-gradient(circle at 35% 30%, rgba(255,255,255,0.95), rgba(126,211,255,0.64), rgba(34,44,58,0.32));
+    box-shadow: 0 2px 10px rgba(0,0,0,0.22);
+}
+
+.signal-board-delete {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.45rem;
+    z-index: 5;
+    width: 1.35rem;
+    height: 1.35rem;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(28, 35, 48, 0.14);
+    border-radius: 999px;
+    color: rgba(28, 35, 48, 0.62);
+    background: rgba(255,255,255,0.28);
+    cursor: pointer;
+}
+
+.signal-board-pin-content {
+    display: grid;
+    gap: 0.44rem;
+    margin-top: 0.32rem;
+}
+
+.signal-board-pin-topline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
 }
 
 .signal-board-pin-eyebrow {
-    position: relative;
-    z-index: 2;
-    color: rgba(83, 58, 42, 0.70);
-    font-weight: 800;
+    color: rgba(33, 45, 64, 0.62);
+    font-size: 0.58rem;
+    letter-spacing: 0.18em;
+}
+
+.signal-board-layer-badge {
+    display: inline-flex;
+    border: 1px solid rgba(28, 35, 48, 0.10);
+    border-radius: 999px;
+    padding: 0.16rem 0.32rem;
+    color: rgba(29, 36, 49, 0.55);
+    background: rgba(255,255,255,0.18);
+    font-size: 0.55rem;
+    line-height: 1;
 }
 
 .signal-board-pin h2 {
-    position: relative;
-    z-index: 2;
-    margin: 0.35rem 0 0.45rem;
-    color: rgba(31, 27, 24, 0.96);
+    margin: 0;
+    color: rgba(22, 27, 36, 0.90);
     font-family: 'Orbitron', Arial, sans-serif;
-    font-size: 0.96rem;
-    line-height: 1.15;
-    letter-spacing: 0.035em;
+    font-size: 0.9rem;
+    line-height: 1.16;
+    letter-spacing: 0.045em;
     text-transform: uppercase;
 }
 
-.signal-board-pin p:not(.signal-board-pin-eyebrow) {
-    position: relative;
-    z-index: 2;
+.signal-board-pin-body {
     margin: 0;
-    color: rgba(57, 47, 40, 0.78);
+    color: rgba(30, 38, 52, 0.70);
     font-size: 0.78rem;
-    line-height: 1.52;
+    line-height: 1.45;
 }
 
-.signal-board-pin span {
+.signal-board-pin-footer {
     position: relative;
-    z-index: 2;
+    z-index: 3;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.42rem;
+    margin-top: 0.72rem;
+}
+
+.signal-board-pin-pill {
     display: inline-flex;
-    margin-top: 0.75rem;
-    border: 1px solid rgba(79, 55, 35, 0.13);
+    border: 1px solid rgba(28, 35, 48, 0.12);
     border-radius: 999px;
-    padding: 0.3rem 0.5rem;
-    color: rgba(71, 50, 36, 0.78);
-    background: rgba(255, 255, 255, 0.34);
-    font-size: 0.64rem;
-    font-weight: 800;
+    padding: 0.22rem 0.44rem;
+    color: rgba(29, 36, 49, 0.62);
+    background: rgba(255,255,255,0.25);
+    font-size: 0.62rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
 }
 
-/* Center card: futuristic core artifact */
-.signal-board-pin-center {
-    width: 292px;
-    min-height: 188px;
-    z-index: 4;
-    color: rgba(238, 243, 250, 0.94);
-    border-color: rgba(126, 211, 255, 0.28);
-    border-radius: 1.18rem;
+.signal-board-pin-tools {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.22rem;
+}
+
+.signal-board-pin-tools button {
+    width: 1.25rem;
+    height: 1.25rem;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(28, 35, 48, 0.12);
+    border-radius: 999px;
+    color: rgba(30, 39, 55, 0.72);
+    background: rgba(255,255,255,0.30);
+    cursor: pointer;
+    line-height: 1;
+}
+
+.signal-board-pin-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(28, 35, 48, 0.12);
+    border-radius: 999px;
+    padding: 0.24rem 0.45rem;
+    color: rgba(30, 39, 55, 0.72);
+    background: rgba(255,255,255,0.30);
+    text-decoration: none;
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.signal-board-hook-mark {
+    position: absolute;
+    z-index: 0;
+    top: -0.85rem;
+    right: 0.7rem;
+    color: rgba(126, 211, 255, 0.22);
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 4.4rem;
+    line-height: 1;
+}
+
+/* Size system */
+.signal-board-pin-size-sm {
+    width: 11rem;
+    min-height: 8rem;
+    padding: 0.68rem;
+}
+
+.signal-board-pin-size-sm h2 { font-size: 0.72rem; }
+.signal-board-pin-size-sm .signal-board-pin-body { font-size: 0.68rem; }
+
+.signal-board-pin-size-md {
+    width: 14rem;
+    min-height: 10rem;
+}
+
+.signal-board-pin-size-lg {
+    width: 18rem;
+    min-height: 13rem;
+    padding: 1rem;
+}
+
+.signal-board-pin-size-lg h2 { font-size: 1.05rem; }
+.signal-board-pin-size-lg .signal-board-pin-body { font-size: 0.86rem; }
+
+.signal-board-pin-size-xl {
+    width: 22rem;
+    min-height: 15rem;
+    padding: 1.1rem;
+}
+
+.signal-board-pin-size-xl h2 { font-size: 1.24rem; }
+.signal-board-pin-size-xl .signal-board-pin-body { font-size: 0.94rem; }
+
+/* Color system */
+.signal-board-pin-color-cream {
     background:
-        radial-gradient(circle at 42% 22%, rgba(243, 231, 209, 0.16), transparent 28%),
-        radial-gradient(circle at 58% 70%, rgba(126, 211, 255, 0.16), transparent 34%),
-        linear-gradient(145deg, rgba(8, 17, 31, 0.97), rgba(20, 30, 48, 0.94));
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.14),
-        0 18px 38px rgba(0,0,0,0.38),
-        0 0 30px rgba(126,211,255,0.14);
+        linear-gradient(145deg, rgba(248, 239, 213, 0.96), rgba(226, 213, 180, 0.88)),
+        radial-gradient(circle at top left, rgba(255,255,255,0.32), transparent 48%);
 }
 
-.signal-board-pin-center::before {
+.signal-board-pin-color-sky {
     background:
-        linear-gradient(90deg, rgba(220,186,92,0.18), rgba(188,224,255,0.44), rgba(168,132,255,0.22));
+        linear-gradient(145deg, rgba(219, 241, 252, 0.96), rgba(181, 217, 237, 0.88)),
+        radial-gradient(circle at top left, rgba(126,211,255,0.34), transparent 48%);
 }
 
-.signal-board-pin-center .signal-board-pin-eyebrow,
-.signal-board-pin-center span {
-    color: rgba(243, 231, 209, 0.84);
+.signal-board-pin-color-violet {
+    background:
+        linear-gradient(145deg, rgba(228, 219, 252, 0.96), rgba(196, 180, 234, 0.88)),
+        radial-gradient(circle at top left, rgba(168,132,255,0.30), transparent 48%);
 }
 
-.signal-board-pin-center h2 {
-    color: rgba(245, 247, 252, 0.98);
-    font-size: 1.2rem;
+.signal-board-pin-color-gold {
+    background:
+        linear-gradient(145deg, rgba(250, 237, 195, 0.98), rgba(224, 194, 105, 0.88)),
+        radial-gradient(circle at top left, rgba(255,255,255,0.34), transparent 48%);
 }
 
-.signal-board-pin-center p:not(.signal-board-pin-eyebrow) {
+.signal-board-pin-color-rose {
+    background:
+        linear-gradient(145deg, rgba(251, 222, 229, 0.96), rgba(232, 167, 184, 0.88)),
+        radial-gradient(circle at top left, rgba(255,255,255,0.32), transparent 48%);
+}
+
+.signal-board-pin-color-mint {
+    background:
+        linear-gradient(145deg, rgba(220, 244, 229, 0.96), rgba(180, 221, 197, 0.88)),
+        radial-gradient(circle at top left, rgba(255,255,255,0.30), transparent 48%);
+}
+
+.signal-board-pin-color-graphite {
+    border-color: rgba(238, 243, 250, 0.16);
+    background:
+        linear-gradient(145deg, rgba(50, 60, 78, 0.98), rgba(19, 25, 38, 0.94)),
+        radial-gradient(circle at top left, rgba(126,211,255,0.18), transparent 48%);
+}
+
+.signal-board-pin-color-graphite .signal-board-pin-eyebrow {
+    color: rgba(188, 224, 255, 0.78);
+}
+
+.signal-board-pin-color-graphite h2 {
+    color: rgba(248, 250, 255, 0.96);
+}
+
+.signal-board-pin-color-graphite .signal-board-pin-body {
     color: rgba(224, 231, 240, 0.76);
 }
 
-/* Card type tones */
-.signal-board-pin-track {
-    background:
-        radial-gradient(circle at 12% 10%, rgba(255,255,255,0.64), transparent 24%),
-        linear-gradient(180deg, rgba(232, 247, 255, 0.96), rgba(190, 221, 240, 0.90));
+.signal-board-pin-color-graphite .signal-board-layer-badge,
+.signal-board-pin-color-graphite .signal-board-pin-pill,
+.signal-board-pin-color-graphite .signal-board-pin-tools button,
+.signal-board-pin-color-graphite .signal-board-pin-link {
+    border-color: rgba(238, 243, 250, 0.16);
+    color: rgba(238, 243, 250, 0.82);
+    background: rgba(255,255,255,0.08);
 }
 
-.signal-board-pin-realm {
-    background:
-        radial-gradient(circle at 12% 10%, rgba(255,255,255,0.60), transparent 24%),
-        linear-gradient(180deg, rgba(239, 232, 255, 0.96), rgba(214, 202, 244, 0.90));
+/* Cover stack */
+.signal-board-cover-stack {
+    position: relative;
+    z-index: 2;
+    height: 5.6rem;
+    margin-bottom: 0.8rem;
 }
 
-.signal-board-pin-moon {
+.signal-board-cover-stack span {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    width: 4.4rem;
+    height: 5.25rem;
+    border: 1px solid rgba(30, 39, 55, 0.14);
+    border-radius: 0.55rem;
+    color: rgba(30, 39, 55, 0.68);
     background:
-        radial-gradient(circle at 12% 10%, rgba(255,255,255,0.60), transparent 24%),
-        linear-gradient(180deg, rgba(255, 249, 226, 0.96), rgba(235, 218, 176, 0.90));
+        radial-gradient(circle at 30% 20%, rgba(126,211,255,0.20), transparent 40%),
+        linear-gradient(145deg, rgba(238,243,250,0.96), rgba(205,215,230,0.78));
+    font-family: 'Orbitron', Arial, sans-serif;
+    font-size: 0.75rem;
 }
 
-.signal-board-pin-visual {
-    background:
-        radial-gradient(circle at 12% 10%, rgba(255,255,255,0.60), transparent 24%),
-        linear-gradient(180deg, rgba(255, 238, 220, 0.96), rgba(230, 199, 168, 0.90));
+.signal-board-cover-stack span:nth-child(1) {
+    left: 50%;
+    transform: translateX(-50%) rotate(-2deg);
+    z-index: 3;
 }
 
-.signal-board-pin-hook,
-.signal-board-pin-action {
-    background:
-        radial-gradient(circle at 12% 10%, rgba(255,255,255,0.60), transparent 24%),
-        linear-gradient(180deg, rgba(255, 232, 237, 0.96), rgba(236, 194, 205, 0.90));
+.signal-board-cover-stack span:nth-child(2) {
+    left: calc(50% - 2.4rem);
+    top: 0.38rem;
+    transform: translateX(-50%) rotate(-8deg);
+    z-index: 2;
 }
 
-.signal-board-pin-portal {
-    background:
-        radial-gradient(circle at 12% 10%, rgba(255,255,255,0.62), transparent 24%),
-        linear-gradient(180deg, rgba(241, 246, 250, 0.96), rgba(199, 214, 230, 0.90));
+.signal-board-cover-stack span:nth-child(3) {
+    left: calc(50% + 2.4rem);
+    top: 0.4rem;
+    transform: translateX(-50%) rotate(7deg);
+    z-index: 1;
 }
 
+/* Mobile list */
 .signal-board-mobile-list {
     display: none;
+    width: min(100%, 980px);
+    margin: 0 auto;
+    padding: 0 1rem 4rem;
+    gap: 0.8rem;
 }
 
-/* Bottom panels */
-.signal-board-bottom-grid {
-    width: min(100%, 1180px);
-    margin: 1.1rem auto 0;
-    display: grid;
-    grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
-    gap: 1rem;
+@media (max-width: 1180px) {
+    .signal-board-control-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
-.signal-board-panel {
-    border: 1px solid rgba(214, 224, 235, 0.16);
-    border-radius: 1.35rem;
-    padding: 1.15rem;
-    color: rgba(238, 243, 250, 0.92);
-    background:
-        radial-gradient(circle at top left, rgba(126, 211, 255, 0.07), transparent 32%),
-        radial-gradient(circle at bottom right, rgba(220, 186, 92, 0.045), transparent 30%),
-        linear-gradient(145deg, rgba(255,255,255,0.07), rgba(205,215,230,0.028), rgba(8,11,20,0.66));
-    box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.10),
-        0 14px 36px rgba(0, 0, 0, 0.24);
-}
+@media (max-width: 840px) {
+    .signal-board-stage-header,
+    .signal-board-controls-heading,
+    .signal-board-reset-zone {
+        display: block;
+    }
 
-.signal-board-panel h2 {
-    margin: 0.35rem 0 1rem;
-    font-family: 'Orbitron', Arial, sans-serif;
-    color: rgba(245, 247, 252, 0.96);
-    font-size: 1.15rem;
-    text-transform: uppercase;
-}
+    .signal-board-reset-zone button {
+        width: 100%;
+        margin-top: 0.8rem;
+    }
 
-.signal-board-phase-list {
-    display: grid;
-    gap: 0.72rem;
-}
+    .signal-board-control-grid,
+    .signal-board-create-grid {
+        grid-template-columns: 1fr;
+    }
 
-.signal-board-phase {
-    display: grid;
-    grid-template-columns: 7.3rem minmax(0, 1fr);
-    gap: 0.72rem;
-    border: 1px solid rgba(255,255,255,0.09);
-    border-radius: 1rem;
-    padding: 0.82rem;
-    background: rgba(255,255,255,0.04);
-}
-
-.signal-board-phase > span {
-    color: rgba(243, 231, 209, 0.86);
-    font-size: 0.76rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-}
-
-.signal-board-phase h3,
-.signal-board-note h3 {
-    margin: 0 0 0.25rem;
-    color: rgba(238, 243, 250, 0.94);
-    font-size: 0.92rem;
-}
-
-.signal-board-phase p,
-.signal-board-note p {
-    margin: 0;
-    color: rgba(224, 231, 240, 0.72);
-    line-height: 1.55;
-    font-size: 0.84rem;
-}
-
-.signal-board-chip-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.52rem;
-}
-
-.signal-board-chip-list span {
-    border: 1px solid rgba(188, 224, 255, 0.16);
-    border-radius: 999px;
-    padding: 0.43rem 0.62rem;
-    background: rgba(255,255,255,0.04);
-    color: rgba(224, 231, 240, 0.76);
-    font-size: 0.74rem;
-}
-
-.signal-board-note {
-    margin-top: 1rem;
-    border: 1px solid rgba(220, 186, 92, 0.18);
-    border-radius: 1rem;
-    padding: 0.95rem;
-    background: rgba(220, 186, 92, 0.045);
-}
-
-@media (max-width: 920px) {
     .signal-board-frame {
-        display: none;
+        display: block;
     }
 
     .signal-board-mobile-list {
-        width: min(100%, 720px);
-        margin: 0 auto;
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 0.85rem;
+        display: none;
     }
 
     .signal-board-mobile-list .signal-board-pin {
         position: relative;
         left: auto;
         top: auto;
-        width: 100%;
+        transform: none;
+        width: auto;
         min-height: auto;
-        transform: none;
-    }
-
-    .signal-board-mobile-list .signal-board-pin:hover {
-        transform: none;
-    }
-
-    .signal-board-bottom-grid {
-        grid-template-columns: 1fr;
-        width: min(100%, 720px);
-    }
-
-    .signal-board-phase {
-        grid-template-columns: 1fr;
     }
 }
 
-@media (max-width: 520px) {
-    .signal-board-shell {
-        padding-top: 1.8rem;
+@media (max-width: 560px) {
+    .signal-board-switch-links,
+    .signal-board-stage-actions {
+        flex-direction: column;
     }
 
-    .signal-board-actions a {
+    .signal-board-switch-links a,
+    .signal-board-stage-actions button {
         width: 100%;
+    }
+}
+
+
+/* ===================================
+   V11 NAV + BOARD FOCUS POLISH
+   Keeps board as hero, moves view/customize controls up,
+   and leaves a bottom return affordance.
+   =================================== */
+
+.signal-board-top-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    margin-top: 1.35rem;
+}
+
+.signal-board-switch-links,
+.signal-board-focus-actions {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+}
+
+.signal-board-switch-links {
+    padding: 0.25rem;
+    border: 1px solid rgba(214, 224, 235, 0.10);
+    border-radius: 999px;
+    background: rgba(255,255,255,0.035);
+}
+
+.signal-board-focus-actions {
+    padding: 0.25rem;
+    border: 1px solid rgba(126, 211, 255, 0.14);
+    border-radius: 999px;
+    background:
+        radial-gradient(circle at left, rgba(126,211,255,0.10), transparent 70%),
+        rgba(255,255,255,0.035);
+}
+
+.signal-board-focus-actions button,
+.signal-board-return-button {
+    border: 1px solid rgba(126, 211, 255, 0.22);
+    border-radius: 999px;
+    min-height: 2.45rem;
+    padding: 0.64rem 0.85rem;
+    color: rgba(238, 243, 250, 0.92);
+    background: rgba(126, 211, 255, 0.075);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.72rem;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.signal-board-focus-actions button:hover,
+.signal-board-return-button:hover {
+    transform: translateY(-1px);
+    border-color: rgba(126, 211, 255, 0.44);
+    background: rgba(126, 211, 255, 0.12);
+}
+
+.signal-board-stage-footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.65rem;
+    margin: 0.95rem auto 0;
+    color: rgba(224, 231, 240, 0.52);
+    font-size: 0.74rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.signal-board-stage-footer button {
+    border: 1px solid rgba(238, 243, 250, 0.13);
+    border-radius: 999px;
+    min-height: 2.1rem;
+    padding: 0.48rem 0.7rem;
+    color: rgba(238, 243, 250, 0.72);
+    background: rgba(255,255,255,0.035);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.66rem;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+}
+
+.signal-board-return-button {
+    flex: 0 0 auto;
+    margin-left: auto;
+}
+
+.signal-board-controls-heading {
+    align-items: center;
+}
+
+@media (max-width: 840px) {
+    .signal-board-top-actions,
+    .signal-board-stage-footer,
+    .signal-board-controls-heading {
+        display: grid;
+        justify-items: center;
+        text-align: center;
+    }
+
+    .signal-board-switch-links,
+    .signal-board-focus-actions {
+        justify-content: center;
+    }
+
+    .signal-board-return-button {
+        margin: 0.85rem auto 0;
+    }
+}
+
+@media (max-width: 560px) {
+    .signal-board-switch-links,
+    .signal-board-focus-actions {
+        width: 100%;
+        display: grid;
+        border-radius: 1rem;
+    }
+
+    .signal-board-focus-actions button,
+    .signal-board-switch-links a {
+        width: 100%;
+    }
+}
+
+
+/* ===================================
+   V12 HERO ACTION ALIGNMENT + MOBILE BOARD
+   Full file replacement includes this section.
+   =================================== */
+
+.signal-board-hero-actions {
+    display: grid;
+    justify-items: center;
+    gap: 0.72rem;
+    margin-top: 1.38rem;
+}
+
+.signal-board-switch-links,
+.signal-board-focus-actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+}
+
+.signal-board-switch-links {
+    padding: 0.25rem;
+    border: 1px solid rgba(214, 224, 235, 0.10);
+    border-radius: 999px;
+    background: rgba(255,255,255,0.035);
+}
+
+.signal-board-focus-actions {
+    padding: 0.25rem;
+    border: 1px solid rgba(126, 211, 255, 0.14);
+    border-radius: 999px;
+    background:
+        radial-gradient(circle at left, rgba(126,211,255,0.10), transparent 70%),
+        rgba(255,255,255,0.035);
+}
+
+.signal-board-switch-links a,
+.signal-board-focus-actions button {
+    min-width: 11.2rem;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+.signal-board-focus-actions button {
+    border: 1px solid rgba(126, 211, 255, 0.24);
+    border-radius: 999px;
+    min-height: 2.55rem;
+    padding: 0.68rem 0.95rem;
+    color: rgba(238, 243, 250, 0.92);
+    background: rgba(126, 211, 255, 0.075);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.74rem;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.signal-board-focus-actions button:hover {
+    transform: translateY(-1px);
+    border-color: rgba(126, 211, 255, 0.44);
+    background: rgba(126, 211, 255, 0.12);
+}
+
+.signal-board-frame-scroll {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border-radius: 2rem;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-color: rgba(126, 211, 255, 0.32) rgba(255,255,255,0.04);
+    scrollbar-width: thin;
+}
+
+.signal-board-frame-scroll::-webkit-scrollbar {
+    height: 10px;
+}
+
+.signal-board-frame-scroll::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.04);
+    border-radius: 999px;
+}
+
+.signal-board-frame-scroll::-webkit-scrollbar-thumb {
+    background: rgba(126,211,255,0.28);
+    border-radius: 999px;
+}
+
+.signal-board-stage {
+    position: relative;
+}
+
+.signal-board-stage::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 5.35rem;
+    width: min(42rem, 70vw);
+    height: 1px;
+    transform: translateX(-50%);
+    background: linear-gradient(90deg, transparent, rgba(126,211,255,0.28), transparent);
+    pointer-events: none;
+}
+
+@media (max-width: 840px) {
+    .signal-board-hero {
+        min-height: 92vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+
+    .signal-board-hero h1 {
+        font-size: clamp(3.1rem, 16vw, 5.6rem);
+    }
+
+    .signal-board-hero-actions {
+        width: 100%;
+        gap: 0.65rem;
+    }
+
+    .signal-board-switch-links,
+    .signal-board-focus-actions {
+        width: min(100%, 420px);
+        display: grid;
+        grid-template-columns: 1fr;
+        border-radius: 1.1rem;
+    }
+
+    .signal-board-switch-links a,
+    .signal-board-focus-actions button {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .signal-board-stage {
+        padding-top: 0.75rem;
+    }
+
+    .signal-board-stage-header {
+        display: block;
+        text-align: center;
+    }
+
+    .signal-board-stage-header > p {
+        margin: 0.65rem auto 0;
+    }
+
+    .signal-board-frame-scroll {
+        margin-inline: -1rem;
+        padding-inline: 1rem;
+        border-radius: 0;
+    }
+
+    .signal-board-frame {
+        display: block !important;
+        width: 980px;
+        min-width: 980px;
+        min-height: 760px;
+        border-radius: 1.35rem;
+    }
+
+    .signal-board-mobile-list {
+        display: none !important;
+    }
+
+    .signal-board-stage-footer {
+        margin-top: 0.85rem;
         text-align: center;
     }
 }
 
-/* signalBoard.css */
-.signal-board-pin-asset {
-    position: relative;
-    z-index: 2;
-    width: 100%;
-    height: 74px;
-    margin-bottom: 0.72rem;
-    border: 1px solid rgba(255,255,255,0.20);
-    border-radius: 0.7rem;
-    overflow: hidden;
-    background:
-        radial-gradient(circle at top left, rgba(126,211,255,0.16), transparent 30%),
-        rgba(8, 17, 31, 0.14);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.12);
-}
+@media (max-width: 560px) {
+    .signal-board-hero {
+        min-height: 96vh;
+    }
 
-.signal-board-pin-image {
-    object-fit: cover;
-}
-
-.signal-board-pin-asset-needed {
-    display: grid;
-    place-items: center;
-    height: 46px;
-    border-style: dashed;
-    background: rgba(255,255,255,0.18);
-}
-
-.signal-board-pin-asset-needed span {
-    margin: 0;
-    border: 0;
-    background: transparent;
-    color: rgba(71, 50, 36, 0.64);
+    .signal-board-frame {
+        width: 900px;
+        min-width: 900px;
+        min-height: 720px;
+    }
 }

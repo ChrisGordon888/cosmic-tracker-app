@@ -9,172 +9,199 @@ import {
 } from '@/lib/releases/sirensInNeverland';
 import '@/styles/sirensRelease.css';
 
-function isDisplayReadyAsset(asset: SirensAsset | null) {
+function isReadyAsset(asset: SirensAsset | null) {
   return Boolean(asset?.src && asset.status !== 'needed');
 }
 
-function ReleaseCover() {
+function ReleaseArtwork() {
   const coverAsset = getSirensAssetById(sirensRelease.coverAssetId);
 
-  if (isDisplayReadyAsset(coverAsset) && coverAsset?.src) {
+  if (isReadyAsset(coverAsset) && coverAsset?.src) {
     return (
-      <div className="sirens-release-cover sirens-release-cover-has-image">
+      <figure className="sirens-artwork sirens-artwork-image">
         <Image
           src={coverAsset.src}
           alt={coverAsset.alt}
           fill
           priority
-          sizes="(max-width: 900px) 100vw, 42vw"
-          className="sirens-release-cover-image"
+          sizes="(max-width: 920px) 82vw, 360px"
+          className="sirens-artwork-img"
         />
-        <div className="sirens-release-cover-sheen" />
-        <div className="sirens-release-cover-title">
+        <figcaption>
           <span>{sirensRelease.artist.displayName}</span>
-          <strong>SIRENS</strong>
-          <em>in Neverland</em>
-        </div>
-      </div>
+          <strong>{sirensRelease.title}</strong>
+        </figcaption>
+      </figure>
     );
   }
 
   return (
-    <div className="sirens-release-cover" aria-label="SIRENS in Neverland cover placeholder">
-      <div className="sirens-release-cover-moon" />
-      <div className="sirens-release-cover-title">
+    <figure className="sirens-artwork sirens-artwork-placeholder" aria-label="SIRENS in Neverland cover placeholder">
+      <div className="sirens-artwork-orbit" />
+      <div className="sirens-artwork-title">
         <span>{sirensRelease.artist.displayName}</span>
         <strong>SIRENS</strong>
         <em>in Neverland</em>
       </div>
-    </div>
+      <figcaption>
+        <span>Cover asset</span>
+        <strong>awaiting final artwork</strong>
+      </figcaption>
+    </figure>
   );
-}
-
-function TrackAssetBadge({ assetId }: { assetId?: string }) {
-  const asset = getSirensAssetById(assetId);
-
-  if (!asset) {
-    return <span>Asset not assigned</span>;
-  }
-
-  return <span>{asset.status === 'needed' ? 'Visual needed' : `Visual ${asset.status}`}</span>;
 }
 
 export default function SirensReleasePage() {
   const leadSingle = sirensTracks.find((track) => track.status === 'focus-single');
   const secondSingle = sirensTracks.find((track) => track.status === 'second-single');
+  const heroHook = sirensRelease.mainHookLines[0];
+
   return (
-    <main className="sirens-release-shell">
-      <section className="sirens-release-hero">
-        <ReleaseCover />
+    <main className="sirens-page">
+      <section className="sirens-hero">
+        <div className="sirens-hero-grid">
+          <div className="sirens-hero-copy">
+            <p className="sirens-label">{sirensRelease.releaseType} / Release World</p>
+            <h1>
+              <span>SIRENS</span>
+              <em>in Neverland</em>
+            </h1>
+            <p className="sirens-hero-summary">{sirensRelease.oneLineSummary}</p>
 
-        <div className="sirens-release-copy">
-          <p className="sirens-release-kicker">{sirensRelease.releaseType} Release World</p>
-          <h1>{sirensRelease.title}</h1>
-          <p className="sirens-release-subtitle">{sirensRelease.oneLineSummary}</p>
-
-          <div className="sirens-release-status">
-            <span>{sirensRelease.status}</span>
-            <span>{sirensRelease.trackCount} tracks</span>
-            <span>{sirensRelease.currentFocus} first</span>
-            <span>EP drop {sirensRelease.fullDrop}</span>
+            <div className="sirens-hero-actions">
+              <a aria-disabled="true">Listen soon</a>
+              <Link href="/releases/sirens-in-neverland/board">Open signal board</Link>
+            </div>
           </div>
 
-          <div className="sirens-release-actions">
-            <Link href="/releases/sirens-in-neverland/board">Open Signal Board</Link>
-            <Link href="/nexus">Enter Nexus</Link>
-            <a aria-disabled="true">Listen Coming Soon</a>
+          <div className="sirens-hero-art">
+            <ReleaseArtwork />
+          </div>
+        </div>
+
+        <div className="sirens-meta-strip" aria-label="Release metadata">
+          <div>
+            <span>Artist</span>
+            <strong>{sirensRelease.artist.displayName}</strong>
+          </div>
+          <div>
+            <span>Lead single</span>
+            <strong>{sirensRelease.currentFocus}</strong>
+          </div>
+          <div>
+            <span>Second signal</span>
+            <strong>{sirensRelease.secondFocus ?? 'running from the plug'}</strong>
+          </div>
+          <div>
+            <span>World opens</span>
+            <strong>{sirensRelease.fullDrop ?? 'July 29'}</strong>
           </div>
         </div>
       </section>
 
-      <section className="sirens-release-story">
-        <p className="sirens-release-kicker">The Story</p>
-        <h2>Not just a project. A place.</h2>
+      <section className="sirens-hook-band" aria-label="Main hook">
+        <p>{heroHook}</p>
+      </section>
+
+      <section className="sirens-story-section">
+        <div className="sirens-section-heading">
+          <p className="sirens-label">The world</p>
+          <h2>Not just a project. A place.</h2>
+        </div>
         <p>{sirensRelease.story}</p>
       </section>
 
-      <section className="sirens-release-grid">
-        <article className="sirens-release-panel">
-          <div className="sirens-release-panel-heading">
-            <p className="sirens-release-kicker">Tracklist</p>
-            <h2>The six signals</h2>
-          </div>
+      <section className="sirens-single-path">
+        <div className="sirens-section-heading">
+          <p className="sirens-label">Release path</p>
+          <h2>Front door, fracture, full myth.</h2>
+        </div>
 
-          <div className="sirens-tracklist">
-            {sirensTracks.map((track) => (
-              <div key={track.slug} className="sirens-track-card">
-                <span className="sirens-track-number">{track.number}</span>
-                <div>
-                  <h3>{track.displayTitle}</h3>
-                  <p>{track.note}</p>
-                  <div className="sirens-track-meta">
-                    <span>{track.role}</span>
-                    <span>{track.realmName}</span>
-                    <TrackAssetBadge assetId={track.coverAssetId} />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </article>
+        <div className="sirens-path-list">
+          <article>
+            <span>01</span>
+            <div>
+              <h3>{leadSingle?.displayTitle ?? 'DoOver'}</h3>
+              <p>
+                The emotional front door: direct, repeatable, hypnotic, and built around the need
+                to replay a moment before it disappears.
+              </p>
+            </div>
+          </article>
 
-        <article className="sirens-release-panel">
-          <div className="sirens-release-panel-heading">
-            <p className="sirens-release-kicker">Release Strategy</p>
-            <h2>Three-phase world</h2>
-          </div>
+          <article>
+            <span>02</span>
+            <div>
+              <h3>{secondSingle?.displayTitle ?? 'running from the plug'}</h3>
+              <p>
+                The contrast signal: movement, urgency, nighttime pressure, and the rupture that
+                proves the world is bigger than softness.
+              </p>
+            </div>
+          </article>
 
-          <div className="sirens-realm-list">
-            {sirensRolloutDates.map((beat) => (
-              <div key={`${beat.date}-${beat.title}`} className="sirens-realm-card">
-                <span>{beat.date}</span>
-                <div>
-                  <h3>{beat.title}</h3>
-                  <p>{beat.goal}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </article>
+          <article>
+            <span>03</span>
+            <div>
+              <h3>{sirensRelease.title}</h3>
+              <p>
+                The completed emotional universe: fantasy, warning signs, desire, memory,
+                and the beautiful danger of wanting one more chance.
+              </p>
+            </div>
+          </article>
+        </div>
       </section>
 
-      <section className="sirens-release-bottom">
-        <article className="sirens-release-panel">
-          <p className="sirens-release-kicker">Single Path</p>
-          <h2>Front door, contrast, completion</h2>
-          <div className="sirens-rollout-list">
-            <div>
-              <span>01</span>
-              <p>
-                <strong>{leadSingle?.displayTitle ?? 'DoOver'}</strong> opens the world as the emotional,
-                replayable front door.
-              </p>
-            </div>
-            <div>
-              <span>02</span>
-              <p>
-                <strong>{secondSingle?.displayTitle ?? 'running from the plug'}</strong> expands the
-                EP with motion, urgency, contrast, and edge.
-              </p>
-            </div>
-            <div>
-              <span>03</span>
-              <p>
-                <strong>{sirensRelease.title}</strong> lands as the complete emotional universe on {sirensRelease.fullDrop}.
-              </p>
-            </div>
-          </div>
-        </article>
+      <section className="sirens-track-section">
+        <div className="sirens-section-heading">
+          <p className="sirens-label">Track sequence</p>
+          <h2>Six signals from the waterline.</h2>
+        </div>
 
-        <article className="sirens-release-panel sirens-release-cta">
-          <p className="sirens-release-kicker">Next Portal</p>
-          <h2>Enter the board behind the release.</h2>
+        <div className="sirens-track-list">
+          {sirensTracks.map((track) => (
+            <article key={track.slug}>
+              <span>{track.number}</span>
+              <div>
+                <h3>{track.displayTitle}</h3>
+                <p>{track.role}</p>
+              </div>
+              <em>{track.realmName}</em>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="sirens-rollout-section">
+        <div className="sirens-section-heading">
+          <p className="sirens-label">Moon rhythm</p>
+          <h2>Rollout cadence.</h2>
+        </div>
+
+        <div className="sirens-rollout-list">
+          {sirensRolloutDates.map((beat) => (
+            <article key={`${beat.date}-${beat.title}`}>
+              <span>{beat.date}</span>
+              <div>
+                <h3>{beat.title}</h3>
+                <p>{beat.publicAction}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="sirens-portal">
+        <div>
+          <p className="sirens-label">Behind the release</p>
+          <h2>Enter the board where the world is still forming.</h2>
           <p>
-            The Signal Board is the scrapbook layer: moon timing, content hooks,
-            visual language, realm connections, and the hidden threads behind the EP.
+            The release page is the polished portal. The Signal Board is the messy mythology:
+            notes, asset fragments, moon timing, realm links, and content direction.
           </p>
-          <Link href="/releases/sirens-in-neverland/board">Open Signal Board</Link>
-        </article>
+        </div>
+        <Link href="/releases/sirens-in-neverland/board">Open signal board</Link>
       </section>
     </main>
   );

@@ -28,8 +28,8 @@ const typeDefs = gql`
     completedReps: Int!
     completed: Boolean!
     date: String!
-    ritualId: ID                # stores linked ritual's ID
-    ritual: Ritual              # dynamically resolved ritual object
+    ritualId: ID
+    ritual: Ritual
   }
 
   # 🔮 Ritual
@@ -42,35 +42,29 @@ const typeDefs = gql`
     updatedAt: String
   }
 
-   # 👤 USER (NEW!)
+  # 👤 USER
   type User {
     id: ID!
     email: String!
     name: String
     image: String
-    
-    # Gamification
+
     level: Int!
     xp: Int!
     xpToNextLevel: Int!
-    
-    # Realm Progress
+
     currentRealm: Int!
     unlockedRealms: [Int!]!
     completedTrials: [CompletedTrial!]!
     visitedLocations: [VisitedLocation!]!
-    
-    # Music Stats
+
     musicStats: MusicStats!
-    
-    # Streaks
     streaks: Streaks!
-    
+
     createdAt: String
     updatedAt: String
   }
-  
-  # 🎯 TRIAL (NEW!)
+
   type CompletedTrial {
     realmId: Int!
     trialId: String!
@@ -81,8 +75,7 @@ const typeDefs = gql`
     completedAt: String
     xpEarned: Int!
   }
-  
-  # 📍 LOCATION (NEW!)
+
   type VisitedLocation {
     realmId: Int!
     locationId: String!
@@ -90,15 +83,14 @@ const typeDefs = gql`
     visitedAt: String!
     xpEarned: Int!
   }
-  
-  # 🎵 MUSIC STATS (NEW!)
+
   type MusicStats {
     tracksListened: [TrackListen!]!
     totalListeningTime: Int!
     favoriteRealm: Int
     totalTracksUnlocked: Int!
   }
-  
+
   type TrackListen {
     realmId: Int!
     trackTitle: String!
@@ -109,22 +101,19 @@ const typeDefs = gql`
     lastListenedAt: String!
     xpEarned: Int!
   }
-  
-  # 🔥 STREAKS (NEW!)
+
   type Streaks {
     currentStreak: Int!
     longestStreak: Int!
     lastLoginDate: String
     totalLogins: Int!
   }
-  
-  # 🏆 LEADERBOARD (NEW!)
+
   type LeaderboardEntry {
     rank: Int!
     user: User!
   }
-  
-  # ⚡ XP RESPONSE (NEW!)
+
   type XPGainResponse {
     user: User!
     xpGained: Int!
@@ -133,7 +122,135 @@ const typeDefs = gql`
     message: String!
   }
 
-   # 📖 Queries
+  # ========================================
+  # 🌌 CREATOR WORLD TYPES
+  # ========================================
+
+  type CreativeProfile {
+    id: ID!
+    ownerId: String!
+    artistName: String!
+    slug: String!
+    displayName: String
+    tagline: String
+    bio: String
+    isPublic: Boolean!
+    isFeatured: Boolean!
+    featuredReleaseWorldId: ID
+    createdAt: String
+    updatedAt: String
+  }
+
+  type ReleaseWorld {
+    id: ID!
+    ownerId: String!
+    creativeProfileId: ID!
+    title: String!
+    slug: String!
+    releaseType: String!
+    status: String!
+    visibility: String!
+    isFeatured: Boolean!
+    oneLineSummary: String
+    story: String
+    currentFocus: String
+    secondFocus: String
+    fullDropDate: String
+    createdAt: String
+    updatedAt: String
+    lastOpenedAt: String
+  }
+
+  type BoardArtifact {
+    id: ID!
+    ownerId: String!
+    releaseWorldId: ID!
+    kind: String!
+    eyebrow: String
+    title: String!
+    body: String
+    meta: String
+    href: String
+    connectedTrackSlug: String
+    position: BoardArtifactPosition!
+    style: BoardArtifactStyle!
+    isGenerated: Boolean!
+    isUserCreated: Boolean!
+    createdAt: String
+    updatedAt: String
+  }
+
+  type BoardArtifactPosition {
+    x: Float!
+    y: Float!
+    rotate: Float!
+  }
+
+  type BoardArtifactStyle {
+    color: String!
+    size: String!
+    layer: Int!
+  }
+
+  input CreativeProfileInput {
+    artistName: String!
+    slug: String!
+    displayName: String
+    tagline: String
+    bio: String
+    isPublic: Boolean
+    isFeatured: Boolean
+  }
+
+  input ReleaseWorldInput {
+    creativeProfileId: ID!
+    title: String!
+    slug: String!
+    releaseType: String
+    status: String
+    visibility: String
+    isFeatured: Boolean
+    oneLineSummary: String
+    story: String
+    currentFocus: String
+    secondFocus: String
+    fullDropDate: String
+  }
+
+  input UpdateReleaseWorldInput {
+    title: String
+    slug: String
+    releaseType: String
+    status: String
+    visibility: String
+    isFeatured: Boolean
+    oneLineSummary: String
+    story: String
+    currentFocus: String
+    secondFocus: String
+    fullDropDate: String
+  }
+
+  input BoardArtifactInput {
+    id: ID
+    kind: String!
+    eyebrow: String
+    title: String!
+    body: String
+    meta: String
+    href: String
+    connectedTrackSlug: String
+    x: Float!
+    y: Float!
+    rotate: Float
+    color: String
+    size: String
+    layer: Int
+    isGenerated: Boolean
+    isUserCreated: Boolean
+  }
+
+  # 📖 Queries
   type Query {
     hello: String
     todayMoonPhase: String
@@ -153,14 +270,18 @@ const typeDefs = gql`
     # Rituals
     allRituals: [Ritual!]!
     getRitual(id: ID!): Ritual
-    
-    # ========================================
-    # 🆕 MUSIC MULTIVERSE QUERIES (ADD THESE!)
-    # ========================================
+
+    # Music Multiverse
     me: User
     getUserProgress: User
     getLeaderboard(limit: Int): [LeaderboardEntry!]!
     checkRealmUnlock(realmId: Int!): Boolean!
+
+    # Creator Worlds
+    myCreativeProfiles: [CreativeProfile!]!
+    myReleaseWorlds: [ReleaseWorld!]!
+    getMyReleaseWorld(id: ID!): ReleaseWorld
+    getBoardArtifacts(releaseWorldId: ID!): [BoardArtifact!]!
   }
 
   # 🛠️ Mutations
@@ -177,18 +298,18 @@ const typeDefs = gql`
 
     # Practice Quests
     addPracticeQuest(
-      name: String!,
-      description: String,
-      repetitions: Int!,
-      date: String!,
+      name: String!
+      description: String
+      repetitions: Int!
+      date: String!
       ritualId: ID
     ): PracticeQuest
 
     updatePracticeQuest(
-      id: ID!,
-      name: String,
-      description: String,
-      repetitions: Int,
+      id: ID!
+      name: String
+      description: String
+      repetitions: Int
       ritualId: ID
     ): PracticeQuest
 
@@ -200,27 +321,36 @@ const typeDefs = gql`
     addRitual(title: String!, description: String!): Ritual
     updateRitual(id: ID!, title: String!, description: String!): Ritual
     deleteRitual(id: ID!): Ritual
-    
-    # ========================================
-    # 🆕 MUSIC MULTIVERSE MUTATIONS (NEW!)
-    # ========================================
-    
-    # Trial System
+
+    # Music Multiverse
     startTrial(realmId: Int!, trialId: String!, trialName: String!): User!
     completeTrialStep(realmId: Int!, trialId: String!): XPGainResponse!
-    
-    # Location Exploration
-    visitLocation(realmId: Int!, locationId: String!, locationName: String!): XPGainResponse!
-    
-    # Music Tracking
-    logMusicListen(realmId: Int!, trackTitle: String!, duration: Int!): XPGainResponse!
-    
-    # Realm Management
+
+    visitLocation(
+      realmId: Int!
+      locationId: String!
+      locationName: String!
+    ): XPGainResponse!
+
+    logMusicListen(
+      realmId: Int!
+      trackTitle: String!
+      duration: Int!
+    ): XPGainResponse!
+
     unlockRealm(realmId: Int!): User!
     setCurrentRealm(realmId: Int!): User!
-    
-    # Streaks
     logDailyLogin: XPGainResponse!
+
+    # Creator Worlds
+    createCreativeProfile(input: CreativeProfileInput!): CreativeProfile!
+    createReleaseWorld(input: ReleaseWorldInput!): ReleaseWorld!
+    updateReleaseWorld(id: ID!, input: UpdateReleaseWorldInput!): ReleaseWorld!
+    archiveReleaseWorld(id: ID!): ReleaseWorld!
+    saveBoardArtifacts(
+      releaseWorldId: ID!
+      artifacts: [BoardArtifactInput!]!
+    ): [BoardArtifact!]!
   }
 `;
 
