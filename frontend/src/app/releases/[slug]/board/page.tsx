@@ -84,6 +84,27 @@ const SAVE_BOARD_ARTIFACTS = gql`
   }
 `;
 
+const UPDATE_RELEASE_WORLD = gql`
+  mutation UpdateReleaseWorld($id: ID!, $input: UpdateReleaseWorldInput!) {
+    updateReleaseWorld(id: $id, input: $input) {
+      id
+      title
+      slug
+      releaseType
+      status
+      visibility
+      isFeatured
+      oneLineSummary
+      story
+      currentFocus
+      secondFocus
+      fullDropDate
+      updatedAt
+      lastOpenedAt
+    }
+  }
+`;
+
 type ArtifactKind =
   | 'center'
   | 'realm'
@@ -117,6 +138,18 @@ interface ReleaseWorld {
   fullDropDate?: string | null;
   updatedAt?: string | null;
   lastOpenedAt?: string | null;
+}
+
+interface PortalSettings {
+  title: string;
+  releaseType: string;
+  status: string;
+  visibility: string;
+  oneLineSummary: string;
+  story: string;
+  currentFocus: string;
+  secondFocus: string;
+  fullDropDate: string;
 }
 
 interface BoardArtifact {
@@ -379,6 +412,47 @@ function mapArtifactToInput(artifact: BoardArtifact) {
   };
 }
 
+function formatDateForInput(value?: string | null) {
+  if (!value) return '';
+
+  const numericValue = Number(value);
+  const date = Number.isFinite(numericValue)
+    ? new Date(numericValue)
+    : new Date(value);
+
+  if (Number.isNaN(date.getTime())) return '';
+
+  return date.toISOString().slice(0, 10);
+}
+
+function getPortalSettingsFromReleaseWorld(releaseWorld?: ReleaseWorld | null): PortalSettings {
+  return {
+    title: releaseWorld?.title ?? '',
+    releaseType: releaseWorld?.releaseType ?? 'ep',
+    status: releaseWorld?.status ?? 'draft',
+    visibility: releaseWorld?.visibility ?? 'private',
+    oneLineSummary: releaseWorld?.oneLineSummary ?? '',
+    story: releaseWorld?.story ?? '',
+    currentFocus: releaseWorld?.currentFocus ?? '',
+    secondFocus: releaseWorld?.secondFocus ?? '',
+    fullDropDate: formatDateForInput(releaseWorld?.fullDropDate),
+  };
+}
+
+function getPortalSettingsInput(settings: PortalSettings) {
+  return {
+    title: settings.title.trim(),
+    releaseType: settings.releaseType,
+    status: settings.status,
+    visibility: settings.visibility,
+    oneLineSummary: settings.oneLineSummary.trim(),
+    story: settings.story.trim(),
+    currentFocus: settings.currentFocus.trim(),
+    secondFocus: settings.secondFocus.trim(),
+    fullDropDate: settings.fullDropDate || null,
+  };
+}
+
 function looksLikeLegacySirensStarter(artifacts: BoardArtifact[], releaseTitle: string) {
   if (releaseTitle.toLowerCase().includes('sirens')) return false;
   if (artifacts.some((artifact) => artifact.isUserCreated)) return false;
@@ -589,6 +663,11 @@ export default function DynamicReleaseSignalBoardPage() {
   const [noteTitle, setNoteTitle] = useState('');
   const [noteBody, setNoteBody] = useState('');
 
+  const [portalSettings, setPortalSettings] = useState<PortalSettings>(() =>
+    getPortalSettingsFromReleaseWorld(null)
+  );
+  const [portalMessage, setPortalMessage] = useState('Portal settings are synced from the release world.');
+
   const {
     data: releaseData,
     loading: releaseLoading,
@@ -619,12 +698,20 @@ export default function DynamicReleaseSignalBoardPage() {
   });
 
   const [saveBoardArtifacts, { loading: isSaving }] = useMutation(SAVE_BOARD_ARTIFACTS);
+  const [updateReleaseWorld, { loading: isUpdatingPortal }] = useMutation(UPDATE_RELEASE_WORLD);
 
   useEffect(() => {
     if (!focusOptions.some((track) => track.slug === selectedTrackSlug)) {
       setSelectedTrackSlug(focusOptions[0]?.slug ?? 'project-hook');
     }
   }, [focusOptions, selectedTrackSlug]);
+
+  useEffect(() => {
+    if (!releaseWorld) return;
+
+    setPortalSettings(getPortalSettingsFromReleaseWorld(releaseWorld));
+    setPortalMessage('Portal settings loaded from MongoDB.');
+  }, [releaseWorld]);
 
   useEffect(() => {
     if (!slug || !releaseWorld) return;
@@ -736,6 +823,14 @@ export default function DynamicReleaseSignalBoardPage() {
       })),
     [focusOptions, hookArtifacts]
   );
+
+  function updatePortalSetting<K extends keyof PortalSettings>(key: K, value: PortalSettings[K]) {
+    setPortalSettings((current) => ({
+      ...current,
+      [key]: value,
+    }));
+    setPortalMessage('Unsaved portal changes. Save Portal Settings to update the release page.');
+  }
 
   function updateArtifact(id: string, updates: Partial<BoardArtifact>) {
     setArtifacts((current) =>
@@ -860,6 +955,42 @@ export default function DynamicReleaseSignalBoardPage() {
     setArtifacts(resetArtifacts);
     setSelectedArtifactId(null);
     setSaveMessage('Local board reset. Save to Cloud only if you want to replace the cloud board.');
+  }
+
+  async function handleSavePortalSettings() {
+    if (!releaseWorldId) {
+      setPortalMessage('Save failed: release world could not be found.');
+      return;
+    }
+
+    if (!portalSettings.title.trim()) {
+      setPortalMessage('Save failed: title is required.');
+      return;
+    }
+
+    try {
+      setPortalMessage('Saving portal settings to MongoDB...');
+
+      const result = await updateReleaseWorld({
+        variables: {
+          id: releaseWorldId,
+          input: getPortalSettingsInput(portalSettings),
+        },
+      });
+
+      const updatedWorld = result.data?.updateReleaseWorld as ReleaseWorld | undefined;
+
+      if (updatedWorld) {
+        setPortalSettings(getPortalSettingsFromReleaseWorld(updatedWorld));
+        setPortalMessage('Portal settings saved. Open the Release Page to see the polished portal update.');
+        await refetchReleaseWorld();
+      } else {
+        setPortalMessage('Portal settings saved, but no release world was returned.');
+      }
+    } catch (portalError) {
+      const message = portalError instanceof Error ? portalError.message : 'Unknown portal save error.';
+      setPortalMessage(`Portal save failed: ${message}`);
+    }
   }
 
   async function handleSaveToCloud() {
@@ -1031,6 +1162,134 @@ export default function DynamicReleaseSignalBoardPage() {
           <button type="button" className="signal-board-return-button" onClick={scrollToBoard}>
             View Board
           </button>
+        </div>
+
+        <div className="signal-board-portal-settings">
+          <div className="signal-board-portal-settings-header">
+            <div>
+              <p className="signal-board-panel-kicker">Portal Settings</p>
+              <h2>Shape the release page</h2>
+              <p>
+                This is the bridge from studio wall to polished portal. Save these fields,
+                then open the Release Page to see the public-facing world update.
+              </p>
+            </div>
+
+            <div className="signal-board-portal-status">
+              <span>ReleaseWorld</span>
+              <strong>{releaseWorld?.title ?? 'Loading project...'}</strong>
+              <em>{portalMessage}</em>
+            </div>
+          </div>
+
+          <div className="signal-board-portal-grid">
+            <label>
+              Release title
+              <input
+                value={portalSettings.title}
+                onChange={(event) => updatePortalSetting('title', event.target.value)}
+                placeholder="Release title"
+              />
+            </label>
+
+            <label>
+              Release type
+              <select
+                value={portalSettings.releaseType}
+                onChange={(event) => updatePortalSetting('releaseType', event.target.value)}
+              >
+                <option value="single">Single</option>
+                <option value="ep">EP</option>
+                <option value="album">Album</option>
+                <option value="campaign">Campaign</option>
+              </select>
+            </label>
+
+            <label>
+              Status
+              <select
+                value={portalSettings.status}
+                onChange={(event) => updatePortalSetting('status', event.target.value)}
+              >
+                <option value="draft">Draft</option>
+                <option value="active">Active</option>
+                <option value="released">Released</option>
+                <option value="archived">Archived</option>
+              </select>
+            </label>
+
+            <label>
+              Visibility
+              <select
+                value={portalSettings.visibility}
+                onChange={(event) => updatePortalSetting('visibility', event.target.value)}
+              >
+                <option value="private">Private</option>
+                <option value="unlisted">Unlisted</option>
+                <option value="public">Public</option>
+              </select>
+            </label>
+
+            <label>
+              Current focus
+              <input
+                value={portalSettings.currentFocus}
+                onChange={(event) => updatePortalSetting('currentFocus', event.target.value)}
+                placeholder="Lead single / front door"
+              />
+            </label>
+
+            <label>
+              Second focus
+              <input
+                value={portalSettings.secondFocus}
+                onChange={(event) => updatePortalSetting('secondFocus', event.target.value)}
+                placeholder="Contrast signal"
+              />
+            </label>
+
+            <label>
+              Drop date
+              <input
+                type="date"
+                value={portalSettings.fullDropDate}
+                onChange={(event) => updatePortalSetting('fullDropDate', event.target.value)}
+              />
+            </label>
+
+            <label className="signal-board-portal-wide">
+              One-line summary
+              <input
+                value={portalSettings.oneLineSummary}
+                onChange={(event) => updatePortalSetting('oneLineSummary', event.target.value)}
+                placeholder="The public-facing one-line promise of this release world."
+              />
+            </label>
+
+            <label className="signal-board-portal-wide">
+              Story
+              <textarea
+                value={portalSettings.story}
+                onChange={(event) => updatePortalSetting('story', event.target.value)}
+                placeholder="Write the release-world story that should appear on the portal."
+                rows={5}
+              />
+            </label>
+          </div>
+
+          <div className="signal-board-portal-actions">
+            <p>{portalMessage}</p>
+            <div>
+              <Link href={`/releases/${slug}`}>Open Release Page</Link>
+              <button
+                type="button"
+                onClick={handleSavePortalSettings}
+                disabled={isUpdatingPortal || !releaseWorldId}
+              >
+                {isUpdatingPortal ? 'Saving Portal...' : 'Save Portal Settings'}
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className="signal-board-reset-zone">
