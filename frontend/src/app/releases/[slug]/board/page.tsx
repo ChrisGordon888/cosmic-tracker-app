@@ -1070,22 +1070,6 @@ export default function DynamicReleaseSignalBoardPage() {
           and saves changes back to the same release world.
         </p>
 
-        <div className="signal-board-cloud-bar">
-          <div>
-            <span>Mongo status</span>
-            <strong>{cloudStatus}</strong>
-          </div>
-          <p>{cloudMessage}</p>
-          <div className="signal-board-cloud-actions">
-            <button type="button" onClick={handleReloadCloudBoard}>
-              Reload Cloud Board
-            </button>
-            <button type="button" onClick={handleSaveToCloud} disabled={isSaving || !releaseWorldId}>
-              {isSaving ? 'Saving...' : 'Save to Cloud'}
-            </button>
-          </div>
-        </div>
-
         <div className="signal-board-hero-actions">
           <nav className="signal-board-switch-links" aria-label="Page navigation">
             <Link href={`/releases/${slug}`}>Release Page</Link>
@@ -1144,152 +1128,51 @@ export default function DynamicReleaseSignalBoardPage() {
         <div className="signal-board-stage-footer">
           <span>{artifacts.length} artifacts loaded</span>
           <button type="button" onClick={scrollToControls}>
-            Scroll to controls
+            Scroll to board workshop
           </button>
+        </div>
+
+        <div className="signal-board-board-save-zone">
+          <div>
+            <p className="signal-board-panel-kicker">Board Save</p>
+            <h2>Save the studio wall</h2>
+            <p>
+              Use this after moving cards, adding hooks, deleting notes, or changing board colors.
+              Portal Settings save separately near the final pass.
+            </p>
+          </div>
+
+          <div className="signal-board-cloud-bar">
+          <div>
+            <span>Mongo status</span>
+            <strong>{cloudStatus}</strong>
+          </div>
+          <p>{cloudMessage}</p>
+          <div className="signal-board-cloud-actions">
+            <button type="button" onClick={handleReloadCloudBoard}>
+              Reload Cloud Board
+            </button>
+            <button type="button" onClick={handleSaveToCloud} disabled={isSaving || !releaseWorldId}>
+              {isSaving ? 'Saving...' : 'Save to Cloud'}
+            </button>
+          </div>
+          </div>
         </div>
       </section>
 
       <section ref={controlsRef} className="signal-board-controls" aria-label="Signal board controls">
         <div className="signal-board-controls-heading">
           <div>
-            <p className="signal-board-panel-kicker">Customize</p>
-            <h2>Enhance the board</h2>
+            <p className="signal-board-panel-kicker">Board Workshop</p>
+            <h2>Shape the studio wall</h2>
           </div>
           <p>
-            Adjust the generated starter board, edit selected cards, add hooks per track,
-            and create new artifacts.
+            Adjust the generated starter board, edit selected cards, add hooks, and create new artifacts.
+            When the wall feels right, move to the Portal Final Pass below.
           </p>
           <button type="button" className="signal-board-return-button" onClick={scrollToBoard}>
             View Board
           </button>
-        </div>
-
-        <div className="signal-board-portal-settings">
-          <div className="signal-board-portal-settings-header">
-            <div>
-              <p className="signal-board-panel-kicker">Portal Settings</p>
-              <h2>Shape the release page</h2>
-              <p>
-                This is the bridge from studio wall to polished portal. Save these fields,
-                then open the Release Page to see the public-facing world update.
-              </p>
-            </div>
-
-            <div className="signal-board-portal-status">
-              <span>ReleaseWorld</span>
-              <strong>{releaseWorld?.title ?? 'Loading project...'}</strong>
-              <em>{portalMessage}</em>
-            </div>
-          </div>
-
-          <div className="signal-board-portal-grid">
-            <label>
-              Release title
-              <input
-                value={portalSettings.title}
-                onChange={(event) => updatePortalSetting('title', event.target.value)}
-                placeholder="Release title"
-              />
-            </label>
-
-            <label>
-              Release type
-              <select
-                value={portalSettings.releaseType}
-                onChange={(event) => updatePortalSetting('releaseType', event.target.value)}
-              >
-                <option value="single">Single</option>
-                <option value="ep">EP</option>
-                <option value="album">Album</option>
-                <option value="campaign">Campaign</option>
-              </select>
-            </label>
-
-            <label>
-              Status
-              <select
-                value={portalSettings.status}
-                onChange={(event) => updatePortalSetting('status', event.target.value)}
-              >
-                <option value="draft">Draft</option>
-                <option value="active">Active</option>
-                <option value="released">Released</option>
-                <option value="archived">Archived</option>
-              </select>
-            </label>
-
-            <label>
-              Visibility
-              <select
-                value={portalSettings.visibility}
-                onChange={(event) => updatePortalSetting('visibility', event.target.value)}
-              >
-                <option value="private">Private</option>
-                <option value="unlisted">Unlisted</option>
-                <option value="public">Public</option>
-              </select>
-            </label>
-
-            <label>
-              Current focus
-              <input
-                value={portalSettings.currentFocus}
-                onChange={(event) => updatePortalSetting('currentFocus', event.target.value)}
-                placeholder="Lead single / front door"
-              />
-            </label>
-
-            <label>
-              Second focus
-              <input
-                value={portalSettings.secondFocus}
-                onChange={(event) => updatePortalSetting('secondFocus', event.target.value)}
-                placeholder="Contrast signal"
-              />
-            </label>
-
-            <label>
-              Drop date
-              <input
-                type="date"
-                value={portalSettings.fullDropDate}
-                onChange={(event) => updatePortalSetting('fullDropDate', event.target.value)}
-              />
-            </label>
-
-            <label className="signal-board-portal-wide">
-              One-line summary
-              <input
-                value={portalSettings.oneLineSummary}
-                onChange={(event) => updatePortalSetting('oneLineSummary', event.target.value)}
-                placeholder="The public-facing one-line promise of this release world."
-              />
-            </label>
-
-            <label className="signal-board-portal-wide">
-              Story
-              <textarea
-                value={portalSettings.story}
-                onChange={(event) => updatePortalSetting('story', event.target.value)}
-                placeholder="Write the release-world story that should appear on the portal."
-                rows={5}
-              />
-            </label>
-          </div>
-
-          <div className="signal-board-portal-actions">
-            <p>{portalMessage}</p>
-            <div>
-              <Link href={`/releases/${slug}`}>Open Release Page</Link>
-              <button
-                type="button"
-                onClick={handleSavePortalSettings}
-                disabled={isUpdatingPortal || !releaseWorldId}
-              >
-                {isUpdatingPortal ? 'Saving Portal...' : 'Save Portal Settings'}
-              </button>
-            </div>
-          </div>
         </div>
 
         <div className="signal-board-reset-zone">
@@ -1454,6 +1337,14 @@ export default function DynamicReleaseSignalBoardPage() {
           </div>
         </div>
 
+        <div className="signal-board-section-divider">
+          <div>
+            <p className="signal-board-panel-kicker">Create Signals</p>
+            <h2>Add hooks and artifacts</h2>
+          </div>
+          <p>Capture raw material for the world. These are board artifacts first; later they can feed the portal.</p>
+        </div>
+
         <div className="signal-board-create-grid">
           <div className="signal-board-toolbox-card">
             <p className="signal-board-panel-kicker">Hook Lab</p>
@@ -1529,6 +1420,142 @@ export default function DynamicReleaseSignalBoardPage() {
             <button type="button" onClick={addNoteArtifact}>
               Add Note Artifact
             </button>
+          </div>
+        </div>
+
+        <div className="signal-board-section-divider signal-board-section-divider-portal">
+          <div>
+            <p className="signal-board-panel-kicker">Portal Final Pass</p>
+            <h2>Print the world to the release page</h2>
+          </div>
+          <p>Shape the public-facing portal after the board has enough signal. This updates the dynamic release page.</p>
+        </div>
+
+        <div className="signal-board-portal-settings">
+          <div className="signal-board-portal-settings-header">
+            <div>
+              <p className="signal-board-panel-kicker">Portal Settings</p>
+              <h2>Final release page copy</h2>
+              <p>
+                Use this as the final pass after the board has signal. Save these fields,
+                then open the Release Page to see the public-facing world update.
+              </p>
+            </div>
+
+            <div className="signal-board-portal-status">
+              <span>ReleaseWorld</span>
+              <strong>{releaseWorld?.title ?? 'Loading project...'}</strong>
+              <em>{portalMessage}</em>
+            </div>
+          </div>
+
+          <div className="signal-board-portal-grid">
+            <label>
+              Release title
+              <input
+                value={portalSettings.title}
+                onChange={(event) => updatePortalSetting('title', event.target.value)}
+                placeholder="Release title"
+              />
+            </label>
+
+            <label>
+              Release type
+              <select
+                value={portalSettings.releaseType}
+                onChange={(event) => updatePortalSetting('releaseType', event.target.value)}
+              >
+                <option value="single">Single</option>
+                <option value="ep">EP</option>
+                <option value="album">Album</option>
+                <option value="campaign">Campaign</option>
+              </select>
+            </label>
+
+            <label>
+              Status
+              <select
+                value={portalSettings.status}
+                onChange={(event) => updatePortalSetting('status', event.target.value)}
+              >
+                <option value="draft">Draft</option>
+                <option value="active">Active</option>
+                <option value="released">Released</option>
+                <option value="archived">Archived</option>
+              </select>
+            </label>
+
+            <label>
+              Visibility
+              <select
+                value={portalSettings.visibility}
+                onChange={(event) => updatePortalSetting('visibility', event.target.value)}
+              >
+                <option value="private">Private</option>
+                <option value="unlisted">Unlisted</option>
+                <option value="public">Public</option>
+              </select>
+            </label>
+
+            <label>
+              Current focus
+              <input
+                value={portalSettings.currentFocus}
+                onChange={(event) => updatePortalSetting('currentFocus', event.target.value)}
+                placeholder="Lead single / front door"
+              />
+            </label>
+
+            <label>
+              Second focus
+              <input
+                value={portalSettings.secondFocus}
+                onChange={(event) => updatePortalSetting('secondFocus', event.target.value)}
+                placeholder="Contrast signal"
+              />
+            </label>
+
+            <label>
+              Drop date
+              <input
+                type="date"
+                value={portalSettings.fullDropDate}
+                onChange={(event) => updatePortalSetting('fullDropDate', event.target.value)}
+              />
+            </label>
+
+            <label className="signal-board-portal-wide">
+              One-line summary
+              <input
+                value={portalSettings.oneLineSummary}
+                onChange={(event) => updatePortalSetting('oneLineSummary', event.target.value)}
+                placeholder="The public-facing one-line promise of this release world."
+              />
+            </label>
+
+            <label className="signal-board-portal-wide">
+              Story
+              <textarea
+                value={portalSettings.story}
+                onChange={(event) => updatePortalSetting('story', event.target.value)}
+                placeholder="Write the release-world story that should appear on the portal."
+                rows={5}
+              />
+            </label>
+          </div>
+
+          <div className="signal-board-portal-actions">
+            <p>{portalMessage}</p>
+            <div>
+              <Link href={`/releases/${slug}`}>Open Release Page</Link>
+              <button
+                type="button"
+                onClick={handleSavePortalSettings}
+                disabled={isUpdatingPortal || !releaseWorldId}
+              >
+                {isUpdatingPortal ? 'Saving Portal...' : 'Save Portal Settings'}
+              </button>
+            </div>
           </div>
         </div>
       </section>
