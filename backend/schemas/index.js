@@ -161,6 +161,29 @@ const typeDefs = gql`
     lastOpenedAt: String
   }
 
+  type ReleaseTrack {
+    id: ID!
+    ownerId: String!
+    releaseWorldId: ID!
+    title: String!
+    slug: String!
+    trackNumber: Int!
+    role: String!
+    status: String!
+    bpm: Int
+    keySignature: String
+    mood: String
+    hook: String
+    notes: String
+    audioUrl: String
+    isFocusTrack: Boolean!
+    isSecondFocus: Boolean!
+    isPublic: Boolean!
+    createdAt: String
+    updatedAt: String
+    lastOpenedAt: String
+  }
+
   type BoardArtifact {
     id: ID!
     ownerId: String!
@@ -231,6 +254,41 @@ const typeDefs = gql`
     fullDropDate: String
   }
 
+  input ReleaseTrackInput {
+    releaseWorldId: ID!
+    title: String!
+    slug: String
+    trackNumber: Int
+    role: String
+    status: String
+    bpm: Int
+    keySignature: String
+    mood: String
+    hook: String
+    notes: String
+    audioUrl: String
+    isFocusTrack: Boolean
+    isSecondFocus: Boolean
+    isPublic: Boolean
+  }
+
+  input UpdateReleaseTrackInput {
+    title: String
+    slug: String
+    trackNumber: Int
+    role: String
+    status: String
+    bpm: Int
+    keySignature: String
+    mood: String
+    hook: String
+    notes: String
+    audioUrl: String
+    isFocusTrack: Boolean
+    isSecondFocus: Boolean
+    isPublic: Boolean
+  }
+
   input BoardArtifactInput {
     id: ID
     kind: String!
@@ -282,6 +340,8 @@ const typeDefs = gql`
     myReleaseWorlds: [ReleaseWorld!]!
     getMyReleaseWorld(id: ID!): ReleaseWorld
     getMyReleaseWorldBySlug(slug: String!): ReleaseWorld
+    getReleaseTracks(releaseWorldId: ID!): [ReleaseTrack!]!
+    getReleaseTrack(id: ID!): ReleaseTrack
     getBoardArtifacts(releaseWorldId: ID!): [BoardArtifact!]!
   }
 
@@ -348,6 +408,15 @@ const typeDefs = gql`
     createReleaseWorld(input: ReleaseWorldInput!): ReleaseWorld!
     updateReleaseWorld(id: ID!, input: UpdateReleaseWorldInput!): ReleaseWorld!
     archiveReleaseWorld(id: ID!): ReleaseWorld!
+
+    createReleaseTrack(input: ReleaseTrackInput!): ReleaseTrack!
+    updateReleaseTrack(id: ID!, input: UpdateReleaseTrackInput!): ReleaseTrack!
+    deleteReleaseTrack(id: ID!): ReleaseTrack
+    reorderReleaseTracks(
+      releaseWorldId: ID!
+      orderedTrackIds: [ID!]!
+    ): [ReleaseTrack!]!
+
     saveBoardArtifacts(
       releaseWorldId: ID!
       artifacts: [BoardArtifactInput!]!

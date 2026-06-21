@@ -8,11 +8,77 @@ const Ritual = require("../models/Rituals");
 const CreativeProfile = require("../models/CreativeProfile");
 const ReleaseWorld = require("../models/ReleaseWorld");
 const BoardArtifact = require("../models/BoardArtifact");
+const ReleaseTrack = require("../models/ReleaseTrack");
 
 function normalizeSlug(slug) {
     return String(slug || "")
         .trim()
         .toLowerCase();
+}
+
+function slugifyTitle(title) {
+    return String(title || "")
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+}
+
+function normalizeTrackSlug(inputSlug, title) {
+    const fallback = slugifyTitle(title);
+    return normalizeSlug(inputSlug || fallback);
+}
+
+async function getOwnedReleaseWorld(releaseWorldId, userId) {
+    return await ReleaseWorld.findOne({
+        _id: releaseWorldId,
+        ownerId: userId,
+    });
+}
+
+async function syncReleaseWorldFocusFromTrack(track, userId) {
+    if (!track) return;
+
+    const update = {
+        lastOpenedAt: new Date(),
+    };
+
+    if (track.isFocusTrack) {
+        update.currentFocus = track.title;
+
+        await ReleaseTrack.updateMany(
+            {
+                ownerId: userId,
+                releaseWorldId: track.releaseWorldId,
+                _id: { $ne: track._id },
+            },
+            { isFocusTrack: false }
+        );
+    }
+
+    if (track.isSecondFocus) {
+        update.secondFocus = track.title;
+
+        await ReleaseTrack.updateMany(
+            {
+                ownerId: userId,
+                releaseWorldId: track.releaseWorldId,
+                _id: { $ne: track._id },
+            },
+            { isSecondFocus: false }
+        );
+    }
+
+    if (track.isFocusTrack || track.isSecondFocus) {
+        await ReleaseWorld.findOneAndUpdate(
+            {
+                _id: track.releaseWorldId,
+                ownerId: userId,
+            },
+            update,
+            { new: true }
+        );
+    }
 }
 
 module.exports = {
@@ -149,6 +215,40 @@ module.exports = {
             }
 
             return releaseWorld;
+        },
+
+        getReleaseTracks: async (_, { releaseWorldId }, { user }) => {
+            if (!user) throw new Error("Unauthorized: Please sign in.");
+
+            const releaseWorld = await getOwnedReleaseWorld(releaseWorldId, user.id);
+
+            if (!releaseWorld) {
+                throw new Error("Release world not found.");
+            }
+
+            return await ReleaseTrack.find({
+                ownerId: user.id,
+                releaseWorldId,
+            }).sort({
+                trackNumber: 1,
+                createdAt: 1,
+            });
+        },
+
+        getReleaseTrack: async (_, { id }, { user }) => {
+            if (!user) throw new Error("Unauthorized: Please sign in.");
+
+            const track = await ReleaseTrack.findOne({
+                _id: id,
+                ownerId: user.id,
+            });
+
+            if (track) {
+                track.lastOpenedAt = new Date();
+                await track.save();
+            }
+
+            return track;
         },
 
         getBoardArtifacts: async (_, { releaseWorldId }, { user }) => {
@@ -636,6 +736,187 @@ module.exports = {
                 { status: "archived" },
                 { new: true }
             );
+        },
+
+        createReleaseTrack: async (_, { input }, { user }) => {
+            if (!user) throw new Error("Unauthorized: Please sign in.");
+
+            const releaseWorld = await getOwnedReleaseWorld(input.releaseWorldId, user.id);
+
+            if (!releaseWorld) {
+                throw new Error("Release world not found.");
+            }
+
+            const existingTracksCount = await ReleaseTrack.countDocuments({
+                ownerId: user.id,
+                releaseWorldId: input.releaseWorldId,
+            });
+
+            const trackNumber = input.trackNumber || existingTracksCount + 1;
+            const slug = normalizeTrackSlug(input.slug, input.title);
+
+            const track = await ReleaseTrack.create({
+                ownerId: user.id,
+                releaseWorldId: releaseWorld._id,
+                title: input.title,
+                slug,
+                trackNumber,
+                role: input.role || "unknown",
+                status: input.status || "idea",
+                bpm: input.bpm || null,
+                keySignature: input.keySignature || "",
+                mood: input.mood || "",
+                hook: input.hook || "",
+                notes: input.notes || "",
+                audioUrl: input.audioUrl || "",
+                isFocusTrack: input.isFocusTrack || false,
+                isSecondFocus: input.isSecondFocus || false,
+                isPublic: input.isPublic || false,
+                lastOpenedAt: new Date(),
+            });
+
+            await syncReleaseWorldFocusFromTrack(track, user.id);
+
+            releaseWorld.lastOpenedAt = new Date();
+            await releaseWorld.save();
+
+            return track;
+        },
+
+        updateReleaseTrack: async (_, { id, input }, { user }) => {
+            if (!user) throw new Error("Unauthorized: Please sign in.");
+
+            const existingTrack = await ReleaseTrack.findOne({
+                _id: id,
+                ownerId: user.id,
+            });
+
+            if (!existingTrack) {
+                throw new Error("Release track not found.");
+            }
+
+            const releaseWorld = await getOwnedReleaseWorld(existingTrack.releaseWorldId, user.id);
+
+            if (!releaseWorld) {
+                throw new Error("Release world not found.");
+            }
+
+            const update = {
+                ...input,
+                lastOpenedAt: new Date(),
+            };
+
+            if (input.slug !== undefined || input.title !== undefined) {
+                update.slug = normalizeTrackSlug(
+                    input.slug,
+                    input.title || existingTrack.title
+                );
+            }
+
+            if (input.bpm === undefined) {
+                delete update.bpm;
+            }
+
+            const updatedTrack = await ReleaseTrack.findOneAndUpdate(
+                {
+                    _id: id,
+                    ownerId: user.id,
+                },
+                update,
+                { new: true }
+            );
+
+            await syncReleaseWorldFocusFromTrack(updatedTrack, user.id);
+
+            releaseWorld.lastOpenedAt = new Date();
+            await releaseWorld.save();
+
+            return updatedTrack;
+        },
+
+        deleteReleaseTrack: async (_, { id }, { user }) => {
+            if (!user) throw new Error("Unauthorized: Please sign in.");
+
+            const track = await ReleaseTrack.findOne({
+                _id: id,
+                ownerId: user.id,
+            });
+
+            if (!track) {
+                throw new Error("Release track not found.");
+            }
+
+            const releaseWorld = await getOwnedReleaseWorld(track.releaseWorldId, user.id);
+
+            if (!releaseWorld) {
+                throw new Error("Release world not found.");
+            }
+
+            const deletedTrack = await ReleaseTrack.findOneAndDelete({
+                _id: id,
+                ownerId: user.id,
+            });
+
+            if (deletedTrack?.isFocusTrack) {
+                releaseWorld.currentFocus = "";
+            }
+
+            if (deletedTrack?.isSecondFocus) {
+                releaseWorld.secondFocus = "";
+            }
+
+            releaseWorld.lastOpenedAt = new Date();
+            await releaseWorld.save();
+
+            return deletedTrack;
+        },
+
+        reorderReleaseTracks: async (_, { releaseWorldId, orderedTrackIds }, { user }) => {
+            if (!user) throw new Error("Unauthorized: Please sign in.");
+
+            const releaseWorld = await getOwnedReleaseWorld(releaseWorldId, user.id);
+
+            if (!releaseWorld) {
+                throw new Error("Release world not found.");
+            }
+
+            const tracks = await ReleaseTrack.find({
+                ownerId: user.id,
+                releaseWorldId,
+                _id: { $in: orderedTrackIds },
+            });
+
+            if (tracks.length !== orderedTrackIds.length) {
+                throw new Error("One or more tracks could not be found.");
+            }
+
+            await Promise.all(
+                orderedTrackIds.map((trackId, index) =>
+                    ReleaseTrack.findOneAndUpdate(
+                        {
+                            _id: trackId,
+                            ownerId: user.id,
+                            releaseWorldId,
+                        },
+                        {
+                            trackNumber: index + 1,
+                            lastOpenedAt: new Date(),
+                        },
+                        { new: true }
+                    )
+                )
+            );
+
+            releaseWorld.lastOpenedAt = new Date();
+            await releaseWorld.save();
+
+            return await ReleaseTrack.find({
+                ownerId: user.id,
+                releaseWorldId,
+            }).sort({
+                trackNumber: 1,
+                createdAt: 1,
+            });
         },
 
         saveBoardArtifacts: async (_, { releaseWorldId, artifacts }, { user }) => {
