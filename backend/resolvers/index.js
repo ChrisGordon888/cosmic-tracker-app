@@ -9,6 +9,12 @@ const CreativeProfile = require("../models/CreativeProfile");
 const ReleaseWorld = require("../models/ReleaseWorld");
 const BoardArtifact = require("../models/BoardArtifact");
 
+function normalizeSlug(slug) {
+    return String(slug || "")
+        .trim()
+        .toLowerCase();
+}
+
 module.exports = {
     Query: {
         hello: () => "Hello Cosmic Tracker 🌙",
@@ -118,6 +124,22 @@ module.exports = {
 
             const releaseWorld = await ReleaseWorld.findOne({
                 _id: id,
+                ownerId: user.id,
+            });
+
+            if (releaseWorld) {
+                releaseWorld.lastOpenedAt = new Date();
+                await releaseWorld.save();
+            }
+
+            return releaseWorld;
+        },
+
+        getMyReleaseWorldBySlug: async (_, { slug }, { user }) => {
+            if (!user) throw new Error("Unauthorized: Please sign in.");
+
+            const releaseWorld = await ReleaseWorld.findOne({
+                slug: normalizeSlug(slug),
                 ownerId: user.id,
             });
 
@@ -554,6 +576,7 @@ module.exports = {
 
             return await CreativeProfile.create({
                 ...input,
+                slug: normalizeSlug(input.slug),
                 ownerId: user.id,
             });
         },
@@ -572,6 +595,7 @@ module.exports = {
 
             return await ReleaseWorld.create({
                 ...input,
+                slug: normalizeSlug(input.slug),
                 ownerId: user.id,
                 creativeProfileId: profile._id,
                 fullDropDate: input.fullDropDate ? new Date(input.fullDropDate) : null,
@@ -586,6 +610,10 @@ module.exports = {
                 ...input,
                 lastOpenedAt: new Date(),
             };
+
+            if (input.slug !== undefined) {
+                update.slug = normalizeSlug(input.slug);
+            }
 
             if (input.fullDropDate !== undefined) {
                 update.fullDropDate = input.fullDropDate
@@ -627,7 +655,11 @@ module.exports = {
                 releaseWorldId,
             });
 
-            if (!artifacts.length) return [];
+            if (!artifacts.length) {
+                releaseWorld.lastOpenedAt = new Date();
+                await releaseWorld.save();
+                return [];
+            }
 
             const docs = await BoardArtifact.insertMany(
                 artifacts.map((artifact) => ({

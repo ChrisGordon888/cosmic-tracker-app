@@ -281,6 +281,7 @@ const typeDefs = gql`
     myCreativeProfiles: [CreativeProfile!]!
     myReleaseWorlds: [ReleaseWorld!]!
     getMyReleaseWorld(id: ID!): ReleaseWorld
+    getMyReleaseWorldBySlug(slug: String!): ReleaseWorld
     getBoardArtifacts(releaseWorldId: ID!): [BoardArtifact!]!
   }
 
