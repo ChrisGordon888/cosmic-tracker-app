@@ -2961,3 +2961,86 @@
     min-height: 720px !important;
   }
 }
+
+/* ===================================
+   SIGNAL BOARD PANEL / INSPECTOR ALIGNMENT POLISH
+   Append after signalBoard.horizontal-tabs.css.
+   Goal: make the right tool panel share the same vertical box as the board + selected artifact inspector.
+   =================================== */
+
+@media (min-width: 1081px) {
+  .signal-board-workspace {
+    align-items: stretch !important;
+  }
+
+  .signal-board-canvas-zone {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    align-content: stretch;
+    min-height: calc(100vh - 8.45rem);
+  }
+
+  .signal-board-frame-scroll {
+    min-height: 0;
+  }
+
+  .signal-board-frame-compact {
+    min-height: calc(100vh - 14.85rem) !important;
+  }
+
+  .signal-board-inspector-bar {
+    min-height: 6.15rem;
+    margin-top: 0.72rem;
+    align-self: end;
+  }
+
+  .signal-board-work-panel {
+    height: calc(100vh - 8.45rem);
+    min-height: calc(100vh - 8.45rem);
+    max-height: calc(100vh - 8.45rem);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .signal-board-panel-section {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .signal-board-panel-scroll,
+  .signal-board-track-manager-body,
+  .signal-board-portal-grid,
+  .signal-board-signal-composer,
+  .signal-board-style-panel {
+    min-height: 0;
+  }
+
+  .signal-board-track-list,
+  .signal-board-panel-section > .signal-board-track-list {
+    max-height: 15rem;
+    overflow: auto;
+    padding-right: 0.2rem;
+  }
+
+  .signal-board-panel-actions {
+    margin-top: auto;
+    padding-top: 0.85rem;
+  }
+}
+
+@media (min-width: 1321px) {
+  .signal-board-frame-compact {
+    min-height: calc(100vh - 14.35rem) !important;
+  }
+}
+
+@media (max-width: 1080px) {
+  .signal-board-work-panel {
+    height: auto;
+    min-height: 0;
+    max-height: none;
+  }
+}
