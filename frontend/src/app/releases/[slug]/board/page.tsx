@@ -105,6 +105,96 @@ const UPDATE_RELEASE_WORLD = gql`
   }
 `;
 
+const GET_RELEASE_TRACKS = gql`
+  query GetReleaseTracks($releaseWorldId: ID!) {
+    getReleaseTracks(releaseWorldId: $releaseWorldId) {
+      id
+      title
+      slug
+      trackNumber
+      role
+      status
+      bpm
+      keySignature
+      mood
+      hook
+      notes
+      audioUrl
+      isFocusTrack
+      isSecondFocus
+      isPublic
+      createdAt
+      updatedAt
+      lastOpenedAt
+    }
+  }
+`;
+
+const CREATE_RELEASE_TRACK = gql`
+  mutation CreateReleaseTrack($input: ReleaseTrackInput!) {
+    createReleaseTrack(input: $input) {
+      id
+      title
+      slug
+      trackNumber
+      role
+      status
+      bpm
+      keySignature
+      mood
+      hook
+      notes
+      audioUrl
+      isFocusTrack
+      isSecondFocus
+      isPublic
+      createdAt
+      updatedAt
+      lastOpenedAt
+    }
+  }
+`;
+
+const UPDATE_RELEASE_TRACK = gql`
+  mutation UpdateReleaseTrack($id: ID!, $input: UpdateReleaseTrackInput!) {
+    updateReleaseTrack(id: $id, input: $input) {
+      id
+      title
+      slug
+      trackNumber
+      role
+      status
+      bpm
+      keySignature
+      mood
+      hook
+      notes
+      audioUrl
+      isFocusTrack
+      isSecondFocus
+      isPublic
+      createdAt
+      updatedAt
+      lastOpenedAt
+    }
+  }
+`;
+
+const DELETE_RELEASE_TRACK = gql`
+  mutation DeleteReleaseTrack($id: ID!) {
+    deleteReleaseTrack(id: $id) {
+      id
+      title
+      slug
+      trackNumber
+      role
+      status
+      isFocusTrack
+      isSecondFocus
+    }
+  }
+`;
+
 type ArtifactKind =
   | 'center'
   | 'realm'
@@ -138,6 +228,51 @@ interface ReleaseWorld {
   fullDropDate?: string | null;
   updatedAt?: string | null;
   lastOpenedAt?: string | null;
+}
+
+
+interface ReleaseTrack {
+  id: string;
+  title: string;
+  slug: string;
+  trackNumber: number;
+  role: string;
+  status: string;
+  bpm?: number | null;
+  keySignature?: string | null;
+  mood?: string | null;
+  hook?: string | null;
+  notes?: string | null;
+  audioUrl?: string | null;
+  isFocusTrack: boolean;
+  isSecondFocus: boolean;
+  isPublic: boolean;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+  lastOpenedAt?: string | null;
+}
+
+interface TrackForm {
+  title: string;
+  trackNumber: string;
+  role: string;
+  status: string;
+  bpm: string;
+  keySignature: string;
+  mood: string;
+  hook: string;
+  notes: string;
+  audioUrl: string;
+  isFocusTrack: boolean;
+  isSecondFocus: boolean;
+  isPublic: boolean;
+}
+
+interface HookTargetOption {
+  slug: string;
+  title: string;
+  meta: string;
+  kind: 'project' | 'track' | 'visual' | 'rollout' | 'portal';
 }
 
 interface PortalSettings {
@@ -218,6 +353,30 @@ const sizeOptions: Array<{ value: ArtifactSize; label: string }> = [
 
 const layerOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
+const trackRoleOptions = [
+  { value: 'unknown', label: 'Unknown' },
+  { value: 'intro', label: 'Intro' },
+  { value: 'lead-single', label: 'Lead Single' },
+  { value: 'second-single', label: 'Second Single' },
+  { value: 'focus-track', label: 'Focus Track' },
+  { value: 'deep-cut', label: 'Deep Cut' },
+  { value: 'interlude', label: 'Interlude' },
+  { value: 'outro', label: 'Outro' },
+  { value: 'bonus', label: 'Bonus' },
+];
+
+const trackStatusOptions = [
+  { value: 'idea', label: 'Idea' },
+  { value: 'writing', label: 'Writing' },
+  { value: 'demo', label: 'Demo' },
+  { value: 'recording', label: 'Recording' },
+  { value: 'mixing', label: 'Mixing' },
+  { value: 'mastered', label: 'Mastered' },
+  { value: 'released', label: 'Released' },
+  { value: 'archived', label: 'Archived' },
+];
+
+
 function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
 }
@@ -267,6 +426,120 @@ function getProjectFocusOptions(releaseWorld?: ReleaseWorld | null) {
 
 function getTrackTitle(slug: string, releaseWorld?: ReleaseWorld | null) {
   return getProjectFocusOptions(releaseWorld).find((track) => track.slug === slug)?.title ?? 'Project Hook';
+}
+
+function getEmptyTrackForm(nextTrackNumber = 1): TrackForm {
+  return {
+    title: '',
+    trackNumber: String(nextTrackNumber),
+    role: 'unknown',
+    status: 'idea',
+    bpm: '',
+    keySignature: '',
+    mood: '',
+    hook: '',
+    notes: '',
+    audioUrl: '',
+    isFocusTrack: false,
+    isSecondFocus: false,
+    isPublic: false,
+  };
+}
+
+function getTrackFormFromReleaseTrack(track: ReleaseTrack): TrackForm {
+  return {
+    title: track.title ?? '',
+    trackNumber: String(track.trackNumber ?? 1),
+    role: track.role ?? 'unknown',
+    status: track.status ?? 'idea',
+    bpm: track.bpm ? String(track.bpm) : '',
+    keySignature: track.keySignature ?? '',
+    mood: track.mood ?? '',
+    hook: track.hook ?? '',
+    notes: track.notes ?? '',
+    audioUrl: track.audioUrl ?? '',
+    isFocusTrack: Boolean(track.isFocusTrack),
+    isSecondFocus: Boolean(track.isSecondFocus),
+    isPublic: Boolean(track.isPublic),
+  };
+}
+
+function getTrackInputFromForm(form: TrackForm) {
+  const bpmValue = form.bpm.trim() ? Number(form.bpm) : null;
+
+  return {
+    title: form.title.trim(),
+    trackNumber: form.trackNumber.trim() ? Number(form.trackNumber) : undefined,
+    role: form.role,
+    status: form.status,
+    bpm: Number.isFinite(bpmValue) ? bpmValue : null,
+    keySignature: form.keySignature.trim(),
+    mood: form.mood.trim(),
+    hook: form.hook.trim(),
+    notes: form.notes.trim(),
+    audioUrl: form.audioUrl.trim(),
+    isFocusTrack: form.isFocusTrack,
+    isSecondFocus: form.isSecondFocus,
+    isPublic: form.isPublic,
+  };
+}
+
+function getHookTargetOptions(releaseWorld?: ReleaseWorld | null, releaseTracks: ReleaseTrack[] = []): HookTargetOption[] {
+  const options: HookTargetOption[] = [
+    {
+      slug: 'project-hook',
+      title: 'Whole Project',
+      meta: 'World-level signal',
+      kind: 'project',
+    },
+  ];
+
+  releaseTracks.forEach((track) => {
+    options.push({
+      slug: track.slug,
+      title: `Track ${String(track.trackNumber).padStart(2, '0')} — ${track.title}`,
+      meta: track.role || 'Track',
+      kind: 'track',
+    });
+  });
+
+  if (releaseTracks.length === 0) {
+    getProjectFocusOptions(releaseWorld).forEach((track) => {
+      options.push({
+        slug: track.slug,
+        title: track.title,
+        meta: 'Focus signal',
+        kind: 'track',
+      });
+    });
+  }
+
+  options.push(
+    {
+      slug: 'visual-world',
+      title: 'Visual World',
+      meta: 'Artwork / clips / palette',
+      kind: 'visual',
+    },
+    {
+      slug: 'rollout',
+      title: 'Rollout',
+      meta: 'Campaign beat',
+      kind: 'rollout',
+    },
+    {
+      slug: 'portal',
+      title: 'Release Portal',
+      meta: 'Public page idea',
+      kind: 'portal',
+    }
+  );
+
+  return options;
+}
+
+function getHookTargetTitle(slug: string, options: HookTargetOption[]) {
+  return options.find((option) => option.slug === slug)?.title ?? 'Whole Project';
 }
 
 function getInitialArtifacts(
@@ -663,6 +936,10 @@ export default function DynamicReleaseSignalBoardPage() {
   const [noteTitle, setNoteTitle] = useState('');
   const [noteBody, setNoteBody] = useState('');
 
+  const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
+  const [trackForm, setTrackForm] = useState<TrackForm>(() => getEmptyTrackForm(1));
+  const [trackMessage, setTrackMessage] = useState('Tracks load from this release world. Add songs here, then attach hooks below.');
+
   const [portalSettings, setPortalSettings] = useState<PortalSettings>(() =>
     getPortalSettingsFromReleaseWorld(null)
   );
@@ -682,8 +959,6 @@ export default function DynamicReleaseSignalBoardPage() {
   const releaseWorld = releaseData?.getMyReleaseWorldBySlug as ReleaseWorld | null | undefined;
   const releaseWorldId = releaseWorld?.id;
   const releaseTitle = releaseWorld?.title ?? 'Release World';
-  const focusOptions = useMemo(() => getProjectFocusOptions(releaseWorld), [releaseWorld]);
-
   const {
     data: boardData,
     loading: boardLoading,
@@ -697,14 +972,67 @@ export default function DynamicReleaseSignalBoardPage() {
     fetchPolicy: 'cache-and-network',
   });
 
+  const {
+    data: trackData,
+    loading: tracksLoading,
+    error: tracksError,
+    refetch: refetchReleaseTracks,
+  } = useQuery(GET_RELEASE_TRACKS, {
+    variables: {
+      releaseWorldId,
+    },
+    skip: !releaseWorldId,
+    fetchPolicy: 'cache-and-network',
+  });
+
+  const releaseTracks = useMemo(
+    () => ((trackData?.getReleaseTracks ?? []) as ReleaseTrack[]),
+    [trackData]
+  );
+
+  const hookTargetOptions = useMemo(
+    () => getHookTargetOptions(releaseWorld, releaseTracks),
+    [releaseWorld, releaseTracks]
+  );
+
+  const selectedTrack = useMemo(
+    () => releaseTracks.find((track) => track.id === selectedTrackId) ?? null,
+    [releaseTracks, selectedTrackId]
+  );
+
   const [saveBoardArtifacts, { loading: isSaving }] = useMutation(SAVE_BOARD_ARTIFACTS);
   const [updateReleaseWorld, { loading: isUpdatingPortal }] = useMutation(UPDATE_RELEASE_WORLD);
+  const [createReleaseTrack, { loading: isCreatingTrack }] = useMutation(CREATE_RELEASE_TRACK);
+  const [updateReleaseTrack, { loading: isUpdatingTrack }] = useMutation(UPDATE_RELEASE_TRACK);
+  const [deleteReleaseTrack, { loading: isDeletingTrack }] = useMutation(DELETE_RELEASE_TRACK);
 
   useEffect(() => {
-    if (!focusOptions.some((track) => track.slug === selectedTrackSlug)) {
-      setSelectedTrackSlug(focusOptions[0]?.slug ?? 'project-hook');
+    if (!hookTargetOptions.some((target) => target.slug === selectedTrackSlug)) {
+      setSelectedTrackSlug(hookTargetOptions[0]?.slug ?? 'project-hook');
     }
-  }, [focusOptions, selectedTrackSlug]);
+  }, [hookTargetOptions, selectedTrackSlug]);
+
+  useEffect(() => {
+    if (!releaseWorldId) return;
+
+    if (!selectedTrackId && releaseTracks.length > 0) {
+      const firstTrack = releaseTracks[0];
+      setSelectedTrackId(firstTrack.id);
+      setTrackForm(getTrackFormFromReleaseTrack(firstTrack));
+      setTrackMessage(`Loaded ${releaseTracks.length} track${releaseTracks.length === 1 ? '' : 's'} from MongoDB.`);
+      return;
+    }
+
+    if (selectedTrack) {
+      setTrackForm(getTrackFormFromReleaseTrack(selectedTrack));
+      return;
+    }
+
+    if (releaseTracks.length === 0) {
+      setTrackForm(getEmptyTrackForm(1));
+      setTrackMessage('No tracks yet. Add the first song for this release world.');
+    }
+  }, [releaseWorldId, releaseTracks, selectedTrack, selectedTrackId]);
 
   useEffect(() => {
     if (!releaseWorld) return;
@@ -816,13 +1144,121 @@ export default function DynamicReleaseSignalBoardPage() {
 
   const hookCounts = useMemo(
     () =>
-      focusOptions.map((track) => ({
-        slug: track.slug,
-        title: track.title,
-        count: hookArtifacts.filter((artifact) => artifact.connectedTrackSlug === track.slug).length,
+      hookTargetOptions.map((target) => ({
+        slug: target.slug,
+        title: target.title,
+        meta: target.meta,
+        count: hookArtifacts.filter((artifact) => artifact.connectedTrackSlug === target.slug).length,
       })),
-    [focusOptions, hookArtifacts]
+    [hookTargetOptions, hookArtifacts]
   );
+
+  function getNextTrackNumber() {
+    const highestTrackNumber = releaseTracks.reduce(
+      (highest, track) => Math.max(highest, track.trackNumber ?? 0),
+      0
+    );
+
+    return highestTrackNumber + 1;
+  }
+
+  function updateTrackForm<K extends keyof TrackForm>(key: K, value: TrackForm[K]) {
+    setTrackForm((current) => ({
+      ...current,
+      [key]: value,
+    }));
+    setTrackMessage('Unsaved track changes. Save Track to update the song layer.');
+  }
+
+  function handleSelectTrack(track: ReleaseTrack) {
+    setSelectedTrackId(track.id);
+    setTrackForm(getTrackFormFromReleaseTrack(track));
+    setTrackMessage(`Editing Track ${String(track.trackNumber).padStart(2, '0')} — ${track.title}.`);
+  }
+
+  function handleNewTrack() {
+    setSelectedTrackId(null);
+    setTrackForm(getEmptyTrackForm(getNextTrackNumber()));
+    setTrackMessage('Creating a new track for this release world.');
+  }
+
+  async function handleSaveTrack() {
+    if (!releaseWorldId) {
+      setTrackMessage('Track save failed: release world could not be found.');
+      return;
+    }
+
+    if (!trackForm.title.trim()) {
+      setTrackMessage('Track save failed: title is required.');
+      return;
+    }
+
+    try {
+      setTrackMessage(selectedTrackId ? 'Updating track in MongoDB...' : 'Creating track in MongoDB...');
+
+      const input = getTrackInputFromForm(trackForm);
+      const result = selectedTrackId
+        ? await updateReleaseTrack({
+            variables: {
+              id: selectedTrackId,
+              input,
+            },
+          })
+        : await createReleaseTrack({
+            variables: {
+              input: {
+                releaseWorldId,
+                ...input,
+              },
+            },
+          });
+
+      const savedTrack = (selectedTrackId
+        ? result.data?.updateReleaseTrack
+        : result.data?.createReleaseTrack) as ReleaseTrack | undefined;
+
+      await refetchReleaseTracks();
+      await refetchReleaseWorld();
+
+      if (savedTrack) {
+        setSelectedTrackId(savedTrack.id);
+        setTrackForm(getTrackFormFromReleaseTrack(savedTrack));
+        setTrackMessage(`Track saved: ${savedTrack.title}. Focus fields sync to the release portal when selected.`);
+      } else {
+        setTrackMessage('Track saved, but no track was returned.');
+      }
+    } catch (trackError) {
+      const message = trackError instanceof Error ? trackError.message : 'Unknown track save error.';
+      setTrackMessage(`Track save failed: ${message}`);
+    }
+  }
+
+  async function handleDeleteTrack() {
+    if (!selectedTrackId) {
+      setTrackMessage('Select a track before deleting.');
+      return;
+    }
+
+    try {
+      const trackTitle = selectedTrack?.title ?? 'Selected track';
+      setTrackMessage(`Deleting ${trackTitle}...`);
+
+      await deleteReleaseTrack({
+        variables: {
+          id: selectedTrackId,
+        },
+      });
+
+      setSelectedTrackId(null);
+      setTrackForm(getEmptyTrackForm(Math.max(getNextTrackNumber() - 1, 1)));
+      await refetchReleaseTracks();
+      await refetchReleaseWorld();
+      setTrackMessage(`${trackTitle} deleted from this release world.`);
+    } catch (trackError) {
+      const message = trackError instanceof Error ? trackError.message : 'Unknown track delete error.';
+      setTrackMessage(`Track delete failed: ${message}`);
+    }
+  }
 
   function updatePortalSetting<K extends keyof PortalSettings>(key: K, value: PortalSettings[K]) {
     setPortalSettings((current) => ({
@@ -865,8 +1301,8 @@ export default function DynamicReleaseSignalBoardPage() {
     const cleanDescription = hookDescription.trim();
     if (!cleanTitle && !cleanDescription) return;
 
-    const trackTitle = getTrackTitle(selectedTrackSlug, releaseWorld);
-    const matchingTrackIndex = focusOptions.findIndex((track) => track.slug === selectedTrackSlug);
+    const trackTitle = getHookTargetTitle(selectedTrackSlug, hookTargetOptions);
+    const matchingTrackIndex = hookTargetOptions.findIndex((target) => target.slug === selectedTrackSlug);
     const id = makeId('hook');
 
     setArtifacts((current) => [
@@ -1325,7 +1761,7 @@ export default function DynamicReleaseSignalBoardPage() {
 
           <div className="signal-board-toolbox-card">
             <p className="signal-board-panel-kicker">Theme Map</p>
-            <h2>Hooks by focus</h2>
+            <h2>Hooks by target</h2>
             <div className="signal-board-theme-map">
               {hookCounts.map((track) => (
                 <div key={track.slug}>
@@ -1333,6 +1769,210 @@ export default function DynamicReleaseSignalBoardPage() {
                   <strong>{track.count}</strong>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="signal-board-section-divider signal-board-section-divider-tracks">
+          <div>
+            <p className="signal-board-panel-kicker">Track Manager</p>
+            <h2>Song layer</h2>
+          </div>
+          <p>Add songs to this release world. Hooks and artifacts can attach to these tracks below.</p>
+        </div>
+
+        <div className="signal-board-track-manager">
+          <div className="signal-board-track-list-card">
+            <div className="signal-board-track-card-header">
+              <div>
+                <p className="signal-board-panel-kicker">Release Tracks</p>
+                <h2>{releaseTracks.length} song{releaseTracks.length === 1 ? '' : 's'}</h2>
+              </div>
+              <button type="button" onClick={handleNewTrack}>
+                New Track
+              </button>
+            </div>
+
+            {tracksError && <p className="signal-board-track-message">Track load error: {tracksError.message}</p>}
+            {tracksLoading && <p className="signal-board-track-message">Loading tracks...</p>}
+
+            <div className="signal-board-track-list">
+              {releaseTracks.length > 0 ? (
+                releaseTracks.map((track) => (
+                  <button
+                    key={track.id}
+                    type="button"
+                    className={track.id === selectedTrackId ? 'is-active' : ''}
+                    onClick={() => handleSelectTrack(track)}
+                  >
+                    <span>{String(track.trackNumber).padStart(2, '0')}</span>
+                    <strong>{track.title}</strong>
+                    <em>
+                      {track.role} · {track.status}
+                      {track.isFocusTrack ? ' · Focus' : ''}
+                      {track.isSecondFocus ? ' · Second' : ''}
+                    </em>
+                  </button>
+                ))
+              ) : (
+                <div className="signal-board-track-empty">
+                  <strong>No tracks yet</strong>
+                  <p>Create the first song for this release world, then attach hooks to it.</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="signal-board-track-editor-card">
+            <div className="signal-board-track-card-header">
+              <div>
+                <p className="signal-board-panel-kicker">Track Editor</p>
+                <h2>{selectedTrack ? selectedTrack.title : 'New song'}</h2>
+              </div>
+              {selectedTrack && (
+                <button type="button" className="signal-board-track-delete" onClick={handleDeleteTrack} disabled={isDeletingTrack}>
+                  {isDeletingTrack ? 'Deleting...' : 'Delete'}
+                </button>
+              )}
+            </div>
+
+            <div className="signal-board-track-form-grid">
+              <label className="signal-board-track-wide">
+                Track title
+                <input
+                  value={trackForm.title}
+                  onChange={(event) => updateTrackForm('title', event.target.value)}
+                  placeholder="Song title"
+                />
+              </label>
+
+              <label>
+                Number
+                <input
+                  type="number"
+                  min="1"
+                  value={trackForm.trackNumber}
+                  onChange={(event) => updateTrackForm('trackNumber', event.target.value)}
+                />
+              </label>
+
+              <label>
+                Role
+                <select value={trackForm.role} onChange={(event) => updateTrackForm('role', event.target.value)}>
+                  {trackRoleOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label>
+                Status
+                <select value={trackForm.status} onChange={(event) => updateTrackForm('status', event.target.value)}>
+                  {trackStatusOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label>
+                BPM
+                <input
+                  type="number"
+                  min="1"
+                  value={trackForm.bpm}
+                  onChange={(event) => updateTrackForm('bpm', event.target.value)}
+                  placeholder="140"
+                />
+              </label>
+
+              <label>
+                Key
+                <input
+                  value={trackForm.keySignature}
+                  onChange={(event) => updateTrackForm('keySignature', event.target.value)}
+                  placeholder="F minor"
+                />
+              </label>
+
+              <label>
+                Mood
+                <input
+                  value={trackForm.mood}
+                  onChange={(event) => updateTrackForm('mood', event.target.value)}
+                  placeholder="blue chrome night drive"
+                />
+              </label>
+
+              <label className="signal-board-track-wide">
+                Hook
+                <textarea
+                  value={trackForm.hook}
+                  onChange={(event) => updateTrackForm('hook', event.target.value)}
+                  placeholder="Main song hook, line, or emotional signal..."
+                  rows={3}
+                />
+              </label>
+
+              <label className="signal-board-track-wide">
+                Notes
+                <textarea
+                  value={trackForm.notes}
+                  onChange={(event) => updateTrackForm('notes', event.target.value)}
+                  placeholder="Production notes, lyrical direction, world notes, mix status..."
+                  rows={3}
+                />
+              </label>
+
+              <label className="signal-board-track-wide">
+                Audio URL
+                <input
+                  value={trackForm.audioUrl}
+                  onChange={(event) => updateTrackForm('audioUrl', event.target.value)}
+                  placeholder="Optional audio/demo link"
+                />
+              </label>
+            </div>
+
+            <div className="signal-board-track-toggles">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={trackForm.isFocusTrack}
+                  onChange={(event) => updateTrackForm('isFocusTrack', event.target.checked)}
+                />
+                Focus Track
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={trackForm.isSecondFocus}
+                  onChange={(event) => updateTrackForm('isSecondFocus', event.target.checked)}
+                />
+                Second Focus
+              </label>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={trackForm.isPublic}
+                  onChange={(event) => updateTrackForm('isPublic', event.target.checked)}
+                />
+                Public on portal later
+              </label>
+            </div>
+
+            <div className="signal-board-track-actions">
+              <p>{trackMessage}</p>
+              <button
+                type="button"
+                onClick={handleSaveTrack}
+                disabled={isCreatingTrack || isUpdatingTrack || !releaseWorldId || !trackForm.title.trim()}
+              >
+                {isCreatingTrack || isUpdatingTrack ? 'Saving Track...' : selectedTrack ? 'Save Track' : 'Create Track'}
+              </button>
             </div>
           </div>
         </div>
@@ -1351,11 +1991,11 @@ export default function DynamicReleaseSignalBoardPage() {
             <h2>Add project hooks</h2>
 
             <label>
-              Focus
+              Attach to
               <select value={selectedTrackSlug} onChange={(event) => setSelectedTrackSlug(event.target.value)}>
-                {focusOptions.map((track) => (
-                  <option key={track.slug} value={track.slug}>
-                    {track.title}
+                {hookTargetOptions.map((target) => (
+                  <option key={target.slug} value={target.slug}>
+                    {target.title}
                   </option>
                 ))}
               </select>
