@@ -2963,33 +2963,48 @@
 }
 
 /* ===================================
-   BOTTOM DOCK LOCK-IN
-   Fixes the right-panel/selected-artifact alignment without forcing panel height.
-   The workspace now reads as:
-   Header tabs
-   Board + active panel
-   Full-width selected artifact dock
+   BALANCED WORKSPACE FINAL POLISH
+   Fixes the bottom gap by keeping the selected artifact inspector
+   inside the board column instead of forcing a full-width dock.
    =================================== */
 
 @media (min-width: 1081px) {
   .signal-board-workspace {
-    grid-template-columns: minmax(0, 1fr) minmax(360px, 440px) !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(390px, 500px) !important;
     grid-template-areas:
       "workspace-header workspace-header"
-      "board panel"
-      "dock dock" !important;
+      "canvas panel" !important;
     align-items: start !important;
-    gap: 0.85rem !important;
+    gap: 0.9rem !important;
+    width: min(100%, 1740px) !important;
+    margin: 0 auto !important;
+    padding: 0.85rem clamp(0.75rem, 2vw, 1.15rem) 1.05rem !important;
+  }
+
+  .signal-board-workspace-header {
+    grid-area: workspace-header;
   }
 
   .signal-board-canvas-zone {
-    display: contents !important;
+    grid-area: canvas;
+    display: grid !important;
+    grid-template-columns: 1fr;
+    gap: 0.72rem;
+    min-width: 0;
+    align-self: start;
   }
 
   .signal-board-frame-scroll {
-    grid-area: board;
+    width: 100%;
     min-width: 0;
-    align-self: start;
+    border-radius: 1.45rem;
+  }
+
+  .signal-board-frame-compact {
+    min-height: clamp(560px, calc(100vh - 17.2rem), 760px) !important;
+    max-height: none !important;
+    border-radius: 1.45rem !important;
   }
 
   .signal-board-work-panel {
@@ -2997,60 +3012,66 @@
     position: sticky;
     top: 5.85rem;
     align-self: start;
-    max-height: calc(100vh - 6.75rem);
-    overflow: auto;
-    margin-top: 0 !important;
-  }
-
-  .signal-board-inspector-bar {
-    grid-area: dock;
-    position: relative !important;
-    bottom: auto !important;
-    z-index: 20;
-    width: 100%;
+    min-height: 0;
+    max-height: clamp(620px, calc(100vh - 7.2rem), 920px);
+    overflow-y: auto;
     margin: 0 !important;
-    display: grid;
-    grid-template-columns: minmax(240px, 1.35fr) repeat(3, minmax(160px, 0.55fr));
-    align-items: end;
     border-radius: 1.35rem;
   }
 
-  .signal-board-frame-compact {
-    min-height: calc(100vh - 16rem) !important;
-    max-height: none !important;
+  .signal-board-inspector-bar {
+    position: relative !important;
+    bottom: auto !important;
+    z-index: 3;
+    width: 100%;
+    margin: 0 !important;
+    display: grid;
+    grid-template-columns: minmax(230px, 1.25fr) repeat(3, minmax(150px, 0.55fr));
+    align-items: end;
+    gap: 0.8rem;
+    border-radius: 1.25rem;
+    padding: 0.85rem 1rem;
+  }
+
+  .signal-board-inspector-bar > div:first-child {
+    min-width: 0;
+  }
+
+  .signal-board-inspector-bar label {
+    margin: 0;
+  }
+}
+
+@media (min-width: 1321px) {
+  .signal-board-workspace-header {
+    grid-template-columns: minmax(260px, 0.8fr) minmax(520px, 1.2fr) minmax(320px, 0.8fr);
   }
 }
 
 @media (min-width: 1081px) and (max-width: 1320px) {
   .signal-board-workspace {
-    grid-template-columns: minmax(0, 1fr) minmax(340px, 410px) !important;
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 430px) !important;
   }
 
   .signal-board-inspector-bar {
-    grid-template-columns: minmax(220px, 1fr) repeat(3, minmax(130px, 0.48fr));
+    grid-template-columns: minmax(200px, 1fr) repeat(3, minmax(120px, 0.45fr));
   }
 }
 
 @media (max-width: 1080px) {
-  .signal-board-workspace {
-    grid-template-areas:
-      "workspace-header"
-      "canvas"
-      "dock"
-      "panel" !important;
-  }
-
   .signal-board-canvas-zone {
-    grid-area: canvas;
     display: grid !important;
     gap: 0.75rem;
   }
 
   .signal-board-inspector-bar {
-    grid-area: dock;
     position: relative !important;
     bottom: auto !important;
     margin-top: 0 !important;
+  }
+
+  .signal-board-work-panel {
+    overflow: visible;
   }
 }
 
