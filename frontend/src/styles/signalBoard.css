@@ -2963,84 +2963,99 @@
 }
 
 /* ===================================
-   SIGNAL BOARD PANEL / INSPECTOR ALIGNMENT POLISH
-   Append after signalBoard.horizontal-tabs.css.
-   Goal: make the right tool panel share the same vertical box as the board + selected artifact inspector.
+   BOTTOM DOCK LOCK-IN
+   Fixes the right-panel/selected-artifact alignment without forcing panel height.
+   The workspace now reads as:
+   Header tabs
+   Board + active panel
+   Full-width selected artifact dock
    =================================== */
 
 @media (min-width: 1081px) {
   .signal-board-workspace {
-    align-items: stretch !important;
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 440px) !important;
+    grid-template-areas:
+      "workspace-header workspace-header"
+      "board panel"
+      "dock dock" !important;
+    align-items: start !important;
+    gap: 0.85rem !important;
   }
 
   .signal-board-canvas-zone {
-    display: grid;
-    grid-template-rows: auto 1fr;
-    align-content: stretch;
-    min-height: calc(100vh - 8.45rem);
+    display: contents !important;
   }
 
   .signal-board-frame-scroll {
-    min-height: 0;
-  }
-
-  .signal-board-frame-compact {
-    min-height: calc(100vh - 14.85rem) !important;
-  }
-
-  .signal-board-inspector-bar {
-    min-height: 6.15rem;
-    margin-top: 0.72rem;
-    align-self: end;
+    grid-area: board;
+    min-width: 0;
+    align-self: start;
   }
 
   .signal-board-work-panel {
-    height: calc(100vh - 8.45rem);
-    min-height: calc(100vh - 8.45rem);
-    max-height: calc(100vh - 8.45rem);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  .signal-board-panel-section {
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .signal-board-panel-scroll,
-  .signal-board-track-manager-body,
-  .signal-board-portal-grid,
-  .signal-board-signal-composer,
-  .signal-board-style-panel {
-    min-height: 0;
-  }
-
-  .signal-board-track-list,
-  .signal-board-panel-section > .signal-board-track-list {
-    max-height: 15rem;
+    grid-area: panel;
+    position: sticky;
+    top: 5.85rem;
+    align-self: start;
+    max-height: calc(100vh - 6.75rem);
     overflow: auto;
-    padding-right: 0.2rem;
+    margin-top: 0 !important;
   }
 
-  .signal-board-panel-actions {
-    margin-top: auto;
-    padding-top: 0.85rem;
+  .signal-board-inspector-bar {
+    grid-area: dock;
+    position: relative !important;
+    bottom: auto !important;
+    z-index: 20;
+    width: 100%;
+    margin: 0 !important;
+    display: grid;
+    grid-template-columns: minmax(240px, 1.35fr) repeat(3, minmax(160px, 0.55fr));
+    align-items: end;
+    border-radius: 1.35rem;
+  }
+
+  .signal-board-frame-compact {
+    min-height: calc(100vh - 16rem) !important;
+    max-height: none !important;
   }
 }
 
-@media (min-width: 1321px) {
-  .signal-board-frame-compact {
-    min-height: calc(100vh - 14.35rem) !important;
+@media (min-width: 1081px) and (max-width: 1320px) {
+  .signal-board-workspace {
+    grid-template-columns: minmax(0, 1fr) minmax(340px, 410px) !important;
+  }
+
+  .signal-board-inspector-bar {
+    grid-template-columns: minmax(220px, 1fr) repeat(3, minmax(130px, 0.48fr));
   }
 }
 
 @media (max-width: 1080px) {
-  .signal-board-work-panel {
-    height: auto;
-    min-height: 0;
-    max-height: none;
+  .signal-board-workspace {
+    grid-template-areas:
+      "workspace-header"
+      "canvas"
+      "dock"
+      "panel" !important;
+  }
+
+  .signal-board-canvas-zone {
+    grid-area: canvas;
+    display: grid !important;
+    gap: 0.75rem;
+  }
+
+  .signal-board-inspector-bar {
+    grid-area: dock;
+    position: relative !important;
+    bottom: auto !important;
+    margin-top: 0 !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .signal-board-inspector-bar {
+    grid-template-columns: 1fr !important;
   }
 }
