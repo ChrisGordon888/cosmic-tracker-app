@@ -1547,9 +1547,7 @@
     .signal-board-section-divider > p {
         max-width: 680px;
     }
-}
-
-/* ===================================
+}/* ===================================
    TRACK MANAGER PANEL
    Song-aware release world layer.
    Append to src/styles/signalBoard.css
@@ -1834,4 +1832,602 @@
     .signal-board-track-toggles {
         display: grid;
     }
+}
+
+/* ===================================
+   COMPACT WORKSPACE REDESIGN
+   Board stays visible; tools move into rail + side panel.
+   Full replacement file may keep older styles above as shared primitives.
+   =================================== */
+
+.signal-board-shell-compact {
+  min-height: 100vh;
+  padding: 0;
+}
+
+.signal-board-command-bar {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  display: grid;
+  grid-template-columns: minmax(190px, 0.72fr) minmax(260px, 1.4fr) minmax(220px, 0.8fr);
+  align-items: center;
+  gap: 0.85rem;
+  width: min(100%, 1680px);
+  margin: 0 auto;
+  padding: 0.72rem clamp(0.75rem, 2vw, 1.15rem);
+  border-bottom: 1px solid rgba(214, 224, 235, 0.11);
+  background:
+    radial-gradient(circle at 14% 0%, rgba(126, 211, 255, 0.12), transparent 24rem),
+    linear-gradient(180deg, rgba(3, 5, 10, 0.94), rgba(3, 5, 10, 0.78));
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(18px) saturate(140%);
+}
+
+.signal-board-command-left,
+.signal-board-command-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.signal-board-command-actions {
+  justify-content: flex-end;
+}
+
+.signal-board-command-left a,
+.signal-board-command-actions button,
+.signal-board-panel-heading a,
+.signal-board-panel-heading button,
+.signal-board-panel-actions button,
+.signal-board-danger-mini button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.35rem;
+  border: 1px solid rgba(238, 243, 250, 0.13);
+  border-radius: 999px;
+  padding: 0.58rem 0.82rem;
+  color: rgba(238, 243, 250, 0.86);
+  background: rgba(255, 255, 255, 0.046);
+  cursor: pointer;
+  text-decoration: none;
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, opacity 0.2s ease;
+}
+
+.signal-board-command-actions button:last-child,
+.signal-board-panel-actions button {
+  color: rgba(5, 10, 16, 0.95);
+  border-color: rgba(126, 211, 255, 0.48);
+  background: linear-gradient(135deg, rgba(243, 231, 209, 0.96), rgba(126, 211, 255, 0.92));
+}
+
+.signal-board-command-left a:hover,
+.signal-board-command-actions button:hover,
+.signal-board-panel-heading a:hover,
+.signal-board-panel-heading button:hover,
+.signal-board-panel-actions button:hover,
+.signal-board-danger-mini button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(126, 211, 255, 0.36);
+  background: rgba(126, 211, 255, 0.09);
+}
+
+.signal-board-panel-actions button:hover {
+  background: linear-gradient(135deg, rgba(243, 231, 209, 1), rgba(126, 211, 255, 1));
+}
+
+.signal-board-command-actions button:disabled,
+.signal-board-panel-actions button:disabled,
+.signal-board-danger-mini button:disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.signal-board-command-title {
+  min-width: 0;
+  text-align: center;
+}
+
+.signal-board-command-title h1 {
+  margin: 0.14rem 0 0.1rem;
+  overflow: hidden;
+  color: rgba(245, 247, 252, 0.96);
+  font-family: 'Orbitron', Arial, sans-serif;
+  font-size: clamp(1rem, 2.2vw, 1.55rem);
+  letter-spacing: 0.08em;
+  line-height: 1.08;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.signal-board-command-title span {
+  display: block;
+  overflow: hidden;
+  color: rgba(224, 231, 240, 0.58);
+  font-size: 0.72rem;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.signal-board-workspace {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr) minmax(340px, 420px);
+  gap: 0.85rem;
+  width: min(100%, 1680px);
+  margin: 0 auto;
+  padding: 0.85rem clamp(0.75rem, 2vw, 1.15rem) 1.25rem;
+}
+
+.signal-board-side-rail {
+  position: sticky;
+  top: 4.6rem;
+  align-self: start;
+  display: grid;
+  gap: 0.55rem;
+  border: 1px solid rgba(214, 224, 235, 0.11);
+  border-radius: 1.45rem;
+  padding: 0.55rem;
+  background:
+    radial-gradient(circle at top, rgba(126, 211, 255, 0.09), transparent 14rem),
+    rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 18px 40px rgba(0,0,0,0.18);
+  backdrop-filter: blur(14px) saturate(130%);
+}
+
+.signal-board-side-rail button {
+  display: grid;
+  place-items: center;
+  gap: 0.32rem;
+  min-height: 4.35rem;
+  border: 1px solid rgba(238, 243, 250, 0.1);
+  border-radius: 1.05rem;
+  color: rgba(238, 243, 250, 0.72);
+  background: rgba(255, 255, 255, 0.035);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.signal-board-side-rail button span {
+  color: rgba(126, 211, 255, 0.78);
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.signal-board-side-rail button:hover,
+.signal-board-side-rail button.is-active {
+  transform: translateY(-1px);
+  border-color: rgba(126, 211, 255, 0.34);
+  color: rgba(245, 247, 252, 0.96);
+  background:
+    radial-gradient(circle at 30% 0%, rgba(126, 211, 255, 0.16), transparent 70%),
+    rgba(126, 211, 255, 0.07);
+}
+
+.signal-board-canvas-zone {
+  min-width: 0;
+}
+
+.signal-board-canvas-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.65rem;
+}
+
+.signal-board-canvas-header h2 {
+  margin: 0.26rem 0 0;
+  color: rgba(245, 247, 252, 0.96);
+  font-family: 'Orbitron', Arial, sans-serif;
+  font-size: clamp(1.1rem, 2.4vw, 1.8rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.signal-board-canvas-header > p {
+  max-width: 520px;
+  margin: 0;
+  color: rgba(224, 231, 240, 0.55);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  text-align: right;
+}
+
+.signal-board-frame-compact {
+  min-height: calc(100vh - 13.2rem);
+  border-radius: 1.5rem;
+}
+
+.signal-board-work-panel {
+  position: sticky;
+  top: 4.6rem;
+  align-self: start;
+  max-height: calc(100vh - 5.6rem);
+  overflow: auto;
+  border: 1px solid rgba(214, 224, 235, 0.13);
+  border-radius: 1.45rem;
+  padding: 0.85rem;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(126, 211, 255, 0.10), transparent 22rem),
+    radial-gradient(circle at 100% 20%, rgba(168, 132, 255, 0.08), transparent 18rem),
+    linear-gradient(145deg, rgba(255,255,255,0.068), rgba(7, 11, 20, 0.78));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 22px 54px rgba(0,0,0,0.24);
+  backdrop-filter: blur(16px) saturate(132%);
+}
+
+.signal-board-work-panel::-webkit-scrollbar {
+  width: 8px;
+}
+
+.signal-board-work-panel::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.04);
+  border-radius: 999px;
+}
+
+.signal-board-work-panel::-webkit-scrollbar-thumb {
+  background: rgba(126,211,255,0.28);
+  border-radius: 999px;
+}
+
+.signal-board-panel-section {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.signal-board-panel-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.signal-board-panel-heading h2 {
+  margin: 0.26rem 0 0;
+  color: rgba(245, 247, 252, 0.96);
+  font-family: 'Orbitron', Arial, sans-serif;
+  font-size: clamp(1rem, 2.2vw, 1.35rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.signal-board-panel-message,
+.signal-board-empty-note {
+  margin: 0;
+  border: 1px solid rgba(238, 243, 250, 0.08);
+  border-radius: 1rem;
+  padding: 0.72rem 0.78rem;
+  color: rgba(224, 231, 240, 0.66);
+  background: rgba(255,255,255,0.035);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.signal-board-track-strip {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.signal-board-track-strip button {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.14rem 0.65rem;
+  align-items: center;
+  width: 100%;
+  border: 1px solid rgba(238, 243, 250, 0.1);
+  border-radius: 1rem;
+  padding: 0.68rem 0.72rem;
+  color: rgba(238, 243, 250, 0.84);
+  background: rgba(255,255,255,0.035);
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.signal-board-track-strip button:hover,
+.signal-board-track-strip button.is-active {
+  transform: translateY(-1px);
+  border-color: rgba(126, 211, 255, 0.32);
+  background: rgba(126, 211, 255, 0.07);
+}
+
+.signal-board-track-strip button span {
+  grid-row: span 2;
+  display: grid;
+  place-items: center;
+  width: 2.3rem;
+  height: 2.3rem;
+  border: 1px solid rgba(126, 211, 255, 0.22);
+  border-radius: 0.8rem;
+  color: rgba(126, 211, 255, 0.88);
+  background: rgba(126, 211, 255, 0.07);
+  font-family: 'Orbitron', Arial, sans-serif;
+  font-size: 0.76rem;
+}
+
+.signal-board-track-strip button strong {
+  overflow: hidden;
+  color: rgba(245, 247, 252, 0.94);
+  font-family: 'Orbitron', Arial, sans-serif;
+  font-size: 0.82rem;
+  letter-spacing: 0.05em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.signal-board-track-strip button em {
+  color: rgba(224, 231, 240, 0.55);
+  font-size: 0.68rem;
+  font-style: normal;
+  line-height: 1.35;
+}
+
+.signal-board-track-form-grid-compact,
+.signal-board-portal-grid-compact,
+.signal-board-compact-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.signal-board-track-form-grid-compact label,
+.signal-board-portal-grid-compact label,
+.signal-board-toggle-row label,
+.signal-board-inspector-bar label {
+  display: grid;
+  gap: 0.34rem;
+  color: rgba(188, 224, 255, 0.68);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.signal-board-track-form-grid-compact input,
+.signal-board-track-form-grid-compact select,
+.signal-board-track-form-grid-compact textarea,
+.signal-board-portal-grid-compact input,
+.signal-board-portal-grid-compact select,
+.signal-board-portal-grid-compact textarea,
+.signal-board-inspector-bar select {
+  width: 100%;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 0.78rem;
+  padding: 0.66rem;
+  color: rgba(238, 243, 250, 0.92);
+  background: rgba(255,255,255,0.055);
+  outline: none;
+  font: inherit;
+  font-size: 0.78rem;
+  letter-spacing: normal;
+  text-transform: none;
+  resize: vertical;
+}
+
+.signal-board-track-form-grid-compact input:focus,
+.signal-board-track-form-grid-compact select:focus,
+.signal-board-track-form-grid-compact textarea:focus,
+.signal-board-portal-grid-compact input:focus,
+.signal-board-portal-grid-compact select:focus,
+.signal-board-portal-grid-compact textarea:focus,
+.signal-board-inspector-bar select:focus {
+  border-color: rgba(126, 211, 255, 0.42);
+  box-shadow: 0 0 0 3px rgba(126, 211, 255, 0.09);
+}
+
+.signal-board-wide-field,
+.signal-board-portal-wide {
+  grid-column: 1 / -1;
+}
+
+.signal-board-toggle-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.signal-board-toggle-row label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.42rem;
+  min-height: 2.4rem;
+  border: 1px solid rgba(238, 243, 250, 0.1);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.035);
+  color: rgba(238, 243, 250, 0.78);
+}
+
+.signal-board-toggle-row input {
+  accent-color: #7ed3ff;
+}
+
+.signal-board-panel-actions {
+  display: flex;
+  justify-content: stretch;
+}
+
+.signal-board-panel-actions button {
+  width: 100%;
+}
+
+.signal-board-danger-mini {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border: 1px solid rgba(244, 121, 148, 0.16);
+  border-radius: 1rem;
+  padding: 0.72rem;
+  background: rgba(244, 121, 148, 0.055);
+}
+
+.signal-board-danger-mini span {
+  color: rgba(255, 220, 228, 0.78);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.signal-board-danger-mini button {
+  border-color: rgba(244, 121, 148, 0.24);
+  color: rgba(255, 220, 228, 0.92);
+  background: rgba(244, 121, 148, 0.075);
+}
+
+.signal-board-toolbox-card-flat {
+  box-shadow: none;
+}
+
+.signal-board-inspector-bar {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.1fr) repeat(3, minmax(92px, 0.55fr));
+  gap: 0.65rem;
+  align-items: end;
+  margin-top: 0.72rem;
+  border: 1px solid rgba(126, 211, 255, 0.16);
+  border-radius: 1.25rem;
+  padding: 0.72rem;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(126,211,255,0.11), transparent 18rem),
+    rgba(255,255,255,0.045);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 16px 34px rgba(0,0,0,0.18);
+  backdrop-filter: blur(14px) saturate(130%);
+}
+
+.signal-board-inspector-bar strong {
+  display: block;
+  margin: 0.2rem 0 0.05rem;
+  overflow: hidden;
+  color: rgba(245, 247, 252, 0.95);
+  font-family: 'Orbitron', Arial, sans-serif;
+  font-size: 0.88rem;
+  letter-spacing: 0.06em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.signal-board-inspector-bar span {
+  display: block;
+  color: rgba(224, 231, 240, 0.54);
+  font-size: 0.72rem;
+}
+
+@media (max-width: 1320px) {
+  .signal-board-workspace {
+    grid-template-columns: 72px minmax(0, 1fr) minmax(320px, 390px);
+  }
+
+  .signal-board-side-rail button {
+    min-height: 3.9rem;
+    font-size: 0.58rem;
+  }
+}
+
+@media (max-width: 1080px) {
+  .signal-board-command-bar {
+    grid-template-columns: 1fr;
+    position: relative;
+    text-align: center;
+  }
+
+  .signal-board-command-left,
+  .signal-board-command-actions {
+    justify-content: center;
+  }
+
+  .signal-board-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .signal-board-side-rail {
+    position: sticky;
+    top: 0;
+    z-index: 150;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    border-radius: 1.15rem;
+  }
+
+  .signal-board-side-rail button {
+    min-height: 3rem;
+  }
+
+  .signal-board-work-panel {
+    position: relative;
+    top: auto;
+    max-height: none;
+  }
+
+  .signal-board-frame-compact {
+    min-height: 760px;
+  }
+}
+
+@media (max-width: 720px) {
+  .signal-board-command-left,
+  .signal-board-command-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .signal-board-command-left a,
+  .signal-board-command-actions button {
+    width: 100%;
+  }
+
+  .signal-board-canvas-header,
+  .signal-board-panel-heading,
+  .signal-board-inspector-bar,
+  .signal-board-danger-mini {
+    display: grid;
+    text-align: center;
+  }
+
+  .signal-board-canvas-header > p {
+    text-align: center;
+  }
+
+  .signal-board-frame-scroll {
+    margin-inline: -0.75rem;
+    padding-inline: 0.75rem;
+    border-radius: 0;
+  }
+
+  .signal-board-frame-compact {
+    width: 900px;
+    min-width: 900px;
+    min-height: 720px;
+  }
+
+  .signal-board-track-form-grid-compact,
+  .signal-board-portal-grid-compact,
+  .signal-board-compact-grid,
+  .signal-board-toggle-row {
+    grid-template-columns: 1fr;
+  }
+
+  .signal-board-side-rail button {
+    font-size: 0.56rem;
+  }
+
+  .signal-board-side-rail button span {
+    font-size: 0.9rem;
+  }
 }

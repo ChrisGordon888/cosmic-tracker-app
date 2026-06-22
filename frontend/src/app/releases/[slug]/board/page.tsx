@@ -937,6 +937,8 @@ export default function DynamicReleaseSignalBoardPage() {
   const [noteBody, setNoteBody] = useState('');
 
   const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
+  const [isCreatingNewTrack, setIsCreatingNewTrack] = useState(false);
+  const [activePanel, setActivePanel] = useState<'tracks' | 'signals' | 'style' | 'portal'>('tracks');
   const [trackForm, setTrackForm] = useState<TrackForm>(() => getEmptyTrackForm(1));
   const [trackMessage, setTrackMessage] = useState('Tracks load from this release world. Add songs here, then attach hooks below.');
 
@@ -1015,6 +1017,8 @@ export default function DynamicReleaseSignalBoardPage() {
   useEffect(() => {
     if (!releaseWorldId) return;
 
+    if (isCreatingNewTrack) return;
+
     if (!selectedTrackId && releaseTracks.length > 0) {
       const firstTrack = releaseTracks[0];
       setSelectedTrackId(firstTrack.id);
@@ -1032,7 +1036,7 @@ export default function DynamicReleaseSignalBoardPage() {
       setTrackForm(getEmptyTrackForm(1));
       setTrackMessage('No tracks yet. Add the first song for this release world.');
     }
-  }, [releaseWorldId, releaseTracks, selectedTrack, selectedTrackId]);
+  }, [releaseWorldId, releaseTracks, selectedTrack, selectedTrackId, isCreatingNewTrack]);
 
   useEffect(() => {
     if (!releaseWorld) return;
@@ -1171,12 +1175,14 @@ export default function DynamicReleaseSignalBoardPage() {
   }
 
   function handleSelectTrack(track: ReleaseTrack) {
+    setIsCreatingNewTrack(false);
     setSelectedTrackId(track.id);
     setTrackForm(getTrackFormFromReleaseTrack(track));
     setTrackMessage(`Editing Track ${String(track.trackNumber).padStart(2, '0')} — ${track.title}.`);
   }
 
   function handleNewTrack() {
+    setIsCreatingNewTrack(true);
     setSelectedTrackId(null);
     setTrackForm(getEmptyTrackForm(getNextTrackNumber()));
     setTrackMessage('Creating a new track for this release world.');
@@ -1194,10 +1200,11 @@ export default function DynamicReleaseSignalBoardPage() {
     }
 
     try {
-      setTrackMessage(selectedTrackId ? 'Updating track in MongoDB...' : 'Creating track in MongoDB...');
+      const isUpdatingExistingTrack = Boolean(selectedTrackId && !isCreatingNewTrack);
+      setTrackMessage(isUpdatingExistingTrack ? 'Updating track in MongoDB...' : 'Creating track in MongoDB...');
 
       const input = getTrackInputFromForm(trackForm);
-      const result = selectedTrackId
+      const result = isUpdatingExistingTrack
         ? await updateReleaseTrack({
             variables: {
               id: selectedTrackId,
@@ -1213,7 +1220,7 @@ export default function DynamicReleaseSignalBoardPage() {
             },
           });
 
-      const savedTrack = (selectedTrackId
+      const savedTrack = (isUpdatingExistingTrack
         ? result.data?.updateReleaseTrack
         : result.data?.createReleaseTrack) as ReleaseTrack | undefined;
 
@@ -1221,6 +1228,7 @@ export default function DynamicReleaseSignalBoardPage() {
       await refetchReleaseWorld();
 
       if (savedTrack) {
+        setIsCreatingNewTrack(false);
         setSelectedTrackId(savedTrack.id);
         setTrackForm(getTrackFormFromReleaseTrack(savedTrack));
         setTrackMessage(`Track saved: ${savedTrack.title}. Focus fields sync to the release portal when selected.`);
@@ -1239,8 +1247,15 @@ export default function DynamicReleaseSignalBoardPage() {
       return;
     }
 
+    const trackTitle = selectedTrack?.title ?? 'Selected track';
+    const confirmed = window.confirm(`Delete ${trackTitle}? This removes the track from this release world.`);
+
+    if (!confirmed) {
+      setTrackMessage('Delete cancelled.');
+      return;
+    }
+
     try {
-      const trackTitle = selectedTrack?.title ?? 'Selected track';
       setTrackMessage(`Deleting ${trackTitle}...`);
 
       await deleteReleaseTrack({
@@ -1250,6 +1265,7 @@ export default function DynamicReleaseSignalBoardPage() {
       });
 
       setSelectedTrackId(null);
+      setIsCreatingNewTrack(true);
       setTrackForm(getEmptyTrackForm(Math.max(getNextTrackNumber() - 1, 1)));
       await refetchReleaseTracks();
       await refetchReleaseWorld();
@@ -1497,723 +1513,646 @@ export default function DynamicReleaseSignalBoardPage() {
   const cloudMessage = releaseError?.message || boardError?.message || saveMessage;
 
   return (
-    <main className="signal-board-shell">
-      <section className="signal-board-hero">
-        <p className="signal-board-kicker">Release World Board</p>
-        <h1>{releaseWorld?.title ? `${releaseWorld.title} Signal Board` : 'Release Signal Board'}</h1>
-        <p>
-          This board resolves the project from the URL slug, loads its artifacts from MongoDB,
-          and saves changes back to the same release world.
-        </p>
-
-        <div className="signal-board-hero-actions">
-          <nav className="signal-board-switch-links" aria-label="Page navigation">
-            <Link href={`/releases/${slug}`}>Release Page</Link>
-            <Link href="/creator/projects">Project Library</Link>
-          </nav>
-
-          <div className="signal-board-focus-actions" aria-label="Board view controls">
-            <button type="button" onClick={scrollToBoard}>
-              View Board
-            </button>
-            <button type="button" onClick={scrollToControls}>
-              Customize
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <section className="signal-board-stage" aria-label="Main interactive board stage">
-        <div className="signal-board-stage-header">
-          <div>
-            <p className="signal-board-panel-kicker">Main Board</p>
-            <h2>{releaseTitle}</h2>
-          </div>
-          <p>
-            Drag notes directly on the board. Select a note, then scroll below to refine it.
-          </p>
+    <main className="signal-board-shell signal-board-shell-compact">
+      <header className="signal-board-command-bar" aria-label="Signal board command bar">
+        <div className="signal-board-command-left">
+          <Link href="/creator/projects">Project Library</Link>
+          <Link href={`/releases/${slug}`}>Release Page</Link>
         </div>
 
-        <div className="signal-board-frame-scroll" aria-label="Scrollable board area">
-          <section
-            ref={boardRef}
-            className="signal-board-frame"
-            aria-label={`${releaseTitle} signal board`}
+        <div className="signal-board-command-title">
+          <p className="signal-board-panel-kicker">Release World Board</p>
+          <h1>{releaseWorld?.title ? `${releaseWorld.title} Signal Board` : 'Release Signal Board'}</h1>
+          <span>{artifacts.length} artifacts • {releaseTracks.length} tracks • {cloudStatus}</span>
+        </div>
+
+        <div className="signal-board-command-actions">
+          <button type="button" onClick={handleReloadCloudBoard}>
+            Reload
+          </button>
+          <button type="button" onClick={handleSaveToCloud} disabled={isSaving || !releaseWorldId}>
+            {isSaving ? 'Saving...' : 'Save Board'}
+          </button>
+        </div>
+      </header>
+
+      <section className="signal-board-workspace" aria-label="Compact signal board workspace">
+        <aside className="signal-board-side-rail" aria-label="Workspace tools">
+          <button
+            type="button"
+            className={activePanel === 'tracks' ? 'is-active' : ''}
+            onClick={() => setActivePanel('tracks')}
           >
-            <div className="signal-board-frame-glow" />
-            <div className="signal-board-texture" />
-            <div className="signal-board-thread signal-board-thread-a" />
-            <div className="signal-board-thread signal-board-thread-b" />
-            <div className="signal-board-thread signal-board-thread-c" />
-            <div className="signal-board-thread signal-board-thread-d" />
-            <div className="signal-board-thread signal-board-thread-e" />
-
-            {artifacts.map((artifact) => (
-              <BoardArtifactCard
-                key={artifact.id}
-                artifact={artifact}
-                isSelected={artifact.id === selectedArtifactId}
-                onPointerDown={handleArtifactPointerDown}
-                onDelete={deleteArtifact}
-                onLayerNudge={nudgeLayer}
-              />
-            ))}
-          </section>
-        </div>
-
-        <div className="signal-board-stage-footer">
-          <span>{artifacts.length} artifacts loaded</span>
-          <button type="button" onClick={scrollToControls}>
-            Scroll to board workshop
+            <span>♪</span>
+            Tracks
           </button>
-        </div>
-
-        <div className="signal-board-board-save-zone">
-          <div>
-            <p className="signal-board-panel-kicker">Board Save</p>
-            <h2>Save the studio wall</h2>
-            <p>
-              Use this after moving cards, adding hooks, deleting notes, or changing board colors.
-              Portal Settings save separately near the final pass.
-            </p>
-          </div>
-
-          <div className="signal-board-cloud-bar">
-          <div>
-            <span>Mongo status</span>
-            <strong>{cloudStatus}</strong>
-          </div>
-          <p>{cloudMessage}</p>
-          <div className="signal-board-cloud-actions">
-            <button type="button" onClick={handleReloadCloudBoard}>
-              Reload Cloud Board
-            </button>
-            <button type="button" onClick={handleSaveToCloud} disabled={isSaving || !releaseWorldId}>
-              {isSaving ? 'Saving...' : 'Save to Cloud'}
-            </button>
-          </div>
-          </div>
-        </div>
-      </section>
-
-      <section ref={controlsRef} className="signal-board-controls" aria-label="Signal board controls">
-        <div className="signal-board-controls-heading">
-          <div>
-            <p className="signal-board-panel-kicker">Board Workshop</p>
-            <h2>Shape the studio wall</h2>
-          </div>
-          <p>
-            Adjust the generated starter board, edit selected cards, add hooks, and create new artifacts.
-            When the wall feels right, move to the Portal Final Pass below.
-          </p>
-          <button type="button" className="signal-board-return-button" onClick={scrollToBoard}>
-            View Board
+          <button
+            type="button"
+            className={activePanel === 'signals' ? 'is-active' : ''}
+            onClick={() => setActivePanel('signals')}
+          >
+            <span>✎</span>
+            Signals
           </button>
-        </div>
-
-        <div className="signal-board-reset-zone">
-          <div>
-            <p className="signal-board-panel-kicker">Danger zone</p>
-            <strong>Reset the local board</strong>
-            <span>
-              This clears the current local layout and rebuilds the starter board. It will not
-              overwrite MongoDB unless you click Save to Cloud.
-            </span>
-          </div>
-          <button type="button" onClick={resetBoard}>
-            Reset Board
+          <button
+            type="button"
+            className={activePanel === 'style' ? 'is-active' : ''}
+            onClick={() => setActivePanel('style')}
+          >
+            <span>◐</span>
+            Style
           </button>
-        </div>
+          <button
+            type="button"
+            className={activePanel === 'portal' ? 'is-active' : ''}
+            onClick={() => setActivePanel('portal')}
+          >
+            <span>◎</span>
+            Portal
+          </button>
+        </aside>
 
-        <div className="signal-board-control-grid">
-          <div className="signal-board-toolbox-card">
-            <p className="signal-board-panel-kicker">Board Theme</p>
-            <h2>Starter board</h2>
-            <div className="signal-board-style-row" aria-label="Starter board color">
-              {colorOptions.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  className={`signal-board-swatch signal-board-swatch-${option.value} ${
-                    boardColor === option.value ? 'is-active' : ''
-                  }`}
-                  onClick={() => applyStarterBoardColor(option.value)}
-                >
-                  {option.label}
-                </button>
-              ))}
+        <section className="signal-board-canvas-zone" aria-label="Main interactive board stage">
+          <div className="signal-board-canvas-header">
+            <div>
+              <p className="signal-board-panel-kicker">Studio Wall</p>
+              <h2>{releaseTitle}</h2>
             </div>
-            <p className="signal-board-tool-note">
-              Applies to original generated artifacts only. User-added notes keep their own style.
-            </p>
+            <p>{cloudMessage}</p>
           </div>
 
-          <div className="signal-board-toolbox-card signal-board-selected-card">
-            <p className="signal-board-panel-kicker">Selected Artifact</p>
-            <h2>{selectedArtifact?.title ?? 'Click a note'}</h2>
+          <div className="signal-board-frame-scroll" aria-label="Scrollable board area">
+            <section
+              ref={boardRef}
+              className="signal-board-frame signal-board-frame-compact"
+              aria-label={`${releaseTitle} signal board`}
+            >
+              <div className="signal-board-frame-glow" />
+              <div className="signal-board-texture" />
+              <div className="signal-board-thread signal-board-thread-a" />
+              <div className="signal-board-thread signal-board-thread-b" />
+              <div className="signal-board-thread signal-board-thread-c" />
+              <div className="signal-board-thread signal-board-thread-d" />
+              <div className="signal-board-thread signal-board-thread-e" />
 
-            {selectedArtifact ? (
-              <>
-                <label>
-                  Color
-                  <select
-                    value={selectedArtifact.color ?? 'cream'}
-                    onChange={(event) =>
-                      updateArtifact(selectedArtifact.id, {
-                        color: event.target.value as ArtifactColor,
-                      })
-                    }
-                  >
-                    {colorOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <label>
-                  Size
-                  <select
-                    value={selectedArtifact.size ?? 'md'}
-                    onChange={(event) =>
-                      updateArtifact(selectedArtifact.id, {
-                        size: event.target.value as ArtifactSize,
-                      })
-                    }
-                  >
-                    {sizeOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <label>
-                  Layer
-                  <select
-                    value={selectedArtifact.layer ?? 4}
-                    onChange={(event) =>
-                      updateArtifact(selectedArtifact.id, {
-                        layer: Number(event.target.value),
-                      })
-                    }
-                  >
-                    {layerOptions.map((layer) => (
-                      <option key={layer} value={layer}>
-                        Layer {layer}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </>
-            ) : (
-              <p className="signal-board-tool-note">
-                Click any original or custom card to customize it.
-              </p>
-            )}
-          </div>
-
-          <div className="signal-board-toolbox-card">
-            <p className="signal-board-panel-kicker">New Artifact Style</p>
-            <h2>Defaults</h2>
-
-            <div className="signal-board-style-row" aria-label="Sticky note color">
-              {colorOptions.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  className={`signal-board-swatch signal-board-swatch-${option.value} ${
-                    selectedColor === option.value ? 'is-active' : ''
-                  }`}
-                  onClick={() => setSelectedColor(option.value)}
-                >
-                  {option.label}
-                </button>
+              {artifacts.map((artifact) => (
+                <BoardArtifactCard
+                  key={artifact.id}
+                  artifact={artifact}
+                  isSelected={artifact.id === selectedArtifactId}
+                  onPointerDown={handleArtifactPointerDown}
+                  onDelete={deleteArtifact}
+                  onLayerNudge={nudgeLayer}
+                />
               ))}
-            </div>
-
-            <div className="signal-board-size-row" aria-label="Sticky note size">
-              {sizeOptions.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  className={selectedSize === option.value ? 'is-active' : ''}
-                  onClick={() => setSelectedSize(option.value)}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-
-            <label>
-              Layer priority
-              <select value={selectedLayer} onChange={(event) => setSelectedLayer(Number(event.target.value))}>
-                {layerOptions.map((layer) => (
-                  <option key={layer} value={layer}>
-                    Layer {layer}
-                  </option>
-                ))}
-              </select>
-            </label>
+            </section>
           </div>
 
-          <div className="signal-board-toolbox-card">
-            <p className="signal-board-panel-kicker">Theme Map</p>
-            <h2>Hooks by target</h2>
-            <div className="signal-board-theme-map">
-              {hookCounts.map((track) => (
-                <div key={track.slug}>
-                  <span>{track.title}</span>
-                  <strong>{track.count}</strong>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="signal-board-section-divider signal-board-section-divider-tracks">
-          <div>
-            <p className="signal-board-panel-kicker">Track Manager</p>
-            <h2>Song layer</h2>
-          </div>
-          <p>Add songs to this release world. Hooks and artifacts can attach to these tracks below.</p>
-        </div>
-
-        <div className="signal-board-track-manager">
-          <div className="signal-board-track-list-card">
-            <div className="signal-board-track-card-header">
+          {selectedArtifact && (
+            <div className="signal-board-inspector-bar" aria-label="Selected artifact inspector">
               <div>
-                <p className="signal-board-panel-kicker">Release Tracks</p>
-                <h2>{releaseTracks.length} song{releaseTracks.length === 1 ? '' : 's'}</h2>
+                <p className="signal-board-panel-kicker">Selected Artifact</p>
+                <strong>{selectedArtifact.title}</strong>
+                <span>{selectedArtifact.eyebrow || selectedArtifact.kind}</span>
               </div>
-              <button type="button" onClick={handleNewTrack}>
-                New Track
-              </button>
+
+              <label>
+                Color
+                <select
+                  value={selectedArtifact.color ?? 'cream'}
+                  onChange={(event) =>
+                    updateArtifact(selectedArtifact.id, {
+                      color: event.target.value as ArtifactColor,
+                    })
+                  }
+                >
+                  {colorOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label>
+                Size
+                <select
+                  value={selectedArtifact.size ?? 'md'}
+                  onChange={(event) =>
+                    updateArtifact(selectedArtifact.id, {
+                      size: event.target.value as ArtifactSize,
+                    })
+                  }
+                >
+                  {sizeOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label>
+                Layer
+                <select
+                  value={selectedArtifact.layer ?? 4}
+                  onChange={(event) =>
+                    updateArtifact(selectedArtifact.id, {
+                      layer: Number(event.target.value),
+                    })
+                  }
+                >
+                  {layerOptions.map((layer) => (
+                    <option key={layer} value={layer}>
+                      {layer}
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
+          )}
+        </section>
 
-            {tracksError && <p className="signal-board-track-message">Track load error: {tracksError.message}</p>}
-            {tracksLoading && <p className="signal-board-track-message">Loading tracks...</p>}
+        <aside ref={controlsRef} className="signal-board-work-panel" aria-label="Workspace panel">
+          {activePanel === 'tracks' && (
+            <section className="signal-board-panel-section">
+              <div className="signal-board-panel-heading">
+                <div>
+                  <p className="signal-board-panel-kicker">Track Manager</p>
+                  <h2>{isCreatingNewTrack ? 'New track' : selectedTrack ? 'Edit track' : 'Tracks'}</h2>
+                </div>
+                <button type="button" onClick={handleNewTrack}>
+                  Start New
+                </button>
+              </div>
 
-            <div className="signal-board-track-list">
-              {releaseTracks.length > 0 ? (
-                releaseTracks.map((track) => (
+              <p className="signal-board-panel-message">
+                {tracksError?.message || trackMessage}
+              </p>
+
+              <div className="signal-board-track-strip" aria-label="Release tracks">
+                {tracksLoading && <p className="signal-board-empty-note">Loading tracks...</p>}
+                {!tracksLoading && releaseTracks.length === 0 && (
+                  <p className="signal-board-empty-note">No tracks yet. Start New to add the first song.</p>
+                )}
+                {releaseTracks.map((track) => (
                   <button
                     key={track.id}
                     type="button"
-                    className={track.id === selectedTrackId ? 'is-active' : ''}
+                    className={selectedTrackId === track.id && !isCreatingNewTrack ? 'is-active' : ''}
                     onClick={() => handleSelectTrack(track)}
                   >
                     <span>{String(track.trackNumber).padStart(2, '0')}</span>
                     <strong>{track.title}</strong>
                     <em>
-                      {track.role} · {track.status}
-                      {track.isFocusTrack ? ' · Focus' : ''}
-                      {track.isSecondFocus ? ' · Second' : ''}
+                      {track.role}{track.isFocusTrack ? ' • Focus' : ''}{track.isSecondFocus ? ' • Second' : ''}
                     </em>
                   </button>
-                ))
-              ) : (
-                <div className="signal-board-track-empty">
-                  <strong>No tracks yet</strong>
-                  <p>Create the first song for this release world, then attach hooks to it.</p>
+                ))}
+              </div>
+
+              <div className="signal-board-track-form-grid signal-board-track-form-grid-compact">
+                <label className="signal-board-wide-field">
+                  Title
+                  <input
+                    value={trackForm.title}
+                    onChange={(event) => updateTrackForm('title', event.target.value)}
+                    placeholder="Track title"
+                  />
+                </label>
+                <label>
+                  #
+                  <input
+                    type="number"
+                    min="1"
+                    value={trackForm.trackNumber}
+                    onChange={(event) => updateTrackForm('trackNumber', event.target.value)}
+                  />
+                </label>
+                <label>
+                  Role
+                  <select value={trackForm.role} onChange={(event) => updateTrackForm('role', event.target.value)}>
+                    {trackRoleOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Status
+                  <select value={trackForm.status} onChange={(event) => updateTrackForm('status', event.target.value)}>
+                    {trackStatusOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  BPM
+                  <input
+                    type="number"
+                    min="1"
+                    value={trackForm.bpm}
+                    onChange={(event) => updateTrackForm('bpm', event.target.value)}
+                    placeholder="140"
+                  />
+                </label>
+                <label>
+                  Key
+                  <input
+                    value={trackForm.keySignature}
+                    onChange={(event) => updateTrackForm('keySignature', event.target.value)}
+                    placeholder="F minor"
+                  />
+                </label>
+                <label className="signal-board-wide-field">
+                  Mood
+                  <input
+                    value={trackForm.mood}
+                    onChange={(event) => updateTrackForm('mood', event.target.value)}
+                    placeholder="blue chrome night drive"
+                  />
+                </label>
+                <label className="signal-board-wide-field">
+                  Hook
+                  <textarea
+                    value={trackForm.hook}
+                    onChange={(event) => updateTrackForm('hook', event.target.value)}
+                    rows={3}
+                    placeholder="Main hook or signal line"
+                  />
+                </label>
+                <label className="signal-board-wide-field">
+                  Notes
+                  <textarea
+                    value={trackForm.notes}
+                    onChange={(event) => updateTrackForm('notes', event.target.value)}
+                    rows={3}
+                    placeholder="Production notes, story notes, rollout notes..."
+                  />
+                </label>
+                <label className="signal-board-wide-field">
+                  Audio URL
+                  <input
+                    value={trackForm.audioUrl}
+                    onChange={(event) => updateTrackForm('audioUrl', event.target.value)}
+                    placeholder="/audio/song.mp3 or external URL"
+                  />
+                </label>
+              </div>
+
+              <div className="signal-board-toggle-row">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={trackForm.isFocusTrack}
+                    onChange={(event) => updateTrackForm('isFocusTrack', event.target.checked)}
+                  />
+                  Focus
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={trackForm.isSecondFocus}
+                    onChange={(event) => updateTrackForm('isSecondFocus', event.target.checked)}
+                  />
+                  Second
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={trackForm.isPublic}
+                    onChange={(event) => updateTrackForm('isPublic', event.target.checked)}
+                  />
+                  Public
+                </label>
+              </div>
+
+              <div className="signal-board-panel-actions">
+                <button type="button" onClick={handleSaveTrack} disabled={isCreatingTrack || isUpdatingTrack || !releaseWorldId}>
+                  {isCreatingTrack || isUpdatingTrack
+                    ? 'Saving...'
+                    : isCreatingNewTrack || !selectedTrackId
+                      ? 'Create Track'
+                      : 'Update Track'}
+                </button>
+              </div>
+
+              {selectedTrackId && !isCreatingNewTrack && (
+                <div className="signal-board-danger-mini">
+                  <span>Danger zone</span>
+                  <button type="button" onClick={handleDeleteTrack} disabled={isDeletingTrack}>
+                    {isDeletingTrack ? 'Deleting...' : 'Delete Track'}
+                  </button>
                 </div>
               )}
-            </div>
-          </div>
+            </section>
+          )}
 
-          <div className="signal-board-track-editor-card">
-            <div className="signal-board-track-card-header">
-              <div>
-                <p className="signal-board-panel-kicker">Track Editor</p>
-                <h2>{selectedTrack ? selectedTrack.title : 'New song'}</h2>
+          {activePanel === 'signals' && (
+            <section className="signal-board-panel-section">
+              <div className="signal-board-panel-heading">
+                <div>
+                  <p className="signal-board-panel-kicker">Create Signals</p>
+                  <h2>Add to board</h2>
+                </div>
               </div>
-              {selectedTrack && (
-                <button type="button" className="signal-board-track-delete" onClick={handleDeleteTrack} disabled={isDeletingTrack}>
-                  {isDeletingTrack ? 'Deleting...' : 'Delete'}
+
+              <div className="signal-board-compact-grid">
+                <div className="signal-board-toolbox-card signal-board-toolbox-card-flat">
+                  <p className="signal-board-panel-kicker">Hook Lab</p>
+                  <h2>Add hook artifact</h2>
+
+                  <label>
+                    Attach to
+                    <select value={selectedTrackSlug} onChange={(event) => setSelectedTrackSlug(event.target.value)}>
+                      {hookTargetOptions.map((target) => (
+                        <option key={target.slug} value={target.slug}>
+                          {target.title}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label>
+                    Hook title
+                    <input
+                      value={hookTitle}
+                      onChange={(event) => setHookTitle(event.target.value)}
+                      placeholder="Short hook title"
+                    />
+                  </label>
+
+                  <label>
+                    Hook description
+                    <textarea
+                      value={hookDescription}
+                      onChange={(event) => setHookDescription(event.target.value)}
+                      placeholder="Add the full hook, phrase, theme, or lyric..."
+                      rows={4}
+                    />
+                  </label>
+
+                  <button type="button" onClick={addHook}>
+                    Add Hook
+                  </button>
+                </div>
+
+                <div className="signal-board-toolbox-card signal-board-toolbox-card-flat">
+                  <p className="signal-board-panel-kicker">Artifact Drop</p>
+                  <h2>Add custom note</h2>
+
+                  <label>
+                    Tag
+                    <input
+                      value={noteTag}
+                      onChange={(event) => setNoteTag(event.target.value)}
+                      placeholder="Visual idea, Cover note, Symbol..."
+                    />
+                  </label>
+
+                  <label>
+                    Title
+                    <input
+                      value={noteTitle}
+                      onChange={(event) => setNoteTitle(event.target.value)}
+                      placeholder="Short artifact title"
+                    />
+                  </label>
+
+                  <label>
+                    Description
+                    <textarea
+                      value={noteBody}
+                      onChange={(event) => setNoteBody(event.target.value)}
+                      placeholder="Add the actual note, idea, symbol, clip thought, or reminder..."
+                      rows={4}
+                    />
+                  </label>
+
+                  <button type="button" onClick={addNoteArtifact}>
+                    Add Note
+                  </button>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {activePanel === 'style' && (
+            <section className="signal-board-panel-section">
+              <div className="signal-board-panel-heading">
+                <div>
+                  <p className="signal-board-panel-kicker">Style</p>
+                  <h2>Board + new cards</h2>
+                </div>
+                <button type="button" onClick={resetBoard}>
+                  Reset Local
                 </button>
-              )}
-            </div>
+              </div>
 
-            <div className="signal-board-track-form-grid">
-              <label className="signal-board-track-wide">
-                Track title
-                <input
-                  value={trackForm.title}
-                  onChange={(event) => updateTrackForm('title', event.target.value)}
-                  placeholder="Song title"
-                />
-              </label>
+              <div className="signal-board-compact-grid">
+                <div className="signal-board-toolbox-card signal-board-toolbox-card-flat">
+                  <p className="signal-board-panel-kicker">Board Theme</p>
+                  <h2>Starter board</h2>
+                  <div className="signal-board-style-row" aria-label="Starter board color">
+                    {colorOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        className={`signal-board-swatch signal-board-swatch-${option.value} ${
+                          boardColor === option.value ? 'is-active' : ''
+                        }`}
+                        onClick={() => applyStarterBoardColor(option.value)}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="signal-board-tool-note">
+                    Applies to generated starter artifacts only. User-added notes keep their chosen style.
+                  </p>
+                </div>
 
-              <label>
-                Number
-                <input
-                  type="number"
-                  min="1"
-                  value={trackForm.trackNumber}
-                  onChange={(event) => updateTrackForm('trackNumber', event.target.value)}
-                />
-              </label>
+                <div className="signal-board-toolbox-card signal-board-toolbox-card-flat">
+                  <p className="signal-board-panel-kicker">New Card Defaults</p>
+                  <h2>Signal style</h2>
+                  <div className="signal-board-style-row" aria-label="Sticky note color">
+                    {colorOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        className={`signal-board-swatch signal-board-swatch-${option.value} ${
+                          selectedColor === option.value ? 'is-active' : ''
+                        }`}
+                        onClick={() => setSelectedColor(option.value)}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
 
-              <label>
-                Role
-                <select value={trackForm.role} onChange={(event) => updateTrackForm('role', event.target.value)}>
-                  {trackRoleOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
+                  <div className="signal-board-size-row" aria-label="Sticky note size">
+                    {sizeOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        className={selectedSize === option.value ? 'is-active' : ''}
+                        onClick={() => setSelectedSize(option.value)}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
 
-              <label>
-                Status
-                <select value={trackForm.status} onChange={(event) => updateTrackForm('status', event.target.value)}>
-                  {trackStatusOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
+                  <label>
+                    Layer priority
+                    <select value={selectedLayer} onChange={(event) => setSelectedLayer(Number(event.target.value))}>
+                      {layerOptions.map((layer) => (
+                        <option key={layer} value={layer}>
+                          Layer {layer}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
 
-              <label>
-                BPM
-                <input
-                  type="number"
-                  min="1"
-                  value={trackForm.bpm}
-                  onChange={(event) => updateTrackForm('bpm', event.target.value)}
-                  placeholder="140"
-                />
-              </label>
+                <div className="signal-board-toolbox-card signal-board-toolbox-card-flat signal-board-wide-field">
+                  <p className="signal-board-panel-kicker">Signal Map</p>
+                  <h2>Hooks by target</h2>
+                  <div className="signal-board-theme-map">
+                    {hookCounts.map((target) => (
+                      <div key={target.slug}>
+                        <span>{target.title}</span>
+                        <strong>{target.count}</strong>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
 
-              <label>
-                Key
-                <input
-                  value={trackForm.keySignature}
-                  onChange={(event) => updateTrackForm('keySignature', event.target.value)}
-                  placeholder="F minor"
-                />
-              </label>
+          {activePanel === 'portal' && (
+            <section className="signal-board-panel-section">
+              <div className="signal-board-panel-heading">
+                <div>
+                  <p className="signal-board-panel-kicker">Portal Final Pass</p>
+                  <h2>Release page copy</h2>
+                </div>
+                <Link href={`/releases/${slug}`}>Open Page</Link>
+              </div>
 
-              <label>
-                Mood
-                <input
-                  value={trackForm.mood}
-                  onChange={(event) => updateTrackForm('mood', event.target.value)}
-                  placeholder="blue chrome night drive"
-                />
-              </label>
+              <p className="signal-board-panel-message">{portalMessage}</p>
 
-              <label className="signal-board-track-wide">
-                Hook
-                <textarea
-                  value={trackForm.hook}
-                  onChange={(event) => updateTrackForm('hook', event.target.value)}
-                  placeholder="Main song hook, line, or emotional signal..."
-                  rows={3}
-                />
-              </label>
+              <div className="signal-board-portal-grid signal-board-portal-grid-compact">
+                <label>
+                  Release title
+                  <input
+                    value={portalSettings.title}
+                    onChange={(event) => updatePortalSetting('title', event.target.value)}
+                    placeholder="Release title"
+                  />
+                </label>
 
-              <label className="signal-board-track-wide">
-                Notes
-                <textarea
-                  value={trackForm.notes}
-                  onChange={(event) => updateTrackForm('notes', event.target.value)}
-                  placeholder="Production notes, lyrical direction, world notes, mix status..."
-                  rows={3}
-                />
-              </label>
+                <label>
+                  Release type
+                  <select
+                    value={portalSettings.releaseType}
+                    onChange={(event) => updatePortalSetting('releaseType', event.target.value)}
+                  >
+                    <option value="single">Single</option>
+                    <option value="ep">EP</option>
+                    <option value="album">Album</option>
+                    <option value="campaign">Campaign</option>
+                  </select>
+                </label>
 
-              <label className="signal-board-track-wide">
-                Audio URL
-                <input
-                  value={trackForm.audioUrl}
-                  onChange={(event) => updateTrackForm('audioUrl', event.target.value)}
-                  placeholder="Optional audio/demo link"
-                />
-              </label>
-            </div>
+                <label>
+                  Status
+                  <select
+                    value={portalSettings.status}
+                    onChange={(event) => updatePortalSetting('status', event.target.value)}
+                  >
+                    <option value="draft">Draft</option>
+                    <option value="active">Active</option>
+                    <option value="released">Released</option>
+                    <option value="archived">Archived</option>
+                  </select>
+                </label>
 
-            <div className="signal-board-track-toggles">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={trackForm.isFocusTrack}
-                  onChange={(event) => updateTrackForm('isFocusTrack', event.target.checked)}
-                />
-                Focus Track
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={trackForm.isSecondFocus}
-                  onChange={(event) => updateTrackForm('isSecondFocus', event.target.checked)}
-                />
-                Second Focus
-              </label>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={trackForm.isPublic}
-                  onChange={(event) => updateTrackForm('isPublic', event.target.checked)}
-                />
-                Public on portal later
-              </label>
-            </div>
+                <label>
+                  Visibility
+                  <select
+                    value={portalSettings.visibility}
+                    onChange={(event) => updatePortalSetting('visibility', event.target.value)}
+                  >
+                    <option value="private">Private</option>
+                    <option value="unlisted">Unlisted</option>
+                    <option value="public">Public</option>
+                  </select>
+                </label>
 
-            <div className="signal-board-track-actions">
-              <p>{trackMessage}</p>
-              <button
-                type="button"
-                onClick={handleSaveTrack}
-                disabled={isCreatingTrack || isUpdatingTrack || !releaseWorldId || !trackForm.title.trim()}
-              >
-                {isCreatingTrack || isUpdatingTrack ? 'Saving Track...' : selectedTrack ? 'Save Track' : 'Create Track'}
-              </button>
-            </div>
-          </div>
-        </div>
+                <label>
+                  Current focus
+                  <input
+                    value={portalSettings.currentFocus}
+                    onChange={(event) => updatePortalSetting('currentFocus', event.target.value)}
+                    placeholder="Lead single / front door"
+                  />
+                </label>
 
-        <div className="signal-board-section-divider">
-          <div>
-            <p className="signal-board-panel-kicker">Create Signals</p>
-            <h2>Add hooks and artifacts</h2>
-          </div>
-          <p>Capture raw material for the world. These are board artifacts first; later they can feed the portal.</p>
-        </div>
+                <label>
+                  Second focus
+                  <input
+                    value={portalSettings.secondFocus}
+                    onChange={(event) => updatePortalSetting('secondFocus', event.target.value)}
+                    placeholder="Contrast signal"
+                  />
+                </label>
 
-        <div className="signal-board-create-grid">
-          <div className="signal-board-toolbox-card">
-            <p className="signal-board-panel-kicker">Hook Lab</p>
-            <h2>Add project hooks</h2>
+                <label>
+                  Drop date
+                  <input
+                    type="date"
+                    value={portalSettings.fullDropDate}
+                    onChange={(event) => updatePortalSetting('fullDropDate', event.target.value)}
+                  />
+                </label>
 
-            <label>
-              Attach to
-              <select value={selectedTrackSlug} onChange={(event) => setSelectedTrackSlug(event.target.value)}>
-                {hookTargetOptions.map((target) => (
-                  <option key={target.slug} value={target.slug}>
-                    {target.title}
-                  </option>
-                ))}
-              </select>
-            </label>
+                <label className="signal-board-portal-wide">
+                  One-line summary
+                  <input
+                    value={portalSettings.oneLineSummary}
+                    onChange={(event) => updatePortalSetting('oneLineSummary', event.target.value)}
+                    placeholder="The public-facing one-line promise of this release world."
+                  />
+                </label>
 
-            <label>
-              Hook title
-              <input
-                value={hookTitle}
-                onChange={(event) => setHookTitle(event.target.value)}
-                placeholder="Short hook title"
-              />
-            </label>
+                <label className="signal-board-portal-wide">
+                  Story
+                  <textarea
+                    value={portalSettings.story}
+                    onChange={(event) => updatePortalSetting('story', event.target.value)}
+                    placeholder="Write the release-world story that should appear on the portal."
+                    rows={5}
+                  />
+                </label>
+              </div>
 
-            <label>
-              Hook description
-              <textarea
-                value={hookDescription}
-                onChange={(event) => setHookDescription(event.target.value)}
-                placeholder="Add the full hook, phrase, theme, or lyric..."
-                rows={4}
-              />
-            </label>
-
-            <button type="button" onClick={addHook}>
-              Add Hook Artifact
-            </button>
-          </div>
-
-          <div className="signal-board-toolbox-card">
-            <p className="signal-board-panel-kicker">Artifact Drop</p>
-            <h2>Add a custom note</h2>
-
-            <label>
-              Tag
-              <input
-                value={noteTag}
-                onChange={(event) => setNoteTag(event.target.value)}
-                placeholder="Visual idea, Cover note, Symbol..."
-              />
-            </label>
-
-            <label>
-              Title
-              <input
-                value={noteTitle}
-                onChange={(event) => setNoteTitle(event.target.value)}
-                placeholder="Short artifact title"
-              />
-            </label>
-
-            <label>
-              Description
-              <textarea
-                value={noteBody}
-                onChange={(event) => setNoteBody(event.target.value)}
-                placeholder="Add the actual note, idea, symbol, clip thought, or reminder..."
-                rows={4}
-              />
-            </label>
-
-            <button type="button" onClick={addNoteArtifact}>
-              Add Note Artifact
-            </button>
-          </div>
-        </div>
-
-        <div className="signal-board-section-divider signal-board-section-divider-portal">
-          <div>
-            <p className="signal-board-panel-kicker">Portal Final Pass</p>
-            <h2>Print the world to the release page</h2>
-          </div>
-          <p>Shape the public-facing portal after the board has enough signal. This updates the dynamic release page.</p>
-        </div>
-
-        <div className="signal-board-portal-settings">
-          <div className="signal-board-portal-settings-header">
-            <div>
-              <p className="signal-board-panel-kicker">Portal Settings</p>
-              <h2>Final release page copy</h2>
-              <p>
-                Use this as the final pass after the board has signal. Save these fields,
-                then open the Release Page to see the public-facing world update.
-              </p>
-            </div>
-
-            <div className="signal-board-portal-status">
-              <span>ReleaseWorld</span>
-              <strong>{releaseWorld?.title ?? 'Loading project...'}</strong>
-              <em>{portalMessage}</em>
-            </div>
-          </div>
-
-          <div className="signal-board-portal-grid">
-            <label>
-              Release title
-              <input
-                value={portalSettings.title}
-                onChange={(event) => updatePortalSetting('title', event.target.value)}
-                placeholder="Release title"
-              />
-            </label>
-
-            <label>
-              Release type
-              <select
-                value={portalSettings.releaseType}
-                onChange={(event) => updatePortalSetting('releaseType', event.target.value)}
-              >
-                <option value="single">Single</option>
-                <option value="ep">EP</option>
-                <option value="album">Album</option>
-                <option value="campaign">Campaign</option>
-              </select>
-            </label>
-
-            <label>
-              Status
-              <select
-                value={portalSettings.status}
-                onChange={(event) => updatePortalSetting('status', event.target.value)}
-              >
-                <option value="draft">Draft</option>
-                <option value="active">Active</option>
-                <option value="released">Released</option>
-                <option value="archived">Archived</option>
-              </select>
-            </label>
-
-            <label>
-              Visibility
-              <select
-                value={portalSettings.visibility}
-                onChange={(event) => updatePortalSetting('visibility', event.target.value)}
-              >
-                <option value="private">Private</option>
-                <option value="unlisted">Unlisted</option>
-                <option value="public">Public</option>
-              </select>
-            </label>
-
-            <label>
-              Current focus
-              <input
-                value={portalSettings.currentFocus}
-                onChange={(event) => updatePortalSetting('currentFocus', event.target.value)}
-                placeholder="Lead single / front door"
-              />
-            </label>
-
-            <label>
-              Second focus
-              <input
-                value={portalSettings.secondFocus}
-                onChange={(event) => updatePortalSetting('secondFocus', event.target.value)}
-                placeholder="Contrast signal"
-              />
-            </label>
-
-            <label>
-              Drop date
-              <input
-                type="date"
-                value={portalSettings.fullDropDate}
-                onChange={(event) => updatePortalSetting('fullDropDate', event.target.value)}
-              />
-            </label>
-
-            <label className="signal-board-portal-wide">
-              One-line summary
-              <input
-                value={portalSettings.oneLineSummary}
-                onChange={(event) => updatePortalSetting('oneLineSummary', event.target.value)}
-                placeholder="The public-facing one-line promise of this release world."
-              />
-            </label>
-
-            <label className="signal-board-portal-wide">
-              Story
-              <textarea
-                value={portalSettings.story}
-                onChange={(event) => updatePortalSetting('story', event.target.value)}
-                placeholder="Write the release-world story that should appear on the portal."
-                rows={5}
-              />
-            </label>
-          </div>
-
-          <div className="signal-board-portal-actions">
-            <p>{portalMessage}</p>
-            <div>
-              <Link href={`/releases/${slug}`}>Open Release Page</Link>
-              <button
-                type="button"
-                onClick={handleSavePortalSettings}
-                disabled={isUpdatingPortal || !releaseWorldId}
-              >
-                {isUpdatingPortal ? 'Saving Portal...' : 'Save Portal Settings'}
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="signal-board-mobile-list" aria-label="Signal board artifact list">
-        {artifacts.map((artifact) => (
-          <article
-            key={`mobile-${artifact.id}`}
-            className={`signal-board-pin signal-board-pin-${artifact.kind} signal-board-pin-color-${
-              artifact.color ?? 'cream'
-            } signal-board-pin-size-${artifact.size ?? 'md'}`}
-          >
-            <p className="signal-board-pin-eyebrow">{artifact.eyebrow}</p>
-            <h2>{artifact.title}</h2>
-            <p>{artifact.body}</p>
-            {artifact.meta && <span>{artifact.meta}</span>}
-          </article>
-        ))}
+              <div className="signal-board-panel-actions">
+                <button
+                  type="button"
+                  onClick={handleSavePortalSettings}
+                  disabled={isUpdatingPortal || !releaseWorldId}
+                >
+                  {isUpdatingPortal ? 'Saving Portal...' : 'Save Portal'}
+                </button>
+              </div>
+            </section>
+          )}
+        </aside>
       </section>
     </main>
   );
