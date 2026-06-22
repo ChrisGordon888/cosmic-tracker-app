@@ -2431,3 +2431,295 @@
     font-size: 0.9rem;
   }
 }
+
+/* ===================================
+   COMPACT WORKSPACE ALIGNMENT POLISH
+   Append to bottom of src/styles/signalBoard.css
+   after the compact workspace replacement.
+   =================================== */
+
+.signal-board-command-bar {
+  width: 100%;
+  max-width: none;
+  grid-template-columns: minmax(220px, 0.9fr) minmax(340px, 1.25fr) minmax(240px, 0.9fr);
+  padding-inline: clamp(0.9rem, 1.8vw, 1.35rem);
+}
+
+.signal-board-command-left a,
+.signal-board-command-actions button {
+  min-width: 8.8rem;
+}
+
+.signal-board-workspace {
+  width: 100%;
+  max-width: none;
+  grid-template-columns: 84px minmax(720px, 1fr) minmax(360px, 410px);
+  align-items: start;
+  gap: clamp(0.8rem, 1vw, 1rem);
+  padding: 0.9rem clamp(0.8rem, 1.6vw, 1.25rem) 1.1rem;
+}
+
+.signal-board-side-rail,
+.signal-board-work-panel {
+  top: 5rem;
+}
+
+.signal-board-side-rail {
+  border-radius: 1.3rem;
+  padding: 0.5rem;
+}
+
+.signal-board-side-rail button {
+  min-height: 4.1rem;
+  border-radius: 0.95rem;
+}
+
+.signal-board-canvas-zone {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  min-width: 0;
+}
+
+.signal-board-canvas-header {
+  min-height: 4.2rem;
+  align-items: center;
+  margin-bottom: 0.55rem;
+}
+
+.signal-board-canvas-header h2 {
+  font-size: clamp(1.2rem, 2vw, 1.65rem);
+  line-height: 1.05;
+}
+
+.signal-board-canvas-header > p {
+  max-width: 380px;
+  font-size: 0.76rem;
+}
+
+.signal-board-frame-scroll {
+  border-radius: 1.5rem;
+  overflow: auto;
+}
+
+.signal-board-frame-compact {
+  width: 100%;
+  min-width: 0;
+  min-height: calc(100vh - 12.8rem);
+  max-height: calc(100vh - 12.8rem);
+}
+
+.signal-board-work-panel {
+  max-height: calc(100vh - 6.1rem);
+  padding: 0.9rem;
+  border-radius: 1.3rem;
+}
+
+.signal-board-panel-section {
+  gap: 0.72rem;
+}
+
+.signal-board-panel-heading {
+  min-height: 4.2rem;
+  align-items: center;
+  padding-bottom: 0.15rem;
+  border-bottom: 1px solid rgba(238, 243, 250, 0.06);
+}
+
+.signal-board-panel-heading h2 {
+  max-width: 220px;
+  font-size: clamp(0.98rem, 1.6vw, 1.16rem);
+  line-height: 1.35;
+  letter-spacing: 0.08em;
+}
+
+.signal-board-panel-heading .signal-board-panel-kicker {
+  margin-bottom: 0.15rem;
+}
+
+.signal-board-panel-heading a,
+.signal-board-panel-heading button {
+  min-height: 2.2rem;
+  padding: 0.52rem 0.74rem;
+  white-space: nowrap;
+}
+
+.signal-board-compact-grid {
+  grid-template-columns: 1fr;
+  gap: 0.7rem;
+}
+
+.signal-board-toolbox-card,
+.signal-board-toolbox-card-flat {
+  border-radius: 1.05rem;
+  padding: 0.82rem;
+}
+
+.signal-board-toolbox-card h2,
+.signal-board-toolbox-card-flat h2 {
+  margin-bottom: 0.62rem;
+  font-size: 0.84rem;
+  line-height: 1.25;
+}
+
+.signal-board-style-row,
+.signal-board-size-row {
+  gap: 0.38rem;
+  margin-bottom: 0.65rem;
+}
+
+.signal-board-swatch,
+.signal-board-size-row button {
+  min-height: 1.95rem !important;
+  padding: 0.42rem 0.52rem !important;
+}
+
+.signal-board-theme-map {
+  max-height: 13rem;
+  overflow: auto;
+  padding-right: 0.15rem;
+}
+
+.signal-board-theme-map div {
+  padding: 0.52rem 0.6rem;
+}
+
+.signal-board-theme-map span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.signal-board-track-strip {
+  max-height: 13rem;
+  overflow: auto;
+  padding-right: 0.15rem;
+}
+
+.signal-board-track-strip button {
+  padding: 0.58rem 0.62rem;
+}
+
+.signal-board-track-form-grid-compact,
+.signal-board-portal-grid-compact {
+  gap: 0.55rem;
+}
+
+.signal-board-track-form-grid-compact input,
+.signal-board-track-form-grid-compact select,
+.signal-board-track-form-grid-compact textarea,
+.signal-board-portal-grid-compact input,
+.signal-board-portal-grid-compact select,
+.signal-board-portal-grid-compact textarea,
+.signal-board-inspector-bar select {
+  border-radius: 0.7rem;
+  padding: 0.58rem 0.62rem;
+  font-size: 0.76rem;
+}
+
+.signal-board-toggle-row {
+  gap: 0.42rem;
+}
+
+.signal-board-toggle-row label {
+  min-height: 2.1rem;
+  padding-inline: 0.4rem;
+  font-size: 0.58rem;
+}
+
+.signal-board-panel-actions button {
+  min-height: 2.3rem;
+}
+
+.signal-board-danger-mini {
+  padding: 0.62rem;
+}
+
+.signal-board-inspector-bar {
+  position: sticky;
+  bottom: 0.75rem;
+  z-index: 160;
+  grid-template-columns: minmax(210px, 1fr) repeat(3, minmax(100px, 0.42fr));
+  margin-top: 0.65rem;
+  border-radius: 1.1rem;
+}
+
+.signal-board-inspector-bar strong {
+  max-width: 100%;
+}
+
+@media (max-width: 1380px) {
+  .signal-board-workspace {
+    grid-template-columns: 76px minmax(620px, 1fr) minmax(340px, 390px);
+  }
+
+  .signal-board-command-bar {
+    grid-template-columns: minmax(200px, 0.9fr) minmax(300px, 1.2fr) minmax(220px, 0.9fr);
+  }
+}
+
+@media (max-width: 1180px) {
+  .signal-board-command-bar {
+    position: sticky;
+    grid-template-columns: 1fr;
+    gap: 0.55rem;
+    text-align: center;
+  }
+
+  .signal-board-command-left,
+  .signal-board-command-actions {
+    justify-content: center;
+  }
+
+  .signal-board-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .signal-board-side-rail {
+    position: sticky;
+    top: 0;
+    z-index: 170;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .signal-board-work-panel {
+    position: relative;
+    top: auto;
+    max-height: none;
+  }
+
+  .signal-board-frame-compact {
+    width: 980px;
+    min-width: 980px;
+    min-height: 760px;
+    max-height: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .signal-board-command-left,
+  .signal-board-command-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .signal-board-canvas-header,
+  .signal-board-panel-heading,
+  .signal-board-inspector-bar {
+    min-height: auto;
+  }
+
+  .signal-board-panel-heading h2 {
+    max-width: none;
+  }
+
+  .signal-board-inspector-bar {
+    position: relative;
+    bottom: auto;
+    grid-template-columns: 1fr;
+  }
+
+  .signal-board-frame-compact {
+    width: 900px;
+    min-width: 900px;
+    min-height: 720px;
+  }
+}
