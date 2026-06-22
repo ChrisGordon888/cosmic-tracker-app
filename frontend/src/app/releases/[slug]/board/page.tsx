@@ -1537,50 +1537,53 @@ export default function DynamicReleaseSignalBoardPage() {
       </header>
 
       <section className="signal-board-workspace" aria-label="Compact signal board workspace">
-        <aside className="signal-board-side-rail" aria-label="Workspace tools">
-          <button
-            type="button"
-            className={activePanel === 'tracks' ? 'is-active' : ''}
-            onClick={() => setActivePanel('tracks')}
-          >
-            <span>♪</span>
-            Tracks
-          </button>
-          <button
-            type="button"
-            className={activePanel === 'signals' ? 'is-active' : ''}
-            onClick={() => setActivePanel('signals')}
-          >
-            <span>✎</span>
-            Signals
-          </button>
-          <button
-            type="button"
-            className={activePanel === 'style' ? 'is-active' : ''}
-            onClick={() => setActivePanel('style')}
-          >
-            <span>◐</span>
-            Style
-          </button>
-          <button
-            type="button"
-            className={activePanel === 'portal' ? 'is-active' : ''}
-            onClick={() => setActivePanel('portal')}
-          >
-            <span>◎</span>
-            Portal
-          </button>
-        </aside>
-
-        <section className="signal-board-canvas-zone" aria-label="Main interactive board stage">
-          <div className="signal-board-canvas-header">
-            <div>
-              <p className="signal-board-panel-kicker">Studio Wall</p>
-              <h2>{releaseTitle}</h2>
-            </div>
-            <p>{cloudMessage}</p>
+        <div className="signal-board-workspace-header" aria-label="Workspace header">
+          <div className="signal-board-workspace-title">
+            <p className="signal-board-panel-kicker">Studio Wall</p>
+            <h2>{releaseTitle}</h2>
           </div>
 
+          <nav className="signal-board-horizontal-tabs" aria-label="Workspace tools">
+            <button
+              type="button"
+              className={activePanel === 'tracks' ? 'is-active' : ''}
+              onClick={() => setActivePanel('tracks')}
+            >
+              <span>♪</span>
+              Tracks
+            </button>
+            <button
+              type="button"
+              className={activePanel === 'signals' ? 'is-active' : ''}
+              onClick={() => setActivePanel('signals')}
+            >
+              <span>✎</span>
+              Signals
+            </button>
+            <button
+              type="button"
+              className={activePanel === 'style' ? 'is-active' : ''}
+              onClick={() => setActivePanel('style')}
+            >
+              <span>◐</span>
+              Style
+            </button>
+            <button
+              type="button"
+              className={activePanel === 'portal' ? 'is-active' : ''}
+              onClick={() => setActivePanel('portal')}
+            >
+              <span>◎</span>
+              Portal
+            </button>
+          </nav>
+
+          <p className="signal-board-workspace-status">{cloudMessage}</p>
+        </div>
+
+
+
+        <section className="signal-board-canvas-zone" aria-label="Main interactive board stage">
           <div className="signal-board-frame-scroll" aria-label="Scrollable board area">
             <section
               ref={boardRef}
