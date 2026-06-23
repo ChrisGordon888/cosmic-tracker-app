@@ -199,6 +199,9 @@ const typeDefs = gql`
     style: BoardArtifactStyle!
     isGenerated: Boolean!
     isUserCreated: Boolean!
+    isPublic: Boolean!
+    pageSection: String
+    pageOrder: Int
     createdAt: String
     updatedAt: String
   }
@@ -306,6 +309,9 @@ const typeDefs = gql`
     layer: Int
     isGenerated: Boolean
     isUserCreated: Boolean
+    isPublic: Boolean
+    pageSection: String
+    pageOrder: Int
   }
 
   # 📖 Queries
@@ -343,6 +349,7 @@ const typeDefs = gql`
     getReleaseTracks(releaseWorldId: ID!): [ReleaseTrack!]!
     getReleaseTrack(id: ID!): ReleaseTrack
     getBoardArtifacts(releaseWorldId: ID!): [BoardArtifact!]!
+    getPublicBoardArtifacts(releaseWorldId: ID!): [BoardArtifact!]!
   }
 
   # 🛠️ Mutations

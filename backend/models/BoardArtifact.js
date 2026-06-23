@@ -58,11 +58,30 @@ const BoardArtifactSchema = new mongoose.Schema(
 
     isGenerated: { type: Boolean, default: false },
     isUserCreated: { type: Boolean, default: true },
+
+    // Release page publishing bridge
+    isPublic: { type: Boolean, default: false, index: true },
+
+    pageSection: {
+      type: String,
+      enum: ["story", "track", "visual", "rollout", "quote", "asset"],
+      default: "story",
+      index: true,
+    },
+
+    pageOrder: { type: Number, default: 1, index: true },
   },
   { timestamps: true }
 );
 
 BoardArtifactSchema.index({ releaseWorldId: 1, updatedAt: -1 });
 BoardArtifactSchema.index({ ownerId: 1, releaseWorldId: 1 });
+BoardArtifactSchema.index({
+  ownerId: 1,
+  releaseWorldId: 1,
+  isPublic: 1,
+  pageSection: 1,
+  pageOrder: 1,
+});
 
 module.exports = mongoose.model("BoardArtifact", BoardArtifactSchema);

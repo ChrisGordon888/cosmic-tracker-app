@@ -254,10 +254,39 @@ module.exports = {
         getBoardArtifacts: async (_, { releaseWorldId }, { user }) => {
             if (!user) throw new Error("Unauthorized: Please sign in.");
 
+            const releaseWorld = await getOwnedReleaseWorld(releaseWorldId, user.id);
+
+            if (!releaseWorld) {
+                throw new Error("Release world not found.");
+            }
+
             return await BoardArtifact.find({
                 ownerId: user.id,
                 releaseWorldId,
-            }).sort({ createdAt: 1 });
+            }).sort({
+                pageOrder: 1,
+                createdAt: 1,
+            });
+        },
+
+        getPublicBoardArtifacts: async (_, { releaseWorldId }, { user }) => {
+            if (!user) throw new Error("Unauthorized: Please sign in.");
+
+            const releaseWorld = await getOwnedReleaseWorld(releaseWorldId, user.id);
+
+            if (!releaseWorld) {
+                throw new Error("Release world not found.");
+            }
+
+            return await BoardArtifact.find({
+                ownerId: user.id,
+                releaseWorldId,
+                isPublic: true,
+            }).sort({
+                pageSection: 1,
+                pageOrder: 1,
+                createdAt: 1,
+            });
         },
     },
 
@@ -968,6 +997,13 @@ module.exports = {
                         artifact.isUserCreated === undefined
                             ? true
                             : artifact.isUserCreated,
+
+                    isPublic: artifact.isPublic || false,
+                    pageSection: artifact.pageSection || "story",
+                    pageOrder:
+                        artifact.pageOrder === undefined || artifact.pageOrder === null
+                            ? 1
+                            : artifact.pageOrder,
                 }))
             );
 
