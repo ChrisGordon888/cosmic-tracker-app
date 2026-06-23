@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { gql, useQuery } from '@apollo/client';
 import '@/styles/releaseWorld.css';
@@ -26,8 +27,8 @@ const GET_RELEASE_WORLD_BY_SLUG = gql`
   }
 `;
 
-const GET_RELEASE_WORLD_PORTAL_DETAILS = gql`
-  query GetReleaseWorldPortalDetails($releaseWorldId: ID!) {
+const GET_RELEASE_PAGE_CREATOR_DATA = gql`
+  query GetReleasePageCreatorData($releaseWorldId: ID!) {
     getReleaseTracks(releaseWorldId: $releaseWorldId) {
       id
       title
@@ -44,6 +45,7 @@ const GET_RELEASE_WORLD_PORTAL_DETAILS = gql`
       isFocusTrack
       isSecondFocus
       isPublic
+      updatedAt
     }
 
     getPublicBoardArtifacts(releaseWorldId: $releaseWorldId) {
@@ -58,6 +60,8 @@ const GET_RELEASE_WORLD_PORTAL_DETAILS = gql`
       isPublic
       pageSection
       pageOrder
+      createdAt
+      updatedAt
     }
   }
 `;
@@ -95,6 +99,7 @@ type ReleaseTrack = {
   isFocusTrack: boolean;
   isSecondFocus: boolean;
   isPublic: boolean;
+  updatedAt?: string | null;
 };
 
 type PublicBoardArtifact = {
@@ -109,57 +114,55 @@ type PublicBoardArtifact = {
   isPublic: boolean;
   pageSection?: string | null;
   pageOrder?: number | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
 };
 
-type PortalSection = 'story' | 'track' | 'visual' | 'rollout' | 'quote' | 'asset';
+type ArtifactSectionKey = 'story' | 'track' | 'visual' | 'rollout' | 'quote' | 'asset';
 
-const portalSectionOrder: PortalSection[] = [
-  'quote',
-  'track',
-  'visual',
-  'story',
-  'rollout',
-  'asset',
+const artifactSections: Array<{
+  key: ArtifactSectionKey;
+  eyebrow: string;
+  title: string;
+  body: string;
+}> = [
+  {
+    key: 'quote',
+    eyebrow: 'Featured signals',
+    title: 'Hooks, quotes, and phrases.',
+    body: 'Fragments marked public from the Signal Board — the lines, hooks, and emotional anchors that define the world.',
+  },
+  {
+    key: 'track',
+    eyebrow: 'Track notes',
+    title: 'Signals attached to songs.',
+    body: 'Song-level notes, emotional tags, and creative signals that connect board ideas to the track path.',
+  },
+  {
+    key: 'visual',
+    eyebrow: 'Visual language',
+    title: 'Images, palettes, and symbols.',
+    body: 'Cover direction, clips, colors, motifs, and the visual world forming around the release.',
+  },
+  {
+    key: 'rollout',
+    eyebrow: 'Rollout path',
+    title: 'Campaign beats and movement.',
+    body: 'Teasers, story moments, launch ideas, and follow-up signals from the studio wall.',
+  },
+  {
+    key: 'story',
+    eyebrow: 'World notes',
+    title: 'Mythology and meaning.',
+    body: 'Public-facing world-building notes pulled from the private board.',
+  },
+  {
+    key: 'asset',
+    eyebrow: 'Assets',
+    title: 'Public files and references.',
+    body: 'Published board assets, references, links, and supporting material.',
+  },
 ];
-
-const portalSectionLabels: Record<PortalSection, { label: string; title: string; description: string }> = {
-  quote: {
-    label: 'Featured signals',
-    title: 'Quotes, hooks, and phrases from the board.',
-    description:
-      'These are the fragments marked public from the Signal Board — the lines, hooks, and emotional anchors that define the world.',
-  },
-  track: {
-    label: 'Track notes',
-    title: 'Song-specific signals.',
-    description:
-      'Public artifacts connected to tracks: hooks, notes, moods, and song-world details that help the listener enter each piece.',
-  },
-  visual: {
-    label: 'Visual language',
-    title: 'The look, palette, and symbols.',
-    description:
-      'Cover ideas, visual references, clip direction, colors, and mythic symbols selected from the studio wall.',
-  },
-  story: {
-    label: 'Story fragments',
-    title: 'World-building notes from the private board.',
-    description:
-      'Selected narrative pieces that explain the emotional arc, mythology, and intention behind the release.',
-  },
-  rollout: {
-    label: 'Rollout path',
-    title: 'How the world moves outward.',
-    description:
-      'Campaign beats, teaser ideas, content rhythm, and the sequence that carries the release into the public.',
-  },
-  asset: {
-    label: 'Assets',
-    title: 'Files, links, and release materials.',
-    description:
-      'Public-facing assets and links that belong with the release world. This section will become stronger once upload support lands.',
-  },
-};
 
 function formatLabel(value?: string | null) {
   if (!value) return 'Unknown';
@@ -230,8 +233,7 @@ function getReleasePath(world: ReleaseWorld) {
     steps.push({
       number: '02',
       title: world.secondFocus.trim(),
-      label:
-        'Contrast signal',
+      label: 'Contrast signal',
       body:
         'The second doorway. This gives the world motion, contrast, pressure, or another emotional angle.',
     });
@@ -249,59 +251,24 @@ function getReleasePath(world: ReleaseWorld) {
   return steps;
 }
 
-function normalizePageSection(section?: string | null): PortalSection {
-  if (
-    section === 'story' ||
-    section === 'track' ||
-    section === 'visual' ||
-    section === 'rollout' ||
-    section === 'quote' ||
-    section === 'asset'
-  ) {
-    return section;
-  }
+function getTrackMeta(track: ReleaseTrack) {
+  const parts = [formatLabel(track.role), formatLabel(track.status)];
 
-  return 'story';
+  if (track.bpm) parts.push(`${track.bpm} BPM`);
+  if (track.keySignature?.trim()) parts.push(track.keySignature.trim());
+  if (track.isFocusTrack) parts.push('Focus');
+  if (track.isSecondFocus) parts.push('Second');
+
+  return parts.filter(Boolean).join(' / ');
 }
 
-function groupPublicArtifacts(artifacts: PublicBoardArtifact[]) {
-  return artifacts.reduce<Record<PortalSection, PublicBoardArtifact[]>>(
-    (groups, artifact) => {
-      const section = normalizePageSection(artifact.pageSection);
-      groups[section].push(artifact);
-      return groups;
-    },
-    {
-      story: [],
-      track: [],
-      visual: [],
-      rollout: [],
-      quote: [],
-      asset: [],
-    },
-  );
-}
-
-function sortPublicArtifacts(artifacts: PublicBoardArtifact[]) {
-  return [...artifacts].sort((a, b) => {
-    const aOrder = a.pageOrder ?? 1;
-    const bOrder = b.pageOrder ?? 1;
-
-    if (aOrder !== bOrder) return aOrder - bOrder;
-
-    return a.title.localeCompare(b.title);
-  });
-}
-
-function getTrackBadges(track: ReleaseTrack) {
-  const badges = [formatLabel(track.role), formatLabel(track.status)];
-
-  if (track.bpm) badges.push(`${track.bpm} BPM`);
-  if (track.keySignature?.trim()) badges.push(track.keySignature.trim());
-  if (track.isFocusTrack) badges.push('Lead signal');
-  if (track.isSecondFocus) badges.push('Contrast');
-
-  return badges.filter(Boolean);
+function getSectionArtifacts(
+  artifacts: PublicBoardArtifact[],
+  sectionKey: ArtifactSectionKey,
+) {
+  return artifacts
+    .filter((artifact) => (artifact.pageSection ?? 'story') === sectionKey)
+    .sort((a, b) => (a.pageOrder ?? 1) - (b.pageOrder ?? 1));
 }
 
 function ReleaseArtwork({ world }: { world: ReleaseWorld }) {
@@ -327,27 +294,6 @@ function ReleaseArtwork({ world }: { world: ReleaseWorld }) {
   );
 }
 
-function PublicArtifactCard({ artifact }: { artifact: PublicBoardArtifact }) {
-  return (
-    <article className={`release-world-public-card release-world-public-card-${normalizePageSection(artifact.pageSection)}`}>
-      <div className="release-world-public-card-topline">
-        <span>{artifact.eyebrow || formatLabel(artifact.kind)}</span>
-        <em>#{artifact.pageOrder ?? 1}</em>
-      </div>
-
-      <h3>{artifact.title}</h3>
-
-      {artifact.body?.trim() && <p>{artifact.body}</p>}
-
-      <div className="release-world-public-card-footer">
-        {artifact.meta?.trim() && <span>{artifact.meta}</span>}
-        {artifact.connectedTrackSlug?.trim() && <span>{artifact.connectedTrackSlug}</span>}
-        {artifact.href?.trim() && <Link href={artifact.href}>Open</Link>}
-      </div>
-    </article>
-  );
-}
-
 export default function DynamicReleasePage() {
   const params = useParams<{ slug?: string | string[] }>();
   const rawSlug = params?.slug;
@@ -362,18 +308,24 @@ export default function DynamicReleasePage() {
   const world = data?.getMyReleaseWorldBySlug as ReleaseWorld | null | undefined;
 
   const {
-    data: portalData,
-    loading: portalLoading,
-    error: portalError,
-  } = useQuery(GET_RELEASE_WORLD_PORTAL_DETAILS, {
+    data: creatorData,
+    loading: creatorLoading,
+    error: creatorError,
+  } = useQuery(GET_RELEASE_PAGE_CREATOR_DATA, {
     variables: { releaseWorldId: world?.id ?? '' },
     skip: !world?.id,
     fetchPolicy: 'cache-and-network',
   });
 
-  const releaseTracks = (portalData?.getReleaseTracks ?? []) as ReleaseTrack[];
-  const publicArtifacts = (portalData?.getPublicBoardArtifacts ?? []) as PublicBoardArtifact[];
-  const artifactGroups = groupPublicArtifacts(publicArtifacts);
+  const releaseTracks = useMemo(
+    () => (creatorData?.getReleaseTracks ?? []) as ReleaseTrack[],
+    [creatorData],
+  );
+
+  const publicArtifacts = useMemo(
+    () => (creatorData?.getPublicBoardArtifacts ?? []) as PublicBoardArtifact[],
+    [creatorData],
+  );
 
   if (loading) {
     return (
@@ -483,6 +435,110 @@ export default function DynamicReleasePage() {
         </p>
       </section>
 
+      {releaseTracks.length > 0 && (
+        <section className="release-world-track-section">
+          <div className="release-world-section-heading release-world-section-heading-split">
+            <div>
+              <p className="release-world-label">Track Path</p>
+              <h2>The songs inside the world.</h2>
+            </div>
+            <p>
+              {creatorLoading
+                ? 'Loading track path...'
+                : `${releaseTracks.length} track${releaseTracks.length === 1 ? '' : 's'} mapped from the Creator OS.`}
+            </p>
+          </div>
+
+          {creatorError && (
+            <p className="release-world-inline-error">{creatorError.message}</p>
+          )}
+
+          <div className="release-world-track-grid">
+            {releaseTracks.map((track) => (
+              <article key={track.id} className="release-world-track-card">
+                <div className="release-world-track-card-top">
+                  <span>{String(track.trackNumber).padStart(2, '0')}</span>
+                  <em>{track.isPublic ? 'Public' : 'Private'}</em>
+                </div>
+                <p>{getTrackMeta(track)}</p>
+                <h3>{track.title}</h3>
+
+                {(track.mood || track.hook || track.notes) && (
+                  <div className="release-world-track-card-body">
+                    {track.mood && <strong>{track.mood}</strong>}
+                    {track.hook && <p>{track.hook}</p>}
+                    {track.notes && <small>{track.notes}</small>}
+                  </div>
+                )}
+
+                {track.audioUrl?.trim() ? (
+                  <a href={track.audioUrl} target="_blank" rel="noreferrer">
+                    Listen source
+                  </a>
+                ) : (
+                  <span className="release-world-track-pending">Audio pending</span>
+                )}
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {publicArtifacts.length > 0 && (
+        <section className="release-world-board-section">
+          <div className="release-world-section-heading release-world-section-heading-split">
+            <div>
+              <p className="release-world-label">Board to Portal</p>
+              <h2>Published signals from the studio wall.</h2>
+            </div>
+            <p>
+              {publicArtifacts.length} published artifact
+              {publicArtifacts.length === 1 ? '' : 's'} selected from the Signal Board.
+            </p>
+          </div>
+
+          <div className="release-world-board-section-list">
+            {artifactSections.map((section) => {
+              const artifacts = getSectionArtifacts(publicArtifacts, section.key);
+
+              if (artifacts.length === 0) return null;
+
+              return (
+                <section key={section.key} className="release-world-board-group">
+                  <div className="release-world-board-group-heading">
+                    <p className="release-world-label">{section.eyebrow}</p>
+                    <h3>{section.title}</h3>
+                    <span>{section.body}</span>
+                  </div>
+
+                  <div className="release-world-board-grid">
+                    {artifacts.map((artifact) => (
+                      <article key={artifact.id} className="release-world-board-card">
+                        <div className="release-world-board-card-top">
+                          <span>{artifact.eyebrow || formatLabel(artifact.kind)}</span>
+                          <em>{String(artifact.pageOrder ?? 1).padStart(2, '0')}</em>
+                        </div>
+                        <h4>{artifact.title}</h4>
+                        {artifact.body && <p>{artifact.body}</p>}
+                        <div className="release-world-board-card-meta">
+                          {artifact.meta && <strong>{artifact.meta}</strong>}
+                          {artifact.connectedTrackSlug && (
+                            <span>{artifact.connectedTrackSlug}</span>
+                          )}
+                        </div>
+                        {artifact.href && (
+                          <Link href={artifact.href}>Open linked signal</Link>
+                        )}
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
       <section className="release-world-path-section">
         <div className="release-world-section-heading">
           <p className="release-world-label">Release path</p>
@@ -503,106 +559,32 @@ export default function DynamicReleasePage() {
         </div>
       </section>
 
-      <section className="release-world-track-section">
+      <section className="release-world-signal-section">
         <div className="release-world-section-heading">
-          <p className="release-world-label">Track path</p>
-          <h2>The songs inside the world.</h2>
+          <p className="release-world-label">Project signals</p>
+          <h2>What this world needs next.</h2>
         </div>
 
-        {portalLoading && (
-          <p className="release-world-muted">Loading tracks and public board signals...</p>
-        )}
+        <div className="release-world-signal-grid">
+          <article>
+            <span>01</span>
+            <h3>Core hook</h3>
+            <p>Define the phrase, melody, or concept that people remember first.</p>
+          </article>
 
-        {portalError && (
-          <p className="release-world-muted">Could not load portal details: {portalError.message}</p>
-        )}
+          <article>
+            <span>02</span>
+            <h3>Visual identity</h3>
+            <p>Collect cover direction, colors, typography, clips, and symbolic references.</p>
+          </article>
 
-        {!portalLoading && releaseTracks.length === 0 && (
-          <p className="release-world-muted">
-            No tracks have been added to this release world yet. Add them from the Signal Board Track Manager.
-          </p>
-        )}
-
-        {releaseTracks.length > 0 && (
-          <div className="release-world-track-grid">
-            {releaseTracks.map((track) => (
-              <article key={track.id} className="release-world-track-card">
-                <div className="release-world-track-card-number">
-                  {String(track.trackNumber).padStart(2, '0')}
-                </div>
-                <div>
-                  <p>{getTrackBadges(track).join(' / ')}</p>
-                  <h3>{track.title}</h3>
-                  {track.mood?.trim() && <strong>{track.mood}</strong>}
-                  {track.hook?.trim() && <span>{track.hook}</span>}
-                  {track.notes?.trim() && <em>{track.notes}</em>}
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
+          <article>
+            <span>03</span>
+            <h3>Rollout rhythm</h3>
+            <p>Map the teaser, first signal, contrast push, full release, and follow-up content.</p>
+          </article>
+        </div>
       </section>
-
-      {publicArtifacts.length > 0 ? (
-        <section className="release-world-public-artifacts-section">
-          <div className="release-world-section-heading">
-            <p className="release-world-label">Board to portal</p>
-            <h2>Published signals from the studio wall.</h2>
-          </div>
-
-          <div className="release-world-public-section-list">
-            {portalSectionOrder.map((section) => {
-              const artifacts = sortPublicArtifacts(artifactGroups[section]);
-              const sectionMeta = portalSectionLabels[section];
-
-              if (artifacts.length === 0) return null;
-
-              return (
-                <section key={section} className={`release-world-public-section release-world-public-section-${section}`}>
-                  <div className="release-world-public-section-header">
-                    <p className="release-world-label">{sectionMeta.label}</p>
-                    <h2>{sectionMeta.title}</h2>
-                    <span>{sectionMeta.description}</span>
-                  </div>
-
-                  <div className="release-world-public-grid">
-                    {artifacts.map((artifact) => (
-                      <PublicArtifactCard key={artifact.id} artifact={artifact} />
-                    ))}
-                  </div>
-                </section>
-              );
-            })}
-          </div>
-        </section>
-      ) : (
-        <section className="release-world-signal-section">
-          <div className="release-world-section-heading">
-            <p className="release-world-label">Project signals</p>
-            <h2>What this world needs next.</h2>
-          </div>
-
-          <div className="release-world-signal-grid">
-            <article>
-              <span>01</span>
-              <h3>Core hook</h3>
-              <p>Define the phrase, melody, or concept that people remember first.</p>
-            </article>
-
-            <article>
-              <span>02</span>
-              <h3>Visual identity</h3>
-              <p>Collect cover direction, colors, typography, clips, and symbolic references.</p>
-            </article>
-
-            <article>
-              <span>03</span>
-              <h3>Rollout rhythm</h3>
-              <p>Map the teaser, first signal, contrast push, full release, and follow-up content.</p>
-            </article>
-          </div>
-        </section>
-      )}
 
       <section className="release-world-rollout-section">
         <div className="release-world-section-heading">
