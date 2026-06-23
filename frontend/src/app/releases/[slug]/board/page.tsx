@@ -53,6 +53,9 @@ const GET_BOARD_ARTIFACTS = gql`
       }
       isGenerated
       isUserCreated
+      isPublic
+      pageSection
+      pageOrder
     }
   }
 `;
@@ -83,6 +86,9 @@ const SAVE_BOARD_ARTIFACTS = gql`
       }
       isGenerated
       isUserCreated
+      isPublic
+      pageSection
+      pageOrder
     }
   }
 `;
@@ -313,6 +319,9 @@ interface BoardArtifact {
   layer?: number;
   isGenerated?: boolean;
   isUserCreated?: boolean;
+  isPublic?: boolean;
+  pageSection?: string;
+  pageOrder?: number;
 }
 
 interface StoredBoardState {
@@ -341,6 +350,9 @@ interface MongoBoardArtifact {
   };
   isGenerated: boolean;
   isUserCreated: boolean;
+  isPublic: boolean;
+  pageSection?: string | null;
+  pageOrder?: number | null;
 }
 
 const colorOptions: Array<{ value: ArtifactColor; label: string }> = [
@@ -361,6 +373,15 @@ const sizeOptions: Array<{ value: ArtifactSize; label: string }> = [
 ];
 
 const layerOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+const pageSectionOptions = [
+  { value: "story", label: "Story" },
+  { value: "track", label: "Track Note" },
+  { value: "visual", label: "Visual" },
+  { value: "rollout", label: "Rollout" },
+  { value: "quote", label: "Quote / Hook" },
+  { value: "asset", label: "Asset" },
+];
 
 const trackRoleOptions = [
   { value: "unknown", label: "Unknown" },
@@ -677,6 +698,9 @@ function mapMongoArtifact(artifact: MongoBoardArtifact): BoardArtifact {
     layer: artifact.style.layer ?? 4,
     isGenerated: artifact.isGenerated,
     isUserCreated: artifact.isUserCreated,
+    isPublic: artifact.isPublic,
+    pageSection: artifact.pageSection ?? "story",
+    pageOrder: artifact.pageOrder ?? 1,
   };
 }
 
@@ -698,6 +722,9 @@ function mapArtifactToInput(artifact: BoardArtifact) {
     layer: artifact.layer ?? 4,
     isGenerated: artifact.isGenerated ?? false,
     isUserCreated: artifact.isUserCreated ?? true,
+    isPublic: artifact.isPublic ?? false,
+    pageSection: artifact.pageSection ?? "story",
+    pageOrder: artifact.pageOrder ?? 1,
   };
 }
 
@@ -847,6 +874,7 @@ function BoardArtifactCard({
     `signal-board-pin-color-${artifact.color ?? "cream"}`,
     `signal-board-pin-size-${artifact.size ?? "md"}`,
     artifact.isUserCreated ? "signal-board-pin-user" : "",
+    artifact.isPublic ? "is-public-artifact" : "",
     isSelected ? "is-selected" : "",
   ]
     .filter(Boolean)
@@ -859,6 +887,7 @@ function BoardArtifactCard({
       onPointerDown={(event) => onPointerDown(event, artifact.id)}
     >
       <div className="signal-board-pin-cap" />
+      {artifact.isPublic && <span className="signal-board-page-badge">Page</span>}
 
       {artifact.isUserCreated && (
         <button
@@ -1806,6 +1835,57 @@ export default function DynamicReleaseSignalBoardPage() {
                   {layerOptions.map((layer) => (
                     <option key={layer} value={layer}>
                       {layer}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="signal-board-public-toggle">
+                Release Page
+                <button
+                  type="button"
+                  className={selectedArtifact.isPublic ? "is-active" : ""}
+                  onClick={() =>
+                    updateArtifact(selectedArtifact.id, {
+                      isPublic: !selectedArtifact.isPublic,
+                    })
+                  }
+                >
+                  {selectedArtifact.isPublic ? "Showing" : "Hidden"}
+                </button>
+              </label>
+
+              <label>
+                Section
+                <select
+                  value={selectedArtifact.pageSection ?? "story"}
+                  onChange={(event) =>
+                    updateArtifact(selectedArtifact.id, {
+                      pageSection: event.target.value,
+                    })
+                  }
+                >
+                  {pageSectionOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label>
+                Order
+                <select
+                  value={selectedArtifact.pageOrder ?? 1}
+                  onChange={(event) =>
+                    updateArtifact(selectedArtifact.id, {
+                      pageOrder: Number(event.target.value),
+                    })
+                  }
+                >
+                  {Array.from({ length: 12 }, (_, index) => index + 1).map((order) => (
+                    <option key={order} value={order}>
+                      {order}
                     </option>
                   ))}
                 </select>

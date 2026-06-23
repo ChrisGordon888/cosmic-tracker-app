@@ -3396,3 +3396,63 @@
     min-height: 720px !important;
   }
 }
+
+/* ===================================
+   PUBLIC ARTIFACT MAPPING
+   Board card -> Release Page bridge
+   =================================== */
+
+.signal-board-pin.is-public-artifact {
+  box-shadow:
+    0 0 0 1px rgba(126, 211, 255, 0.42),
+    0 18px 44px rgba(0, 0, 0, 0.32),
+    0 0 42px rgba(126, 211, 255, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.34);
+}
+
+.signal-board-page-badge {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.55rem;
+  z-index: 8;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.7rem;
+  height: 1.35rem;
+  padding: 0 0.55rem;
+  border: 1px solid rgba(126, 211, 255, 0.42);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at top left, rgba(126, 211, 255, 0.28), transparent 70%),
+    rgba(7, 11, 20, 0.82);
+  color: rgba(232, 246, 255, 0.92);
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.signal-board-public-toggle button {
+  min-height: 2.45rem;
+  border: 1px solid rgba(214, 224, 235, 0.16);
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.045);
+  color: rgba(235, 240, 246, 0.86);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.signal-board-public-toggle button.is-active {
+  border-color: rgba(126, 211, 255, 0.52);
+  background:
+    radial-gradient(circle at top left, rgba(126, 211, 255, 0.22), transparent 70%),
+    rgba(126, 211, 255, 0.10);
+  color: rgba(232, 246, 255, 0.96);
+  box-shadow: 0 0 28px rgba(126, 211, 255, 0.12);
+}
