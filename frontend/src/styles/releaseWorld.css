@@ -897,3 +897,51 @@
     font-size: clamp(2rem, 15vw, 3.6rem);
   }
 }
+
+/* ===================================
+   RELEASE WORLD COVER ART
+   Asset V1 cover rendering
+   =================================== */
+
+.release-world-artwork-has-cover {
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.release-world-cover-image {
+  position: absolute;
+  inset: 1.05rem;
+  z-index: 3;
+  width: calc(100% - 2.1rem);
+  height: calc(100% - 2.1rem);
+  object-fit: cover;
+  border-radius: 1.35rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow:
+    0 28px 80px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.release-world-cover-sheen {
+  position: absolute;
+  inset: 1.05rem;
+  z-index: 4;
+  pointer-events: none;
+  border-radius: 1.35rem;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.22),
+      transparent 34%,
+      transparent 62%,
+      rgba(126, 211, 255, 0.12)
+    );
+  mix-blend-mode: screen;
+}
+
+.release-world-artwork-has-cover figcaption {
+  z-index: 5;
+  backdrop-filter: blur(16px);
+  background:
+    linear-gradient(135deg, rgba(7, 11, 20, 0.74), rgba(7, 11, 20, 0.42));
+}

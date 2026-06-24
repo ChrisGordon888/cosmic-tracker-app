@@ -21,6 +21,8 @@ const GET_RELEASE_WORLD_BY_SLUG = gql`
       currentFocus
       secondFocus
       fullDropDate
+      coverArtUrl
+      coverAssetId
       updatedAt
       lastOpenedAt
     }
@@ -79,6 +81,8 @@ type ReleaseWorld = {
   currentFocus?: string | null;
   secondFocus?: string | null;
   fullDropDate?: string | null;
+  coverArtUrl?: string | null;
+  coverAssetId?: string | null;
   updatedAt?: string | null;
   lastOpenedAt?: string | null;
 };
@@ -273,11 +277,38 @@ function getSectionArtifacts(
 
 function ReleaseArtwork({ world }: { world: ReleaseWorld }) {
   const titleParts = getTitleParts(world.title);
+  const coverArtUrl = world.coverArtUrl?.trim();
+
+  if (coverArtUrl) {
+    return (
+      <figure
+        className="release-world-artwork release-world-artwork-has-cover"
+        aria-label={`${world.title} cover artwork`}
+      >
+        <div className="release-world-artwork-orbit release-world-artwork-orbit-a" />
+        <div className="release-world-artwork-orbit release-world-artwork-orbit-b" />
+        <div className="release-world-artwork-glow" />
+
+        <img
+          src={coverArtUrl}
+          alt={`${world.title} cover artwork`}
+          className="release-world-cover-image"
+        />
+
+        <div className="release-world-cover-sheen" />
+
+        <figcaption>
+          <span>{formatLabel(world.status)}</span>
+          <strong>{formatLabel(world.visibility)}</strong>
+        </figcaption>
+      </figure>
+    );
+  }
 
   return (
     <figure className="release-world-artwork" aria-label={`${world.title} artwork placeholder`}>
       <div className="release-world-artwork-orbit release-world-artwork-orbit-a" />
-      <div className="release-world-artwork-orbit release-world-artwork-orbit-b" />
+      <div className="release-world-artwork-orbit release-world-artwork-b" />
       <div className="release-world-artwork-glow" />
 
       <div className="release-world-artwork-title">
@@ -287,8 +318,8 @@ function ReleaseArtwork({ world }: { world: ReleaseWorld }) {
       </div>
 
       <figcaption>
-        <span>{world.status}</span>
-        <strong>{world.visibility}</strong>
+        <span>{formatLabel(world.status)}</span>
+        <strong>{formatLabel(world.visibility)}</strong>
       </figcaption>
     </figure>
   );
