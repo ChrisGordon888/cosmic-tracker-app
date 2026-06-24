@@ -1171,6 +1171,9 @@ export default function DynamicReleaseSignalBoardPage() {
   const [assetMessage, setAssetMessage] = useState(
     "Assets register cover art, audio, and visual references to this release world.",
   );
+  const [selectedAssetFile, setSelectedAssetFile] = useState<File | null>(null);
+  const [assetUploadPreviewUrl, setAssetUploadPreviewUrl] = useState("");
+  const [isUploadingAsset, setIsUploadingAsset] = useState(false);
 
   const [portalSettings, setPortalSettings] = useState<PortalSettings>(() =>
     getPortalSettingsFromReleaseWorld(null),
@@ -1278,6 +1281,20 @@ export default function DynamicReleaseSignalBoardPage() {
     () => releaseAssets.filter((asset) => asset.usage === "track-audio" || asset.kind === "audio"),
     [releaseAssets],
   );
+
+  useEffect(() => {
+    if (!selectedAssetFile || !selectedAssetFile.type.startsWith("image/")) {
+      setAssetUploadPreviewUrl("");
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(selectedAssetFile);
+    setAssetUploadPreviewUrl(previewUrl);
+
+    return () => {
+      URL.revokeObjectURL(previewUrl);
+    };
+  }, [selectedAssetFile]);
 
   useEffect(() => {
     if (
@@ -1602,6 +1619,31 @@ export default function DynamicReleaseSignalBoardPage() {
   }
 
 
+  function getUploadKindFromAssetForm() {
+    if (assetForm.usage === "track-audio") return "audio";
+    if (assetForm.usage === "cover") return "cover";
+    return assetForm.kind || "asset";
+  }
+
+  function handleAssetFileChange(fileList: FileList | null) {
+    const file = fileList?.[0] ?? null;
+    setSelectedAssetFile(file);
+
+    if (!file) {
+      setAssetMessage("No file selected yet.");
+      return;
+    }
+
+    setAssetForm((current) => ({
+      ...current,
+      title: current.title || file.name.replace(/\.[^/.]+$/, ""),
+      fileName: file.name,
+      mimeType: file.type || current.mimeType,
+    }));
+
+    setAssetMessage(`Selected ${file.name}. Upload it to Blob when ready.`);
+  }
+
   function updateAssetForm<K extends keyof AssetForm>(
     key: K,
     value: AssetForm[K],
@@ -1622,6 +1664,113 @@ export default function DynamicReleaseSignalBoardPage() {
       return next;
     });
     setAssetMessage("Unsaved asset changes. Register asset to sync it to the release world.");
+  }
+
+  async function handleUploadAndCreateAsset() {
+    if (!releaseWorldId) {
+      setAssetMessage("Upload failed: release world could not be found.");
+      return;
+    }
+
+    if (!selectedAssetFile) {
+      setAssetMessage("Upload failed: choose a file first.");
+      return;
+    }
+
+    if (assetForm.usage === "track-audio" && !assetForm.trackId) {
+      setAssetMessage("Upload failed: choose a track before attaching audio.");
+      return;
+    }
+
+    try {
+      setIsUploadingAsset(true);
+      setAssetMessage("Uploading file to Vercel Blob...");
+
+      const formData = new FormData();
+      formData.append("file", selectedAssetFile);
+      formData.append("releaseWorldId", releaseWorldId);
+      formData.append("kind", getUploadKindFromAssetForm());
+
+      const uploadResponse = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const uploadResult = (await uploadResponse.json()) as {
+        url?: string;
+        pathname?: string;
+        contentType?: string;
+        size?: number;
+        fileName?: string;
+        error?: string;
+      };
+
+      if (!uploadResponse.ok || !uploadResult.url) {
+        throw new Error(uploadResult.error || "Blob upload failed.");
+      }
+
+      setAssetMessage("Blob upload complete. Registering asset in MongoDB...");
+
+      const input = {
+        ...getAssetInputFromForm(
+          {
+            ...assetForm,
+            title:
+              assetForm.title.trim() ||
+              uploadResult.fileName ||
+              selectedAssetFile.name ||
+              "Uploaded asset",
+            url: uploadResult.url,
+            fileName: uploadResult.fileName || selectedAssetFile.name,
+            mimeType: uploadResult.contentType || selectedAssetFile.type,
+          },
+          releaseWorldId,
+        ),
+        size: uploadResult.size ?? selectedAssetFile.size,
+      };
+
+      const result = await createReleaseAsset({
+        variables: {
+          input,
+        },
+      });
+
+      const savedAsset = result.data?.createReleaseAsset as ReleaseAsset | undefined;
+
+      await refetchReleaseAssets();
+      await refetchReleaseWorld();
+      await refetchReleaseTracks();
+
+      if (savedAsset) {
+        setAssetMessage(
+          `Uploaded and saved: ${savedAsset.title}. ${getAssetUsageLabel(
+            savedAsset.usage,
+          )} is now synced to this release world.`,
+        );
+        setSelectedAssetFile(null);
+        setAssetForm((current) => ({
+          ...getEmptyAssetForm(),
+          usage: current.usage,
+          kind:
+            current.usage === "track-audio"
+              ? "audio"
+              : current.usage === "cover"
+                ? "cover"
+                : "image",
+          trackId: current.usage === "track-audio" ? current.trackId : "",
+        }));
+      } else {
+        setAssetMessage("Uploaded and saved, but no asset was returned.");
+      }
+    } catch (uploadError) {
+      const message =
+        uploadError instanceof Error
+          ? uploadError.message
+          : "Unknown upload error.";
+      setAssetMessage(`Upload failed: ${message}`);
+    } finally {
+      setIsUploadingAsset(false);
+    }
   }
 
   async function handleCreateAsset() {
@@ -2525,6 +2674,48 @@ export default function DynamicReleaseSignalBoardPage() {
                       </div>
                     </div>
                   </article>
+                </div>
+
+                <div className="signal-board-upload-card" aria-label="Upload asset to Vercel Blob">
+                  <div className="signal-board-upload-copy">
+                    <p className="signal-board-panel-kicker">Cloud Upload</p>
+                    <h3>Upload a file from your computer</h3>
+                    <span>Uploads to Vercel Blob, then registers the returned URL as a ReleaseAsset.</span>
+                  </div>
+
+                  <label className="signal-board-file-drop">
+                    <input
+                      type="file"
+                      accept={
+                        assetForm.usage === "track-audio"
+                          ? "audio/*"
+                          : assetForm.kind === "video"
+                            ? "video/*"
+                            : assetForm.kind === "document"
+                              ? ".pdf,.txt,.doc,.docx"
+                              : "image/*,audio/*,video/*,.pdf"
+                      }
+                      onChange={(event) =>
+                        handleAssetFileChange(event.currentTarget.files)
+                      }
+                    />
+                    <strong>{selectedAssetFile ? selectedAssetFile.name : "Choose file"}</strong>
+                    <span>Cover art, audio bounce, promo visual, or reference file</span>
+                  </label>
+
+                  {assetUploadPreviewUrl && (
+                    <div className="signal-board-upload-preview">
+                      <img src={assetUploadPreviewUrl} alt="Selected asset preview" />
+                    </div>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={handleUploadAndCreateAsset}
+                    disabled={isUploadingAsset || isCreatingAsset || !releaseWorldId || !selectedAssetFile}
+                  >
+                    {isUploadingAsset ? "Uploading..." : "Upload + Register Asset"}
+                  </button>
                 </div>
 
                 <div className="signal-board-track-form-grid signal-board-track-form-grid-compact">
