@@ -3456,3 +3456,97 @@
   color: rgba(232, 246, 255, 0.96);
   box-shadow: 0 0 28px rgba(126, 211, 255, 0.12);
 }
+
+/* ===================================
+   SIGNAL BOARD ASSET MANAGER
+   ReleaseAsset V1 frontend controls
+   =================================== */
+
+.signal-board-asset-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.signal-board-cover-preview {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.signal-board-cover-preview img {
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 1.15rem;
+  box-shadow: 0 22px 58px rgba(0, 0, 0, 0.28);
+}
+
+.signal-board-cover-preview span {
+  color: rgba(235, 240, 246, 0.66);
+  font-size: 0.75rem;
+  overflow-wrap: anywhere;
+}
+
+.signal-board-asset-list {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+.signal-board-asset-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 1.15rem;
+  background:
+    radial-gradient(circle at top left, rgba(126, 211, 255, 0.12), transparent 56%),
+    rgba(255, 255, 255, 0.045);
+}
+
+.signal-board-asset-card h3 {
+  margin: 0.15rem 0 0;
+  color: rgba(248, 250, 252, 0.94);
+  font-size: 1rem;
+}
+
+.signal-board-asset-card p,
+.signal-board-asset-card span {
+  display: block;
+  margin: 0.35rem 0 0;
+  color: rgba(218, 226, 236, 0.72);
+  font-size: 0.8rem;
+}
+
+.signal-board-asset-card a {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.25rem;
+  padding: 0 0.9rem;
+  border: 1px solid rgba(126, 211, 255, 0.3);
+  border-radius: 999px;
+  color: rgba(232, 246, 255, 0.92);
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+@media (max-width: 760px) {
+  .signal-board-asset-overview,
+  .signal-board-asset-card {
+    grid-template-columns: 1fr;
+  }
+
+  .signal-board-asset-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

@@ -24,6 +24,8 @@ const GET_RELEASE_WORLD_BY_SLUG = gql`
       currentFocus
       secondFocus
       fullDropDate
+      coverArtUrl
+      coverAssetId
       updatedAt
       lastOpenedAt
     }
@@ -108,6 +110,8 @@ const UPDATE_RELEASE_WORLD = gql`
       currentFocus
       secondFocus
       fullDropDate
+      coverArtUrl
+      coverAssetId
       updatedAt
       lastOpenedAt
     }
@@ -204,6 +208,54 @@ const DELETE_RELEASE_TRACK = gql`
   }
 `;
 
+const GET_RELEASE_ASSETS = gql`
+  query GetReleaseAssets($releaseWorldId: ID!) {
+    getReleaseAssets(releaseWorldId: $releaseWorldId) {
+      id
+      ownerId
+      releaseWorldId
+      trackId
+      boardArtifactId
+      kind
+      usage
+      title
+      description
+      url
+      fileName
+      mimeType
+      size
+      isPublic
+      createdAt
+      updatedAt
+      lastOpenedAt
+    }
+  }
+`;
+
+const CREATE_RELEASE_ASSET = gql`
+  mutation CreateReleaseAsset($input: ReleaseAssetInput!) {
+    createReleaseAsset(input: $input) {
+      id
+      ownerId
+      releaseWorldId
+      trackId
+      boardArtifactId
+      kind
+      usage
+      title
+      description
+      url
+      fileName
+      mimeType
+      size
+      isPublic
+      createdAt
+      updatedAt
+      lastOpenedAt
+    }
+  }
+`;
+
 type ArtifactKind =
   | "center"
   | "realm"
@@ -242,6 +294,8 @@ interface ReleaseWorld {
   currentFocus?: string | null;
   secondFocus?: string | null;
   fullDropDate?: string | null;
+  coverArtUrl?: string | null;
+  coverAssetId?: string | null;
   updatedAt?: string | null;
   lastOpenedAt?: string | null;
 }
@@ -283,6 +337,38 @@ interface TrackForm {
   isPublic: boolean;
 }
 
+interface ReleaseAsset {
+  id: string;
+  ownerId: string;
+  releaseWorldId: string;
+  trackId?: string | null;
+  boardArtifactId?: string | null;
+  kind: string;
+  usage: string;
+  title: string;
+  description?: string | null;
+  url: string;
+  fileName?: string | null;
+  mimeType?: string | null;
+  size?: number | null;
+  isPublic: boolean;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+  lastOpenedAt?: string | null;
+}
+
+interface AssetForm {
+  title: string;
+  usage: string;
+  kind: string;
+  url: string;
+  fileName: string;
+  mimeType: string;
+  trackId: string;
+  description: string;
+  isPublic: boolean;
+}
+
 interface HookTargetOption {
   slug: string;
   title: string;
@@ -300,6 +386,8 @@ interface PortalSettings {
   currentFocus: string;
   secondFocus: string;
   fullDropDate: string;
+  coverArtUrl: string;
+  coverAssetId: string;
 }
 
 interface BoardArtifact {
@@ -404,6 +492,25 @@ const trackStatusOptions = [
   { value: "mastered", label: "Mastered" },
   { value: "released", label: "Released" },
   { value: "archived", label: "Archived" },
+];
+
+const assetUsageOptions = [
+  { value: "cover", label: "Cover Art" },
+  { value: "track-audio", label: "Track Audio" },
+  { value: "visual-reference", label: "Visual Reference" },
+  { value: "promo", label: "Promo Asset" },
+  { value: "canvas", label: "Canvas Clip" },
+  { value: "lyric", label: "Lyric Asset" },
+  { value: "other", label: "Other" },
+];
+
+const assetKindOptions = [
+  { value: "cover", label: "Cover" },
+  { value: "audio", label: "Audio" },
+  { value: "image", label: "Image" },
+  { value: "video", label: "Video" },
+  { value: "document", label: "Document" },
+  { value: "other", label: "Other" },
 ];
 
 function clamp(value: number, min: number, max: number) {
@@ -514,6 +621,42 @@ function getTrackInputFromForm(form: TrackForm) {
     isSecondFocus: form.isSecondFocus,
     isPublic: form.isPublic,
   };
+}
+
+function getEmptyAssetForm(): AssetForm {
+  return {
+    title: "",
+    usage: "cover",
+    kind: "cover",
+    url: "",
+    fileName: "",
+    mimeType: "",
+    trackId: "",
+    description: "",
+    isPublic: true,
+  };
+}
+
+function getAssetInputFromForm(form: AssetForm, releaseWorldId: string) {
+  const usage = form.usage || "other";
+  const kind = form.kind || (usage === "track-audio" ? "audio" : "image");
+
+  return {
+    releaseWorldId,
+    trackId: usage === "track-audio" && form.trackId ? form.trackId : null,
+    kind,
+    usage,
+    title: form.title.trim(),
+    description: form.description.trim(),
+    url: form.url.trim(),
+    fileName: form.fileName.trim(),
+    mimeType: form.mimeType.trim(),
+    isPublic: form.isPublic,
+  };
+}
+
+function getAssetUsageLabel(usage?: string | null) {
+  return assetUsageOptions.find((option) => option.value === usage)?.label ?? "Asset";
 }
 
 function getHookTargetOptions(
@@ -754,6 +897,8 @@ function getPortalSettingsFromReleaseWorld(
     currentFocus: releaseWorld?.currentFocus ?? "",
     secondFocus: releaseWorld?.secondFocus ?? "",
     fullDropDate: formatDateForInput(releaseWorld?.fullDropDate),
+    coverArtUrl: releaseWorld?.coverArtUrl ?? "",
+    coverAssetId: releaseWorld?.coverAssetId ?? "",
   };
 }
 
@@ -768,6 +913,8 @@ function getPortalSettingsInput(settings: PortalSettings) {
     currentFocus: settings.currentFocus.trim(),
     secondFocus: settings.secondFocus.trim(),
     fullDropDate: settings.fullDropDate || null,
+    coverArtUrl: settings.coverArtUrl.trim(),
+    coverAssetId: settings.coverAssetId.trim() || null,
   };
 }
 
@@ -1009,13 +1156,20 @@ export default function DynamicReleaseSignalBoardPage() {
   const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
   const [isCreatingNewTrack, setIsCreatingNewTrack] = useState(false);
   const [activePanel, setActivePanel] = useState<
-    "tracks" | "signals" | "style" | "portal"
+    "tracks" | "assets" | "signals" | "style" | "portal"
   >("tracks");
   const [trackForm, setTrackForm] = useState<TrackForm>(() =>
     getEmptyTrackForm(1),
   );
   const [trackMessage, setTrackMessage] = useState(
     "Tracks load from this release world. Add songs here, then attach hooks below.",
+  );
+
+  const [assetForm, setAssetForm] = useState<AssetForm>(() =>
+    getEmptyAssetForm(),
+  );
+  const [assetMessage, setAssetMessage] = useState(
+    "Assets register cover art, audio, and visual references to this release world.",
   );
 
   const [portalSettings, setPortalSettings] = useState<PortalSettings>(() =>
@@ -1068,9 +1222,28 @@ export default function DynamicReleaseSignalBoardPage() {
     fetchPolicy: "cache-and-network",
   });
 
+  const {
+    data: assetData,
+    loading: assetsLoading,
+    error: assetsError,
+    refetch: refetchReleaseAssets,
+  } = useQuery(GET_RELEASE_ASSETS, {
+    variables: {
+      releaseWorldId,
+    },
+    skip: !releaseWorldId,
+    fetchPolicy: "cache-and-network",
+  });
+
   const releaseTracks = useMemo(
     () => (trackData?.getReleaseTracks ?? []) as ReleaseTrack[],
     [trackData],
+  );
+
+
+  const releaseAssets = useMemo(
+    () => (assetData?.getReleaseAssets ?? []) as ReleaseAsset[],
+    [assetData],
   );
 
   const hookTargetOptions = useMemo(
@@ -1093,6 +1266,18 @@ export default function DynamicReleaseSignalBoardPage() {
     useMutation(UPDATE_RELEASE_TRACK);
   const [deleteReleaseTrack, { loading: isDeletingTrack }] =
     useMutation(DELETE_RELEASE_TRACK);
+  const [createReleaseAsset, { loading: isCreatingAsset }] =
+    useMutation(CREATE_RELEASE_ASSET);
+
+  const coverAssets = useMemo(
+    () => releaseAssets.filter((asset) => asset.usage === "cover" || asset.kind === "cover"),
+    [releaseAssets],
+  );
+
+  const trackAudioAssets = useMemo(
+    () => releaseAssets.filter((asset) => asset.usage === "track-audio" || asset.kind === "audio"),
+    [releaseAssets],
+  );
 
   useEffect(() => {
     if (
@@ -1413,6 +1598,89 @@ export default function DynamicReleaseSignalBoardPage() {
           ? trackError.message
           : "Unknown track delete error.";
       setTrackMessage(`Track delete failed: ${message}`);
+    }
+  }
+
+
+  function updateAssetForm<K extends keyof AssetForm>(
+    key: K,
+    value: AssetForm[K],
+  ) {
+    setAssetForm((current) => {
+      const next = {
+        ...current,
+        [key]: value,
+      };
+
+      if (key === "usage") {
+        const usage = String(value);
+        if (usage === "cover") next.kind = "cover";
+        if (usage === "track-audio") next.kind = "audio";
+        if (usage === "visual-reference") next.kind = "image";
+      }
+
+      return next;
+    });
+    setAssetMessage("Unsaved asset changes. Register asset to sync it to the release world.");
+  }
+
+  async function handleCreateAsset() {
+    if (!releaseWorldId) {
+      setAssetMessage("Asset save failed: release world could not be found.");
+      return;
+    }
+
+    if (!assetForm.title.trim()) {
+      setAssetMessage("Asset save failed: title is required.");
+      return;
+    }
+
+    if (!assetForm.url.trim()) {
+      setAssetMessage("Asset save failed: URL is required.");
+      return;
+    }
+
+    if (assetForm.usage === "track-audio" && !assetForm.trackId) {
+      setAssetMessage("Asset save failed: choose a track before attaching audio.");
+      return;
+    }
+
+    try {
+      setAssetMessage("Registering asset in MongoDB...");
+
+      const result = await createReleaseAsset({
+        variables: {
+          input: getAssetInputFromForm(assetForm, releaseWorldId),
+        },
+      });
+
+      const savedAsset = result.data?.createReleaseAsset as ReleaseAsset | undefined;
+
+      await refetchReleaseAssets();
+      await refetchReleaseWorld();
+      await refetchReleaseTracks();
+
+      if (savedAsset) {
+        setAssetMessage(
+          `Asset saved: ${savedAsset.title}. ${getAssetUsageLabel(
+            savedAsset.usage,
+          )} is now synced to the Creator OS.`,
+        );
+        setAssetForm((current) => ({
+          ...getEmptyAssetForm(),
+          usage: current.usage,
+          kind: current.usage === "track-audio" ? "audio" : current.usage === "cover" ? "cover" : "image",
+          trackId: current.usage === "track-audio" ? current.trackId : "",
+        }));
+      } else {
+        setAssetMessage("Asset saved, but no asset was returned.");
+      }
+    } catch (assetError) {
+      const message =
+        assetError instanceof Error
+          ? assetError.message
+          : "Unknown asset save error.";
+      setAssetMessage(`Asset save failed: ${message}`);
     }
   }
 
@@ -1905,11 +2173,13 @@ export default function DynamicReleaseSignalBoardPage() {
               <h2>
                 {activePanel === "tracks"
                   ? "Track Manager"
-                  : activePanel === "signals"
-                    ? "Create Signals"
-                    : activePanel === "style"
-                      ? "Style + Map"
-                      : "Portal Final Pass"}
+                  : activePanel === "assets"
+                    ? "Asset Manager"
+                    : activePanel === "signals"
+                      ? "Create Signals"
+                      : activePanel === "style"
+                        ? "Style + Map"
+                        : "Portal Final Pass"}
               </h2>
             </div>
 
@@ -1924,6 +2194,14 @@ export default function DynamicReleaseSignalBoardPage() {
               >
                 <span>♪</span>
                 Tracks
+              </button>
+              <button
+                type="button"
+                className={activePanel === "assets" ? "is-active" : ""}
+                onClick={() => setActivePanel("assets")}
+              >
+                <span>◈</span>
+                Assets
               </button>
               <button
                 type="button"
@@ -2193,6 +2471,225 @@ export default function DynamicReleaseSignalBoardPage() {
                     </button>
                   </div>
                 )}
+              </section>
+            )}
+
+            {activePanel === "assets" && (
+              <section className="signal-board-panel-section">
+                <div className="signal-board-panel-heading">
+                  <div>
+                    <p className="signal-board-panel-kicker">Asset Manager</p>
+                    <h2>Cover, audio, and references</h2>
+                  </div>
+                  <Link href={`/releases/${slug}`}>View Page</Link>
+                </div>
+
+                <p className="signal-board-panel-message">
+                  {assetsError?.message || assetMessage}
+                </p>
+
+                <div className="signal-board-asset-overview">
+                  <article className="signal-board-toolbox-card signal-board-toolbox-card-flat">
+                    <p className="signal-board-panel-kicker">Current Cover</p>
+                    <h2>{releaseWorld?.coverArtUrl ? "Cover synced" : "No cover yet"}</h2>
+                    {releaseWorld?.coverArtUrl ? (
+                      <div className="signal-board-cover-preview">
+                        <img
+                          src={releaseWorld.coverArtUrl}
+                          alt={`${releaseTitle} cover preview`}
+                        />
+                        <span>{releaseWorld.coverArtUrl}</span>
+                      </div>
+                    ) : (
+                      <p className="signal-board-empty-note">
+                        Register a cover asset to update the release page hero.
+                      </p>
+                    )}
+                  </article>
+
+                  <article className="signal-board-toolbox-card signal-board-toolbox-card-flat">
+                    <p className="signal-board-panel-kicker">Asset Totals</p>
+                    <h2>{releaseAssets.length} registered</h2>
+                    <div className="signal-board-theme-map">
+                      <div>
+                        <span>Cover</span>
+                        <strong>{coverAssets.length}</strong>
+                      </div>
+                      <div>
+                        <span>Audio</span>
+                        <strong>{trackAudioAssets.length}</strong>
+                      </div>
+                      <div>
+                        <span>Tracks</span>
+                        <strong>{releaseTracks.length}</strong>
+                      </div>
+                    </div>
+                  </article>
+                </div>
+
+                <div className="signal-board-track-form-grid signal-board-track-form-grid-compact">
+                  <label className="signal-board-wide-field">
+                    Asset title
+                    <input
+                      value={assetForm.title}
+                      onChange={(event) =>
+                        updateAssetForm("title", event.target.value)
+                      }
+                      placeholder="Cover art, demo bounce, visual reference..."
+                    />
+                  </label>
+
+                  <label>
+                    Usage
+                    <select
+                      value={assetForm.usage}
+                      onChange={(event) =>
+                        updateAssetForm("usage", event.target.value)
+                      }
+                    >
+                      {assetUsageOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label>
+                    Kind
+                    <select
+                      value={assetForm.kind}
+                      onChange={(event) =>
+                        updateAssetForm("kind", event.target.value)
+                      }
+                    >
+                      {assetKindOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  {assetForm.usage === "track-audio" && (
+                    <label className="signal-board-wide-field">
+                      Attach to track
+                      <select
+                        value={assetForm.trackId}
+                        onChange={(event) =>
+                          updateAssetForm("trackId", event.target.value)
+                        }
+                      >
+                        <option value="">Choose track</option>
+                        {releaseTracks.map((track) => (
+                          <option key={track.id} value={track.id}>
+                            {String(track.trackNumber).padStart(2, "0")} — {track.title}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  )}
+
+                  <label className="signal-board-wide-field">
+                    Asset URL
+                    <input
+                      value={assetForm.url}
+                      onChange={(event) =>
+                        updateAssetForm("url", event.target.value)
+                      }
+                      placeholder="/cover.jpg, /music/demo.mp3, or external URL"
+                    />
+                  </label>
+
+                  <label>
+                    File name
+                    <input
+                      value={assetForm.fileName}
+                      onChange={(event) =>
+                        updateAssetForm("fileName", event.target.value)
+                      }
+                      placeholder="cover.jpg"
+                    />
+                  </label>
+
+                  <label>
+                    MIME type
+                    <input
+                      value={assetForm.mimeType}
+                      onChange={(event) =>
+                        updateAssetForm("mimeType", event.target.value)
+                      }
+                      placeholder="image/jpeg or audio/mpeg"
+                    />
+                  </label>
+
+                  <label className="signal-board-wide-field">
+                    Description
+                    <textarea
+                      value={assetForm.description}
+                      onChange={(event) =>
+                        updateAssetForm("description", event.target.value)
+                      }
+                      rows={3}
+                      placeholder="What is this asset for?"
+                    />
+                  </label>
+                </div>
+
+                <div className="signal-board-toggle-row">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={assetForm.isPublic}
+                      onChange={(event) =>
+                        updateAssetForm("isPublic", event.target.checked)
+                      }
+                    />
+                    Public asset
+                  </label>
+                </div>
+
+                <div className="signal-board-panel-actions">
+                  <button
+                    type="button"
+                    onClick={handleCreateAsset}
+                    disabled={isCreatingAsset || !releaseWorldId}
+                  >
+                    {isCreatingAsset ? "Registering..." : "Register Asset"}
+                  </button>
+                </div>
+
+                <div className="signal-board-asset-list" aria-label="Registered assets">
+                  {assetsLoading && (
+                    <p className="signal-board-empty-note">Loading assets...</p>
+                  )}
+                  {!assetsLoading && releaseAssets.length === 0 && (
+                    <p className="signal-board-empty-note">
+                      No assets yet. Register a cover URL or track audio URL to start.
+                    </p>
+                  )}
+                  {releaseAssets.map((asset) => {
+                    const attachedTrack = releaseTracks.find(
+                      (track) => track.id === asset.trackId,
+                    );
+
+                    return (
+                      <article key={asset.id} className="signal-board-asset-card">
+                        <div>
+                          <p className="signal-board-panel-kicker">
+                            {getAssetUsageLabel(asset.usage)} / {formatLabel(asset.kind)}
+                          </p>
+                          <h3>{asset.title}</h3>
+                          {asset.description && <p>{asset.description}</p>}
+                          {attachedTrack && <span>Attached to {attachedTrack.title}</span>}
+                        </div>
+                        <a href={asset.url} target="_blank" rel="noreferrer">
+                          Open
+                        </a>
+                      </article>
+                    );
+                  })}
+                </div>
               </section>
             )}
 
@@ -2505,6 +3002,18 @@ export default function DynamicReleaseSignalBoardPage() {
                       onChange={(event) =>
                         updatePortalSetting("fullDropDate", event.target.value)
                       }
+                    />
+                  </label>
+
+
+                  <label className="signal-board-portal-wide">
+                    Cover Art URL
+                    <input
+                      value={portalSettings.coverArtUrl}
+                      onChange={(event) =>
+                        updatePortalSetting("coverArtUrl", event.target.value)
+                      }
+                      placeholder="/cover.jpg or external image URL"
                     />
                   </label>
 
