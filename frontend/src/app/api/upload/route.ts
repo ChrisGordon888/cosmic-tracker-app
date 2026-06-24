@@ -29,28 +29,57 @@ function isUploadFile(value: unknown): value is UploadFile {
 }
 
 function slugifyFileName(value: string) {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9._-]+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-+|-+$/g, '');
+  return (
+    value
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9._-]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'upload'
+  );
+}
+
+function sanitizePathSegment(value: string) {
+  return (
+    value
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'release-world'
+  );
 }
 
 function getUploadFolder(kind: string) {
   if (kind === 'audio') return 'release-audio';
   if (kind === 'cover') return 'release-covers';
   if (kind === 'image') return 'release-images';
+  if (kind === 'video') return 'release-videos';
+  if (kind === 'document') return 'release-documents';
   return 'release-assets';
 }
 
 export async function POST(request: Request) {
   try {
+    const token = process.env.BLOB_READ_WRITE_TOKEN;
+
+    if (!token) {
+      return NextResponse.json(
+        {
+          error:
+            'Missing BLOB_READ_WRITE_TOKEN in server environment. Check Vercel Project Settings → Environment Variables and redeploy.',
+        },
+        { status: 500 },
+      );
+    }
+
     const formData = await request.formData();
 
     const fileValue = formData.get('file');
-    const releaseWorldId = String(formData.get('releaseWorldId') || 'release-world');
-    const kind = String(formData.get('kind') || 'asset');
+    const releaseWorldId = sanitizePathSegment(
+      String(formData.get('releaseWorldId') || 'release-world'),
+    );
+    const kind = sanitizePathSegment(String(formData.get('kind') || 'asset'));
 
     if (!isUploadFile(fileValue)) {
       return NextResponse.json(
@@ -75,6 +104,7 @@ export async function POST(request: Request) {
     const blob = await put(pathname, file, {
       access: 'public',
       addRandomSuffix: true,
+      token,
     });
 
     return NextResponse.json({
@@ -88,9 +118,6 @@ export async function POST(request: Request) {
     const message =
       error instanceof Error ? error.message : 'Unknown upload error.';
 
-    return NextResponse.json(
-      { error: message },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
