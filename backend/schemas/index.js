@@ -79,7 +79,7 @@ const typeDefs = gql`
   type VisitedLocation {
     realmId: Int!
     locationId: String!
-    locationName: String
+    locationName: String!
     visitedAt: String!
     xpEarned: Int!
   }
@@ -156,6 +156,8 @@ const typeDefs = gql`
     currentFocus: String
     secondFocus: String
     fullDropDate: String
+    coverArtUrl: String
+    coverAssetId: ID
     createdAt: String
     updatedAt: String
     lastOpenedAt: String
@@ -178,6 +180,26 @@ const typeDefs = gql`
     audioUrl: String
     isFocusTrack: Boolean!
     isSecondFocus: Boolean!
+    isPublic: Boolean!
+    createdAt: String
+    updatedAt: String
+    lastOpenedAt: String
+  }
+
+  type ReleaseAsset {
+    id: ID!
+    ownerId: String!
+    releaseWorldId: ID!
+    trackId: ID
+    boardArtifactId: ID
+    kind: String!
+    usage: String!
+    title: String!
+    description: String
+    url: String!
+    fileName: String
+    mimeType: String
+    size: Int
     isPublic: Boolean!
     createdAt: String
     updatedAt: String
@@ -241,6 +263,8 @@ const typeDefs = gql`
     currentFocus: String
     secondFocus: String
     fullDropDate: String
+    coverArtUrl: String
+    coverAssetId: ID
   }
 
   input UpdateReleaseWorldInput {
@@ -255,6 +279,8 @@ const typeDefs = gql`
     currentFocus: String
     secondFocus: String
     fullDropDate: String
+    coverArtUrl: String
+    coverAssetId: ID
   }
 
   input ReleaseTrackInput {
@@ -289,6 +315,35 @@ const typeDefs = gql`
     audioUrl: String
     isFocusTrack: Boolean
     isSecondFocus: Boolean
+    isPublic: Boolean
+  }
+
+  input ReleaseAssetInput {
+    releaseWorldId: ID!
+    trackId: ID
+    boardArtifactId: ID
+    kind: String
+    usage: String
+    title: String!
+    description: String
+    url: String!
+    fileName: String
+    mimeType: String
+    size: Int
+    isPublic: Boolean
+  }
+
+  input UpdateReleaseAssetInput {
+    trackId: ID
+    boardArtifactId: ID
+    kind: String
+    usage: String
+    title: String
+    description: String
+    url: String
+    fileName: String
+    mimeType: String
+    size: Int
     isPublic: Boolean
   }
 
@@ -346,8 +401,13 @@ const typeDefs = gql`
     myReleaseWorlds: [ReleaseWorld!]!
     getMyReleaseWorld(id: ID!): ReleaseWorld
     getMyReleaseWorldBySlug(slug: String!): ReleaseWorld
+
     getReleaseTracks(releaseWorldId: ID!): [ReleaseTrack!]!
     getReleaseTrack(id: ID!): ReleaseTrack
+
+    getReleaseAssets(releaseWorldId: ID!): [ReleaseAsset!]!
+    getReleaseAsset(id: ID!): ReleaseAsset
+
     getBoardArtifacts(releaseWorldId: ID!): [BoardArtifact!]!
     getPublicBoardArtifacts(releaseWorldId: ID!): [BoardArtifact!]!
   }
@@ -423,6 +483,10 @@ const typeDefs = gql`
       releaseWorldId: ID!
       orderedTrackIds: [ID!]!
     ): [ReleaseTrack!]!
+
+    createReleaseAsset(input: ReleaseAssetInput!): ReleaseAsset!
+    updateReleaseAsset(id: ID!, input: UpdateReleaseAssetInput!): ReleaseAsset!
+    deleteReleaseAsset(id: ID!): ReleaseAsset
 
     saveBoardArtifacts(
       releaseWorldId: ID!

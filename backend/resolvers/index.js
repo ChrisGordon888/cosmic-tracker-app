@@ -1,3 +1,4 @@
+```js
 const User = require("../models/User");
 const SacredYes = require("../models/SacredYes");
 const MoodEntry = require("../models/MoodEntry");
@@ -9,6 +10,7 @@ const CreativeProfile = require("../models/CreativeProfile");
 const ReleaseWorld = require("../models/ReleaseWorld");
 const BoardArtifact = require("../models/BoardArtifact");
 const ReleaseTrack = require("../models/ReleaseTrack");
+const ReleaseAsset = require("../models/ReleaseAsset");
 
 function normalizeSlug(slug) {
     return String(slug || "")
@@ -29,11 +31,48 @@ function normalizeTrackSlug(inputSlug, title) {
     return normalizeSlug(inputSlug || fallback);
 }
 
+function normalizeOptionalId(value) {
+    if (value === undefined) return undefined;
+    if (value === null) return null;
+    const cleanValue = String(value).trim();
+    return cleanValue ? cleanValue : null;
+}
+
 async function getOwnedReleaseWorld(releaseWorldId, userId) {
     return await ReleaseWorld.findOne({
         _id: releaseWorldId,
         ownerId: userId,
     });
+}
+
+async function getOwnedReleaseTrack(trackId, userId, releaseWorldId) {
+    if (!trackId) return null;
+
+    const query = {
+        _id: trackId,
+        ownerId: userId,
+    };
+
+    if (releaseWorldId) {
+        query.releaseWorldId = releaseWorldId;
+    }
+
+    return await ReleaseTrack.findOne(query);
+}
+
+async function getOwnedBoardArtifact(boardArtifactId, userId, releaseWorldId) {
+    if (!boardArtifactId) return null;
+
+    const query = {
+        _id: boardArtifactId,
+        ownerId: userId,
+    };
+
+    if (releaseWorldId) {
+        query.releaseWorldId = releaseWorldId;
+    }
+
+    return await BoardArtifact.findOne(query);
 }
 
 async function syncReleaseWorldFocusFromTrack(track, userId) {
@@ -76,6 +115,84 @@ async function syncReleaseWorldFocusFromTrack(track, userId) {
                 ownerId: userId,
             },
             update,
+            { new: true }
+        );
+    }
+}
+
+async function syncReleaseAssetTargets(asset, userId) {
+    if (!asset) return;
+
+    const isCoverAsset = asset.usage === "cover" || asset.kind === "cover";
+    const isTrackAudioAsset =
+        asset.usage === "track-audio" || asset.kind === "audio";
+
+    if (isCoverAsset) {
+        await ReleaseWorld.findOneAndUpdate(
+            {
+                _id: asset.releaseWorldId,
+                ownerId: userId,
+            },
+            {
+                coverArtUrl: asset.url || "",
+                coverAssetId: asset._id,
+                lastOpenedAt: new Date(),
+            },
+            { new: true }
+        );
+    }
+
+    if (isTrackAudioAsset && asset.trackId) {
+        await ReleaseTrack.findOneAndUpdate(
+            {
+                _id: asset.trackId,
+                ownerId: userId,
+                releaseWorldId: asset.releaseWorldId,
+            },
+            {
+                audioUrl: asset.url || "",
+                lastOpenedAt: new Date(),
+            },
+            { new: true }
+        );
+    }
+}
+
+async function clearReleaseAssetTargets(asset, userId) {
+    if (!asset) return;
+
+    const isCoverAsset = asset.usage === "cover" || asset.kind === "cover";
+    const isTrackAudioAsset =
+        asset.usage === "track-audio" || asset.kind === "audio";
+
+    if (isCoverAsset) {
+        await ReleaseWorld.findOneAndUpdate(
+            {
+                _id: asset.releaseWorldId,
+                ownerId: userId,
+                coverAssetId: asset._id,
+            },
+            {
+                coverArtUrl: "",
+                coverAssetId: null,
+                lastOpenedAt: new Date(),
+            },
+            { new: true }
+        );
+    }
+
+    if (isTrackAudioAsset && asset.trackId) {
+        await ReleaseTrack.findOneAndUpdate(
+            {
+                _id: asset.trackId,
+                ownerId: userId,
+                releaseWorldId: asset.releaseWorldId,
+                audioUrl: asset.url,
+            },
+            {
+                audioUrl: "",
+                lastOpenedAt: new Date(),
+            },
             { new: true }
         );
     }
@@ -249,6 +366,40 @@ module.exports = {
             }
 
             return track;
+        },
+
+        getReleaseAssets: async (_, { releaseWorldId }, { user }) => {
+            if (!user) throw new Error("Unauthorized: Please sign in.");
+
+            const releaseWorld = await getOwnedReleaseWorld(releaseWorldId, user.id);
+
+            if (!releaseWorld) {
+                throw new Error("Release world not found.");
+            }
+
+            return await ReleaseAsset.find({
+                ownerId: user.id,
+                releaseWorldId,
+            }).sort({
+                usage: 1,
+                createdAt: -1,
+            });
+        },
+
+        getReleaseAsset: async (_, { id }, { user }) => {
+            if (!user) throw new Error("Unauthorized: Please sign in.");
+
+            const asset = await ReleaseAsset.findOne({
+                _id: id,
+                ownerId: user.id,
+            });
+
+            if (asset) {
+                asset.lastOpenedAt = new Date();
+                await asset.save();
+            }
+
+            return asset;
         },
 
         getBoardArtifacts: async (_, { releaseWorldId }, { user }) => {
@@ -434,7 +585,7 @@ module.exports = {
             if (!userData) throw new Error("User not found.");
 
             const existingTrial = userData.completedTrials.find(
-                (t) => t.realmId === realmId && t.trialId === trialId
+                (t) => t.realmId === realmId && t.trialId === trialId)
             );
 
             if (existingTrial) return userData;
@@ -728,6 +879,8 @@ module.exports = {
                 ownerId: user.id,
                 creativeProfileId: profile._id,
                 fullDropDate: input.fullDropDate ? new Date(input.fullDropDate) : null,
+                coverAssetId: normalizeOptionalId(input.coverAssetId),
+                coverArtUrl: input.coverArtUrl || "",
                 lastOpenedAt: new Date(),
             });
         },
@@ -748,6 +901,10 @@ module.exports = {
                 update.fullDropDate = input.fullDropDate
                     ? new Date(input.fullDropDate)
                     : null;
+            }
+
+            if (input.coverAssetId !== undefined) {
+                update.coverAssetId = normalizeOptionalId(input.coverAssetId);
             }
 
             return await ReleaseWorld.findOneAndUpdate(
@@ -948,6 +1105,190 @@ module.exports = {
             });
         },
 
+        createReleaseAsset: async (_, { input }, { user }) => {
+            if (!user) throw new Error("Unauthorized: Please sign in.");
+
+            const releaseWorld = await getOwnedReleaseWorld(input.releaseWorldId, user.id);
+
+            if (!releaseWorld) {
+                throw new Error("Release world not found.");
+            }
+
+            const normalizedTrackId = normalizeOptionalId(input.trackId);
+            const normalizedBoardArtifactId = normalizeOptionalId(input.boardArtifactId);
+
+            if (normalizedTrackId) {
+                const track = await getOwnedReleaseTrack(
+                    normalizedTrackId,
+                    user.id,
+                    releaseWorld._id
+                );
+
+                if (!track) {
+                    throw new Error("Track not found for this release world.");
+                }
+            }
+
+            if (normalizedBoardArtifactId) {
+                const artifact = await getOwnedBoardArtifact(
+                    normalizedBoardArtifactId,
+                    user.id,
+                    releaseWorld._id
+                );
+
+                if (!artifact) {
+                    throw new Error("Board artifact not found for this release world.");
+                }
+            }
+
+            const asset = await ReleaseAsset.create({
+                ownerId: user.id,
+                releaseWorldId: releaseWorld._id,
+                trackId: normalizedTrackId,
+                boardArtifactId: normalizedBoardArtifactId,
+                kind: input.kind || "image",
+                usage: input.usage || "other",
+                title: input.title,
+                description: input.description || "",
+                url: input.url,
+                fileName: input.fileName || "",
+                mimeType: input.mimeType || "",
+                size: input.size === undefined || input.size === null ? null : input.size,
+                isPublic: input.isPublic || false,
+                lastOpenedAt: new Date(),
+            });
+
+            await syncReleaseAssetTargets(asset, user.id);
+
+            releaseWorld.lastOpenedAt = new Date();
+            await releaseWorld.save();
+
+            return asset;
+        },
+
+        updateReleaseAsset: async (_, { id, input }, { user }) => {
+            if (!user) throw new Error("Unauthorized: Please sign in.");
+
+            const existingAsset = await ReleaseAsset.findOne({
+                _id: id,
+                ownerId: user.id,
+            });
+
+            if (!existingAsset) {
+                throw new Error("Release asset not found.");
+            }
+
+            const releaseWorld = await getOwnedReleaseWorld(
+                existingAsset.releaseWorldId,
+                user.id
+            );
+
+            if (!releaseWorld) {
+                throw new Error("Release world not found.");
+            }
+
+            const update = {
+                lastOpenedAt: new Date(),
+            };
+
+            if (input.trackId !== undefined) {
+                const normalizedTrackId = normalizeOptionalId(input.trackId);
+
+                if (normalizedTrackId) {
+                    const track = await getOwnedReleaseTrack(
+                        normalizedTrackId,
+                        user.id,
+                        releaseWorld._id
+                    );
+
+                    if (!track) {
+                        throw new Error("Track not found for this release world.");
+                    }
+                }
+
+                update.trackId = normalizedTrackId;
+            }
+
+            if (input.boardArtifactId !== undefined) {
+                const normalizedBoardArtifactId = normalizeOptionalId(
+                    input.boardArtifactId
+                );
+
+                if (normalizedBoardArtifactId) {
+                    const artifact = await getOwnedBoardArtifact(
+                        normalizedBoardArtifactId,
+                        user.id,
+                        releaseWorld._id
+                    );
+
+                    if (!artifact) {
+                        throw new Error("Board artifact not found for this release world.");
+                    }
+                }
+
+                update.boardArtifactId = normalizedBoardArtifactId;
+            }
+
+            if (input.kind !== undefined) update.kind = input.kind || "image";
+            if (input.usage !== undefined) update.usage = input.usage || "other";
+            if (input.title !== undefined) update.title = input.title;
+            if (input.description !== undefined) update.description = input.description || "";
+            if (input.url !== undefined) update.url = input.url;
+            if (input.fileName !== undefined) update.fileName = input.fileName || "";
+            if (input.mimeType !== undefined) update.mimeType = input.mimeType || "";
+            if (input.size !== undefined) {
+                update.size = input.size === null ? null : input.size;
+            }
+            if (input.isPublic !== undefined) update.isPublic = input.isPublic;
+
+            const updatedAsset = await ReleaseAsset.findOneAndUpdate(
+                {
+                    _id: id,
+                    ownerId: user.id,
+                },
+                update,
+                { new: true }
+            );
+
+            await syncReleaseAssetTargets(updatedAsset, user.id);
+
+            releaseWorld.lastOpenedAt = new Date();
+            await releaseWorld.save();
+
+            return updatedAsset;
+        },
+
+        deleteReleaseAsset: async (_, { id }, { user }) => {
+            if (!user) throw new Error("Unauthorized: Please sign in.");
+
+            const asset = await ReleaseAsset.findOne({
+                _id: id,
+                ownerId: user.id,
+            });
+
+            if (!asset) {
+                throw new Error("Release asset not found.");
+            }
+
+            const releaseWorld = await getOwnedReleaseWorld(asset.releaseWorldId, user.id);
+
+            if (!releaseWorld) {
+                throw new Error("Release world not found.");
+            }
+
+            await clearReleaseAssetTargets(asset, user.id);
+
+            const deletedAsset = await ReleaseAsset.findOneAndDelete({
+                _id: id,
+                ownerId: user.id,
+            });
+
+            releaseWorld.lastOpenedAt = new Date();
+            await releaseWorld.save();
+
+            return deletedAsset;
+        },
+
         saveBoardArtifacts: async (_, { releaseWorldId, artifacts }, { user }) => {
             if (!user) throw new Error("Unauthorized: Please sign in.");
 
@@ -1021,3 +1362,4 @@ module.exports = {
         },
     },
 };
+```
