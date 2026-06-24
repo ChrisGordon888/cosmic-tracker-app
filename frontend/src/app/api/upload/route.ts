@@ -13,14 +13,18 @@ type UploadFile = {
   arrayBuffer: () => Promise<ArrayBuffer>;
 };
 
-function isUploadFile(value: FormDataEntryValue | null): value is UploadFile {
-  return Boolean(
-    value &&
-      typeof value === 'object' &&
-      'name' in value &&
-      'size' in value &&
-      'type' in value &&
-      'arrayBuffer' in value,
+function isUploadFile(value: unknown): value is UploadFile {
+  if (!value || typeof value !== 'object') return false;
+
+  return (
+    'name' in value &&
+    'size' in value &&
+    'type' in value &&
+    'arrayBuffer' in value &&
+    typeof (value as { name?: unknown }).name === 'string' &&
+    typeof (value as { size?: unknown }).size === 'number' &&
+    typeof (value as { type?: unknown }).type === 'string' &&
+    typeof (value as { arrayBuffer?: unknown }).arrayBuffer === 'function'
   );
 }
 
@@ -44,16 +48,18 @@ export async function POST(request: Request) {
   try {
     const formData = await request.formData();
 
-    const file = formData.get('file');
+    const fileValue = formData.get('file');
     const releaseWorldId = String(formData.get('releaseWorldId') || 'release-world');
     const kind = String(formData.get('kind') || 'asset');
 
-    if (!isUploadFile(file)) {
+    if (!isUploadFile(fileValue)) {
       return NextResponse.json(
         { error: 'No file was provided.' },
         { status: 400 },
       );
     }
+
+    const file = fileValue;
 
     if (file.size > MAX_FILE_SIZE_BYTES) {
       return NextResponse.json(
