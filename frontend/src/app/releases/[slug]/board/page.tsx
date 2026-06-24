@@ -659,6 +659,16 @@ function getAssetUsageLabel(usage?: string | null) {
   return assetUsageOptions.find((option) => option.value === usage)?.label ?? "Asset";
 }
 
+function formatLabel(value?: string | null) {
+  if (!value) return "Unknown";
+
+  return value
+    .split("-")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
 function getHookTargetOptions(
   releaseWorld?: ReleaseWorld | null,
   releaseTracks: ReleaseTrack[] = [],
