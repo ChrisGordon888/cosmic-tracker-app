@@ -584,7 +584,7 @@ module.exports = {
             if (!userData) throw new Error("User not found.");
 
             const existingTrial = userData.completedTrials.find(
-                (t) => t.realmId === realmId && t.trialId === trialId)
+                (t) => t.realmId === realmId && t.trialId === trialId
             );
 
             if (existingTrial) return userData;
