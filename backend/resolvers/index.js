@@ -1,4 +1,3 @@
-```js
 const User = require("../models/User");
 const SacredYes = require("../models/SacredYes");
 const MoodEntry = require("../models/MoodEntry");
@@ -1362,4 +1361,3 @@ module.exports = {
         },
     },
 };
-```
