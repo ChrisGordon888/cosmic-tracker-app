@@ -594,7 +594,7 @@ moon silver, ice blue, champagne gold, smoked glass.
 }
 
 /* ===================================
-   ðŸ“± NEXUS MOBILE POLISH
+   Ã°Å¸â€œÂ± NEXUS MOBILE POLISH
    =================================== */
 
 @media (max-width: 768px) {
@@ -837,4 +837,28 @@ moon silver, ice blue, champagne gold, smoked glass.
     .nexus-journey-card {
         flex-basis: 88%;
     }
+}
+/* ===================================
+   CREATOR OS FEATURED RELEASE BRIDGE
+   =================================== */
+
+.nexus-featured-release-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding: 0.72rem 1rem;
+    border: 1px solid rgba(220, 186, 92, 0.22);
+    color: rgba(243, 231, 209, 0.92);
+    background: rgba(220, 186, 92, 0.075);
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.nexus-featured-release-link:hover {
+    transform: translateY(-1px);
+    border-color: rgba(220, 186, 92, 0.36);
+    background: rgba(220, 186, 92, 0.12);
 }

@@ -4,7 +4,7 @@ import { useSession, signIn } from 'next-auth/react';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useQuery, useMutation } from '@apollo/client';
+import { gql, useQuery, useMutation } from '@apollo/client';
 import { getTodayMoonPhase, getRealmMoonAlignment } from '@/lib/moonPhases';
 import RealmBackground from '@/components/realm/RealmBackground';
 import { GET_ME, LOG_DAILY_LOGIN } from '@/graphql/realms';
@@ -34,6 +34,49 @@ interface StoredRealmGuidance {
     reflectionPrompt: string;
     savedAt?: string;
 }
+
+interface FeaturedReleaseWorld {
+    id: string;
+    title: string;
+    slug: string;
+    releaseType: string;
+    status: string;
+    visibility: string;
+    isFeatured: boolean;
+    oneLineSummary?: string | null;
+    story?: string | null;
+    currentFocus?: string | null;
+    secondFocus?: string | null;
+    fullDropDate?: string | null;
+    coverArtUrl?: string | null;
+    coverAssetId?: string | null;
+    updatedAt?: string | null;
+    lastOpenedAt?: string | null;
+}
+
+const GET_PUBLIC_FEATURED_RELEASE_WORLD = gql`
+    query GetPublicFeaturedReleaseWorld {
+        getPublicFeaturedReleaseWorld {
+            id
+            title
+            slug
+            releaseType
+            status
+            visibility
+            isFeatured
+            oneLineSummary
+            story
+            currentFocus
+            secondFocus
+            fullDropDate
+            coverArtUrl
+            coverAssetId
+            updatedAt
+            lastOpenedAt
+        }
+    }
+`;
+
 
 const REALM_META = [
     {
@@ -147,6 +190,38 @@ function formatUnlockDate(dateString?: string | null) {
     }
 }
 
+function formatFeaturedReleaseDate(dateString?: string | null) {
+    if (!dateString) return 'Drop date TBD';
+
+    try {
+        return new Intl.DateTimeFormat('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+        }).format(new Date(dateString));
+    } catch {
+        return 'Drop date TBD';
+    }
+}
+
+function formatFeaturedReleaseLabel(value?: string | null) {
+    if (!value) return 'Featured';
+
+    return value
+        .split('-')
+        .filter(Boolean)
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+}
+
+function getFeaturedReleaseSummary(release?: FeaturedReleaseWorld | null) {
+    return (
+        release?.oneLineSummary?.trim() ||
+        release?.story?.trim() ||
+        'The featured world from Creator OS is now connected to the Nexus.'
+    );
+}
+
 function getCollectionTypeLabel(totalCount: number, openCount: number) {
     if (totalCount <= 1) return 'Signal';
     if (openCount < totalCount) return 'Curated EP';
@@ -187,6 +262,12 @@ export default function CosmicNexusHub() {
 
     const { data: userData, loading: userLoading } = useQuery(GET_ME, {
         skip: !session,
+    });
+
+
+    const { data: featuredReleaseData } = useQuery(GET_PUBLIC_FEATURED_RELEASE_WORLD, {
+        fetchPolicy: 'cache-and-network',
+        errorPolicy: 'all',
     });
 
     const [logDailyLogin] = useMutation(LOG_DAILY_LOGIN);
@@ -241,6 +322,32 @@ export default function CosmicNexusHub() {
     })();
 
     const currentRelease = CURRENT_FEATURED_RELEASE;
+    const dynamicFeaturedRelease = featuredReleaseData?.getPublicFeaturedReleaseWorld as
+        | FeaturedReleaseWorld
+        | null
+        | undefined;
+    const hasDynamicFeaturedRelease = Boolean(dynamicFeaturedRelease?.id);
+    const featuredReleaseTitle = dynamicFeaturedRelease?.title ?? currentRelease?.title ?? 'Featured Release';
+    const featuredReleaseSummary = hasDynamicFeaturedRelease
+        ? getFeaturedReleaseSummary(dynamicFeaturedRelease)
+        : 'Explore the current featured signal from the Cosmic registry.';
+    const featuredReleaseArtworkUrl =
+        dynamicFeaturedRelease?.coverArtUrl?.trim() || currentRelease?.coverArtUrl || null;
+    const featuredReleasePortalHref = dynamicFeaturedRelease?.slug
+        ? `/releases/${dynamicFeaturedRelease.slug}`
+        : null;
+    const featuredReleaseStatus = dynamicFeaturedRelease?.status
+        ? formatFeaturedReleaseLabel(dynamicFeaturedRelease.status)
+        : 'Current Release';
+    const featuredReleaseType = dynamicFeaturedRelease?.releaseType
+        ? formatFeaturedReleaseLabel(dynamicFeaturedRelease.releaseType)
+        : 'Cosmic Drop';
+    const featuredReleaseDropDate = formatFeaturedReleaseDate(dynamicFeaturedRelease?.fullDropDate);
+    const featuredReleaseFocusLine = dynamicFeaturedRelease
+        ? `${dynamicFeaturedRelease.currentFocus?.trim() || 'Focus TBD'} → ${
+            dynamicFeaturedRelease.secondFocus?.trim() || 'Second signal TBD'
+        }`
+        : null;
     const currentReleaseTracks = useMemo(() => getCurrentReleaseTracks(), []);
     const currentReleasePrimaryTrack = useMemo(() => {
         if (!currentRelease?.primaryTrackId) return null;
@@ -426,7 +533,7 @@ export default function CosmicNexusHub() {
     const primaryUnlockLabel = currentReleasePrimaryTrack
         ? getTrackUnlockLabel(currentReleasePrimaryTrack)
         : null;
-    const releaseArtworkUrl = currentRelease?.coverArtUrl ?? null;
+    const releaseArtworkUrl = featuredReleaseArtworkUrl;
     const featuredSignalArtwork =
         CURATED_PLAYLIST_ART_OVERRIDES['cosmic-featured-signal'] ??
         releaseArtworkUrl ??
@@ -528,7 +635,7 @@ export default function CosmicNexusHub() {
                         </p>
                     </header>
 
-                    {currentRelease && currentReleasePrimaryTrack && (
+                    {(dynamicFeaturedRelease || currentRelease) && currentReleasePrimaryTrack && (
                         <section
                             id="current-release"
                             className="glass-card nexus-panel p-5 md:p-7 mb-5 fade-in"
@@ -545,13 +652,9 @@ export default function CosmicNexusHub() {
                             >
                                 {releaseArtworkUrl ? (
                                     <div className="mb-5 flex justify-center">
-                                        <Image
+                                        <img
                                             src={releaseArtworkUrl}
-                                            alt={currentRelease.title}
-                                            width={260}
-                                            height={260}
-                                            priority
-                                            sizes="(max-width: 768px) 72vw, 260px"
+                                            alt={featuredReleaseTitle}
                                             style={{
                                                 width: 'min(260px, 72vw)',
                                                 height: 'auto',
@@ -591,7 +694,14 @@ export default function CosmicNexusHub() {
                                         className="px-3 py-1.5 rounded-full text-[11px] uppercase tracking-[0.14em] bg-[#7c5cff22] border border-[#7c5cff44] text-[#cdb7ff]"
                                         style={{ backdropFilter: 'blur(10px)' }}
                                     >
-                                        {currentRelease.title}
+                                        {featuredReleaseTitle}
+                                    </span>
+
+                                    <span
+                                        className="px-3 py-1.5 rounded-full text-[11px] uppercase tracking-[0.14em] bg-white/5 border border-white/10 text-secondary"
+                                        style={{ backdropFilter: 'blur(10px)' }}
+                                    >
+                                        {hasDynamicFeaturedRelease ? 'Creator OS Featured' : 'Static Registry'}
                                     </span>
 
                                     <span
@@ -609,17 +719,23 @@ export default function CosmicNexusHub() {
                                         lineHeight: 1.02,
                                     }}
                                 >
-                                    {currentRelease.title}
+                                    {featuredReleaseTitle}
                                 </h2>
 
                                 <p className="text-base md:text-lg text-white/90 mb-2">
-                                    {currentReleasePrimaryTrack.trackTitle}
+                                    {featuredReleaseFocusLine ?? currentReleasePrimaryTrack.trackTitle}
                                 </p>
 
-                                <p className="text-secondary text-sm md:text-base max-w-2xl mx-auto mb-5 leading-relaxed">
-                                    {currentReleasePrimaryLocked
-                                        ? `The lead track opens ${primaryUnlockLabel}.`
-                                        : 'Now playing in the Nexus.'}
+                                <p className="text-secondary text-sm md:text-base max-w-2xl mx-auto mb-3 leading-relaxed">
+                                    {featuredReleaseSummary}
+                                </p>
+
+                                <p className="text-secondary text-xs md:text-sm max-w-2xl mx-auto mb-5 leading-relaxed uppercase tracking-[0.14em]">
+                                    {hasDynamicFeaturedRelease
+                                        ? `${featuredReleaseType} · ${featuredReleaseStatus} · ${featuredReleaseDropDate}`
+                                        : currentReleasePrimaryLocked
+                                            ? `The lead track opens ${primaryUnlockLabel}.`
+                                            : 'Now playing in the Nexus.'}
                                 </p>
 
                                 <div className="flex flex-wrap justify-center gap-2.5 mb-5">
@@ -651,6 +767,21 @@ export default function CosmicNexusHub() {
                                     >
                                         {showReleaseDetails ? 'Close Details' : 'Open Release'}
                                     </button>
+
+
+                                    {featuredReleasePortalHref && (
+                                        <Link
+                                            href={featuredReleasePortalHref}
+                                            className="btn-secondary nexus-featured-release-link"
+                                            style={{
+                                                borderRadius: '999px',
+                                                backdropFilter: 'blur(10px)',
+                                                textDecoration: 'none',
+                                            }}
+                                        >
+                                            Enter Portal
+                                        </Link>
+                                    )}
                                 </div>
 
                                 <div className="flex flex-wrap justify-center gap-2">
@@ -694,7 +825,7 @@ export default function CosmicNexusHub() {
                                                 <p className="text-xs uppercase tracking-[0.18em] text-muted mb-1">
                                                     Tracklist
                                                 </p>
-                                                <h3 className="text-2xl font-display">SIRENS in Neverland</h3>
+                                                <h3 className="text-2xl font-display">{featuredReleaseTitle}</h3>
                                             </div>
 
                                             <span className="text-xs text-muted">

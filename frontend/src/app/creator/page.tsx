@@ -40,9 +40,9 @@ const CREATOR_HOME_QUERY = gql`
   }
 `;
 
-const UPDATE_RELEASE_WORLD_FEATURED = gql`
-  mutation UpdateReleaseWorldFeatured($id: ID!, $input: UpdateReleaseWorldInput!) {
-    updateReleaseWorld(id: $id, input: $input) {
+const SET_FEATURED_RELEASE_WORLD = gql`
+  mutation SetFeaturedReleaseWorld($releaseWorldId: ID!) {
+    setFeaturedReleaseWorld(releaseWorldId: $releaseWorldId) {
       id
       title
       slug
@@ -222,8 +222,8 @@ export default function CreatorDashboardPage() {
     fetchPolicy: 'cache-and-network',
   });
 
-  const [updateReleaseWorld, { loading: isSettingFeatured }] = useMutation(
-    UPDATE_RELEASE_WORLD_FEATURED,
+  const [setFeaturedReleaseWorld, { loading: isSettingFeatured }] = useMutation(
+    SET_FEATURED_RELEASE_WORLD,
   );
 
   const profiles: CreativeProfile[] = data?.myCreativeProfiles ?? [];
@@ -275,18 +275,11 @@ export default function CreatorDashboardPage() {
     if (!project.id) return;
 
     try {
-      await Promise.all(
-        projects.map((releaseWorld) =>
-          updateReleaseWorld({
-            variables: {
-              id: releaseWorld.id,
-              input: {
-                isFeatured: releaseWorld.id === project.id,
-              },
-            },
-          }),
-        ),
-      );
+      await setFeaturedReleaseWorld({
+        variables: {
+          releaseWorldId: project.id,
+        },
+      });
 
       await refetch();
     } catch (featuredError) {
