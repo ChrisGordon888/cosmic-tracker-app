@@ -257,6 +257,30 @@ const CREATE_RELEASE_ASSET = gql`
   }
 `;
 
+const DELETE_RELEASE_ASSET = gql`
+  mutation DeleteReleaseAsset($id: ID!) {
+    deleteReleaseAsset(id: $id) {
+      id
+      ownerId
+      releaseWorldId
+      trackId
+      boardArtifactId
+      kind
+      usage
+      title
+      description
+      url
+      fileName
+      mimeType
+      size
+      isPublic
+      createdAt
+      updatedAt
+      lastOpenedAt
+    }
+  }
+`;
+
 type ArtifactKind =
   | "center"
   | "realm"
@@ -1282,6 +1306,8 @@ export default function DynamicReleaseSignalBoardPage() {
     useMutation(DELETE_RELEASE_TRACK);
   const [createReleaseAsset, { loading: isCreatingAsset }] =
     useMutation(CREATE_RELEASE_ASSET);
+  const [deleteReleaseAsset, { loading: isDeletingAsset }] =
+    useMutation(DELETE_RELEASE_ASSET);
 
   const coverAssets = useMemo(
     () => releaseAssets.filter((asset) => asset.usage === "cover" || asset.kind === "cover"),
@@ -1693,6 +1719,16 @@ export default function DynamicReleaseSignalBoardPage() {
       return;
     }
 
+    if (assetForm.usage === "cover" && !selectedAssetFile.type.startsWith("image/")) {
+      setAssetMessage("Upload failed: cover art must be an image file.");
+      return;
+    }
+
+    if (assetForm.usage === "track-audio" && !selectedAssetFile.type.startsWith("audio/")) {
+      setAssetMessage("Upload failed: track audio must be an audio file.");
+      return;
+    }
+
     try {
       setIsUploadingAsset(true);
       setAssetMessage("Uploading file directly to Vercel Blob...");
@@ -1859,6 +1895,62 @@ export default function DynamicReleaseSignalBoardPage() {
           ? assetError.message
           : "Unknown asset save error.";
       setAssetMessage(`Asset save failed: ${message}`);
+    }
+  }
+
+  async function handleDeleteAsset(asset: ReleaseAsset) {
+    if (!asset?.id) {
+      setAssetMessage("Delete failed: asset could not be found.");
+      return;
+    }
+
+    const isCoverAsset = asset.usage === "cover" || asset.kind === "cover";
+    const isTrackAudioAsset =
+      asset.usage === "track-audio" || asset.kind === "audio";
+    const attachedTrack = releaseTracks.find((track) => track.id === asset.trackId);
+    const impactNote = isCoverAsset
+      ? " This will also clear the active release cover if this asset is currently connected."
+      : isTrackAudioAsset
+        ? ` This will also clear the attached audio URL${attachedTrack ? ` for ${attachedTrack.title}` : ""} if it is currently connected.`
+        : "";
+
+    const confirmed = window.confirm(
+      `Delete asset "${asset.title}"?${impactNote} The backend will also attempt Vercel Blob cleanup.`,
+    );
+
+    if (!confirmed) {
+      setAssetMessage("Asset delete cancelled.");
+      return;
+    }
+
+    try {
+      setAssetMessage(`Deleting asset: ${asset.title}...`);
+
+      const result = await deleteReleaseAsset({
+        variables: {
+          id: asset.id,
+        },
+      });
+
+      const deletedAsset = result.data?.deleteReleaseAsset as
+        | ReleaseAsset
+        | undefined;
+
+      await refetchReleaseAssets();
+      await refetchReleaseWorld();
+      await refetchReleaseTracks();
+
+      setAssetMessage(
+        deletedAsset
+          ? `Deleted ${deletedAsset.title}. Connected cover/audio fields were cleared and Blob cleanup was requested.`
+          : "Asset deleted. Connected cover/audio fields were cleared and Blob cleanup was requested.",
+      );
+    } catch (assetError) {
+      const message =
+        assetError instanceof Error
+          ? assetError.message
+          : "Unknown asset delete error.";
+      setAssetMessage(`Asset delete failed: ${message}`);
     }
   }
 
@@ -2895,17 +2987,29 @@ export default function DynamicReleaseSignalBoardPage() {
 
                     return (
                       <article key={asset.id} className="signal-board-asset-card">
-                        <div>
+                        <div className="signal-board-asset-card-copy">
                           <p className="signal-board-panel-kicker">
                             {getAssetUsageLabel(asset.usage)} / {formatLabel(asset.kind)}
                           </p>
                           <h3>{asset.title}</h3>
                           {asset.description && <p>{asset.description}</p>}
                           {attachedTrack && <span>Attached to {attachedTrack.title}</span>}
+                          <span>{asset.fileName || asset.url}</span>
                         </div>
-                        <a href={asset.url} target="_blank" rel="noreferrer">
-                          Open
-                        </a>
+
+                        <div className="signal-board-asset-card-actions">
+                          <a href={asset.url} target="_blank" rel="noreferrer">
+                            Open
+                          </a>
+                          <button
+                            type="button"
+                            className="signal-board-danger-mini signal-board-asset-delete"
+                            disabled={isDeletingAsset}
+                            onClick={() => handleDeleteAsset(asset)}
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </article>
                     );
                   })}

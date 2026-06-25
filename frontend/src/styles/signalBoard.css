@@ -1839,3 +1839,84 @@
     padding: 0.9rem;
   }
 }
+
+
+/* ===================================
+   ASSET DELETE UI PASS
+   Mongo asset delete + Vercel Blob cleanup controls
+   =================================== */
+
+.signal-board-asset-card {
+  align-items: stretch;
+}
+
+.signal-board-asset-card-copy {
+  min-width: 0;
+  display: grid;
+  gap: 0.18rem;
+}
+
+.signal-board-asset-card-copy h3,
+.signal-board-asset-card-copy p,
+.signal-board-asset-card-copy span {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.signal-board-asset-card-actions {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  align-self: center;
+}
+
+.signal-board-asset-card-actions a,
+.signal-board-asset-card-actions button {
+  min-height: 2.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.55rem 0.78rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.signal-board-asset-card-actions button {
+  border: 1px solid rgba(244, 121, 148, 0.30);
+}
+
+.signal-board-asset-delete:hover:not(:disabled) {
+  border-color: rgba(244, 121, 148, 0.52) !important;
+  background: rgba(244, 121, 148, 0.13) !important;
+}
+
+@media (max-width: 860px) {
+  .signal-board-asset-card-actions {
+    width: 100%;
+    justify-content: flex-start;
+    margin-top: 0.75rem;
+  }
+
+  .signal-board-asset-card-actions a,
+  .signal-board-asset-card-actions button {
+    flex: 1 1 9rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .signal-board-asset-card-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .signal-board-asset-card-actions a,
+  .signal-board-asset-card-actions button {
+    width: 100%;
+  }
+}
