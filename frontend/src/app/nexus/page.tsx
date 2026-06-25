@@ -3,7 +3,6 @@
 import { useSession, signIn } from 'next-auth/react';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { gql, useQuery, useMutation } from '@apollo/client';
 import { getTodayMoonPhase, getRealmMoonAlignment } from '@/lib/moonPhases';
 import RealmBackground from '@/components/realm/RealmBackground';
@@ -35,25 +34,41 @@ interface StoredRealmGuidance {
     savedAt?: string;
 }
 
+const FEATURED_RELEASE_WORLD_FIELDS = gql`
+    fragment FeaturedReleaseWorldFields on ReleaseWorld {
+        id
+        title
+        slug
+        releaseType
+        status
+        visibility
+        isFeatured
+        oneLineSummary
+        story
+        currentFocus
+        secondFocus
+        fullDropDate
+        coverArtUrl
+        coverAssetId
+        updatedAt
+        lastOpenedAt
+    }
+`;
+
+const GET_MY_FEATURED_RELEASE_WORLD = gql`
+    ${FEATURED_RELEASE_WORLD_FIELDS}
+    query GetMyFeaturedReleaseWorld {
+        getMyFeaturedReleaseWorld {
+            ...FeaturedReleaseWorldFields
+        }
+    }
+`;
+
 const GET_PUBLIC_FEATURED_RELEASE_WORLD = gql`
+    ${FEATURED_RELEASE_WORLD_FIELDS}
     query GetPublicFeaturedReleaseWorld {
         getPublicFeaturedReleaseWorld {
-            id
-            title
-            slug
-            releaseType
-            status
-            visibility
-            isFeatured
-            oneLineSummary
-            story
-            currentFocus
-            secondFocus
-            fullDropDate
-            coverArtUrl
-            coverAssetId
-            updatedAt
-            lastOpenedAt
+            ...FeaturedReleaseWorldFields
         }
     }
 `;
@@ -253,6 +268,7 @@ export default function CosmicNexusHub() {
     const [showJourneys, setShowJourneys] = useState(false);
     const [showVault, setShowVault] = useState(false);
     const [showArchive, setShowArchive] = useState(false);
+    const [showReleaseDetails, setShowReleaseDetails] = useState(false);
 
     const soundtrackCarouselRef = useRef<HTMLDivElement | null>(null);
 
@@ -264,7 +280,13 @@ export default function CosmicNexusHub() {
         skip: !session,
     });
 
-    const { data: featuredReleaseData } = useQuery(GET_PUBLIC_FEATURED_RELEASE_WORLD, {
+    const { data: myFeaturedReleaseData } = useQuery(GET_MY_FEATURED_RELEASE_WORLD, {
+        skip: status !== 'authenticated',
+        fetchPolicy: 'cache-and-network',
+    });
+
+    const { data: publicFeaturedReleaseData } = useQuery(GET_PUBLIC_FEATURED_RELEASE_WORLD, {
+        skip: status === 'authenticated',
         fetchPolicy: 'cache-and-network',
     });
 
@@ -321,16 +343,30 @@ export default function CosmicNexusHub() {
 
     const currentRelease = CURRENT_FEATURED_RELEASE;
     const currentReleaseTracks = useMemo(() => getCurrentReleaseTracks(), []);
-    const creatorFeaturedRelease =
-        (featuredReleaseData?.getPublicFeaturedReleaseWorld ?? null) as NexusFeaturedReleaseWorld | null;
+    const currentReleasePrimaryTrack = useMemo(() => {
+        if (!currentRelease?.primaryTrackId) return null;
+        return getTrackById(currentRelease.primaryTrackId) ?? null;
+    }, [currentRelease]);
 
-    const creatorFeaturedPortalHref = creatorFeaturedRelease
+    const creatorFeaturedRelease =
+        (status === 'authenticated'
+            ? myFeaturedReleaseData?.getMyFeaturedReleaseWorld
+            : publicFeaturedReleaseData?.getPublicFeaturedReleaseWorld) as NexusFeaturedReleaseWorld | null | undefined;
+
+    const creatorFeaturedPortalHref = creatorFeaturedRelease?.slug
         ? `/releases/${creatorFeaturedRelease.slug}`
         : null;
 
-    const creatorFeaturedBoardHref = creatorFeaturedRelease
+    const creatorFeaturedBoardHref = creatorFeaturedRelease?.slug
         ? `/releases/${creatorFeaturedRelease.slug}/board`
         : null;
+
+    const creatorFeaturedArtworkUrl = creatorFeaturedRelease?.coverArtUrl?.trim() || null;
+    const isCreatorPreviewRelease = Boolean(
+        isSignedIn &&
+        creatorFeaturedRelease &&
+        creatorFeaturedRelease.visibility !== 'public'
+    );
 
     const isTrackLocked = (track: any) => {
         if (!track) return false;
@@ -453,6 +489,14 @@ export default function CosmicNexusHub() {
     const memberCatalogCount = nexusVisibleTracks.filter((track) => track.visibility === 'signup').length;
     const premiumCatalogCount = nexusVisibleTracks.filter((track) => track.visibility === 'premium').length;
     const releaseCatalogCount = currentReleaseTracks.length;
+    const lockedReleaseCount = currentReleaseTracks.filter((track) => isTrackLocked(track)).length;
+    const availableReleaseCount = currentReleaseTracks.length - lockedReleaseCount;
+    const currentReleasePrimaryLocked = currentReleasePrimaryTrack
+        ? isTrackLocked(currentReleasePrimaryTrack)
+        : false;
+    const primaryUnlockLabel = currentReleasePrimaryTrack
+        ? getTrackUnlockLabel(currentReleasePrimaryTrack)
+        : null;
 
     const guidanceRealmId = storedGuidance?.realmId ?? null;
     const guidanceRealm = guidanceRealmId !== null ? REALM_STATE_MAP[guidanceRealmId] : null;
@@ -618,24 +662,12 @@ export default function CosmicNexusHub() {
                                     maxWidth: '760px',
                                 }}
                             >
-                                {creatorFeaturedRelease.coverArtUrl ? (
+                                {creatorFeaturedArtworkUrl ? (
                                     <div className="mb-5 flex justify-center">
-                                        <Image
-                                            src={creatorFeaturedRelease.coverArtUrl}
+                                        <img
+                                            src={creatorFeaturedArtworkUrl}
                                             alt={creatorFeaturedRelease.title}
-                                            width={260}
-                                            height={260}
-                                            priority
-                                            sizes="(max-width: 768px) 72vw, 260px"
-                                            style={{
-                                                width: 'min(260px, 72vw)',
-                                                height: 'auto',
-                                                aspectRatio: '1 / 1',
-                                                objectFit: 'cover',
-                                                borderRadius: '26px',
-                                                border: '1px solid rgba(255,255,255,0.12)',
-                                                boxShadow: '0 24px 60px rgba(0,0,0,0.32)',
-                                            }}
+                                            className="nexus-dynamic-release-cover"
                                         />
                                     </div>
                                 ) : (
@@ -666,7 +698,7 @@ export default function CosmicNexusHub() {
                                         className="px-3 py-1.5 rounded-full text-[11px] uppercase tracking-[0.14em] bg-[#7c5cff22] border border-[#7c5cff44] text-[#cdb7ff]"
                                         style={{ backdropFilter: 'blur(10px)' }}
                                     >
-                                        Featured from Creator OS
+                                        {isCreatorPreviewRelease ? 'Creator Preview' : 'Featured from Creator OS'}
                                     </span>
 
                                     <span
@@ -698,40 +730,47 @@ export default function CosmicNexusHub() {
                                 </p>
 
                                 <div className="flex flex-wrap justify-center gap-2.5 mb-5">
-                                    <Link
-                                        href={creatorFeaturedPortalHref}
-                                        className="btn-primary"
+                                    {currentReleasePrimaryTrack && (
+                                        <button
+                                            className="btn-primary"
+                                            onClick={() => tryPlayTrack(currentReleasePrimaryTrack)}
+                                            disabled={currentReleasePrimaryLocked}
+                                            style={{
+                                                borderRadius: '999px',
+                                                boxShadow: '0 14px 28px rgba(0,0,0,0.2)',
+                                                opacity: currentReleasePrimaryLocked ? 0.55 : 1,
+                                                cursor: currentReleasePrimaryLocked ? 'not-allowed' : 'pointer',
+                                            }}
+                                        >
+                                            {currentReleasePrimaryLocked
+                                                ? `Opens ${primaryUnlockLabel}`
+                                                : currentTrack?.id === currentReleasePrimaryTrack.id && isPlaying
+                                                    ? 'Pause Track'
+                                                    : `▶ Play ${currentReleasePrimaryTrack.trackTitle}`}
+                                        </button>
+                                    )}
+
+                                    <button
+                                        className="btn-secondary"
+                                        onClick={() => setShowReleaseDetails((prev) => !prev)}
                                         style={{
                                             borderRadius: '999px',
-                                            boxShadow: '0 14px 28px rgba(0,0,0,0.2)',
+                                            backdropFilter: 'blur(10px)',
                                         }}
                                     >
-                                        Enter Release Portal
-                                    </Link>
+                                        {showReleaseDetails ? 'Close Details' : 'Open Release'}
+                                    </button>
 
                                     <Link
-                                        href="/creator"
+                                        href={creatorFeaturedPortalHref}
                                         className="btn-secondary"
                                         style={{
                                             borderRadius: '999px',
                                             backdropFilter: 'blur(10px)',
                                         }}
                                     >
-                                        Creator OS
+                                        Enter Portal
                                     </Link>
-
-                                    {isSignedIn && creatorFeaturedBoardHref && (
-                                        <Link
-                                            href={creatorFeaturedBoardHref}
-                                            className="btn-secondary"
-                                            style={{
-                                                borderRadius: '999px',
-                                                backdropFilter: 'blur(10px)',
-                                            }}
-                                        >
-                                            Signal Board
-                                        </Link>
-                                    )}
                                 </div>
 
                                 <div className="flex flex-wrap justify-center gap-2">
@@ -772,6 +811,121 @@ export default function CosmicNexusHub() {
                                     </div>
                                 </div>
                             </div>
+
+                            {showReleaseDetails && (
+                                <div
+                                    className="mt-6 pt-5"
+                                    style={{
+                                        borderTop: '1px solid rgba(255,255,255,0.08)',
+                                    }}
+                                >
+                                    <div className="mx-auto" style={{ maxWidth: '920px' }}>
+                                        <div className="nexus-dynamic-release-actions mb-5">
+                                            <Link href={creatorFeaturedPortalHref} className="btn-primary">
+                                                Enter Release Portal
+                                            </Link>
+
+                                            {isSignedIn && creatorFeaturedBoardHref && (
+                                                <Link href={creatorFeaturedBoardHref} className="btn-secondary">
+                                                    Signal Board
+                                                </Link>
+                                            )}
+
+                                            {isSignedIn && (
+                                                <Link href="/creator" className="btn-secondary">
+                                                    Creator Dashboard
+                                                </Link>
+                                            )}
+                                        </div>
+
+                                        {currentReleaseTracks.length > 0 && (
+                                            <>
+                                                <div className="flex items-end justify-between gap-3 mb-4">
+                                                    <div>
+                                                        <p className="text-xs uppercase tracking-[0.18em] text-muted mb-1">
+                                                            Nexus release flow
+                                                        </p>
+                                                        <h3 className="text-2xl font-display">{creatorFeaturedRelease.title}</h3>
+                                                    </div>
+
+                                                    <span className="text-xs text-muted">
+                                                        {availableReleaseCount} open • {lockedReleaseCount} soon
+                                                    </span>
+                                                </div>
+
+                                                <div className="space-y-2">
+                                                    {currentReleaseTracks.map((track, index) => {
+                                                        const locked = isTrackLocked(track);
+                                                        const unlockLabel = getTrackUnlockLabel(track);
+                                                        const trackTheme = getRealmTheme(track.realmId);
+
+                                                        return (
+                                                            <div
+                                                                key={track.id}
+                                                                className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3"
+                                                                style={{
+                                                                    borderColor: trackTheme.border,
+                                                                    background:
+                                                                        `radial-gradient(circle at top left, ${trackTheme.glow}, transparent 34%), linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))`,
+                                                                    boxShadow: `inset 0 1px 0 rgba(255,255,255,0.04), 0 0 12px ${trackTheme.glow}`,
+                                                                }}
+                                                            >
+                                                                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                                                                    <div className="min-w-0">
+                                                                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                                                                            <span className="text-[10px] uppercase tracking-[0.18em] text-muted">
+                                                                                {String(index + 1).padStart(2, '0')}
+                                                                            </span>
+                                                                            <span className="text-[10px] uppercase tracking-[0.18em] text-muted">
+                                                                                {REALM_NAMES[track.realmId]}
+                                                                            </span>
+                                                                            <span
+                                                                                className="px-2 py-0.5 rounded-full text-[10px] uppercase tracking-[0.14em]"
+                                                                                style={{
+                                                                                    background: locked
+                                                                                        ? 'rgba(255,255,255,0.06)'
+                                                                                        : trackTheme.soft,
+                                                                                    border: locked
+                                                                                        ? '1px solid rgba(255,255,255,0.12)'
+                                                                                        : `1px solid ${trackTheme.border}`,
+                                                                                    color: locked ? 'rgba(255,255,255,0.72)' : trackTheme.accent,
+                                                                                }}
+                                                                            >
+                                                                                {locked ? 'soon' : 'open'}
+                                                                            </span>
+                                                                        </div>
+
+                                                                        <h4 className="text-lg font-display leading-tight">
+                                                                            {track.trackTitle}
+                                                                        </h4>
+                                                                        <p className="text-sm text-secondary">
+                                                                            {locked ? `Opens ${unlockLabel}` : 'Available now'}
+                                                                        </p>
+                                                                    </div>
+
+                                                                    <button
+                                                                        className="btn-secondary shrink-0"
+                                                                        onClick={() => tryPlayTrack(track)}
+                                                                        disabled={locked}
+                                                                        style={{
+                                                                            borderRadius: '999px',
+                                                                            opacity: locked ? 0.55 : 1,
+                                                                            cursor: locked ? 'not-allowed' : 'pointer',
+                                                                            minWidth: '150px',
+                                                                        }}
+                                                                    >
+                                                                        {locked ? `Opens ${unlockLabel}` : `▶ Play`}
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         </section>
                     )}
 

@@ -594,7 +594,7 @@ moon silver, ice blue, champagne gold, smoked glass.
 }
 
 /* ===================================
-   Ã°Å¸â€œÂ± NEXUS MOBILE POLISH
+   ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â± NEXUS MOBILE POLISH
    =================================== */
 
 @media (max-width: 768px) {
@@ -836,5 +836,40 @@ moon silver, ice blue, champagne gold, smoked glass.
 
     .nexus-journey-card {
         flex-basis: 88%;
+    }
+}
+/* ===================================
+   NEXUS DYNAMIC FEATURED RELEASE V2
+   Restores release details toggle + Blob-safe cover image.
+   =================================== */
+
+.nexus-dynamic-release-cover {
+    width: min(260px, 72vw);
+    height: auto;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 26px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.32);
+    display: block;
+}
+
+.nexus-dynamic-release-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.65rem;
+}
+
+.nexus-dynamic-release-actions a {
+    border-radius: 999px;
+}
+
+@media (max-width: 640px) {
+    .nexus-dynamic-release-actions a,
+    #current-release .btn-primary,
+    #current-release .btn-secondary {
+        width: 100%;
+        justify-content: center;
     }
 }
