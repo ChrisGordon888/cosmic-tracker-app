@@ -343,11 +343,6 @@ export default function CosmicNexusHub() {
 
     const currentRelease = CURRENT_FEATURED_RELEASE;
     const currentReleaseTracks = useMemo(() => getCurrentReleaseTracks(), []);
-    const currentReleasePrimaryTrack = useMemo(() => {
-        if (!currentRelease?.primaryTrackId) return null;
-        return getTrackById(currentRelease.primaryTrackId) ?? null;
-    }, [currentRelease]);
-
     const creatorFeaturedRelease =
         (status === 'authenticated'
             ? myFeaturedReleaseData?.getMyFeaturedReleaseWorld
@@ -489,15 +484,6 @@ export default function CosmicNexusHub() {
     const memberCatalogCount = nexusVisibleTracks.filter((track) => track.visibility === 'signup').length;
     const premiumCatalogCount = nexusVisibleTracks.filter((track) => track.visibility === 'premium').length;
     const releaseCatalogCount = currentReleaseTracks.length;
-    const lockedReleaseCount = currentReleaseTracks.filter((track) => isTrackLocked(track)).length;
-    const availableReleaseCount = currentReleaseTracks.length - lockedReleaseCount;
-    const currentReleasePrimaryLocked = currentReleasePrimaryTrack
-        ? isTrackLocked(currentReleasePrimaryTrack)
-        : false;
-    const primaryUnlockLabel = currentReleasePrimaryTrack
-        ? getTrackUnlockLabel(currentReleasePrimaryTrack)
-        : null;
-
     const guidanceRealmId = storedGuidance?.realmId ?? null;
     const guidanceRealm = guidanceRealmId !== null ? REALM_STATE_MAP[guidanceRealmId] : null;
 
@@ -730,25 +716,16 @@ export default function CosmicNexusHub() {
                                 </p>
 
                                 <div className="flex flex-wrap justify-center gap-2.5 mb-5">
-                                    {currentReleasePrimaryTrack && (
-                                        <button
-                                            className="btn-primary"
-                                            onClick={() => tryPlayTrack(currentReleasePrimaryTrack)}
-                                            disabled={currentReleasePrimaryLocked}
-                                            style={{
-                                                borderRadius: '999px',
-                                                boxShadow: '0 14px 28px rgba(0,0,0,0.2)',
-                                                opacity: currentReleasePrimaryLocked ? 0.55 : 1,
-                                                cursor: currentReleasePrimaryLocked ? 'not-allowed' : 'pointer',
-                                            }}
-                                        >
-                                            {currentReleasePrimaryLocked
-                                                ? `Opens ${primaryUnlockLabel}`
-                                                : currentTrack?.id === currentReleasePrimaryTrack.id && isPlaying
-                                                    ? 'Pause Track'
-                                                    : `▶ Play ${currentReleasePrimaryTrack.trackTitle}`}
-                                        </button>
-                                    )}
+                                    <Link
+                                        href={creatorFeaturedPortalHref}
+                                        className="btn-primary"
+                                        style={{
+                                            borderRadius: '999px',
+                                            boxShadow: '0 14px 28px rgba(0,0,0,0.2)',
+                                        }}
+                                    >
+                                        Enter Release Portal
+                                    </Link>
 
                                     <button
                                         className="btn-secondary"
@@ -760,17 +737,6 @@ export default function CosmicNexusHub() {
                                     >
                                         {showReleaseDetails ? 'Close Details' : 'Open Release'}
                                     </button>
-
-                                    <Link
-                                        href={creatorFeaturedPortalHref}
-                                        className="btn-secondary"
-                                        style={{
-                                            borderRadius: '999px',
-                                            backdropFilter: 'blur(10px)',
-                                        }}
-                                    >
-                                        Enter Portal
-                                    </Link>
                                 </div>
 
                                 <div className="flex flex-wrap justify-center gap-2">
@@ -813,115 +779,54 @@ export default function CosmicNexusHub() {
                             </div>
 
                             {showReleaseDetails && (
-                                <div
-                                    className="mt-6 pt-5"
-                                    style={{
-                                        borderTop: '1px solid rgba(255,255,255,0.08)',
-                                    }}
-                                >
-                                    <div className="mx-auto" style={{ maxWidth: '920px' }}>
-                                        <div className="nexus-dynamic-release-actions mb-5">
-                                            <Link href={creatorFeaturedPortalHref} className="btn-primary">
-                                                Enter Release Portal
-                                            </Link>
+                                <div className="nexus-dynamic-release-details">
+                                    <div className="nexus-dynamic-release-details-inner">
+                                        <div className="nexus-dynamic-release-detail-copy">
+                                            <p className="text-xs uppercase tracking-[0.18em] text-muted mb-1">
+                                                Release world
+                                            </p>
+                                            <h3 className="text-2xl font-display">
+                                                {creatorFeaturedRelease.title}
+                                            </h3>
+                                            <p className="text-secondary text-sm leading-relaxed">
+                                                {getFeaturedReleaseSummary(creatorFeaturedRelease)}
+                                            </p>
+                                        </div>
 
-                                            {isSignedIn && creatorFeaturedBoardHref && (
-                                                <Link href={creatorFeaturedBoardHref} className="btn-secondary">
-                                                    Signal Board
-                                                </Link>
-                                            )}
+                                        <div className="nexus-dynamic-release-detail-grid">
+                                            <div>
+                                                <span>Lead signal</span>
+                                                <strong>{creatorFeaturedRelease.currentFocus || 'TBD'}</strong>
+                                            </div>
 
-                                            {isSignedIn && (
+                                            <div>
+                                                <span>Second signal</span>
+                                                <strong>{creatorFeaturedRelease.secondFocus || 'TBD'}</strong>
+                                            </div>
+
+                                            <div>
+                                                <span>Status</span>
+                                                <strong>{formatReleaseLabel(creatorFeaturedRelease.status)}</strong>
+                                            </div>
+
+                                            <div>
+                                                <span>World opens</span>
+                                                <strong>{formatReleaseDate(creatorFeaturedRelease.fullDropDate)}</strong>
+                                            </div>
+                                        </div>
+
+                                        {isSignedIn && (
+                                            <div className="nexus-dynamic-release-creator-links">
+                                                {creatorFeaturedBoardHref && (
+                                                    <Link href={creatorFeaturedBoardHref} className="btn-secondary">
+                                                        Signal Board
+                                                    </Link>
+                                                )}
+
                                                 <Link href="/creator" className="btn-secondary">
                                                     Creator Dashboard
                                                 </Link>
-                                            )}
-                                        </div>
-
-                                        {currentReleaseTracks.length > 0 && (
-                                            <>
-                                                <div className="flex items-end justify-between gap-3 mb-4">
-                                                    <div>
-                                                        <p className="text-xs uppercase tracking-[0.18em] text-muted mb-1">
-                                                            Nexus release flow
-                                                        </p>
-                                                        <h3 className="text-2xl font-display">{creatorFeaturedRelease.title}</h3>
-                                                    </div>
-
-                                                    <span className="text-xs text-muted">
-                                                        {availableReleaseCount} open • {lockedReleaseCount} soon
-                                                    </span>
-                                                </div>
-
-                                                <div className="space-y-2">
-                                                    {currentReleaseTracks.map((track, index) => {
-                                                        const locked = isTrackLocked(track);
-                                                        const unlockLabel = getTrackUnlockLabel(track);
-                                                        const trackTheme = getRealmTheme(track.realmId);
-
-                                                        return (
-                                                            <div
-                                                                key={track.id}
-                                                                className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3"
-                                                                style={{
-                                                                    borderColor: trackTheme.border,
-                                                                    background:
-                                                                        `radial-gradient(circle at top left, ${trackTheme.glow}, transparent 34%), linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))`,
-                                                                    boxShadow: `inset 0 1px 0 rgba(255,255,255,0.04), 0 0 12px ${trackTheme.glow}`,
-                                                                }}
-                                                            >
-                                                                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                                                                    <div className="min-w-0">
-                                                                        <div className="flex flex-wrap items-center gap-2 mb-1">
-                                                                            <span className="text-[10px] uppercase tracking-[0.18em] text-muted">
-                                                                                {String(index + 1).padStart(2, '0')}
-                                                                            </span>
-                                                                            <span className="text-[10px] uppercase tracking-[0.18em] text-muted">
-                                                                                {REALM_NAMES[track.realmId]}
-                                                                            </span>
-                                                                            <span
-                                                                                className="px-2 py-0.5 rounded-full text-[10px] uppercase tracking-[0.14em]"
-                                                                                style={{
-                                                                                    background: locked
-                                                                                        ? 'rgba(255,255,255,0.06)'
-                                                                                        : trackTheme.soft,
-                                                                                    border: locked
-                                                                                        ? '1px solid rgba(255,255,255,0.12)'
-                                                                                        : `1px solid ${trackTheme.border}`,
-                                                                                    color: locked ? 'rgba(255,255,255,0.72)' : trackTheme.accent,
-                                                                                }}
-                                                                            >
-                                                                                {locked ? 'soon' : 'open'}
-                                                                            </span>
-                                                                        </div>
-
-                                                                        <h4 className="text-lg font-display leading-tight">
-                                                                            {track.trackTitle}
-                                                                        </h4>
-                                                                        <p className="text-sm text-secondary">
-                                                                            {locked ? `Opens ${unlockLabel}` : 'Available now'}
-                                                                        </p>
-                                                                    </div>
-
-                                                                    <button
-                                                                        className="btn-secondary shrink-0"
-                                                                        onClick={() => tryPlayTrack(track)}
-                                                                        disabled={locked}
-                                                                        style={{
-                                                                            borderRadius: '999px',
-                                                                            opacity: locked ? 0.55 : 1,
-                                                                            cursor: locked ? 'not-allowed' : 'pointer',
-                                                                            minWidth: '150px',
-                                                                        }}
-                                                                    >
-                                                                        {locked ? `Opens ${unlockLabel}` : `▶ Play`}
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                        );
-                                                    })}
-                                                </div>
-                                            </>
+                                            </div>
                                         )}
                                     </div>
                                 </div>

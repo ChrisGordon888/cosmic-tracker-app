@@ -839,8 +839,8 @@ moon silver, ice blue, champagne gold, smoked glass.
     }
 }
 /* ===================================
-   NEXUS DYNAMIC FEATURED RELEASE V2
-   Restores release details toggle + Blob-safe cover image.
+   NEXUS DYNAMIC FEATURED RELEASE V4
+   Surgical cleanup: dynamic-only details
    =================================== */
 
 .nexus-dynamic-release-cover {
@@ -848,28 +848,105 @@ moon silver, ice blue, champagne gold, smoked glass.
     height: auto;
     aspect-ratio: 1 / 1;
     object-fit: cover;
-    border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 26px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
     box-shadow: 0 24px 60px rgba(0, 0, 0, 0.32);
     display: block;
 }
 
-.nexus-dynamic-release-actions {
+.nexus-dynamic-release-details {
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.nexus-dynamic-release-details-inner {
+    width: min(920px, 100%);
+    margin: 0 auto;
+    display: grid;
+    gap: 1rem;
+}
+
+.nexus-dynamic-release-detail-copy {
+    text-align: left;
+    border: 1px solid rgba(214, 224, 235, 0.11);
+    border-radius: 1.4rem;
+    padding: clamp(1rem, 2vw, 1.25rem);
+    background:
+        radial-gradient(circle at top left, rgba(139, 92, 246, 0.10), transparent 34%),
+        linear-gradient(145deg, rgba(255, 255, 255, 0.055), rgba(7, 11, 20, 0.62));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.nexus-dynamic-release-detail-copy h3 {
+    margin: 0 0 0.6rem;
+    color: rgba(245, 247, 252, 0.95);
+}
+
+.nexus-dynamic-release-detail-copy p:last-child {
+    margin: 0;
+}
+
+.nexus-dynamic-release-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.nexus-dynamic-release-detail-grid div {
+    min-width: 0;
+    border: 1px solid rgba(214, 224, 235, 0.10);
+    border-radius: 1.15rem;
+    padding: 0.9rem;
+    text-align: left;
+    background: rgba(255, 255, 255, 0.035);
+}
+
+.nexus-dynamic-release-detail-grid span {
+    display: block;
+    margin-bottom: 0.35rem;
+    color: rgba(188, 224, 255, 0.58);
+    font-size: 0.64rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.nexus-dynamic-release-detail-grid strong {
+    display: block;
+    color: rgba(238, 243, 250, 0.9);
+    font-size: 0.92rem;
+    line-height: 1.35;
+}
+
+.nexus-dynamic-release-creator-links {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     gap: 0.65rem;
 }
 
-.nexus-dynamic-release-actions a {
+.nexus-dynamic-release-creator-links a {
     border-radius: 999px;
+    backdrop-filter: blur(10px);
 }
 
-@media (max-width: 640px) {
-    .nexus-dynamic-release-actions a,
-    #current-release .btn-primary,
-    #current-release .btn-secondary {
-        width: 100%;
-        justify-content: center;
+@media (max-width: 780px) {
+    .nexus-dynamic-release-detail-copy {
+        text-align: center;
+    }
+
+    .nexus-dynamic-release-detail-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .nexus-dynamic-release-detail-grid div {
+        text-align: center;
+    }
+}
+
+@media (max-width: 520px) {
+    .nexus-dynamic-release-detail-grid {
+        grid-template-columns: 1fr;
     }
 }
