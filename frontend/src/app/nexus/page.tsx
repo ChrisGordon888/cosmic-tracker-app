@@ -17,6 +17,7 @@ import {
     REALM_NAMES,
     VAULT_TRACKS,
     getCurrentReleaseTracks,
+    getTrackById,
     getTracksByCollection,
 } from '@/lib/musicRegistry';
 import { REALM_STATE_MAP, type ExperienceMode, type RealmId } from '@/lib/realmStateMap';
