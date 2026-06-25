@@ -74,6 +74,77 @@ async function getOwnedBoardArtifact(boardArtifactId, userId, releaseWorldId) {
     return await BoardArtifact.findOne(query);
 }
 
+async function getPrimaryCreativeProfile(userId) {
+    const profiles = await CreativeProfile.find({ ownerId: userId }).sort({
+        isFeatured: -1,
+        updatedAt: -1,
+        createdAt: -1,
+    });
+
+    return profiles.find((profile) => profile.isFeatured) || profiles[0] || null;
+}
+
+async function getFeaturedReleaseWorldForUser(userId) {
+    const primaryProfile = await getPrimaryCreativeProfile(userId);
+
+    if (primaryProfile?.featuredReleaseWorldId) {
+        const profileFeaturedRelease = await ReleaseWorld.findOne({
+            _id: primaryProfile.featuredReleaseWorldId,
+            ownerId: userId,
+        });
+
+        if (profileFeaturedRelease) return profileFeaturedRelease;
+    }
+
+    const flaggedFeaturedRelease = await ReleaseWorld.findOne({
+        ownerId: userId,
+        isFeatured: true,
+    }).sort({
+        lastOpenedAt: -1,
+        updatedAt: -1,
+        createdAt: -1,
+    });
+
+    if (flaggedFeaturedRelease) return flaggedFeaturedRelease;
+
+    return await ReleaseWorld.findOne({ ownerId: userId }).sort({
+        lastOpenedAt: -1,
+        updatedAt: -1,
+        createdAt: -1,
+    });
+}
+
+async function getPublicFeaturedReleaseWorld() {
+    const featuredProfile = await CreativeProfile.findOne({
+        isFeatured: true,
+        isPublic: true,
+        featuredReleaseWorldId: { $ne: null },
+    }).sort({
+        updatedAt: -1,
+        createdAt: -1,
+    });
+
+    if (featuredProfile?.featuredReleaseWorldId) {
+        const profileFeaturedRelease = await ReleaseWorld.findOne({
+            _id: featuredProfile.featuredReleaseWorldId,
+            visibility: "public",
+            status: { $ne: "archived" },
+        });
+
+        if (profileFeaturedRelease) return profileFeaturedRelease;
+    }
+
+    return await ReleaseWorld.findOne({
+        isFeatured: true,
+        visibility: "public",
+        status: { $ne: "archived" },
+    }).sort({
+        lastOpenedAt: -1,
+        updatedAt: -1,
+        createdAt: -1,
+    });
+}
+
 async function syncReleaseWorldFocusFromTrack(track, userId) {
     if (!track) return;
 
@@ -419,6 +490,16 @@ module.exports = {
             }
 
             return releaseWorld;
+        },
+
+        getMyFeaturedReleaseWorld: async (_, __, { user }) => {
+            if (!user) throw new Error("Unauthorized: Please sign in.");
+
+            return await getFeaturedReleaseWorldForUser(user.id);
+        },
+
+        getPublicFeaturedReleaseWorld: async () => {
+            return await getPublicFeaturedReleaseWorld();
         },
 
         getReleaseTracks: async (_, { releaseWorldId }, { user }) => {
@@ -1009,6 +1090,51 @@ module.exports = {
                 { status: "archived" },
                 { new: true }
             );
+        },
+
+        setFeaturedReleaseWorld: async (_, { releaseWorldId }, { user }) => {
+            if (!user) throw new Error("Unauthorized: Please sign in.");
+
+            const releaseWorld = await getOwnedReleaseWorld(releaseWorldId, user.id);
+
+            if (!releaseWorld) {
+                throw new Error("Release world not found.");
+            }
+
+            const creativeProfile = await CreativeProfile.findOne({
+                _id: releaseWorld.creativeProfileId,
+                ownerId: user.id,
+            });
+
+            if (!creativeProfile) {
+                throw new Error("Creative profile not found for this release world.");
+            }
+
+            await ReleaseWorld.updateMany(
+                {
+                    ownerId: user.id,
+                    _id: { $ne: releaseWorld._id },
+                },
+                { isFeatured: false }
+            );
+
+            await CreativeProfile.updateMany(
+                {
+                    ownerId: user.id,
+                    _id: { $ne: creativeProfile._id },
+                },
+                { isFeatured: false }
+            );
+
+            releaseWorld.isFeatured = true;
+            releaseWorld.lastOpenedAt = new Date();
+            await releaseWorld.save();
+
+            creativeProfile.isFeatured = true;
+            creativeProfile.featuredReleaseWorldId = releaseWorld._id;
+            await creativeProfile.save();
+
+            return releaseWorld;
         },
 
         createReleaseTrack: async (_, { input }, { user }) => {

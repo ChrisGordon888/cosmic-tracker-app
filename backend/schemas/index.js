@@ -401,6 +401,8 @@ const typeDefs = gql`
     myReleaseWorlds: [ReleaseWorld!]!
     getMyReleaseWorld(id: ID!): ReleaseWorld
     getMyReleaseWorldBySlug(slug: String!): ReleaseWorld
+    getMyFeaturedReleaseWorld: ReleaseWorld
+    getPublicFeaturedReleaseWorld: ReleaseWorld
 
     getReleaseTracks(releaseWorldId: ID!): [ReleaseTrack!]!
     getReleaseTrack(id: ID!): ReleaseTrack
@@ -475,6 +477,7 @@ const typeDefs = gql`
     createReleaseWorld(input: ReleaseWorldInput!): ReleaseWorld!
     updateReleaseWorld(id: ID!, input: UpdateReleaseWorldInput!): ReleaseWorld!
     archiveReleaseWorld(id: ID!): ReleaseWorld!
+    setFeaturedReleaseWorld(releaseWorldId: ID!): ReleaseWorld!
 
     createReleaseTrack(input: ReleaseTrackInput!): ReleaseTrack!
     updateReleaseTrack(id: ID!, input: UpdateReleaseTrackInput!): ReleaseTrack!
