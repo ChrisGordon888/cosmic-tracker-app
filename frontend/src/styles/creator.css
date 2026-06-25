@@ -1,7 +1,6 @@
 /* ===================================
-   CREATOR DASHBOARD CLEAN V5
-   Single, consistent creator console stylesheet.
-   Replaces mixed creator-command / creator-console styles.
+   CREATOR DASHBOARD V2
+   Command center + featured release system
    =================================== */
 
 .creator-console-shell {
@@ -10,10 +9,28 @@
     grid-template-columns: 92px minmax(0, 1fr);
     color: rgba(238, 243, 250, 0.94);
     background:
-        radial-gradient(circle at 12% 10%, rgba(220, 186, 92, 0.10), transparent 28%),
-        radial-gradient(circle at 84% 18%, rgba(126, 211, 255, 0.10), transparent 32%),
-        radial-gradient(circle at 50% 100%, rgba(168, 132, 255, 0.08), transparent 34%),
+        radial-gradient(circle at 12% 10%, rgba(220, 186, 92, 0.12), transparent 28%),
+        radial-gradient(circle at 84% 18%, rgba(126, 211, 255, 0.12), transparent 32%),
+        radial-gradient(circle at 50% 100%, rgba(168, 132, 255, 0.10), transparent 34%),
         linear-gradient(180deg, #05070d, #070b14 46%, #05070d);
+}
+
+.creator-console-shell * {
+    box-sizing: border-box;
+}
+
+.creator-console-shell a {
+    color: inherit;
+}
+
+.creator-console-shell button {
+    font: inherit;
+    cursor: pointer;
+}
+
+.creator-console-shell button:disabled {
+    cursor: not-allowed;
+    opacity: 0.58;
 }
 
 .creator-console-rail {
@@ -22,8 +39,8 @@
     height: 100vh;
     border-right: 1px solid rgba(214, 224, 235, 0.10);
     background:
-        linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015)),
-        rgba(5, 7, 13, 0.74);
+        linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.018)),
+        rgba(5, 7, 13, 0.78);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -36,14 +53,14 @@
     height: 3rem;
     display: grid;
     place-items: center;
-    border: 1px solid rgba(220, 186, 92, 0.28);
+    border: 1px solid rgba(220, 186, 92, 0.32);
     border-radius: 1rem;
-    color: rgba(243, 231, 209, 0.92);
+    color: rgba(243, 231, 209, 0.94);
     font-family: 'Orbitron', Arial, sans-serif;
     font-weight: 800;
     background:
-        radial-gradient(circle at 35% 30%, rgba(255,255,255,0.12), rgba(220,186,92,0.08), rgba(8,11,20,0.62));
-    box-shadow: 0 0 22px rgba(220, 186, 92, 0.08);
+        radial-gradient(circle at 35% 30%, rgba(255,255,255,0.14), rgba(220,186,92,0.10), rgba(8,11,20,0.66));
+    box-shadow: 0 0 24px rgba(220, 186, 92, 0.10);
 }
 
 .creator-console-rail-lines {
@@ -56,23 +73,593 @@
     width: 0.35rem;
     height: 0.35rem;
     border-radius: 999px;
-    background: rgba(188, 224, 255, 0.38);
+    background: rgba(188, 224, 255, 0.40);
 }
 
 .creator-console-rail p {
     writing-mode: vertical-rl;
     transform: rotate(180deg);
     margin: auto 0 0;
-    color: rgba(224, 231, 240, 0.42);
+    color: rgba(224, 231, 240, 0.44);
     font-size: 0.7rem;
     letter-spacing: 0.24em;
     text-transform: uppercase;
 }
 
 .creator-console {
-    width: min(100%, 1180px);
+    width: min(100%, 1320px);
     margin: 0 auto;
-    padding: 2.1rem 1.2rem 5rem;
+    padding: clamp(1rem, 2.4vw, 2.25rem) clamp(0.9rem, 2vw, 1.35rem) 5rem;
+}
+
+.creator-console-kicker {
+    margin: 0;
+    color: rgba(188, 224, 255, 0.70);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+}
+
+.creator-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 0.42fr);
+    gap: clamp(1rem, 2vw, 1.35rem);
+    align-items: stretch;
+    margin-bottom: 1rem;
+}
+
+.creator-hero-copy,
+.creator-feature-card,
+.creator-console-header > div:first-child,
+.creator-console-status,
+.creator-console-topline article,
+.creator-console-panel,
+.creator-console-footer {
+    border: 1px solid rgba(214, 224, 235, 0.13);
+    border-radius: 1.45rem;
+    background:
+        linear-gradient(145deg, rgba(255,255,255,0.068), rgba(205,215,230,0.026), rgba(14,20,34,0.50));
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        0 18px 46px rgba(0,0,0,0.24);
+    backdrop-filter: blur(14px) saturate(125%);
+    -webkit-backdrop-filter: blur(14px) saturate(125%);
+}
+
+.creator-hero-copy {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: clamp(1.05rem, 2vw, 1.45rem);
+    overflow: hidden;
+}
+
+.creator-hero-copy h1,
+.creator-console-header h1 {
+    margin: 0.45rem 0 0.7rem;
+    color: rgba(245, 247, 252, 0.96);
+    font-family: 'Orbitron', Arial, sans-serif;
+    font-size: clamp(2.15rem, 6vw, 5.2rem);
+    line-height: 0.9;
+    letter-spacing: 0.045em;
+    text-transform: uppercase;
+    overflow-wrap: anywhere;
+}
+
+.creator-hero-copy p,
+.creator-console-header p,
+.creator-console-note,
+.creator-console-footer p {
+    margin: 0;
+    color: rgba(224, 231, 240, 0.70);
+    line-height: 1.65;
+}
+
+.creator-hero-actions {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.65rem;
+    margin-top: clamp(1rem, 2vw, 1.35rem);
+}
+
+.creator-hero-actions a,
+.creator-console-links a,
+.creator-panel-title-row a,
+.creator-project-card-actions a,
+.creator-project-card-actions button,
+.creator-project-card-empty a {
+    min-height: 2.55rem;
+    display: inline-flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.7rem;
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 0.95rem;
+    padding: 0.72rem;
+    color: rgba(238, 243, 250, 0.90);
+    background: rgba(255,255,255,0.038);
+    text-decoration: none;
+    font-family: 'Orbitron', Arial, sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.creator-hero-actions a:hover,
+.creator-console-links a:hover,
+.creator-panel-title-row a:hover,
+.creator-project-card-actions a:hover,
+.creator-project-card-actions button:hover:not(:disabled),
+.creator-project-card-empty a:hover {
+    transform: translateY(-1px);
+    border-color: rgba(188, 224, 255, 0.28);
+    background: rgba(126, 211, 255, 0.065);
+}
+
+.creator-hero-actions em,
+.creator-console-links em {
+    color: rgba(188, 224, 255, 0.54);
+    font-style: normal;
+    font-family: inherit;
+}
+
+.creator-feature-card {
+    min-width: 0;
+    display: grid;
+    gap: 0.85rem;
+    padding: 1rem;
+    overflow: hidden;
+}
+
+.creator-feature-topline,
+.creator-project-card-meta,
+.creator-panel-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.creator-feature-topline span,
+.creator-feature-topline em,
+.creator-project-card-meta span,
+.creator-project-card-meta em {
+    color: rgba(188, 224, 255, 0.66);
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-style: normal;
+}
+
+.creator-feature-topline span,
+.creator-project-card-meta span {
+    color: rgba(243, 231, 209, 0.78);
+}
+
+.creator-release-cover {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border: 1px solid rgba(238, 243, 250, 0.13);
+    border-radius: 1.2rem;
+    background:
+        radial-gradient(circle at 20% 10%, rgba(126, 211, 255, 0.18), transparent 38%),
+        radial-gradient(circle at 80% 70%, rgba(220, 186, 92, 0.16), transparent 44%),
+        linear-gradient(145deg, rgba(255,255,255,0.07), rgba(10,14,25,0.72));
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.1),
+        0 22px 48px rgba(0,0,0,0.28);
+}
+
+.creator-release-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.creator-release-cover div {
+    height: 100%;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    text-align: center;
+}
+
+.creator-release-cover div span,
+.creator-release-cover div strong {
+    font-family: 'Orbitron', Arial, sans-serif;
+    text-transform: uppercase;
+}
+
+.creator-release-cover div span {
+    color: rgba(188, 224, 255, 0.62);
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+}
+
+.creator-release-cover div strong {
+    color: rgba(245, 247, 252, 0.9);
+    font-size: clamp(1rem, 2.2vw, 1.35rem);
+    line-height: 1.1;
+}
+
+.creator-feature-copy strong,
+.creator-profile-card strong {
+    display: block;
+    color: rgba(245, 247, 252, 0.94);
+    font-family: 'Orbitron', Arial, sans-serif;
+    font-size: 1.05rem;
+    line-height: 1.2;
+    letter-spacing: 0.055em;
+    text-transform: uppercase;
+}
+
+.creator-feature-copy p,
+.creator-profile-card p {
+    margin: 0.45rem 0 0;
+    color: rgba(224, 231, 240, 0.68);
+    line-height: 1.5;
+    font-size: 0.86rem;
+}
+
+.creator-feature-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+}
+
+.creator-feature-metrics div,
+.creator-asset-status-grid div,
+.creator-asset-mini-list div,
+.creator-feature-flow div,
+.creator-console-action-list div,
+.creator-console-phases div,
+.creator-console-track-strip div,
+.creator-profile-card {
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 0.95rem;
+    background: rgba(255,255,255,0.035);
+}
+
+.creator-feature-metrics div {
+    padding: 0.62rem;
+}
+
+.creator-feature-metrics span,
+.creator-console-topline article span,
+.creator-console-focus p,
+.creator-asset-status-grid span,
+.creator-asset-mini-list span,
+.creator-console-phases span,
+.creator-console-track-strip span,
+.creator-profile-card span {
+    display: block;
+    color: rgba(188, 224, 255, 0.62);
+    font-size: 0.65rem;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+}
+
+.creator-feature-metrics strong,
+.creator-console-topline article strong,
+.creator-asset-status-grid strong {
+    display: block;
+    margin-top: 0.3rem;
+    color: rgba(245, 247, 252, 0.94);
+    font-family: 'Orbitron', Arial, sans-serif;
+    font-size: 0.78rem;
+    line-height: 1.2;
+    text-transform: uppercase;
+}
+
+.creator-console-topline {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.creator-console-topline article {
+    min-width: 0;
+    padding: 1rem;
+}
+
+.creator-console-topline article strong {
+    font-size: 1.45rem;
+}
+
+.creator-console-topline article p {
+    margin: 0.25rem 0 0;
+    color: rgba(224, 231, 240, 0.62);
+    font-size: 0.82rem;
+    overflow-wrap: anywhere;
+}
+
+.creator-console-grid {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.creator-console-grid-main {
+    grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.75fr);
+}
+
+.creator-console-grid-balanced {
+    grid-template-columns: minmax(0, 1.3fr) minmax(300px, 0.7fr);
+}
+
+.creator-console-grid-bottom {
+    grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.85fr);
+}
+
+.creator-console-panel {
+    min-width: 0;
+    padding: 1rem;
+}
+
+.creator-console-panel h2 {
+    margin: 0.35rem 0 0.9rem;
+    color: rgba(245, 247, 252, 0.94);
+    font-family: 'Orbitron', Arial, sans-serif;
+    font-size: 1.05rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.creator-panel-title-row {
+    align-items: start;
+    margin-bottom: 0.9rem;
+}
+
+.creator-panel-title-row > div {
+    min-width: 0;
+}
+
+.creator-panel-title-row a {
+    flex: 0 0 auto;
+    min-height: 2.35rem;
+    border-radius: 999px;
+}
+
+.creator-feature-flow {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.65rem;
+    margin-top: 1rem;
+}
+
+.creator-feature-flow div {
+    padding: 0.8rem;
+}
+
+.creator-feature-flow span {
+    color: rgba(243, 231, 209, 0.78);
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.creator-feature-flow strong {
+    display: block;
+    margin: 0.45rem 0 0.35rem;
+    color: rgba(245, 247, 252, 0.92);
+    font-family: 'Orbitron', Arial, sans-serif;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+.creator-feature-flow p,
+.creator-console-phases p,
+.creator-console-track-strip p {
+    margin: 0;
+    color: rgba(224, 231, 240, 0.70);
+    font-size: 0.82rem;
+    line-height: 1.45;
+}
+
+.creator-asset-status-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.55rem;
+}
+
+.creator-asset-status-grid div {
+    padding: 0.7rem;
+    display: grid;
+    gap: 0.35rem;
+}
+
+.creator-asset-status-grid strong {
+    font-size: 1.35rem;
+}
+
+.creator-asset-mini-list {
+    display: grid;
+    gap: 0.45rem;
+    margin-top: 0.75rem;
+}
+
+.creator-asset-mini-list div {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.58rem 0.65rem;
+}
+
+.creator-asset-mini-list p {
+    margin: 0;
+    color: rgba(224, 231, 240, 0.74);
+    font-size: 0.78rem;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.creator-project-library-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.8rem;
+}
+
+.creator-project-card {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: minmax(96px, 0.34fr) minmax(0, 1fr);
+    gap: 0.75rem;
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 1.1rem;
+    padding: 0.75rem;
+    background: rgba(255,255,255,0.035);
+    overflow: hidden;
+}
+
+.creator-project-card.is-featured {
+    border-color: rgba(220, 186, 92, 0.32);
+    background:
+        radial-gradient(circle at top left, rgba(220, 186, 92, 0.08), transparent 40%),
+        rgba(255,255,255,0.04);
+}
+
+.creator-project-card .creator-release-cover {
+    border-radius: 0.85rem;
+}
+
+.creator-project-card-body {
+    min-width: 0;
+}
+
+.creator-project-card-body > strong {
+    display: block;
+    margin: 0.35rem 0;
+    color: rgba(245, 247, 252, 0.92);
+    font-family: 'Orbitron', Arial, sans-serif;
+    font-size: 0.86rem;
+    line-height: 1.18;
+    letter-spacing: 0.055em;
+    text-transform: uppercase;
+    overflow-wrap: anywhere;
+}
+
+.creator-project-card-body p {
+    margin: 0 0 0.62rem;
+    color: rgba(224, 231, 240, 0.68);
+    font-size: 0.76rem;
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.creator-project-card-body code {
+    display: inline-flex;
+    max-width: 100%;
+    border: 1px solid rgba(188, 224, 255, 0.13);
+    border-radius: 0.7rem;
+    padding: 0.32rem 0.45rem;
+    color: rgba(188, 224, 255, 0.74);
+    background: rgba(255, 255, 255, 0.04);
+    font-size: 0.66rem;
+    white-space: normal;
+    word-break: break-word;
+}
+
+.creator-project-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin-top: 0.7rem;
+}
+
+.creator-project-card-actions a,
+.creator-project-card-actions button,
+.creator-project-card-empty a {
+    min-height: 2.1rem;
+    border-radius: 999px;
+    padding: 0.48rem 0.62rem;
+    font-size: 0.64rem;
+}
+
+.creator-project-card-actions button {
+    color: rgba(243, 231, 209, 0.86);
+}
+
+.creator-project-card-empty {
+    grid-template-columns: 1fr;
+}
+
+.creator-profile-card {
+    padding: 0.85rem;
+    margin-bottom: 0.8rem;
+}
+
+.creator-console-pill-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.creator-console-pill-list span {
+    border: 1px solid rgba(188,224,255,0.13);
+    border-radius: 999px;
+    padding: 0.42rem 0.58rem;
+    color: rgba(224, 231, 240, 0.72);
+    background: rgba(255,255,255,0.036);
+    font-size: 0.72rem;
+}
+
+.creator-console-phases,
+.creator-console-track-strip {
+    display: grid;
+    gap: 0.62rem;
+}
+
+.creator-console-phases div {
+    display: grid;
+    grid-template-columns: 3.4rem minmax(0, 1fr);
+    gap: 0.65rem;
+    align-items: center;
+    padding: 0.62rem;
+}
+
+.creator-console-phases strong {
+    display: block;
+    color: rgba(245, 247, 252, 0.90);
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.creator-console-track-strip {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.creator-console-track-strip div {
+    min-height: 8rem;
+    padding: 0.75rem;
+}
+
+.creator-console-track-strip strong {
+    display: block;
+    margin: 0.55rem 0;
+    color: rgba(245, 247, 252, 0.92);
+    font-family: 'Orbitron', Arial, sans-serif;
+    font-size: 0.78rem;
+    line-height: 1.25;
+    text-transform: uppercase;
+}
+
+.creator-console-footer {
+    margin-top: 0.5rem;
+    padding: 1rem;
+    font-size: 0.82rem;
 }
 
 .creator-console-header {
@@ -83,53 +670,21 @@
     margin-bottom: 1rem;
 }
 
+.creator-console-header-centered {
+    grid-template-columns: 1fr;
+}
+
 .creator-console-header > div:first-child,
-.creator-console-status,
-.creator-console-topline article,
-.creator-console-panel,
-.creator-console-footer {
-    border: 1px solid rgba(214, 224, 235, 0.13);
-    border-radius: 1.35rem;
+.creator-console-status {
     padding: 1rem;
-    background:
-        linear-gradient(145deg, rgba(255,255,255,0.06), rgba(205,215,230,0.025), rgba(14,20,34,0.48));
-    box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.08),
-        0 16px 42px rgba(0,0,0,0.22);
-    backdrop-filter: blur(14px) saturate(125%);
-    -webkit-backdrop-filter: blur(14px) saturate(125%);
-}
-
-.creator-console-kicker {
-    margin: 0;
-    color: rgba(188, 224, 255, 0.68);
-    font-size: 0.68rem;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-}
-
-.creator-console-header h1 {
-    margin: 0.45rem 0 0.65rem;
-    color: rgba(245, 247, 252, 0.96);
-    font-family: 'Orbitron', Arial, sans-serif;
-    font-size: clamp(2rem, 6vw, 4.75rem);
-    line-height: 0.92;
-    letter-spacing: 0.045em;
-    text-transform: uppercase;
-}
-
-.creator-console-header p,
-.creator-console-note,
-.creator-console-footer p {
-    margin: 0;
-    color: rgba(224, 231, 240, 0.68);
-    line-height: 1.62;
 }
 
 .creator-console-status {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    color: inherit;
+    text-align: left;
 }
 
 .creator-console-status span,
@@ -150,360 +705,65 @@
     text-transform: uppercase;
 }
 
-.creator-console-topline {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1rem;
-    margin-bottom: 1rem;
-}
-
-.creator-console-topline article span,
-.creator-console-focus p {
-    display: block;
-    color: rgba(188, 224, 255, 0.58);
-    font-size: 0.68rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-}
-
-.creator-console-topline article strong {
-    display: block;
-    margin: 0.35rem 0 0.25rem;
-    color: rgba(245, 247, 252, 0.94);
-    font-family: 'Orbitron', Arial, sans-serif;
-    text-transform: uppercase;
-}
-
-.creator-console-topline article p {
-    margin: 0;
-    color: rgba(224, 231, 240, 0.62);
-    font-size: 0.82rem;
-}
-
-.creator-console-grid {
-    display: grid;
-    grid-template-columns: 1.05fr 0.95fr 0.8fr;
-    gap: 1rem;
-    margin-bottom: 1rem;
-}
-
-.creator-console-grid-balanced {
-    grid-template-columns: 1.3fr 0.7fr;
-}
-
-.creator-console-grid-bottom {
-    grid-template-columns: 1.2fr 0.8fr;
-}
-
-.creator-console-wide {
-    min-width: 0;
-}
-
-.creator-console-panel h2 {
-    margin: 0.35rem 0 0.9rem;
-    color: rgba(245, 247, 252, 0.94);
-    font-family: 'Orbitron', Arial, sans-serif;
-    font-size: 1.05rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-}
-
-.creator-console-action-list,
-.creator-console-phases,
-.creator-console-links,
-.creator-console-track-strip,
-.creator-console-pill-list {
-    display: grid;
-    gap: 0.62rem;
-}
-
-.creator-console-action-list div {
-    display: flex;
-    gap: 0.65rem;
-    align-items: center;
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 0.9rem;
-    padding: 0.7rem;
-    background: rgba(255,255,255,0.032);
-}
-
-.creator-console-action-list span {
-    width: 0.7rem;
-    height: 0.7rem;
-    flex: 0 0 auto;
-    border-radius: 999px;
-    border: 1px solid rgba(220, 186, 92, 0.36);
-    box-shadow: 0 0 12px rgba(220,186,92,0.12);
-}
-
-.creator-console-action-list p,
-.creator-console-phases p,
-.creator-console-track-strip p {
-    margin: 0;
-    color: rgba(224, 231, 240, 0.70);
-    font-size: 0.83rem;
-    line-height: 1.45;
-}
-
-.creator-console-focus {
-    margin-top: 0.8rem;
-    border: 1px solid rgba(220, 186, 92, 0.16);
-    border-radius: 0.95rem;
-    padding: 0.8rem;
-    background: rgba(220, 186, 92, 0.045);
-}
-
-.creator-console-focus strong {
-    display: block;
-    margin-top: 0.35rem;
-    color: rgba(243, 231, 209, 0.90);
-    line-height: 1.45;
-    font-size: 0.9rem;
-}
-
-.creator-console-links a {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 0.9rem;
-    padding: 0.72rem;
-    color: rgba(238, 243, 250, 0.88);
-    background: rgba(255,255,255,0.034);
-    text-decoration: none;
-    font-family: 'Orbitron', Arial, sans-serif;
-    font-size: 0.78rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    transition: transform 0.2s ease, border-color 0.2s ease;
-}
-
-.creator-console-links a:hover {
-    transform: translateY(-1px);
-    border-color: rgba(188, 224, 255, 0.24);
-}
-
-.creator-console-links em {
-    color: rgba(188, 224, 255, 0.52);
-    font-style: normal;
-    font-family: inherit;
-}
-
-.creator-console-note {
-    margin-top: 0.8rem;
-    font-size: 0.8rem;
-}
-
-/* Asset monitor */
-.creator-asset-status-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0.55rem;
-}
-
-.creator-asset-status-grid div,
-.creator-asset-mini-list div {
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 0.9rem;
-    background: rgba(255,255,255,0.035);
-}
-
-.creator-asset-status-grid div {
-    padding: 0.7rem;
-    display: grid;
-    gap: 0.35rem;
-}
-
-.creator-asset-status-grid span,
-.creator-asset-mini-list span {
-    color: rgba(188, 224, 255, 0.62);
-    font-size: 0.65rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-}
-
-.creator-asset-status-grid strong {
-    color: rgba(245, 247, 252, 0.94);
-    font-family: 'Orbitron', Arial, sans-serif;
-    font-size: 1.4rem;
-}
-
-.creator-asset-mini-list {
-    display: grid;
-    gap: 0.45rem;
-    margin-top: 0.75rem;
-}
-
-.creator-asset-mini-list div {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0.58rem 0.65rem;
-}
-
-.creator-asset-mini-list p {
-    margin: 0;
-    color: rgba(224, 231, 240, 0.74);
-    font-size: 0.78rem;
-}
-
-/* Asset intake */
-.creator-console-path {
-    display: inline-flex;
-    max-width: 100%;
-    margin: -0.25rem 0 0.9rem;
-    border: 1px solid rgba(188, 224, 255, 0.13);
-    border-radius: 999px;
-    padding: 0.38rem 0.58rem;
-    color: rgba(188, 224, 255, 0.74);
-    background: rgba(255, 255, 255, 0.04);
-    font-size: 0.68rem;
-    white-space: normal;
-    word-break: break-word;
-}
-
-.creator-next-assets {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0.65rem;
-}
-
-.creator-next-asset-card {
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 1rem;
-    padding: 0.8rem;
-    background: rgba(255,255,255,0.035);
-}
-
-.creator-next-asset-card > span {
-    display: inline-flex;
-    margin-bottom: 0.55rem;
-    border: 1px solid rgba(220, 186, 92, 0.16);
-    border-radius: 999px;
-    padding: 0.26rem 0.44rem;
-    color: rgba(243, 231, 209, 0.78);
-    background: rgba(220, 186, 92, 0.045);
-    font-size: 0.62rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-}
-
-.creator-next-asset-card strong {
-    display: block;
-    margin: 0 0 0.35rem;
-    color: rgba(245, 247, 252, 0.92);
-    font-size: 0.86rem;
-}
-
-.creator-next-asset-card p {
-    margin: 0 0 0.62rem;
-    color: rgba(224, 231, 240, 0.68);
-    font-size: 0.76rem;
-    line-height: 1.45;
-}
-
-.creator-next-asset-card code {
-    display: inline-flex;
-    max-width: 100%;
-    border: 1px solid rgba(188, 224, 255, 0.13);
-    border-radius: 0.7rem;
-    padding: 0.32rem 0.45rem;
-    color: rgba(188, 224, 255, 0.74);
-    background: rgba(255, 255, 255, 0.04);
-    font-size: 0.66rem;
-    white-space: normal;
-    word-break: break-word;
-}
-
-/* Timeline */
-.creator-console-phases div {
-    display: grid;
-    grid-template-columns: 4.8rem minmax(0, 1fr);
-    gap: 0.65rem;
-    align-items: center;
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 0.9rem;
-    padding: 0.62rem;
-    background: rgba(255,255,255,0.032);
-}
-
-.creator-console-phases span {
-    color: rgba(243, 231, 209, 0.82);
-    font-size: 0.72rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-}
-
-.creator-console-phases strong {
-    display: block;
-    color: rgba(245, 247, 252, 0.90);
-    font-size: 0.78rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-}
-
-/* Track strip */
-.creator-console-track-strip {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-}
-
-.creator-console-track-strip div {
-    min-height: 8rem;
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 1rem;
-    padding: 0.75rem;
-    background: rgba(255,255,255,0.032);
-}
-
-.creator-console-track-strip span {
-    color: rgba(243, 231, 209, 0.78);
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-}
-
-.creator-console-track-strip strong {
-    display: block;
-    margin: 0.55rem 0;
-    color: rgba(245, 247, 252, 0.92);
-    font-family: 'Orbitron', Arial, sans-serif;
-    font-size: 0.78rem;
-    line-height: 1.25;
-    text-transform: uppercase;
-}
-
-.creator-console-pill-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-}
-
-.creator-console-pill-list span {
-    border: 1px solid rgba(188,224,255,0.13);
-    border-radius: 999px;
-    padding: 0.42rem 0.58rem;
-    color: rgba(224, 231, 240, 0.72);
-    background: rgba(255,255,255,0.036);
-    font-size: 0.72rem;
-}
-
-.creator-console-footer {
-    margin-top: 0.5rem;
-    font-size: 0.82rem;
-}
-
-@media (max-width: 1120px) {
-    .creator-console-grid,
+@media (max-width: 1180px) {
+    .creator-hero,
+    .creator-console-grid-main,
     .creator-console-grid-balanced,
     .creator-console-grid-bottom,
-    .creator-console-header,
-    .creator-console-topline {
+    .creator-console-header {
         grid-template-columns: 1fr;
     }
 
-    .creator-next-assets,
-    .creator-console-track-strip {
+    .creator-feature-card {
+        grid-template-columns: minmax(180px, 0.36fr) minmax(0, 1fr);
+        align-items: center;
+    }
+
+    .creator-feature-topline,
+    .creator-feature-copy,
+    .creator-feature-metrics {
+        grid-column: 2;
+    }
+
+    .creator-release-cover {
+        grid-column: 1;
+        grid-row: 1 / span 3;
+    }
+
+    .creator-project-library-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .creator-console-track-strip {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 860px) {
+    .creator-console-topline,
+    .creator-feature-flow {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .creator-hero-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .creator-feature-card,
+    .creator-project-card {
+        grid-template-columns: 1fr;
+    }
+
+    .creator-feature-topline,
+    .creator-feature-copy,
+    .creator-feature-metrics,
+    .creator-release-cover {
+        grid-column: auto;
+        grid-row: auto;
+    }
+
+    .creator-project-card .creator-release-cover {
+        max-height: 320px;
     }
 }
 
@@ -536,14 +796,36 @@
         padding-top: 1rem;
     }
 
+    .creator-console-topline,
+    .creator-feature-metrics,
+    .creator-feature-flow,
+    .creator-project-library-grid,
+    .creator-console-track-strip,
     .creator-asset-status-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: 1fr;
+    }
+
+    .creator-hero-copy h1,
+    .creator-console-header h1 {
+        font-size: clamp(2rem, 14vw, 3.8rem);
     }
 }
 
 @media (max-width: 520px) {
-    .creator-next-assets,
-    .creator-console-track-strip {
+    .creator-hero-actions {
         grid-template-columns: 1fr;
+    }
+
+    .creator-panel-title-row,
+    .creator-feature-topline,
+    .creator-project-card-meta {
+        display: grid;
+        justify-content: stretch;
+    }
+
+    .creator-project-card-actions a,
+    .creator-project-card-actions button {
+        flex: 1 1 100%;
+        justify-content: center;
     }
 }
