@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { gql, useMutation, useQuery } from "@apollo/client";
+import { upload } from "@vercel/blob/client";
 import "@/styles/signalBoard.css";
 
 const STORAGE_KEY_PREFIX = "cosmic:release-signal-board";
@@ -1694,30 +1695,49 @@ export default function DynamicReleaseSignalBoardPage() {
 
     try {
       setIsUploadingAsset(true);
-      setAssetMessage("Uploading file to Vercel Blob...");
+      setAssetMessage("Uploading file directly to Vercel Blob...");
 
-      const formData = new FormData();
-      formData.append("file", selectedAssetFile);
-      formData.append("releaseWorldId", releaseWorldId);
-      formData.append("kind", getUploadKindFromAssetForm());
+      const uploadKind = getUploadKindFromAssetForm();
+      const safeFileName =
+        selectedAssetFile.name
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9._-]+/g, "-")
+          .replace(/-+/g, "-")
+          .replace(/^-+|-+$/g, "") || "upload";
+      const releaseSegment =
+        releaseWorldId
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9_-]+/g, "-")
+          .replace(/-+/g, "-")
+          .replace(/^-+|-+$/g, "") || "release-world";
 
-      const uploadResponse = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
+      const folder =
+        uploadKind === "audio"
+          ? "release-audio"
+          : uploadKind === "cover"
+            ? "release-covers"
+            : uploadKind === "image"
+              ? "release-images"
+              : uploadKind === "video"
+                ? "release-videos"
+                : uploadKind === "document"
+                  ? "release-documents"
+                  : "release-assets";
+
+      const pathname = `${folder}/${releaseSegment}/${Date.now()}-${safeFileName}`;
+
+      const uploadResult = await upload(pathname, selectedAssetFile, {
+        access: "public",
+        handleUploadUrl: "/api/upload",
+        clientPayload: JSON.stringify({
+          releaseWorldId,
+          kind: uploadKind,
+          usage: assetForm.usage,
+          trackId: assetForm.trackId,
+        }),
       });
-
-      const uploadResult = (await uploadResponse.json()) as {
-        url?: string;
-        pathname?: string;
-        contentType?: string;
-        size?: number;
-        fileName?: string;
-        error?: string;
-      };
-
-      if (!uploadResponse.ok || !uploadResult.url) {
-        throw new Error(uploadResult.error || "Blob upload failed.");
-      }
 
       setAssetMessage("Blob upload complete. Registering asset in MongoDB...");
 
@@ -1727,16 +1747,15 @@ export default function DynamicReleaseSignalBoardPage() {
             ...assetForm,
             title:
               assetForm.title.trim() ||
-              uploadResult.fileName ||
               selectedAssetFile.name ||
               "Uploaded asset",
             url: uploadResult.url,
-            fileName: uploadResult.fileName || selectedAssetFile.name,
-            mimeType: uploadResult.contentType || selectedAssetFile.type,
+            fileName: selectedAssetFile.name,
+            mimeType: selectedAssetFile.type,
           },
           releaseWorldId,
         ),
-        size: uploadResult.size ?? selectedAssetFile.size,
+        size: selectedAssetFile.size,
       };
 
       const result = await createReleaseAsset({
