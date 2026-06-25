@@ -486,7 +486,7 @@ const typeDefs = gql`
 
     createReleaseAsset(input: ReleaseAssetInput!): ReleaseAsset!
     updateReleaseAsset(id: ID!, input: UpdateReleaseAssetInput!): ReleaseAsset!
-    deleteReleaseAsset(id: ID!): ReleaseAsset
+    deleteReleaseAsset(id: ID!, deleteBlob: Boolean): ReleaseAsset
 
     saveBoardArtifacts(
       releaseWorldId: ID!

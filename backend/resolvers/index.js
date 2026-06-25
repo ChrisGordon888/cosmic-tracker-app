@@ -197,6 +197,94 @@ async function clearReleaseAssetTargets(asset, userId) {
     }
 }
 
+
+function isImageAssetLike({ kind, usage, mimeType = "", fileName = "", url = "" }) {
+    const normalizedKind = String(kind || "").toLowerCase();
+    const normalizedUsage = String(usage || "").toLowerCase();
+    const normalizedMime = String(mimeType || "").toLowerCase();
+    const normalizedFile = String(fileName || url || "").toLowerCase();
+
+    const wantsCover = normalizedUsage === "cover" || normalizedKind === "cover";
+    if (!wantsCover) return true;
+
+    return (
+        normalizedMime.startsWith("image/") ||
+        /\.(jpg|jpeg|png|webp|gif|avif|svg)(\?.*)?$/.test(normalizedFile)
+    );
+}
+
+function isAudioAssetLike({ kind, usage, mimeType = "", fileName = "", url = "" }) {
+    const normalizedKind = String(kind || "").toLowerCase();
+    const normalizedUsage = String(usage || "").toLowerCase();
+    const normalizedMime = String(mimeType || "").toLowerCase();
+    const normalizedFile = String(fileName || url || "").toLowerCase();
+
+    const wantsAudio = normalizedUsage === "track-audio" || normalizedKind === "audio";
+    if (!wantsAudio) return true;
+
+    return (
+        normalizedMime.startsWith("audio/") ||
+        /\.(mp3|wav|m4a|aac|flac|ogg|oga|aiff|aif)(\?.*)?$/.test(normalizedFile)
+    );
+}
+
+function validateReleaseAssetShape(input) {
+    if (!isImageAssetLike(input)) {
+        throw new Error("Cover assets must be image files. Change Usage/Kind or upload an image.");
+    }
+
+    if (!isAudioAssetLike(input)) {
+        throw new Error("Track audio assets must be audio files. Change Usage/Kind or upload an audio file.");
+    }
+}
+
+function isVercelBlobUrl(value) {
+    if (!value) return false;
+
+    try {
+        const hostname = new URL(value).hostname;
+        return (
+            hostname.endsWith(".blob.vercel-storage.com") ||
+            hostname.endsWith(".public.blob.vercel-storage.com")
+        );
+    } catch {
+        return false;
+    }
+}
+
+async function tryDeleteBlobForAsset(asset) {
+    if (!asset?.url) {
+        return { deleted: false, reason: "No asset URL." };
+    }
+
+    if (!isVercelBlobUrl(asset.url)) {
+        return { deleted: false, reason: "Asset URL is not a Vercel Blob URL." };
+    }
+
+    const token = process.env.BLOB_READ_WRITE_TOKEN;
+
+    if (!token) {
+        console.warn(
+            "[deleteReleaseAsset] BLOB_READ_WRITE_TOKEN is not configured on the backend. Mongo asset will be deleted, but Blob cleanup was skipped."
+        );
+        return { deleted: false, reason: "Missing BLOB_READ_WRITE_TOKEN." };
+    }
+
+    try {
+        const { del } = await import("@vercel/blob");
+        await del(asset.url, { token });
+        return { deleted: true, reason: "Deleted from Vercel Blob." };
+    } catch (error) {
+        console.warn("[deleteReleaseAsset] Blob cleanup failed:", {
+            assetId: String(asset._id),
+            url: asset.url,
+            message: error instanceof Error ? error.message : String(error),
+        });
+
+        return { deleted: false, reason: "Blob cleanup failed." };
+    }
+}
+
 module.exports = {
     Query: {
         hello: () => "Hello Cosmic Tracker 🌙",
@@ -1140,13 +1228,23 @@ module.exports = {
                 }
             }
 
+            const assetShape = {
+                kind: input.kind || "image",
+                usage: input.usage || "other",
+                mimeType: input.mimeType || "",
+                fileName: input.fileName || "",
+                url: input.url || "",
+            };
+
+            validateReleaseAssetShape(assetShape);
+
             const asset = await ReleaseAsset.create({
                 ownerId: user.id,
                 releaseWorldId: releaseWorld._id,
                 trackId: normalizedTrackId,
                 boardArtifactId: normalizedBoardArtifactId,
-                kind: input.kind || "image",
-                usage: input.usage || "other",
+                kind: assetShape.kind,
+                usage: assetShape.usage,
                 title: input.title,
                 description: input.description || "",
                 url: input.url,
@@ -1240,6 +1338,20 @@ module.exports = {
             }
             if (input.isPublic !== undefined) update.isPublic = input.isPublic;
 
+            const nextAssetShape = {
+                kind: update.kind !== undefined ? update.kind : existingAsset.kind,
+                usage: update.usage !== undefined ? update.usage : existingAsset.usage,
+                mimeType:
+                    update.mimeType !== undefined ? update.mimeType : existingAsset.mimeType,
+                fileName:
+                    update.fileName !== undefined ? update.fileName : existingAsset.fileName,
+                url: update.url !== undefined ? update.url : existingAsset.url,
+            };
+
+            validateReleaseAssetShape(nextAssetShape);
+
+            await clearReleaseAssetTargets(existingAsset, user.id);
+
             const updatedAsset = await ReleaseAsset.findOneAndUpdate(
                 {
                     _id: id,
@@ -1257,7 +1369,7 @@ module.exports = {
             return updatedAsset;
         },
 
-        deleteReleaseAsset: async (_, { id }, { user }) => {
+        deleteReleaseAsset: async (_, { id, deleteBlob = true }, { user }) => {
             if (!user) throw new Error("Unauthorized: Please sign in.");
 
             const asset = await ReleaseAsset.findOne({
@@ -1281,6 +1393,10 @@ module.exports = {
                 _id: id,
                 ownerId: user.id,
             });
+
+            if (deleteBlob) {
+                await tryDeleteBlobForAsset(asset);
+            }
 
             releaseWorld.lastOpenedAt = new Date();
             await releaseWorld.save();

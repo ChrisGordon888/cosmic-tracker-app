@@ -12,6 +12,7 @@
     "license": "ISC",
     "type": "commonjs",
     "dependencies": {
+        "@vercel/blob": "^1.1.1",
         "apollo-server-express": "^3.13.0",
         "cors": "^2.8.5",
         "dotenv": "^16.5.0",
