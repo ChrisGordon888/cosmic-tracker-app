@@ -510,7 +510,7 @@ export default function CosmicNexusHub() {
             .map((releaseTrack) => toPlayerTrack(releaseTrack, creatorFeaturedRelease));
 
         void playOrToggleTrack(toPlayerTrack(track, creatorFeaturedRelease), flowTracks, {
-            source: 'nexus-featured-release',
+            source: 'nexus',
             label: creatorFeaturedRelease?.title ?? 'Featured release',
         });
     };
