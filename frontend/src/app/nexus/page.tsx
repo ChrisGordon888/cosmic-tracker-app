@@ -283,10 +283,25 @@ function formatUnlockDate(dateString?: string | null) {
 function formatReleaseDate(dateString?: string | null) {
     if (!dateString) return 'TBD';
 
-    const numericValue = Number(dateString);
+    const cleanValue = String(dateString).trim();
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(cleanValue)) {
+        const [year, month, day] = cleanValue.split('-').map(Number);
+        const localDate = new Date(year, month - 1, day);
+
+        if (Number.isNaN(localDate.getTime())) return 'TBD';
+
+        return new Intl.DateTimeFormat('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+        }).format(localDate);
+    }
+
+    const numericValue = Number(cleanValue);
     const date = Number.isFinite(numericValue)
         ? new Date(numericValue)
-        : new Date(dateString);
+        : new Date(cleanValue);
 
     if (Number.isNaN(date.getTime())) return 'TBD';
 
@@ -398,15 +413,23 @@ function getFeaturedTrackAction(track: NexusFeaturedReleaseTrack, isSignedIn: bo
 
 function getFeaturedTrackMetaLine(
     track: NexusFeaturedReleaseTrack,
+    isSignedIn: boolean,
     releaseWorld?: NexusFeaturedReleaseWorld | null
 ) {
-    const parts = [
-        formatReleaseLabel(track.status),
-        formatReleaseDate(track.dropDate || releaseWorld?.fullDropDate),
-        track.keySignature,
-    ].filter((part) => part && part !== 'TBD');
+    const trackAction = getFeaturedTrackAction(track, isSignedIn);
+    const unlockDate = formatReleaseDate(track.unlockDate);
+    const dropDate = formatReleaseDate(track.dropDate || releaseWorld?.fullDropDate);
+    const openDate = unlockDate !== 'TBD' ? unlockDate : dropDate;
 
-    return parts.length > 0 ? parts.join(' • ') : 'Release details forming';
+    if (trackAction.canPlay && trackAction.label === 'Review') return 'Creator review available';
+    if (trackAction.canPlay && trackAction.label === 'Play') return 'Available now';
+    if (trackAction.canPlay && trackAction.label === 'Preview') return 'Preview available';
+    if (trackAction.label === 'Preview pending') return 'Preview pending';
+    if (track.playbackStatus === 'coming-soon' && openDate !== 'TBD') return `Opens ${openDate}`;
+    if (track.playbackStatus === 'coming-soon') return 'Coming soon';
+    if (openDate !== 'TBD') return `Opens ${openDate}`;
+
+    return 'Locked in the sequence';
 }
 
 function getFeaturedTrackPlaybackUrl(track: NexusFeaturedReleaseTrack, isSignedIn: boolean) {
@@ -591,9 +614,6 @@ export default function CosmicNexusHub() {
             : publicFeaturedReleaseTracksLoading;
 
     const featuredReleaseTrackCount = featuredReleaseTracks?.length ?? 0;
-    const featuredReleasePlayableCount =
-        featuredReleaseTracks?.filter((track) => getFeaturedTrackAction(track, isSignedIn).canPlay).length ?? 0;
-
     const playFeaturedReleaseTrack = (track: NexusFeaturedReleaseTrack) => {
         const selectedTrackUrl = getFeaturedTrackPlaybackUrl(track, isSignedIn);
         if (!selectedTrackUrl) return;
@@ -969,7 +989,7 @@ export default function CosmicNexusHub() {
                                             boxShadow: '0 14px 28px rgba(0,0,0,0.2)',
                                         }}
                                     >
-                                        View Release Page
+                                        Enter Release Portal
                                     </Link>
 
                                     <button
@@ -980,7 +1000,7 @@ export default function CosmicNexusHub() {
                                             backdropFilter: 'blur(10px)',
                                         }}
                                     >
-                                        {showReleaseDetails ? 'Close Details' : 'Open Release'}
+                                        {showReleaseDetails ? 'Close Tracklist' : 'Preview Tracklist'}
                                     </button>
                                 </div>
                             </div>
@@ -995,9 +1015,6 @@ export default function CosmicNexusHub() {
                                                     <h4>{featuredReleaseTrackCount > 0 ? `${featuredReleaseTrackCount} track${featuredReleaseTrackCount === 1 ? '' : 's'}` : 'Tracklist forming'}</h4>
                                                 </div>
 
-                                                {featuredReleasePlayableCount > 0 && (
-                                                    <span>{featuredReleasePlayableCount} ready</span>
-                                                )}
                                             </div>
 
                                             {isFeaturedReleaseTracksLoading ? (
@@ -1027,8 +1044,7 @@ export default function CosmicNexusHub() {
                                                                     </div>
 
                                                                     <p>
-                                                                        {getFeaturedTrackMetaLine(track, creatorFeaturedRelease)}
-                                                                        {track.mood ? ` • ${track.mood}` : ''}
+                                                                        {getFeaturedTrackMetaLine(track, isSignedIn, creatorFeaturedRelease)}
                                                                     </p>
                                                                 </div>
 
