@@ -272,14 +272,11 @@ function getModeLabel(mode: ExperienceMode) {
 function formatUnlockDate(dateString?: string | null) {
     if (!dateString) return null;
 
-    try {
-        return new Intl.DateTimeFormat('en-US', {
-            month: 'short',
-            day: 'numeric',
-        }).format(new Date(dateString));
-    } catch {
-        return null;
-    }
+    const formatted = formatReleaseDate(dateString);
+
+    if (formatted === 'TBD') return null;
+
+    return formatted.replace(/, \d{4}$/, '');
 }
 
 function formatReleaseDate(dateString?: string | null) {
@@ -287,9 +284,19 @@ function formatReleaseDate(dateString?: string | null) {
 
     const cleanValue = String(dateString).trim();
 
-    if (/^\d{4}-\d{2}-\d{2}$/.test(cleanValue)) {
-        const [year, month, day] = cleanValue.split('-').map(Number);
-        const localDate = new Date(year, month - 1, day);
+    /**
+     * Handles both:
+     * 2026-07-29
+     * 2026-07-29T00:00:00.000Z
+     *
+     * We intentionally parse the YYYY-MM-DD portion as a local calendar date
+     * so release/unlock dates do not shift one day earlier by timezone.
+     */
+    const datePrefixMatch = cleanValue.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+    if (datePrefixMatch) {
+        const [, year, month, day] = datePrefixMatch;
+        const localDate = new Date(Number(year), Number(month) - 1, Number(day));
 
         if (Number.isNaN(localDate.getTime())) return 'TBD';
 
