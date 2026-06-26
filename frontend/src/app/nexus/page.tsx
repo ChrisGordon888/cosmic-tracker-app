@@ -322,16 +322,20 @@ function getFeaturedTrackReleaseLabel(
     return `${statusLabel} • ${releaseDate}`;
 }
 
-function toPlayerTrack(track: NexusFeaturedReleaseTrack, releaseWorld?: NexusFeaturedReleaseWorld | null) {
+function toPlayerTrack(
+    releaseTrack: NexusReleaseTrack,
+    releaseWorld?: NexusFeaturedReleaseWorld | null
+) {
     return {
-        id: `release-${track.id}`,
-        trackTitle: track.title,
+        id: releaseTrack.id,
+        trackTitle: releaseTrack.title,
         artist: 'Cosmic',
         realmId: 0,
+        realmName: 'INTERSIDDHI',
         realmColor: '#DCBA5C',
-        visibility: track.isPublic ? 'public' : 'signup',
-        trackUrl: track.audioUrl || '',
-        artworkUrl: releaseWorld?.coverArtUrl || undefined,
+        visibility: releaseTrack.isPublic ? 'public' : 'premium',
+        trackUrl: releaseTrack.audioUrl || '',
+        artworkUrl: releaseWorld?.coverArtUrl ?? undefined,
     };
 }
 
