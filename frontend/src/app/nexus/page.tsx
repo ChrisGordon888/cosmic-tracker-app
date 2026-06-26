@@ -88,6 +88,12 @@ const FEATURED_RELEASE_TRACK_FIELDS = gql`
         hook
         notes
         audioUrl
+        previewAudioUrl
+        platformUrl
+        visibility
+        playbackStatus
+        dropDate
+        unlockDate
         isFocusTrack
         isSecondFocus
         isPublic
@@ -148,6 +154,12 @@ interface NexusFeaturedReleaseTrack {
     hook?: string | null;
     notes?: string | null;
     audioUrl?: string | null;
+    previewAudioUrl?: string | null;
+    platformUrl?: string | null;
+    visibility: string;
+    playbackStatus: string;
+    dropDate?: string | null;
+    unlockDate?: string | null;
     isFocusTrack: boolean;
     isSecondFocus: boolean;
     isPublic: boolean;
@@ -298,7 +310,7 @@ function getFeaturedReleaseSummary(releaseWorld?: NexusFeaturedReleaseWorld | nu
     return (
         releaseWorld?.oneLineSummary?.trim() ||
         releaseWorld?.story?.trim() ||
-        'A selected release world: sound, story, sequence, and a portal into the next chapter.'
+        'A live release world from Creator OS: sound, story, cover art, signal board, and portal path.'
     );
 }
 
@@ -316,41 +328,36 @@ function getFeaturedTrackReleaseLabel(
     releaseWorld?: NexusFeaturedReleaseWorld | null
 ) {
     const statusLabel = formatReleaseLabel(track.status);
-    const releaseDate = formatReleaseDate(releaseWorld?.fullDropDate);
+    const dropDate = formatReleaseDate(track.dropDate || releaseWorld?.fullDropDate);
+    const unlockDate = formatReleaseDate(track.unlockDate);
 
-    if (releaseDate === 'TBD') return statusLabel;
-    return `${statusLabel} • ${releaseDate}`;
+    if (track.playbackStatus === 'coming-soon' && unlockDate !== 'TBD') {
+        return `Coming soon • Opens ${unlockDate}`;
+    }
+
+    if (dropDate === 'TBD') return statusLabel;
+    return `${statusLabel} • ${dropDate}`;
 }
 
-function isFeaturedTrackPlayable(track: NexusFeaturedReleaseTrack, isSignedIn: boolean) {
-    if (!track.audioUrl) return false;
-
-    if (isSignedIn) return true;
-
-    const playableStatuses = new Set([
-        'released',
-        'live',
-        'open',
-        'public',
-        'published',
-        'available',
-        'out-now',
-        'out now',
-        'playable',
-    ]);
-
-    return playableStatuses.has(String(track.status || '').trim().toLowerCase());
+function getFeaturedTrackPlaybackLabel(track: NexusFeaturedReleaseTrack, isSignedIn: boolean) {
+    if (isSignedIn && (track.audioUrl || track.previewAudioUrl)) return 'Creator play';
+    if (track.playbackStatus === 'playable' && track.audioUrl) return 'Play';
+    if (track.playbackStatus === 'preview' && (track.previewAudioUrl || track.audioUrl)) return 'Preview';
+    if (track.playbackStatus === 'coming-soon') return 'Coming soon';
+    return 'Locked';
 }
 
-function getFeaturedTrackAvailabilityLabel(track: NexusFeaturedReleaseTrack, isSignedIn: boolean) {
-    if (isFeaturedTrackPlayable(track, isSignedIn)) return 'Open now';
-    if (track.audioUrl && !isSignedIn) return 'Locked';
-    return 'Coming soon';
+function getFeaturedTrackPlaybackUrl(track: NexusFeaturedReleaseTrack, isSignedIn: boolean) {
+    if (isSignedIn) return track.audioUrl || track.previewAudioUrl || '';
+    if (track.playbackStatus === 'playable') return track.audioUrl || '';
+    if (track.playbackStatus === 'preview') return track.previewAudioUrl || track.audioUrl || '';
+    return '';
 }
 
 function toPlayerTrack(
     releaseTrack: NexusFeaturedReleaseTrack,
-    releaseWorld?: NexusFeaturedReleaseWorld | null
+    releaseWorld?: NexusFeaturedReleaseWorld | null,
+    isSignedIn = false
 ) {
     return {
         id: `release-${releaseTrack.id}`,
@@ -359,8 +366,8 @@ function toPlayerTrack(
         realmId: 0,
         realmName: 'INTERSIDDHI',
         realmColor: '#DCBA5C',
-        visibility: releaseTrack.isPublic ? 'public' : 'premium',
-        trackUrl: releaseTrack.audioUrl || '',
+        visibility: releaseTrack.visibility === 'public' || releaseTrack.isPublic ? 'public' : 'premium',
+        trackUrl: getFeaturedTrackPlaybackUrl(releaseTrack, isSignedIn),
         artworkUrl: releaseWorld?.coverArtUrl ?? undefined,
     };
 }
@@ -526,16 +533,17 @@ export default function CosmicNexusHub() {
 
     const featuredReleaseTrackCount = featuredReleaseTracks?.length ?? 0;
     const featuredReleaseAudioCount =
-        featuredReleaseTracks?.filter((track) => Boolean(track.audioUrl)).length ?? 0;
+        featuredReleaseTracks?.filter((track) => Boolean(getFeaturedTrackPlaybackUrl(track, isSignedIn))).length ?? 0;
 
     const playFeaturedReleaseTrack = (track: NexusFeaturedReleaseTrack) => {
-        if (!track.audioUrl) return;
+        const selectedTrackUrl = getFeaturedTrackPlaybackUrl(track, isSignedIn);
+        if (!selectedTrackUrl) return;
 
         const flowTracks = (featuredReleaseTracks ?? [])
-            .filter((releaseTrack) => Boolean(releaseTrack.audioUrl))
-            .map((releaseTrack) => toPlayerTrack(releaseTrack, creatorFeaturedRelease));
+            .filter((releaseTrack) => Boolean(getFeaturedTrackPlaybackUrl(releaseTrack, isSignedIn)))
+            .map((releaseTrack) => toPlayerTrack(releaseTrack, creatorFeaturedRelease, isSignedIn));
 
-        void playOrToggleTrack(toPlayerTrack(track, creatorFeaturedRelease), flowTracks, {
+        void playOrToggleTrack(toPlayerTrack(track, creatorFeaturedRelease, isSignedIn), flowTracks, {
             source: 'nexus',
             label: creatorFeaturedRelease?.title ?? 'Featured release',
         });
@@ -862,7 +870,7 @@ export default function CosmicNexusHub() {
                                         className="px-3 py-1.5 rounded-full text-[11px] uppercase tracking-[0.14em] bg-[#7c5cff22] border border-[#7c5cff44] text-[#cdb7ff]"
                                         style={{ backdropFilter: 'blur(10px)' }}
                                     >
-                                        {isCreatorPreviewRelease ? 'Creator Preview' : 'Featured Release'}
+                                        {isCreatorPreviewRelease ? 'Creator Preview' : 'Featured from Creator OS'}
                                     </span>
 
                                     <span
@@ -926,8 +934,8 @@ export default function CosmicNexusHub() {
                                             color: 'rgba(255,255,255,0.88)',
                                         }}
                                     >
-                                        <span className="block text-white/95">Access</span>
-                                        <span className="text-white/65">{isCreatorPreviewRelease ? 'Preview' : 'Public'}</span>
+                                        <span className="block text-white/95">Portal</span>
+                                        <span className="text-white/65">{formatReleaseLabel(creatorFeaturedRelease.visibility)}</span>
                                     </div>
 
                                     <div
@@ -950,8 +958,8 @@ export default function CosmicNexusHub() {
                                             color: 'rgba(255,255,255,0.88)',
                                         }}
                                     >
-                                        <span className="block text-white/95">Selection</span>
-                                        <span className="text-white/65">Featured world</span>
+                                        <span className="block text-white/95">Live source</span>
+                                        <span className="text-white/65">Mongo ReleaseWorld</span>
                                     </div>
                                 </div>
                             </div>
@@ -962,7 +970,7 @@ export default function CosmicNexusHub() {
                                         <div className="nexus-dynamic-release-detail-hero">
                                             <div className="nexus-dynamic-release-detail-copy">
                                                 <p className="text-xs uppercase tracking-[0.18em] text-muted mb-1">
-                                                    The Portal
+                                                    Release world
                                                 </p>
                                                 <h3 className="text-2xl font-display">
                                                     {creatorFeaturedRelease.title}
@@ -998,14 +1006,14 @@ export default function CosmicNexusHub() {
                                         <div className="nexus-featured-release-track-panel">
                                             <div className="nexus-featured-release-track-heading">
                                                 <div>
-                                                    <p>Tracklist</p>
-                                                    <h4>{featuredReleaseTrackCount > 0 ? `${featuredReleaseTrackCount} song${featuredReleaseTrackCount === 1 ? '' : 's'} in sequence` : 'Tracklist forming'}</h4>
+                                                    <p>Release sequence</p>
+                                                    <h4>{featuredReleaseTrackCount > 0 ? `${featuredReleaseTrackCount} connected track${featuredReleaseTrackCount === 1 ? '' : 's'}` : 'Track sequence forming'}</h4>
                                                 </div>
 
                                                 <span>
                                                     {featuredReleaseAudioCount > 0
-                                                        ? `${featuredReleaseAudioCount} with audio staged`
-                                                        : 'Rollout in progress'}
+                                                        ? `${featuredReleaseAudioCount} audio file${featuredReleaseAudioCount === 1 ? '' : 's'} ready`
+                                                        : 'Audio staging'}
                                                 </span>
                                             </div>
 
@@ -1016,9 +1024,9 @@ export default function CosmicNexusHub() {
                                             ) : featuredReleaseTracks && featuredReleaseTracks.length > 0 ? (
                                                 <div className="nexus-featured-release-track-list">
                                                     {featuredReleaseTracks.map((track) => {
-                                                        const hasAudio = Boolean(track.audioUrl);
-                                                        const canPlayFeaturedTrack = isFeaturedTrackPlayable(track, isSignedIn);
-                                                        const trackAvailabilityLabel = getFeaturedTrackAvailabilityLabel(track, isSignedIn);
+                                                        const playbackUrl = getFeaturedTrackPlaybackUrl(track, isSignedIn);
+                                                        const hasPlayback = Boolean(playbackUrl);
+                                                        const playbackLabel = getFeaturedTrackPlaybackLabel(track, isSignedIn);
                                                         const playerTrackId = `release-${track.id}`;
                                                         const isCurrentDynamicTrack =
                                                             currentTrack?.id === playerTrackId && isPlaying;
@@ -1055,26 +1063,33 @@ export default function CosmicNexusHub() {
                                                                 </div>
 
                                                                 <div className="nexus-featured-release-track-actions">
-                                                                    <span className={track.isPublic ? 'is-public' : 'is-private'}>
-                                                                        {isSignedIn && !track.isPublic ? 'Private' : trackAvailabilityLabel}
+                                                                    <span className={track.visibility === 'public' || track.isPublic ? 'is-public' : track.visibility === 'listed' ? 'is-listed' : 'is-private'}>
+                                                                        {track.visibility === 'public' || track.isPublic
+                                                                            ? 'Public'
+                                                                            : track.visibility === 'listed'
+                                                                                ? 'Listed'
+                                                                                : 'Creator only'}
+                                                                    </span>
+                                                                    <span className={`is-playback-${track.playbackStatus || 'locked'}`}>
+                                                                        {formatReleaseLabel(track.playbackStatus || 'locked')}
                                                                     </span>
 
                                                                     <button
                                                                         type="button"
                                                                         className="btn-secondary"
                                                                         onClick={() => playFeaturedReleaseTrack(track)}
-                                                                        disabled={!canPlayFeaturedTrack}
+                                                                        disabled={!hasPlayback}
                                                                         style={{
                                                                             borderRadius: '999px',
-                                                                            opacity: canPlayFeaturedTrack ? 1 : 0.5,
-                                                                            cursor: canPlayFeaturedTrack ? 'pointer' : 'not-allowed',
+                                                                            opacity: hasPlayback ? 1 : 0.5,
+                                                                            cursor: hasPlayback ? 'pointer' : 'not-allowed',
                                                                         }}
                                                                     >
-                                                                        {!canPlayFeaturedTrack
-                                                                            ? trackAvailabilityLabel
+                                                                        {!hasPlayback
+                                                                            ? playbackLabel
                                                                             : isCurrentDynamicTrack
                                                                                 ? 'Pause'
-                                                                                : 'Play'}
+                                                                                : playbackLabel}
                                                                     </button>
                                                                 </div>
                                                             </div>

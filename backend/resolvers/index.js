@@ -533,7 +533,11 @@ module.exports = {
 
             return await ReleaseTrack.find({
                 releaseWorldId,
-                isPublic: true,
+                status: { $ne: "archived" },
+                $or: [
+                    { visibility: { $in: ["public", "listed"] } },
+                    { isPublic: true },
+                ],
             }).sort({
                 trackNumber: 1,
                 createdAt: 1,
@@ -1188,9 +1192,18 @@ module.exports = {
                 hook: input.hook || "",
                 notes: input.notes || "",
                 audioUrl: input.audioUrl || "",
+                previewAudioUrl: input.previewAudioUrl || "",
+                platformUrl: input.platformUrl || "",
+                visibility: input.visibility || (input.isPublic ? "public" : "private"),
+                playbackStatus: input.playbackStatus || "locked",
+                dropDate: input.dropDate || null,
+                unlockDate: input.unlockDate || null,
                 isFocusTrack: input.isFocusTrack || false,
                 isSecondFocus: input.isSecondFocus || false,
-                isPublic: input.isPublic || false,
+                isPublic:
+                    input.isPublic !== undefined
+                        ? input.isPublic
+                        : input.visibility === "public",
                 lastOpenedAt: new Date(),
             });
 
@@ -1224,6 +1237,14 @@ module.exports = {
                 ...input,
                 lastOpenedAt: new Date(),
             };
+
+            if (input.visibility !== undefined && input.isPublic === undefined) {
+                update.isPublic = input.visibility === "public";
+            }
+
+            if (input.isPublic !== undefined && input.visibility === undefined) {
+                update.visibility = input.isPublic ? "public" : "private";
+            }
 
             if (input.slug !== undefined || input.title !== undefined) {
                 update.slug = normalizeTrackSlug(

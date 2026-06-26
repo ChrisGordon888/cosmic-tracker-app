@@ -134,6 +134,12 @@ const GET_RELEASE_TRACKS = gql`
       hook
       notes
       audioUrl
+      previewAudioUrl
+      platformUrl
+      visibility
+      playbackStatus
+      dropDate
+      unlockDate
       isFocusTrack
       isSecondFocus
       isPublic
@@ -159,6 +165,12 @@ const CREATE_RELEASE_TRACK = gql`
       hook
       notes
       audioUrl
+      previewAudioUrl
+      platformUrl
+      visibility
+      playbackStatus
+      dropDate
+      unlockDate
       isFocusTrack
       isSecondFocus
       isPublic
@@ -184,6 +196,12 @@ const UPDATE_RELEASE_TRACK = gql`
       hook
       notes
       audioUrl
+      previewAudioUrl
+      platformUrl
+      visibility
+      playbackStatus
+      dropDate
+      unlockDate
       isFocusTrack
       isSecondFocus
       isPublic
@@ -338,6 +356,12 @@ interface ReleaseTrack {
   hook?: string | null;
   notes?: string | null;
   audioUrl?: string | null;
+  previewAudioUrl?: string | null;
+  platformUrl?: string | null;
+  visibility: string;
+  playbackStatus: string;
+  dropDate?: string | null;
+  unlockDate?: string | null;
   isFocusTrack: boolean;
   isSecondFocus: boolean;
   isPublic: boolean;
@@ -357,6 +381,12 @@ interface TrackForm {
   hook: string;
   notes: string;
   audioUrl: string;
+  previewAudioUrl: string;
+  platformUrl: string;
+  visibility: string;
+  playbackStatus: string;
+  dropDate: string;
+  unlockDate: string;
   isFocusTrack: boolean;
   isSecondFocus: boolean;
   isPublic: boolean;
@@ -519,6 +549,19 @@ const trackStatusOptions = [
   { value: "archived", label: "Archived" },
 ];
 
+const trackVisibilityOptions = [
+  { value: "private", label: "Private" },
+  { value: "listed", label: "Listed" },
+  { value: "public", label: "Public" },
+];
+
+const playbackStatusOptions = [
+  { value: "locked", label: "Locked" },
+  { value: "preview", label: "Preview" },
+  { value: "playable", label: "Playable" },
+  { value: "coming-soon", label: "Coming Soon" },
+];
+
 const assetUsageOptions = [
   { value: "cover", label: "Cover Art" },
   { value: "track-audio", label: "Track Audio" },
@@ -604,6 +647,12 @@ function getEmptyTrackForm(nextTrackNumber = 1): TrackForm {
     hook: "",
     notes: "",
     audioUrl: "",
+    previewAudioUrl: "",
+    platformUrl: "",
+    visibility: "private",
+    playbackStatus: "locked",
+    dropDate: "",
+    unlockDate: "",
     isFocusTrack: false,
     isSecondFocus: false,
     isPublic: false,
@@ -622,6 +671,12 @@ function getTrackFormFromReleaseTrack(track: ReleaseTrack): TrackForm {
     hook: track.hook ?? "",
     notes: track.notes ?? "",
     audioUrl: track.audioUrl ?? "",
+    previewAudioUrl: track.previewAudioUrl ?? "",
+    platformUrl: track.platformUrl ?? "",
+    visibility: track.visibility ?? (track.isPublic ? "public" : "private"),
+    playbackStatus: track.playbackStatus ?? "locked",
+    dropDate: formatDateForInput(track.dropDate),
+    unlockDate: formatDateForInput(track.unlockDate),
     isFocusTrack: Boolean(track.isFocusTrack),
     isSecondFocus: Boolean(track.isSecondFocus),
     isPublic: Boolean(track.isPublic),
@@ -642,6 +697,12 @@ function getTrackInputFromForm(form: TrackForm) {
     hook: form.hook.trim(),
     notes: form.notes.trim(),
     audioUrl: form.audioUrl.trim(),
+    previewAudioUrl: form.previewAudioUrl.trim(),
+    platformUrl: form.platformUrl.trim(),
+    visibility: form.visibility,
+    playbackStatus: form.playbackStatus,
+    dropDate: form.dropDate || null,
+    unlockDate: form.unlockDate || null,
     isFocusTrack: form.isFocusTrack,
     isSecondFocus: form.isSecondFocus,
     isPublic: form.isPublic,
@@ -2615,6 +2676,38 @@ export default function DynamicReleaseSignalBoardPage() {
                     </select>
                   </label>
                   <label>
+                    Visibility
+                    <select
+                      value={trackForm.visibility}
+                      onChange={(event) => {
+                        const value = event.target.value;
+                        updateTrackForm("visibility", value);
+                        updateTrackForm("isPublic", value === "public");
+                      }}
+                    >
+                      {trackVisibilityOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    Playback
+                    <select
+                      value={trackForm.playbackStatus}
+                      onChange={(event) =>
+                        updateTrackForm("playbackStatus", event.target.value)
+                      }
+                    >
+                      {playbackStatusOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
                     BPM
                     <input
                       type="number"
@@ -2644,6 +2737,26 @@ export default function DynamicReleaseSignalBoardPage() {
                         updateTrackForm("mood", event.target.value)
                       }
                       placeholder="blue chrome night drive"
+                    />
+                  </label>
+                  <label>
+                    Drop Date
+                    <input
+                      type="date"
+                      value={trackForm.dropDate}
+                      onChange={(event) =>
+                        updateTrackForm("dropDate", event.target.value)
+                      }
+                    />
+                  </label>
+                  <label>
+                    Unlock Date
+                    <input
+                      type="date"
+                      value={trackForm.unlockDate}
+                      onChange={(event) =>
+                        updateTrackForm("unlockDate", event.target.value)
+                      }
                     />
                   </label>
                   <label className="signal-board-wide-field">
@@ -2678,6 +2791,26 @@ export default function DynamicReleaseSignalBoardPage() {
                       placeholder="/audio/song.mp3 or external URL"
                     />
                   </label>
+                  <label className="signal-board-wide-field">
+                    Preview Audio URL
+                    <input
+                      value={trackForm.previewAudioUrl}
+                      onChange={(event) =>
+                        updateTrackForm("previewAudioUrl", event.target.value)
+                      }
+                      placeholder="Optional snippet / teaser audio URL"
+                    />
+                  </label>
+                  <label className="signal-board-wide-field">
+                    Platform URL
+                    <input
+                      value={trackForm.platformUrl}
+                      onChange={(event) =>
+                        updateTrackForm("platformUrl", event.target.value)
+                      }
+                      placeholder="Spotify, SoundCloud, YouTube, or pre-save link"
+                    />
+                  </label>
                 </div>
 
                 <div className="signal-board-toggle-row">
@@ -2705,11 +2838,12 @@ export default function DynamicReleaseSignalBoardPage() {
                     <input
                       type="checkbox"
                       checked={trackForm.isPublic}
-                      onChange={(event) =>
-                        updateTrackForm("isPublic", event.target.checked)
-                      }
+                      onChange={(event) => {
+                        updateTrackForm("isPublic", event.target.checked);
+                        updateTrackForm("visibility", event.target.checked ? "public" : "private");
+                      }}
                     />
-                    Public
+                    Show on public tracklist
                   </label>
                 </div>
 

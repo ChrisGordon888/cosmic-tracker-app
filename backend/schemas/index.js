@@ -178,6 +178,12 @@ const typeDefs = gql`
     hook: String
     notes: String
     audioUrl: String
+    previewAudioUrl: String
+    platformUrl: String
+    visibility: String!
+    playbackStatus: String!
+    dropDate: String
+    unlockDate: String
     isFocusTrack: Boolean!
     isSecondFocus: Boolean!
     isPublic: Boolean!
@@ -296,6 +302,12 @@ const typeDefs = gql`
     hook: String
     notes: String
     audioUrl: String
+    previewAudioUrl: String
+    platformUrl: String
+    visibility: String
+    playbackStatus: String
+    dropDate: String
+    unlockDate: String
     isFocusTrack: Boolean
     isSecondFocus: Boolean
     isPublic: Boolean
@@ -313,6 +325,12 @@ const typeDefs = gql`
     hook: String
     notes: String
     audioUrl: String
+    previewAudioUrl: String
+    platformUrl: String
+    visibility: String
+    playbackStatus: String
+    dropDate: String
+    unlockDate: String
     isFocusTrack: Boolean
     isSecondFocus: Boolean
     isPublic: Boolean

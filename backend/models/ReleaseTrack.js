@@ -53,6 +53,23 @@ const ReleaseTrackSchema = new mongoose.Schema(
       index: true,
     },
 
+    visibility: {
+      type: String,
+      enum: ["private", "listed", "public"],
+      default: "private",
+      index: true,
+    },
+
+    playbackStatus: {
+      type: String,
+      enum: ["locked", "preview", "playable", "coming-soon"],
+      default: "locked",
+      index: true,
+    },
+
+    dropDate: { type: Date, default: null },
+    unlockDate: { type: Date, default: null },
+
     bpm: { type: Number, default: null },
     keySignature: { type: String, default: "" },
     mood: { type: String, default: "" },
@@ -60,6 +77,8 @@ const ReleaseTrackSchema = new mongoose.Schema(
     hook: { type: String, default: "" },
     notes: { type: String, default: "" },
     audioUrl: { type: String, default: "" },
+    previewAudioUrl: { type: String, default: "" },
+    platformUrl: { type: String, default: "" },
 
     isFocusTrack: { type: Boolean, default: false, index: true },
     isSecondFocus: { type: Boolean, default: false, index: true },
@@ -73,5 +92,6 @@ const ReleaseTrackSchema = new mongoose.Schema(
 ReleaseTrackSchema.index({ ownerId: 1, releaseWorldId: 1, trackNumber: 1 });
 ReleaseTrackSchema.index({ ownerId: 1, releaseWorldId: 1, slug: 1 }, { unique: true });
 ReleaseTrackSchema.index({ releaseWorldId: 1, status: 1 });
+ReleaseTrackSchema.index({ releaseWorldId: 1, visibility: 1, playbackStatus: 1 });
 
 module.exports = mongoose.model("ReleaseTrack", ReleaseTrackSchema);
