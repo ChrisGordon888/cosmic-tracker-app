@@ -310,7 +310,7 @@ function getFeaturedReleaseSummary(releaseWorld?: NexusFeaturedReleaseWorld | nu
     return (
         releaseWorld?.oneLineSummary?.trim() ||
         releaseWorld?.story?.trim() ||
-        'A live release world from Creator OS: sound, story, cover art, signal board, and portal path.'
+        'A featured release world: sound, story, cover art, and the path into the project.'
     );
 }
 
@@ -340,11 +340,41 @@ function getFeaturedTrackReleaseLabel(
 }
 
 function getFeaturedTrackPlaybackLabel(track: NexusFeaturedReleaseTrack, isSignedIn: boolean) {
-    if (isSignedIn && (track.audioUrl || track.previewAudioUrl)) return 'Creator play';
+    if (isSignedIn && (track.audioUrl || track.previewAudioUrl)) return 'Review';
     if (track.playbackStatus === 'playable' && track.audioUrl) return 'Play';
     if (track.playbackStatus === 'preview' && (track.previewAudioUrl || track.audioUrl)) return 'Preview';
     if (track.playbackStatus === 'coming-soon') return 'Coming soon';
-    return 'Locked';
+    return track.visibility === 'listed' || track.isPublic ? 'Listed' : 'Locked';
+}
+
+function getFeaturedTrackState(track: NexusFeaturedReleaseTrack, isSignedIn: boolean) {
+    const hasCreatorAudio = Boolean(track.audioUrl || track.previewAudioUrl);
+    const hasPublicFullAudio = track.playbackStatus === 'playable' && Boolean(track.audioUrl);
+    const hasPreviewAudio = track.playbackStatus === 'preview' && Boolean(track.previewAudioUrl || track.audioUrl);
+
+    if (isSignedIn && hasCreatorAudio && track.playbackStatus !== 'playable') {
+        return { label: 'Review', className: 'is-review' };
+    }
+
+    if (hasPublicFullAudio) return { label: 'Playable', className: 'is-playable' };
+    if (hasPreviewAudio) return { label: 'Preview', className: 'is-preview' };
+    if (track.playbackStatus === 'coming-soon') return { label: 'Coming Soon', className: 'is-coming-soon' };
+    if (track.visibility === 'listed' || track.isPublic) return { label: 'Listed', className: 'is-listed' };
+
+    return { label: 'Locked', className: 'is-locked' };
+}
+
+function getFeaturedTrackMetaLine(
+    track: NexusFeaturedReleaseTrack,
+    releaseWorld?: NexusFeaturedReleaseWorld | null
+) {
+    const parts = [
+        formatReleaseLabel(track.status),
+        formatReleaseDate(track.dropDate || releaseWorld?.fullDropDate),
+        track.keySignature,
+    ].filter((part) => part && part !== 'TBD');
+
+    return parts.length > 0 ? parts.join(' • ') : 'Release details forming';
 }
 
 function getFeaturedTrackPlaybackUrl(track: NexusFeaturedReleaseTrack, isSignedIn: boolean) {
@@ -870,7 +900,7 @@ export default function CosmicNexusHub() {
                                         className="px-3 py-1.5 rounded-full text-[11px] uppercase tracking-[0.14em] bg-[#7c5cff22] border border-[#7c5cff44] text-[#cdb7ff]"
                                         style={{ backdropFilter: 'blur(10px)' }}
                                     >
-                                        {isCreatorPreviewRelease ? 'Creator Preview' : 'Featured from Creator OS'}
+                                        {isCreatorPreviewRelease ? 'Creator Preview' : 'Featured Release'}
                                     </span>
 
                                     <span
@@ -910,7 +940,7 @@ export default function CosmicNexusHub() {
                                             boxShadow: '0 14px 28px rgba(0,0,0,0.2)',
                                         }}
                                     >
-                                        Enter Release Portal
+                                        View Release Page
                                     </Link>
 
                                     <button
@@ -924,96 +954,22 @@ export default function CosmicNexusHub() {
                                         {showReleaseDetails ? 'Close Details' : 'Open Release'}
                                     </button>
                                 </div>
-
-                                <div className="flex flex-wrap justify-center gap-2">
-                                    <div
-                                        className="px-3 py-2 rounded-2xl border text-[11px] uppercase tracking-[0.12em]"
-                                        style={{
-                                            borderColor: 'rgba(139,92,246,0.42)',
-                                            background: 'rgba(139,92,246,0.12)',
-                                            color: 'rgba(255,255,255,0.88)',
-                                        }}
-                                    >
-                                        <span className="block text-white/95">Portal</span>
-                                        <span className="text-white/65">{formatReleaseLabel(creatorFeaturedRelease.visibility)}</span>
-                                    </div>
-
-                                    <div
-                                        className="px-3 py-2 rounded-2xl border text-[11px] uppercase tracking-[0.12em]"
-                                        style={{
-                                            borderColor: 'rgba(56,189,248,0.35)',
-                                            background: 'rgba(56,189,248,0.10)',
-                                            color: 'rgba(255,255,255,0.88)',
-                                        }}
-                                    >
-                                        <span className="block text-white/95">World opens</span>
-                                        <span className="text-white/65">{formatReleaseDate(creatorFeaturedRelease.fullDropDate)}</span>
-                                    </div>
-
-                                    <div
-                                        className="px-3 py-2 rounded-2xl border text-[11px] uppercase tracking-[0.12em]"
-                                        style={{
-                                            borderColor: 'rgba(255,255,255,0.12)',
-                                            background: 'rgba(255,255,255,0.04)',
-                                            color: 'rgba(255,255,255,0.88)',
-                                        }}
-                                    >
-                                        <span className="block text-white/95">Live source</span>
-                                        <span className="text-white/65">Mongo ReleaseWorld</span>
-                                    </div>
-                                </div>
                             </div>
 
                             {showReleaseDetails && (
-                                <div className="nexus-dynamic-release-details">
+                                <div className="nexus-dynamic-release-details nexus-release-drawer">
                                     <div className="nexus-dynamic-release-details-inner">
-                                        <div className="nexus-dynamic-release-detail-hero">
-                                            <div className="nexus-dynamic-release-detail-copy">
-                                                <p className="text-xs uppercase tracking-[0.18em] text-muted mb-1">
-                                                    Release world
-                                                </p>
-                                                <h3 className="text-2xl font-display">
-                                                    {creatorFeaturedRelease.title}
-                                                </h3>
-                                                <p className="text-secondary text-sm leading-relaxed">
-                                                    {getFeaturedReleaseSummary(creatorFeaturedRelease)}
-                                                </p>
-                                            </div>
-
-                                            <div className="nexus-dynamic-release-detail-grid">
-                                                <div>
-                                                    <span>Lead signal</span>
-                                                    <strong>{creatorFeaturedRelease.currentFocus || 'TBD'}</strong>
-                                                </div>
-
-                                                <div>
-                                                    <span>Second signal</span>
-                                                    <strong>{creatorFeaturedRelease.secondFocus || 'TBD'}</strong>
-                                                </div>
-
-                                                <div>
-                                                    <span>Status</span>
-                                                    <strong>{formatReleaseLabel(creatorFeaturedRelease.status)}</strong>
-                                                </div>
-
-                                                <div>
-                                                    <span>World opens</span>
-                                                    <strong>{formatReleaseDate(creatorFeaturedRelease.fullDropDate)}</strong>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="nexus-featured-release-track-panel">
+                                        <div className="nexus-featured-release-track-panel nexus-release-tracklist-compact">
                                             <div className="nexus-featured-release-track-heading">
                                                 <div>
                                                     <p>Release sequence</p>
-                                                    <h4>{featuredReleaseTrackCount > 0 ? `${featuredReleaseTrackCount} connected track${featuredReleaseTrackCount === 1 ? '' : 's'}` : 'Track sequence forming'}</h4>
+                                                    <h4>{featuredReleaseTrackCount > 0 ? `${featuredReleaseTrackCount} track${featuredReleaseTrackCount === 1 ? '' : 's'}` : 'Tracklist forming'}</h4>
                                                 </div>
 
                                                 <span>
                                                     {featuredReleaseAudioCount > 0
-                                                        ? `${featuredReleaseAudioCount} audio file${featuredReleaseAudioCount === 1 ? '' : 's'} ready`
-                                                        : 'Audio staging'}
+                                                        ? `${featuredReleaseAudioCount} playable`
+                                                        : 'Tracklist only'}
                                                 </span>
                                             </div>
 
@@ -1027,6 +983,7 @@ export default function CosmicNexusHub() {
                                                         const playbackUrl = getFeaturedTrackPlaybackUrl(track, isSignedIn);
                                                         const hasPlayback = Boolean(playbackUrl);
                                                         const playbackLabel = getFeaturedTrackPlaybackLabel(track, isSignedIn);
+                                                        const trackState = getFeaturedTrackState(track, isSignedIn);
                                                         const playerTrackId = `release-${track.id}`;
                                                         const isCurrentDynamicTrack =
                                                             currentTrack?.id === playerTrackId && isPlaying;
@@ -1034,7 +991,7 @@ export default function CosmicNexusHub() {
                                                         return (
                                                             <div
                                                                 key={track.id}
-                                                                className="nexus-featured-release-track-row"
+                                                                className="nexus-featured-release-track-row nexus-featured-release-track-row-compact"
                                                             >
                                                                 <div className="nexus-featured-release-track-number">
                                                                     {String(track.trackNumber || 1).padStart(2, '0')}
@@ -1043,54 +1000,29 @@ export default function CosmicNexusHub() {
                                                                 <div className="nexus-featured-release-track-main">
                                                                     <div className="nexus-featured-release-track-titleline">
                                                                         <h5>{track.title}</h5>
-
-                                                                        <span>
-                                                                            {getFeaturedTrackStatusLabel(track)}
-                                                                        </span>
                                                                     </div>
 
                                                                     <p>
-                                                                        {getFeaturedTrackReleaseLabel(track, creatorFeaturedRelease)}
+                                                                        {getFeaturedTrackMetaLine(track, creatorFeaturedRelease)}
                                                                         {track.mood ? ` • ${track.mood}` : ''}
-                                                                        {track.keySignature ? ` • ${track.keySignature}` : ''}
                                                                     </p>
-
-                                                                    {track.hook && (
-                                                                        <p className="nexus-featured-release-track-hook">
-                                                                            “{track.hook}”
-                                                                        </p>
-                                                                    )}
                                                                 </div>
 
                                                                 <div className="nexus-featured-release-track-actions">
-                                                                    <span className={track.visibility === 'public' || track.isPublic ? 'is-public' : track.visibility === 'listed' ? 'is-listed' : 'is-private'}>
-                                                                        {track.visibility === 'public' || track.isPublic
-                                                                            ? 'Public'
-                                                                            : track.visibility === 'listed'
-                                                                                ? 'Listed'
-                                                                                : 'Creator only'}
-                                                                    </span>
-                                                                    <span className={`is-playback-${track.playbackStatus || 'locked'}`}>
-                                                                        {formatReleaseLabel(track.playbackStatus || 'locked')}
+                                                                    <span className={`nexus-featured-release-state-pill ${trackState.className}`}>
+                                                                        {trackState.label}
                                                                     </span>
 
-                                                                    <button
-                                                                        type="button"
-                                                                        className="btn-secondary"
-                                                                        onClick={() => playFeaturedReleaseTrack(track)}
-                                                                        disabled={!hasPlayback}
-                                                                        style={{
-                                                                            borderRadius: '999px',
-                                                                            opacity: hasPlayback ? 1 : 0.5,
-                                                                            cursor: hasPlayback ? 'pointer' : 'not-allowed',
-                                                                        }}
-                                                                    >
-                                                                        {!hasPlayback
-                                                                            ? playbackLabel
-                                                                            : isCurrentDynamicTrack
-                                                                                ? 'Pause'
-                                                                                : playbackLabel}
-                                                                    </button>
+                                                                    {hasPlayback && (
+                                                                        <button
+                                                                            type="button"
+                                                                            className="btn-secondary nexus-featured-release-play-button"
+                                                                            onClick={() => playFeaturedReleaseTrack(track)}
+                                                                            style={{ borderRadius: '999px' }}
+                                                                        >
+                                                                            {isCurrentDynamicTrack ? 'Pause' : playbackLabel}
+                                                                        </button>
+                                                                    )}
                                                                 </div>
                                                             </div>
                                                         );
