@@ -502,6 +502,14 @@ module.exports = {
             return await getPublicFeaturedReleaseWorld();
         },
 
+        getPublicReleaseWorldBySlug: async (_, { slug }) => {
+            return await ReleaseWorld.findOne({
+                slug: normalizeSlug(slug),
+                visibility: "public",
+                status: { $ne: "archived" },
+            });
+        },
+
         getReleaseTracks: async (_, { releaseWorldId }, { user }) => {
             if (!user) throw new Error("Unauthorized: Please sign in.");
 
@@ -532,6 +540,7 @@ module.exports = {
             }
 
             return await ReleaseTrack.find({
+                ownerId: releaseWorld.ownerId,
                 releaseWorldId,
                 status: { $ne: "archived" },
                 $or: [
@@ -612,17 +621,19 @@ module.exports = {
             });
         },
 
-        getPublicBoardArtifacts: async (_, { releaseWorldId }, { user }) => {
-            if (!user) throw new Error("Unauthorized: Please sign in.");
-
-            const releaseWorld = await getOwnedReleaseWorld(releaseWorldId, user.id);
+        getPublicBoardArtifacts: async (_, { releaseWorldId }) => {
+            const releaseWorld = await ReleaseWorld.findOne({
+                _id: releaseWorldId,
+                visibility: "public",
+                status: { $ne: "archived" },
+            });
 
             if (!releaseWorld) {
-                throw new Error("Release world not found.");
+                return [];
             }
 
             return await BoardArtifact.find({
-                ownerId: user.id,
+                ownerId: releaseWorld.ownerId,
                 releaseWorldId,
                 isPublic: true,
             }).sort({

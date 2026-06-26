@@ -4,66 +4,117 @@ import Link from 'next/link';
 import { useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { gql, useQuery } from '@apollo/client';
+import { useSession } from 'next-auth/react';
 import '@/styles/releaseWorld.css';
 
-const GET_RELEASE_WORLD_BY_SLUG = gql`
-  query GetReleaseWorldBySlug($slug: String!) {
+const RELEASE_WORLD_FIELDS = gql`
+  fragment ReleaseWorldFields on ReleaseWorld {
+    id
+    title
+    slug
+    releaseType
+    status
+    visibility
+    isFeatured
+    oneLineSummary
+    story
+    currentFocus
+    secondFocus
+    fullDropDate
+    coverArtUrl
+    coverAssetId
+    updatedAt
+    lastOpenedAt
+  }
+`;
+
+const RELEASE_TRACK_FIELDS = gql`
+  fragment ReleaseTrackFields on ReleaseTrack {
+    id
+    title
+    slug
+    trackNumber
+    role
+    status
+    bpm
+    keySignature
+    mood
+    hook
+    notes
+    audioUrl
+    previewAudioUrl
+    platformUrl
+    visibility
+    playbackStatus
+    dropDate
+    unlockDate
+    isFocusTrack
+    isSecondFocus
+    isPublic
+    updatedAt
+  }
+`;
+
+const PUBLIC_BOARD_ARTIFACT_FIELDS = gql`
+  fragment PublicBoardArtifactFields on BoardArtifact {
+    id
+    kind
+    eyebrow
+    title
+    body
+    meta
+    href
+    connectedTrackSlug
+    isPublic
+    pageSection
+    pageOrder
+    createdAt
+    updatedAt
+  }
+`;
+
+const GET_MY_RELEASE_WORLD_BY_SLUG = gql`
+  ${RELEASE_WORLD_FIELDS}
+  query GetMyReleaseWorldBySlug($slug: String!) {
     getMyReleaseWorldBySlug(slug: $slug) {
-      id
-      title
-      slug
-      releaseType
-      status
-      visibility
-      isFeatured
-      oneLineSummary
-      story
-      currentFocus
-      secondFocus
-      fullDropDate
-      coverArtUrl
-      coverAssetId
-      updatedAt
-      lastOpenedAt
+      ...ReleaseWorldFields
+    }
+  }
+`;
+
+const GET_PUBLIC_RELEASE_WORLD_BY_SLUG = gql`
+  ${RELEASE_WORLD_FIELDS}
+  query GetPublicReleaseWorldBySlug($slug: String!) {
+    getPublicReleaseWorldBySlug(slug: $slug) {
+      ...ReleaseWorldFields
     }
   }
 `;
 
 const GET_RELEASE_PAGE_CREATOR_DATA = gql`
+  ${RELEASE_TRACK_FIELDS}
+  ${PUBLIC_BOARD_ARTIFACT_FIELDS}
   query GetReleasePageCreatorData($releaseWorldId: ID!) {
     getReleaseTracks(releaseWorldId: $releaseWorldId) {
-      id
-      title
-      slug
-      trackNumber
-      role
-      status
-      bpm
-      keySignature
-      mood
-      hook
-      notes
-      audioUrl
-      isFocusTrack
-      isSecondFocus
-      isPublic
-      updatedAt
+      ...ReleaseTrackFields
     }
 
     getPublicBoardArtifacts(releaseWorldId: $releaseWorldId) {
-      id
-      kind
-      eyebrow
-      title
-      body
-      meta
-      href
-      connectedTrackSlug
-      isPublic
-      pageSection
-      pageOrder
-      createdAt
-      updatedAt
+      ...PublicBoardArtifactFields
+    }
+  }
+`;
+
+const GET_RELEASE_PAGE_PUBLIC_DATA = gql`
+  ${RELEASE_TRACK_FIELDS}
+  ${PUBLIC_BOARD_ARTIFACT_FIELDS}
+  query GetReleasePagePublicData($releaseWorldId: ID!) {
+    getPublicReleaseTracks(releaseWorldId: $releaseWorldId) {
+      ...ReleaseTrackFields
+    }
+
+    getPublicBoardArtifacts(releaseWorldId: $releaseWorldId) {
+      ...PublicBoardArtifactFields
     }
   }
 `;
@@ -100,6 +151,12 @@ type ReleaseTrack = {
   hook?: string | null;
   notes?: string | null;
   audioUrl?: string | null;
+  previewAudioUrl?: string | null;
+  platformUrl?: string | null;
+  visibility?: string | null;
+  playbackStatus?: string | null;
+  dropDate?: string | null;
+  unlockDate?: string | null;
   isFocusTrack: boolean;
   isSecondFocus: boolean;
   isPublic: boolean;
@@ -134,7 +191,7 @@ const artifactSections: Array<{
     key: 'quote',
     eyebrow: 'Featured signals',
     title: 'Hooks, quotes, and phrases.',
-    body: 'Fragments marked public from the Signal Board — the lines, hooks, and emotional anchors that define the world.',
+    body: 'Fragments selected from the Signal Board — the lines, hooks, and emotional anchors that define the world.',
   },
   {
     key: 'track',
@@ -177,15 +234,31 @@ function formatLabel(value?: string | null) {
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
-function formatDate(value?: string | null) {
-  if (!value) return 'TBD';
+function parseDateValue(value?: string | null) {
+  if (!value) return null;
 
   const numericValue = Number(value);
-  const date = Number.isFinite(numericValue)
-    ? new Date(numericValue)
-    : new Date(value);
 
-  if (Number.isNaN(date.getTime())) return 'TBD';
+  if (Number.isFinite(numericValue)) {
+    const numericDate = new Date(numericValue);
+    return Number.isNaN(numericDate.getTime()) ? null : numericDate;
+  }
+
+  const dateOnlyMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+
+  if (dateOnlyMatch) {
+    const [, year, month, day] = dateOnlyMatch;
+    return new Date(Number(year), Number(month) - 1, Number(day));
+  }
+
+  const parsedDate = new Date(value);
+  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+}
+
+function formatDate(value?: string | null) {
+  const date = parseDateValue(value);
+
+  if (!date) return 'TBD';
 
   return new Intl.DateTimeFormat('en-US', {
     month: 'short',
@@ -229,7 +302,7 @@ function getReleasePath(world: ReleaseWorld) {
       title: world.currentFocus.trim(),
       label: 'Front door',
       body:
-        'The first signal. Use this as the main entry point: the hook, image, feeling, or single that invites people into the world.',
+        'The first signal. The hook, image, feeling, or song that invites people into the world.',
     });
   }
 
@@ -239,7 +312,7 @@ function getReleasePath(world: ReleaseWorld) {
       title: world.secondFocus.trim(),
       label: 'Contrast signal',
       body:
-        'The second doorway. This gives the world motion, contrast, pressure, or another emotional angle.',
+        'The second doorway. A second angle, pressure point, or emotional shift inside the release.',
     });
   }
 
@@ -255,15 +328,77 @@ function getReleasePath(world: ReleaseWorld) {
   return steps;
 }
 
-function getTrackMeta(track: ReleaseTrack) {
-  const parts = [formatLabel(track.role), formatLabel(track.status)];
+function getTrackAvailability(track: ReleaseTrack, isCreatorView: boolean) {
+  const playbackStatus = track.playbackStatus || 'locked';
+  const hasFullAudio = Boolean(track.audioUrl?.trim());
+  const hasPreviewAudio = Boolean(track.previewAudioUrl?.trim());
 
-  if (track.bpm) parts.push(`${track.bpm} BPM`);
-  if (track.keySignature?.trim()) parts.push(track.keySignature.trim());
-  if (track.isFocusTrack) parts.push('Focus');
-  if (track.isSecondFocus) parts.push('Second');
+  if (isCreatorView && (hasFullAudio || hasPreviewAudio)) {
+    return {
+      label: 'Review source',
+      href: track.audioUrl?.trim() || track.previewAudioUrl?.trim() || '',
+      isPlayable: true,
+      className: 'release-world-track-action-review',
+    };
+  }
 
-  return parts.filter(Boolean).join(' / ');
+  if (playbackStatus === 'playable' && hasFullAudio) {
+    return {
+      label: 'Listen',
+      href: track.audioUrl?.trim() || '',
+      isPlayable: true,
+      className: 'release-world-track-action-play',
+    };
+  }
+
+  if (playbackStatus === 'preview' && hasPreviewAudio) {
+    return {
+      label: 'Preview',
+      href: track.previewAudioUrl?.trim() || '',
+      isPlayable: true,
+      className: 'release-world-track-action-preview',
+    };
+  }
+
+  if (playbackStatus === 'preview') {
+    return {
+      label: 'Preview soon',
+      href: '',
+      isPlayable: false,
+      className: 'release-world-track-action-pending',
+    };
+  }
+
+  if (playbackStatus === 'coming-soon') {
+    return {
+      label: 'Coming soon',
+      href: '',
+      isPlayable: false,
+      className: 'release-world-track-action-pending',
+    };
+  }
+
+  return {
+    label: 'Locked',
+    href: '',
+    isPlayable: false,
+    className: 'release-world-track-action-locked',
+  };
+}
+
+function getTrackFanLine(track: ReleaseTrack, world: ReleaseWorld) {
+  const availability = track.playbackStatus || 'locked';
+  const unlockDate = track.unlockDate ? formatDate(track.unlockDate) : null;
+  const dropDate = formatDate(track.dropDate || world.fullDropDate);
+
+  if (availability === 'playable') return 'Available now';
+  if (availability === 'preview') return 'Preview available';
+  if (availability === 'coming-soon' && unlockDate && unlockDate !== 'TBD') {
+    return `Opens ${unlockDate}`;
+  }
+
+  if (dropDate !== 'TBD') return `Opens ${dropDate}`;
+  return 'Release timing forming';
 }
 
 function getSectionArtifacts(
@@ -275,7 +410,7 @@ function getSectionArtifacts(
     .sort((a, b) => (a.pageOrder ?? 1) - (b.pageOrder ?? 1));
 }
 
-function ReleaseArtwork({ world }: { world: ReleaseWorld }) {
+function ReleaseArtwork({ world, isCreatorView }: { world: ReleaseWorld; isCreatorView: boolean }) {
   const titleParts = getTitleParts(world.title);
   const coverArtUrl = world.coverArtUrl?.trim();
 
@@ -299,7 +434,7 @@ function ReleaseArtwork({ world }: { world: ReleaseWorld }) {
 
         <figcaption>
           <span>{formatLabel(world.status)}</span>
-          <strong>{formatLabel(world.visibility)}</strong>
+          <strong>{isCreatorView ? formatLabel(world.visibility) : 'Release Portal'}</strong>
         </figcaption>
       </figure>
     );
@@ -319,7 +454,7 @@ function ReleaseArtwork({ world }: { world: ReleaseWorld }) {
 
       <figcaption>
         <span>{formatLabel(world.status)}</span>
-        <strong>{formatLabel(world.visibility)}</strong>
+        <strong>{isCreatorView ? formatLabel(world.visibility) : 'Release Portal'}</strong>
       </figcaption>
     </figure>
   );
@@ -327,38 +462,77 @@ function ReleaseArtwork({ world }: { world: ReleaseWorld }) {
 
 export default function DynamicReleasePage() {
   const params = useParams<{ slug?: string | string[] }>();
+  const { status } = useSession();
   const rawSlug = params?.slug;
   const slug = Array.isArray(rawSlug) ? rawSlug[0] ?? '' : rawSlug ?? '';
-
-  const { data, loading, error } = useQuery(GET_RELEASE_WORLD_BY_SLUG, {
-    variables: { slug },
-    skip: !slug,
-    fetchPolicy: 'cache-and-network',
-  });
-
-  const world = data?.getMyReleaseWorldBySlug as ReleaseWorld | null | undefined;
+  const isCreatorView = status === 'authenticated';
 
   const {
-    data: creatorData,
-    loading: creatorLoading,
-    error: creatorError,
-  } = useQuery(GET_RELEASE_PAGE_CREATOR_DATA, {
-    variables: { releaseWorldId: world?.id ?? '' },
-    skip: !world?.id,
+    data: creatorWorldData,
+    loading: creatorWorldLoading,
+    error: creatorWorldError,
+  } = useQuery(GET_MY_RELEASE_WORLD_BY_SLUG, {
+    variables: { slug },
+    skip: !slug || !isCreatorView,
     fetchPolicy: 'cache-and-network',
   });
 
+  const {
+    data: publicWorldData,
+    loading: publicWorldLoading,
+    error: publicWorldError,
+  } = useQuery(GET_PUBLIC_RELEASE_WORLD_BY_SLUG, {
+    variables: { slug },
+    skip: !slug || isCreatorView,
+    fetchPolicy: 'cache-and-network',
+  });
+
+  const world =
+    (isCreatorView
+      ? creatorWorldData?.getMyReleaseWorldBySlug
+      : publicWorldData?.getPublicReleaseWorldBySlug) as ReleaseWorld | null | undefined;
+
+  const worldLoading = isCreatorView ? creatorWorldLoading : publicWorldLoading;
+  const worldError = isCreatorView ? creatorWorldError : publicWorldError;
+
+  const {
+    data: creatorPageData,
+    loading: creatorPageLoading,
+    error: creatorPageError,
+  } = useQuery(GET_RELEASE_PAGE_CREATOR_DATA, {
+    variables: { releaseWorldId: world?.id ?? '' },
+    skip: !world?.id || !isCreatorView,
+    fetchPolicy: 'cache-and-network',
+  });
+
+  const {
+    data: publicPageData,
+    loading: publicPageLoading,
+    error: publicPageError,
+  } = useQuery(GET_RELEASE_PAGE_PUBLIC_DATA, {
+    variables: { releaseWorldId: world?.id ?? '' },
+    skip: !world?.id || isCreatorView,
+    fetchPolicy: 'cache-and-network',
+  });
+
+  const pageData = isCreatorView ? creatorPageData : publicPageData;
+  const pageLoading = isCreatorView ? creatorPageLoading : publicPageLoading;
+  const pageError = isCreatorView ? creatorPageError : publicPageError;
+
   const releaseTracks = useMemo(
-    () => (creatorData?.getReleaseTracks ?? []) as ReleaseTrack[],
-    [creatorData],
+    () =>
+      (isCreatorView
+        ? pageData?.getReleaseTracks ?? []
+        : pageData?.getPublicReleaseTracks ?? []) as ReleaseTrack[],
+    [isCreatorView, pageData],
   );
 
   const publicArtifacts = useMemo(
-    () => (creatorData?.getPublicBoardArtifacts ?? []) as PublicBoardArtifact[],
-    [creatorData],
+    () => (pageData?.getPublicBoardArtifacts ?? []) as PublicBoardArtifact[],
+    [pageData],
   );
 
-  if (loading) {
+  if (status === 'loading' || worldLoading) {
     return (
       <main className="release-world-page">
         <section className="release-world-state">
@@ -370,14 +544,14 @@ export default function DynamicReleasePage() {
     );
   }
 
-  if (error) {
+  if (worldError) {
     return (
       <main className="release-world-page">
         <section className="release-world-state release-world-error">
-          <p className="release-world-label">GraphQL Error</p>
+          <p className="release-world-label">Release Portal</p>
           <h1>Could not open this release.</h1>
-          <p>{error.message}</p>
-          <Link href="/creator/projects">Back to Project Library</Link>
+          <p>{worldError.message}</p>
+          <Link href="/nexus">Back to Nexus</Link>
         </section>
       </main>
     );
@@ -388,9 +562,12 @@ export default function DynamicReleasePage() {
       <main className="release-world-page">
         <section className="release-world-state">
           <p className="release-world-label">Release Not Found</p>
-          <h1>No world found for /{slug}</h1>
-          <p>This release may not exist yet, or it may belong to another account.</p>
-          <Link href="/creator/projects">Back to Project Library</Link>
+          <h1>No public world found for /{slug}</h1>
+          <p>
+            This release may not exist yet, may still be private, or may only be available to the
+            creator.
+          </p>
+          <Link href="/nexus">Back to Nexus</Link>
         </section>
       </main>
     );
@@ -403,13 +580,22 @@ export default function DynamicReleasePage() {
     world.story?.trim() ||
     'A release world is forming: sound, story, visuals, and signal all moving toward one portal.';
 
+  const firstPlayableTrack = releaseTracks.find((track) => {
+    const availability = getTrackAvailability(track, isCreatorView);
+    return availability.isPlayable && availability.href;
+  });
+
+  const firstPlayableAction = firstPlayableTrack
+    ? getTrackAvailability(firstPlayableTrack, isCreatorView)
+    : null;
+
   return (
     <main className="release-world-page">
       <section className="release-world-hero">
         <div className="release-world-hero-grid">
           <div className="release-world-hero-copy">
             <p className="release-world-label">
-              {formatLabel(world.releaseType)} / Release World
+              {formatLabel(world.releaseType)} / Release Portal
             </p>
 
             <h1>
@@ -420,14 +606,27 @@ export default function DynamicReleasePage() {
             <p className="release-world-hero-summary">{heroHook}</p>
 
             <div className="release-world-hero-actions">
-              <a aria-disabled="true">Listen soon</a>
-              <Link href={`/releases/${world.slug}/board`}>Open signal board</Link>
-              <Link href="/creator/projects">Project library</Link>
+              {firstPlayableAction?.href ? (
+                <a href={firstPlayableAction.href} target="_blank" rel="noreferrer">
+                  {firstPlayableAction.label}
+                </a>
+              ) : (
+                <a aria-disabled="true">Listen soon</a>
+              )}
+
+              <Link href="/nexus">Back to Nexus</Link>
+
+              {isCreatorView && (
+                <>
+                  <Link href={`/releases/${world.slug}/board`}>Open signal board</Link>
+                  <Link href="/creator/projects">Project library</Link>
+                </>
+              )}
             </div>
           </div>
 
           <div className="release-world-hero-art">
-            <ReleaseArtwork world={world} />
+            <ReleaseArtwork world={world} isCreatorView={isCreatorView} />
           </div>
         </div>
 
@@ -462,58 +661,64 @@ export default function DynamicReleasePage() {
         </div>
         <p>
           {world.story?.trim() ||
-            'This release page is the polished portal. The Signal Board behind it holds the messy mythology: notes, hooks, visuals, rollout ideas, symbols, and creative direction.'}
+            'This release page is the polished portal: sound, story, visuals, rollout, and selected signals from the studio wall.'}
         </p>
       </section>
 
-      {releaseTracks.length > 0 && (
-        <section className="release-world-track-section">
-          <div className="release-world-section-heading release-world-section-heading-split">
-            <div>
-              <p className="release-world-label">Track Path</p>
-              <h2>The songs inside the world.</h2>
-            </div>
-            <p>
-              {creatorLoading
-                ? 'Loading track path...'
-                : `${releaseTracks.length} track${releaseTracks.length === 1 ? '' : 's'} mapped from the Creator OS.`}
-            </p>
+      <section className="release-world-track-section">
+        <div className="release-world-section-heading release-world-section-heading-split">
+          <div>
+            <p className="release-world-label">Track Path</p>
+            <h2>The songs inside the world.</h2>
           </div>
+          <p>
+            {pageLoading
+              ? 'Loading track path...'
+              : `${releaseTracks.length} track${releaseTracks.length === 1 ? '' : 's'} in the release sequence.`}
+          </p>
+        </div>
 
-          {creatorError && (
-            <p className="release-world-inline-error">{creatorError.message}</p>
-          )}
+        {pageError && <p className="release-world-inline-error">{pageError.message}</p>}
 
+        {releaseTracks.length > 0 ? (
           <div className="release-world-track-grid">
-            {releaseTracks.map((track) => (
-              <article key={track.id} className="release-world-track-card">
-                <div className="release-world-track-card-top">
-                  <span>{String(track.trackNumber).padStart(2, '0')}</span>
-                  <em>{track.isPublic ? 'Public' : 'Private'}</em>
-                </div>
-                <p>{getTrackMeta(track)}</p>
-                <h3>{track.title}</h3>
+            {releaseTracks.map((track) => {
+              const action = getTrackAvailability(track, isCreatorView);
 
-                {(track.mood || track.hook || track.notes) && (
-                  <div className="release-world-track-card-body">
-                    {track.mood && <strong>{track.mood}</strong>}
-                    {track.hook && <p>{track.hook}</p>}
-                    {track.notes && <small>{track.notes}</small>}
+              return (
+                <article key={track.id} className="release-world-track-card">
+                  <div className="release-world-track-card-top">
+                    <span>{String(track.trackNumber).padStart(2, '0')}</span>
+                    <em>{action.label}</em>
                   </div>
-                )}
 
-                {track.audioUrl?.trim() ? (
-                  <a href={track.audioUrl} target="_blank" rel="noreferrer">
-                    Listen source
-                  </a>
-                ) : (
-                  <span className="release-world-track-pending">Audio pending</span>
-                )}
-              </article>
-            ))}
+                  <h3>{track.title}</h3>
+                  <p>{getTrackFanLine(track, world)}</p>
+
+                  {(track.mood || track.hook) && (
+                    <div className="release-world-track-card-body">
+                      {track.mood && <strong>{track.mood}</strong>}
+                      {track.hook && <p>{track.hook}</p>}
+                    </div>
+                  )}
+
+                  {action.isPlayable && action.href ? (
+                    <a href={action.href} target="_blank" rel="noreferrer" className={action.className}>
+                      {action.label}
+                    </a>
+                  ) : (
+                    <span className={`release-world-track-pending ${action.className}`}>
+                      {action.label}
+                    </span>
+                  )}
+                </article>
+              );
+            })}
           </div>
-        </section>
-      )}
+        ) : (
+          <p className="release-world-inline-empty">The public track sequence is still forming.</p>
+        )}
+      </section>
 
       {publicArtifacts.length > 0 && (
         <section className="release-world-board-section">
@@ -600,19 +805,19 @@ export default function DynamicReleasePage() {
           <article>
             <span>01</span>
             <h3>Core hook</h3>
-            <p>Define the phrase, melody, or concept that people remember first.</p>
+            <p>Remember the phrase, melody, or concept that opens the world.</p>
           </article>
 
           <article>
             <span>02</span>
             <h3>Visual identity</h3>
-            <p>Collect cover direction, colors, typography, clips, and symbolic references.</p>
+            <p>Follow the cover direction, colors, symbols, clips, and emotional palette.</p>
           </article>
 
           <article>
             <span>03</span>
             <h3>Rollout rhythm</h3>
-            <p>Map the teaser, first signal, contrast push, full release, and follow-up content.</p>
+            <p>Move through the teaser, first signal, contrast push, full release, and afterglow.</p>
           </article>
         </div>
       </section>
@@ -628,7 +833,7 @@ export default function DynamicReleasePage() {
             <span>Seed</span>
             <div>
               <h3>Establish the world</h3>
-              <p>Lock the project title, first hook, visual tone, and board direction.</p>
+              <p>Title, cover, first hook, and the feeling that carries the project.</p>
             </div>
           </article>
 
@@ -650,17 +855,19 @@ export default function DynamicReleasePage() {
         </div>
       </section>
 
-      <section className="release-world-portal">
-        <div>
-          <p className="release-world-label">Behind the release</p>
-          <h2>Enter the board where the world is still forming.</h2>
-          <p>
-            The release page is the polished portal. The Signal Board is the working canvas:
-            hooks, notes, asset fragments, rollout ideas, and world-building direction.
-          </p>
-        </div>
-        <Link href={`/releases/${world.slug}/board`}>Open signal board</Link>
-      </section>
+      {isCreatorView && (
+        <section className="release-world-portal">
+          <div>
+            <p className="release-world-label">Creator tools</p>
+            <h2>Keep shaping the world behind the portal.</h2>
+            <p>
+              The public page is the polished portal. The Signal Board remains the working canvas:
+              hooks, notes, asset fragments, rollout ideas, and world-building direction.
+            </p>
+          </div>
+          <Link href={`/releases/${world.slug}/board`}>Open signal board</Link>
+        </section>
+      )}
     </main>
   );
 }

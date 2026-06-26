@@ -421,6 +421,7 @@ const typeDefs = gql`
     getMyReleaseWorldBySlug(slug: String!): ReleaseWorld
     getMyFeaturedReleaseWorld: ReleaseWorld
     getPublicFeaturedReleaseWorld: ReleaseWorld
+    getPublicReleaseWorldBySlug(slug: String!): ReleaseWorld
 
     getReleaseTracks(releaseWorldId: ID!): [ReleaseTrack!]!
     getPublicReleaseTracks(releaseWorldId: ID!): [ReleaseTrack!]!
