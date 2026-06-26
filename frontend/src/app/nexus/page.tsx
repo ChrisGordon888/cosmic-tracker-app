@@ -239,7 +239,7 @@ const CURATED_PLAYLIST_ART_OVERRIDES: Record<string, string> = {
     'april-may-vault': '/april-may-vault.png',
 };
 
-const NEXUS_RELEASE_PREVIEW_VERSION = 'Portal preview v9.1';
+const NEXUS_RELEASE_PREVIEW_VERSION = 'Portal preview v9.2 • date-safe';
 
 function getRealmTint(realmId?: number | null) {
     return getRealmTheme(realmId);
@@ -284,19 +284,8 @@ function formatReleaseDate(dateString?: string | null) {
 
     const cleanValue = String(dateString).trim();
 
-    /**
-     * Handles both:
-     * 2026-07-29
-     * 2026-07-29T00:00:00.000Z
-     *
-     * We intentionally parse the YYYY-MM-DD portion as a local calendar date
-     * so release/unlock dates do not shift one day earlier by timezone.
-     */
-    const datePrefixMatch = cleanValue.match(/^(\d{4})-(\d{2})-(\d{2})/);
-
-    if (datePrefixMatch) {
-        const [, year, month, day] = datePrefixMatch;
-        const localDate = new Date(Number(year), Number(month) - 1, Number(day));
+    const formatLocalCalendarDate = (year: number, month: number, day: number) => {
+        const localDate = new Date(year, month - 1, day);
 
         if (Number.isNaN(localDate.getTime())) return 'TBD';
 
@@ -305,6 +294,21 @@ function formatReleaseDate(dateString?: string | null) {
             day: 'numeric',
             year: 'numeric',
         }).format(localDate);
+    };
+
+    /**
+     * Handles both:
+     * 2026-07-29
+     * 2026-07-29T00:00:00.000Z
+     *
+     * We intentionally read the YYYY-MM-DD calendar portion directly so
+     * release/unlock dates do not shift one day earlier by timezone.
+     */
+    const datePrefixMatch = cleanValue.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+    if (datePrefixMatch) {
+        const [, year, month, day] = datePrefixMatch;
+        return formatLocalCalendarDate(Number(year), Number(month), Number(day));
     }
 
     const numericValue = Number(cleanValue);
@@ -314,11 +318,17 @@ function formatReleaseDate(dateString?: string | null) {
 
     if (Number.isNaN(date.getTime())) return 'TBD';
 
-    return new Intl.DateTimeFormat('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-    }).format(date);
+    /**
+     * GraphQL/Mongo can return Date fields as numeric milliseconds.
+     * If that value represents midnight UTC, normal local formatting can
+     * still display the previous day in US time zones. Preserve the UTC
+     * calendar day here for rollout/unlock display.
+     */
+    return formatLocalCalendarDate(
+        date.getUTCFullYear(),
+        date.getUTCMonth() + 1,
+        date.getUTCDate(),
+    );
 }
 
 function formatReleaseLabel(value?: string | null) {
