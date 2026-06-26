@@ -594,7 +594,7 @@ moon silver, ice blue, champagne gold, smoked glass.
 }
 
 /* ===================================
-   ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â± NEXUS MOBILE POLISH
+   ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€šÃ‚Â± NEXUS MOBILE POLISH
    =================================== */
 
 @media (max-width: 768px) {
@@ -838,48 +838,62 @@ moon silver, ice blue, champagne gold, smoked glass.
         flex-basis: 88%;
     }
 }
+
 /* ===================================
-   NEXUS DYNAMIC FEATURED RELEASE V4
-   Surgical cleanup: dynamic-only details
+   NEXUS FEATURED RELEASE V5
+   Dynamic tracks + public curated feature
    =================================== */
 
 .nexus-dynamic-release-cover {
-    width: min(260px, 72vw);
+    width: min(280px, 74vw);
     height: auto;
     aspect-ratio: 1 / 1;
     object-fit: cover;
-    border-radius: 26px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.32);
+    border-radius: 30px;
+    border: 1px solid rgba(232, 238, 246, 0.18);
+    box-shadow:
+        0 26px 68px rgba(0, 0, 0, 0.38),
+        0 0 34px rgba(188, 224, 255, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
     display: block;
 }
 
 .nexus-dynamic-release-details {
-    margin-top: 1.5rem;
-    padding-top: 1.25rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    margin-top: 1.6rem;
+    padding-top: 1.35rem;
+    border-top: 1px solid rgba(232, 238, 246, 0.10);
 }
 
 .nexus-dynamic-release-details-inner {
-    width: min(920px, 100%);
+    width: min(980px, 100%);
     margin: 0 auto;
     display: grid;
     gap: 1rem;
 }
 
+.nexus-dynamic-release-detail-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(280px, 0.95fr);
+    gap: 1rem;
+    align-items: stretch;
+}
+
 .nexus-dynamic-release-detail-copy {
     text-align: left;
-    border: 1px solid rgba(214, 224, 235, 0.11);
-    border-radius: 1.4rem;
-    padding: clamp(1rem, 2vw, 1.25rem);
+    border: 1px solid rgba(214, 224, 235, 0.13);
+    border-radius: 1.55rem;
+    padding: clamp(1.05rem, 2vw, 1.35rem);
     background:
-        radial-gradient(circle at top left, rgba(139, 92, 246, 0.10), transparent 34%),
-        linear-gradient(145deg, rgba(255, 255, 255, 0.055), rgba(7, 11, 20, 0.62));
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        radial-gradient(circle at top left, rgba(139, 92, 246, 0.11), transparent 34%),
+        radial-gradient(circle at bottom right, rgba(220, 186, 92, 0.07), transparent 30%),
+        linear-gradient(145deg, rgba(255, 255, 255, 0.06), rgba(7, 11, 20, 0.64));
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.07),
+        0 16px 34px rgba(0, 0, 0, 0.18);
 }
 
 .nexus-dynamic-release-detail-copy h3 {
-    margin: 0 0 0.6rem;
+    margin: 0 0 0.65rem;
     color: rgba(245, 247, 252, 0.95);
 }
 
@@ -889,23 +903,26 @@ moon silver, ice blue, champagne gold, smoked glass.
 
 .nexus-dynamic-release-detail-grid {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.75rem;
 }
 
 .nexus-dynamic-release-detail-grid div {
     min-width: 0;
-    border: 1px solid rgba(214, 224, 235, 0.10);
-    border-radius: 1.15rem;
-    padding: 0.9rem;
+    border: 1px solid rgba(214, 224, 235, 0.11);
+    border-radius: 1.2rem;
+    padding: 0.95rem;
     text-align: left;
-    background: rgba(255, 255, 255, 0.035);
+    background:
+        radial-gradient(circle at top right, rgba(188, 224, 255, 0.07), transparent 38%),
+        rgba(255, 255, 255, 0.035);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .nexus-dynamic-release-detail-grid span {
     display: block;
     margin-bottom: 0.35rem;
-    color: rgba(188, 224, 255, 0.58);
+    color: rgba(188, 224, 255, 0.62);
     font-size: 0.64rem;
     font-weight: 800;
     letter-spacing: 0.14em;
@@ -914,9 +931,181 @@ moon silver, ice blue, champagne gold, smoked glass.
 
 .nexus-dynamic-release-detail-grid strong {
     display: block;
-    color: rgba(238, 243, 250, 0.9);
-    font-size: 0.92rem;
+    color: rgba(238, 243, 250, 0.92);
+    font-size: 0.94rem;
     line-height: 1.35;
+}
+
+.nexus-featured-release-track-panel {
+    border: 1px solid rgba(220, 186, 92, 0.16);
+    border-radius: 1.65rem;
+    padding: clamp(1rem, 2vw, 1.25rem);
+    background:
+        radial-gradient(circle at top left, rgba(220, 186, 92, 0.08), transparent 34%),
+        radial-gradient(circle at bottom right, rgba(130, 190, 255, 0.07), transparent 30%),
+        linear-gradient(145deg, rgba(255, 255, 255, 0.052), rgba(7, 11, 20, 0.58));
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.065),
+        0 18px 42px rgba(0, 0, 0, 0.20);
+}
+
+.nexus-featured-release-track-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1rem;
+    margin-bottom: 0.95rem;
+}
+
+.nexus-featured-release-track-heading p {
+    margin: 0 0 0.25rem;
+    color: rgba(188, 224, 255, 0.62);
+    font-size: 0.67rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.nexus-featured-release-track-heading h4 {
+    margin: 0;
+    color: rgba(245, 247, 252, 0.94);
+    font-size: clamp(1.35rem, 2vw, 1.75rem);
+    line-height: 1.1;
+}
+
+.nexus-featured-release-track-heading > span {
+    flex: 0 0 auto;
+    padding: 0.45rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid rgba(232, 238, 246, 0.12);
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(205, 214, 225, 0.72);
+    font-size: 0.68rem;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+}
+
+.nexus-featured-release-track-list {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.nexus-featured-release-track-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 0.9rem;
+    align-items: center;
+    border: 1px solid rgba(232, 238, 246, 0.105);
+    border-radius: 1.25rem;
+    padding: 0.85rem;
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.022));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045);
+}
+
+.nexus-featured-release-track-number {
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(220, 186, 92, 0.22);
+    background:
+        radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.12), rgba(220, 186, 92, 0.08) 48%, rgba(8, 11, 20, 0.38));
+    color: rgba(220, 186, 92, 0.86);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+}
+
+.nexus-featured-release-track-main {
+    min-width: 0;
+    text-align: left;
+}
+
+.nexus-featured-release-track-titleline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.55rem;
+    margin-bottom: 0.25rem;
+}
+
+.nexus-featured-release-track-titleline h5 {
+    margin: 0;
+    color: rgba(245, 247, 252, 0.95);
+    font-size: 1rem;
+    line-height: 1.2;
+}
+
+.nexus-featured-release-track-titleline span {
+    padding: 0.22rem 0.48rem;
+    border-radius: 999px;
+    border: 1px solid rgba(188, 224, 255, 0.14);
+    background: rgba(188, 224, 255, 0.055);
+    color: rgba(188, 224, 255, 0.76);
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.nexus-featured-release-track-main p {
+    margin: 0;
+    color: rgba(205, 214, 225, 0.72);
+    font-size: 0.82rem;
+    line-height: 1.45;
+}
+
+.nexus-featured-release-track-hook {
+    margin-top: 0.35rem !important;
+    color: rgba(232, 238, 246, 0.78) !important;
+    font-style: italic;
+}
+
+.nexus-featured-release-track-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+}
+
+.nexus-featured-release-track-actions > span {
+    padding: 0.38rem 0.58rem;
+    border-radius: 999px;
+    border: 1px solid rgba(232, 238, 246, 0.11);
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(205, 214, 225, 0.68);
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.nexus-featured-release-track-actions > span.is-public {
+    border-color: rgba(74, 222, 128, 0.18);
+    background: rgba(74, 222, 128, 0.07);
+    color: rgba(187, 247, 208, 0.78);
+}
+
+.nexus-featured-release-track-actions > span.is-private {
+    border-color: rgba(220, 186, 92, 0.18);
+    background: rgba(220, 186, 92, 0.07);
+    color: rgba(253, 230, 138, 0.78);
+}
+
+.nexus-featured-release-track-actions button {
+    min-width: 6.25rem;
+}
+
+.nexus-featured-release-empty {
+    border: 1px dashed rgba(232, 238, 246, 0.14);
+    border-radius: 1.15rem;
+    padding: 1rem;
+    color: rgba(205, 214, 225, 0.72);
+    background: rgba(255, 255, 255, 0.028);
+    text-align: center;
+    font-size: 0.9rem;
 }
 
 .nexus-dynamic-release-creator-links {
@@ -931,13 +1120,13 @@ moon silver, ice blue, champagne gold, smoked glass.
     backdrop-filter: blur(10px);
 }
 
-@media (max-width: 780px) {
-    .nexus-dynamic-release-detail-copy {
-        text-align: center;
+@media (max-width: 860px) {
+    .nexus-dynamic-release-detail-hero {
+        grid-template-columns: 1fr;
     }
 
-    .nexus-dynamic-release-detail-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+    .nexus-dynamic-release-detail-copy {
+        text-align: center;
     }
 
     .nexus-dynamic-release-detail-grid div {
@@ -945,8 +1134,46 @@ moon silver, ice blue, champagne gold, smoked glass.
     }
 }
 
+@media (max-width: 720px) {
+    .nexus-featured-release-track-heading,
+    .nexus-featured-release-track-row,
+    .nexus-featured-release-track-actions {
+        align-items: stretch;
+    }
+
+    .nexus-featured-release-track-heading {
+        flex-direction: column;
+    }
+
+    .nexus-featured-release-track-row {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .nexus-featured-release-track-number {
+        margin: 0 auto;
+    }
+
+    .nexus-featured-release-track-main {
+        text-align: center;
+    }
+
+    .nexus-featured-release-track-titleline,
+    .nexus-featured-release-track-actions {
+        justify-content: center;
+    }
+}
+
 @media (max-width: 520px) {
     .nexus-dynamic-release-detail-grid {
         grid-template-columns: 1fr;
+    }
+
+    .nexus-featured-release-track-actions {
+        flex-direction: column;
+    }
+
+    .nexus-featured-release-track-actions button {
+        width: 100%;
     }
 }

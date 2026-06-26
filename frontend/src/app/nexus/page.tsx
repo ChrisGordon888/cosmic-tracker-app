@@ -73,6 +73,48 @@ const GET_PUBLIC_FEATURED_RELEASE_WORLD = gql`
     }
 `;
 
+const FEATURED_RELEASE_TRACK_FIELDS = gql`
+    fragment FeaturedReleaseTrackFields on ReleaseTrack {
+        id
+        releaseWorldId
+        title
+        slug
+        trackNumber
+        role
+        status
+        bpm
+        keySignature
+        mood
+        hook
+        notes
+        audioUrl
+        isFocusTrack
+        isSecondFocus
+        isPublic
+        createdAt
+        updatedAt
+        lastOpenedAt
+    }
+`;
+
+const GET_FEATURED_RELEASE_TRACKS = gql`
+    ${FEATURED_RELEASE_TRACK_FIELDS}
+    query GetFeaturedReleaseTracks($releaseWorldId: ID!) {
+        getReleaseTracks(releaseWorldId: $releaseWorldId) {
+            ...FeaturedReleaseTrackFields
+        }
+    }
+`;
+
+const GET_PUBLIC_FEATURED_RELEASE_TRACKS = gql`
+    ${FEATURED_RELEASE_TRACK_FIELDS}
+    query GetPublicFeaturedReleaseTracks($releaseWorldId: ID!) {
+        getPublicReleaseTracks(releaseWorldId: $releaseWorldId) {
+            ...FeaturedReleaseTrackFields
+        }
+    }
+`;
+
 interface NexusFeaturedReleaseWorld {
     id: string;
     title: string;
@@ -88,6 +130,28 @@ interface NexusFeaturedReleaseWorld {
     fullDropDate?: string | null;
     coverArtUrl?: string | null;
     coverAssetId?: string | null;
+    updatedAt?: string | null;
+    lastOpenedAt?: string | null;
+}
+
+interface NexusFeaturedReleaseTrack {
+    id: string;
+    releaseWorldId: string;
+    title: string;
+    slug?: string | null;
+    trackNumber: number;
+    role: string;
+    status: string;
+    bpm?: number | null;
+    keySignature?: string | null;
+    mood?: string | null;
+    hook?: string | null;
+    notes?: string | null;
+    audioUrl?: string | null;
+    isFocusTrack: boolean;
+    isSecondFocus: boolean;
+    isPublic: boolean;
+    createdAt?: string | null;
     updatedAt?: string | null;
     lastOpenedAt?: string | null;
 }
@@ -238,6 +302,39 @@ function getFeaturedReleaseSummary(releaseWorld?: NexusFeaturedReleaseWorld | nu
     );
 }
 
+function getFeaturedTrackStatusLabel(track?: NexusFeaturedReleaseTrack | null) {
+    if (!track) return 'TBD';
+
+    if (track.isFocusTrack) return 'Focus Track';
+    if (track.isSecondFocus) return 'Second Signal';
+
+    return formatReleaseLabel(track.role || track.status || 'Track');
+}
+
+function getFeaturedTrackReleaseLabel(
+    track: NexusFeaturedReleaseTrack,
+    releaseWorld?: NexusFeaturedReleaseWorld | null
+) {
+    const statusLabel = formatReleaseLabel(track.status);
+    const releaseDate = formatReleaseDate(releaseWorld?.fullDropDate);
+
+    if (releaseDate === 'TBD') return statusLabel;
+    return `${statusLabel} • ${releaseDate}`;
+}
+
+function toPlayerTrack(track: NexusFeaturedReleaseTrack, releaseWorld?: NexusFeaturedReleaseWorld | null) {
+    return {
+        id: `release-${track.id}`,
+        trackTitle: track.title,
+        artist: 'Cosmic',
+        realmId: 0,
+        realmColor: '#DCBA5C',
+        visibility: track.isPublic ? 'public' : 'signup',
+        trackUrl: track.audioUrl || '',
+        artworkUrl: releaseWorld?.coverArtUrl || undefined,
+    };
+}
+
 function getCollectionTypeLabel(totalCount: number, openCount: number) {
     if (totalCount <= 1) return 'Signal';
     if (openCount < totalCount) return 'Curated EP';
@@ -289,6 +386,29 @@ export default function CosmicNexusHub() {
         skip: status === 'authenticated',
         fetchPolicy: 'cache-and-network',
     });
+
+    const activeFeaturedReleaseId =
+        (status === 'authenticated'
+            ? myFeaturedReleaseData?.getMyFeaturedReleaseWorld?.id
+            : publicFeaturedReleaseData?.getPublicFeaturedReleaseWorld?.id) ?? null;
+
+    const { data: myFeaturedReleaseTracksData, loading: myFeaturedReleaseTracksLoading } = useQuery(
+        GET_FEATURED_RELEASE_TRACKS,
+        {
+            skip: status !== 'authenticated' || !activeFeaturedReleaseId,
+            variables: { releaseWorldId: activeFeaturedReleaseId },
+            fetchPolicy: 'cache-and-network',
+        }
+    );
+
+    const { data: publicFeaturedReleaseTracksData, loading: publicFeaturedReleaseTracksLoading } = useQuery(
+        GET_PUBLIC_FEATURED_RELEASE_TRACKS,
+        {
+            skip: status === 'authenticated' || !activeFeaturedReleaseId,
+            variables: { releaseWorldId: activeFeaturedReleaseId },
+            fetchPolicy: 'cache-and-network',
+        }
+    );
 
     const [logDailyLogin] = useMutation(LOG_DAILY_LOGIN);
 
@@ -362,6 +482,34 @@ export default function CosmicNexusHub() {
         creatorFeaturedRelease &&
         creatorFeaturedRelease.visibility !== 'public'
     );
+
+    const featuredReleaseTracks = (
+        status === 'authenticated'
+            ? myFeaturedReleaseTracksData?.getReleaseTracks
+            : publicFeaturedReleaseTracksData?.getPublicReleaseTracks
+    ) as NexusFeaturedReleaseTrack[] | undefined;
+
+    const isFeaturedReleaseTracksLoading =
+        status === 'authenticated'
+            ? myFeaturedReleaseTracksLoading
+            : publicFeaturedReleaseTracksLoading;
+
+    const featuredReleaseTrackCount = featuredReleaseTracks?.length ?? 0;
+    const featuredReleaseAudioCount =
+        featuredReleaseTracks?.filter((track) => Boolean(track.audioUrl)).length ?? 0;
+
+    const playFeaturedReleaseTrack = (track: NexusFeaturedReleaseTrack) => {
+        if (!track.audioUrl) return;
+
+        const flowTracks = (featuredReleaseTracks ?? [])
+            .filter((releaseTrack) => Boolean(releaseTrack.audioUrl))
+            .map((releaseTrack) => toPlayerTrack(releaseTrack, creatorFeaturedRelease));
+
+        void playOrToggleTrack(toPlayerTrack(track, creatorFeaturedRelease), flowTracks, {
+            source: 'nexus-featured-release',
+            label: creatorFeaturedRelease?.title ?? 'Featured release',
+        });
+    };
 
     const isTrackLocked = (track: any) => {
         if (!track) return false;
@@ -781,38 +929,131 @@ export default function CosmicNexusHub() {
                             {showReleaseDetails && (
                                 <div className="nexus-dynamic-release-details">
                                     <div className="nexus-dynamic-release-details-inner">
-                                        <div className="nexus-dynamic-release-detail-copy">
-                                            <p className="text-xs uppercase tracking-[0.18em] text-muted mb-1">
-                                                Release world
-                                            </p>
-                                            <h3 className="text-2xl font-display">
-                                                {creatorFeaturedRelease.title}
-                                            </h3>
-                                            <p className="text-secondary text-sm leading-relaxed">
-                                                {getFeaturedReleaseSummary(creatorFeaturedRelease)}
-                                            </p>
+                                        <div className="nexus-dynamic-release-detail-hero">
+                                            <div className="nexus-dynamic-release-detail-copy">
+                                                <p className="text-xs uppercase tracking-[0.18em] text-muted mb-1">
+                                                    Release world
+                                                </p>
+                                                <h3 className="text-2xl font-display">
+                                                    {creatorFeaturedRelease.title}
+                                                </h3>
+                                                <p className="text-secondary text-sm leading-relaxed">
+                                                    {getFeaturedReleaseSummary(creatorFeaturedRelease)}
+                                                </p>
+                                            </div>
+
+                                            <div className="nexus-dynamic-release-detail-grid">
+                                                <div>
+                                                    <span>Lead signal</span>
+                                                    <strong>{creatorFeaturedRelease.currentFocus || 'TBD'}</strong>
+                                                </div>
+
+                                                <div>
+                                                    <span>Second signal</span>
+                                                    <strong>{creatorFeaturedRelease.secondFocus || 'TBD'}</strong>
+                                                </div>
+
+                                                <div>
+                                                    <span>Status</span>
+                                                    <strong>{formatReleaseLabel(creatorFeaturedRelease.status)}</strong>
+                                                </div>
+
+                                                <div>
+                                                    <span>World opens</span>
+                                                    <strong>{formatReleaseDate(creatorFeaturedRelease.fullDropDate)}</strong>
+                                                </div>
+                                            </div>
                                         </div>
 
-                                        <div className="nexus-dynamic-release-detail-grid">
-                                            <div>
-                                                <span>Lead signal</span>
-                                                <strong>{creatorFeaturedRelease.currentFocus || 'TBD'}</strong>
+                                        <div className="nexus-featured-release-track-panel">
+                                            <div className="nexus-featured-release-track-heading">
+                                                <div>
+                                                    <p>Release sequence</p>
+                                                    <h4>{featuredReleaseTrackCount > 0 ? `${featuredReleaseTrackCount} connected track${featuredReleaseTrackCount === 1 ? '' : 's'}` : 'Track sequence forming'}</h4>
+                                                </div>
+
+                                                <span>
+                                                    {featuredReleaseAudioCount > 0
+                                                        ? `${featuredReleaseAudioCount} audio file${featuredReleaseAudioCount === 1 ? '' : 's'} ready`
+                                                        : 'Audio staging'}
+                                                </span>
                                             </div>
 
-                                            <div>
-                                                <span>Second signal</span>
-                                                <strong>{creatorFeaturedRelease.secondFocus || 'TBD'}</strong>
-                                            </div>
+                                            {isFeaturedReleaseTracksLoading ? (
+                                                <div className="nexus-featured-release-empty">
+                                                    Loading release tracks…
+                                                </div>
+                                            ) : featuredReleaseTracks && featuredReleaseTracks.length > 0 ? (
+                                                <div className="nexus-featured-release-track-list">
+                                                    {featuredReleaseTracks.map((track) => {
+                                                        const hasAudio = Boolean(track.audioUrl);
+                                                        const playerTrackId = `release-${track.id}`;
+                                                        const isCurrentDynamicTrack =
+                                                            currentTrack?.id === playerTrackId && isPlaying;
 
-                                            <div>
-                                                <span>Status</span>
-                                                <strong>{formatReleaseLabel(creatorFeaturedRelease.status)}</strong>
-                                            </div>
+                                                        return (
+                                                            <div
+                                                                key={track.id}
+                                                                className="nexus-featured-release-track-row"
+                                                            >
+                                                                <div className="nexus-featured-release-track-number">
+                                                                    {String(track.trackNumber || 1).padStart(2, '0')}
+                                                                </div>
 
-                                            <div>
-                                                <span>World opens</span>
-                                                <strong>{formatReleaseDate(creatorFeaturedRelease.fullDropDate)}</strong>
-                                            </div>
+                                                                <div className="nexus-featured-release-track-main">
+                                                                    <div className="nexus-featured-release-track-titleline">
+                                                                        <h5>{track.title}</h5>
+
+                                                                        <span>
+                                                                            {getFeaturedTrackStatusLabel(track)}
+                                                                        </span>
+                                                                    </div>
+
+                                                                    <p>
+                                                                        {getFeaturedTrackReleaseLabel(track, creatorFeaturedRelease)}
+                                                                        {track.mood ? ` • ${track.mood}` : ''}
+                                                                        {track.keySignature ? ` • ${track.keySignature}` : ''}
+                                                                    </p>
+
+                                                                    {track.hook && (
+                                                                        <p className="nexus-featured-release-track-hook">
+                                                                            “{track.hook}”
+                                                                        </p>
+                                                                    )}
+                                                                </div>
+
+                                                                <div className="nexus-featured-release-track-actions">
+                                                                    <span className={track.isPublic ? 'is-public' : 'is-private'}>
+                                                                        {track.isPublic ? 'Public' : 'Creator only'}
+                                                                    </span>
+
+                                                                    <button
+                                                                        type="button"
+                                                                        className="btn-secondary"
+                                                                        onClick={() => playFeaturedReleaseTrack(track)}
+                                                                        disabled={!hasAudio}
+                                                                        style={{
+                                                                            borderRadius: '999px',
+                                                                            opacity: hasAudio ? 1 : 0.5,
+                                                                            cursor: hasAudio ? 'pointer' : 'not-allowed',
+                                                                        }}
+                                                                    >
+                                                                        {!hasAudio
+                                                                            ? 'Audio pending'
+                                                                            : isCurrentDynamicTrack
+                                                                                ? 'Pause'
+                                                                                : 'Play'}
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            ) : (
+                                                <div className="nexus-featured-release-empty">
+                                                    Tracks have not been made public for this release yet.
+                                                </div>
+                                            )}
                                         </div>
 
                                         {isSignedIn && (

@@ -520,6 +520,26 @@ module.exports = {
             });
         },
 
+        getPublicReleaseTracks: async (_, { releaseWorldId }) => {
+            const releaseWorld = await ReleaseWorld.findOne({
+                _id: releaseWorldId,
+                visibility: "public",
+                status: { $ne: "archived" },
+            });
+
+            if (!releaseWorld) {
+                return [];
+            }
+
+            return await ReleaseTrack.find({
+                releaseWorldId,
+                isPublic: true,
+            }).sort({
+                trackNumber: 1,
+                createdAt: 1,
+            });
+        },
+
         getReleaseTrack: async (_, { id }, { user }) => {
             if (!user) throw new Error("Unauthorized: Please sign in.");
 

@@ -405,6 +405,7 @@ const typeDefs = gql`
     getPublicFeaturedReleaseWorld: ReleaseWorld
 
     getReleaseTracks(releaseWorldId: ID!): [ReleaseTrack!]!
+    getPublicReleaseTracks(releaseWorldId: ID!): [ReleaseTrack!]!
     getReleaseTrack(id: ID!): ReleaseTrack
 
     getReleaseAssets(releaseWorldId: ID!): [ReleaseAsset!]!
