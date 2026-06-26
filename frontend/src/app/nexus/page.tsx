@@ -239,6 +239,8 @@ const CURATED_PLAYLIST_ART_OVERRIDES: Record<string, string> = {
     'april-may-vault': '/april-may-vault.png',
 };
 
+const NEXUS_RELEASE_PREVIEW_VERSION = 'Portal preview v9.1';
+
 function getRealmTint(realmId?: number | null) {
     return getRealmTheme(realmId);
 }
@@ -421,15 +423,14 @@ function getFeaturedTrackMetaLine(
     const dropDate = formatReleaseDate(track.dropDate || releaseWorld?.fullDropDate);
     const openDate = unlockDate !== 'TBD' ? unlockDate : dropDate;
 
-    if (trackAction.canPlay && trackAction.label === 'Review') return 'Creator review available';
+    if (trackAction.canPlay && trackAction.label === 'Review') return 'Staged for creator review';
     if (trackAction.canPlay && trackAction.label === 'Play') return 'Available now';
     if (trackAction.canPlay && trackAction.label === 'Preview') return 'Preview available';
-    if (trackAction.label === 'Preview pending') return 'Preview pending';
-    if (track.playbackStatus === 'coming-soon' && openDate !== 'TBD') return `Opens ${openDate}`;
-    if (track.playbackStatus === 'coming-soon') return 'Coming soon';
+    if (trackAction.label === 'Preview pending') return 'Preview coming soon';
     if (openDate !== 'TBD') return `Opens ${openDate}`;
+    if (track.playbackStatus === 'coming-soon') return 'Coming soon';
 
-    return 'Locked in the sequence';
+    return 'Not yet open';
 }
 
 function getFeaturedTrackPlaybackUrl(track: NexusFeaturedReleaseTrack, isSignedIn: boolean) {
@@ -949,7 +950,7 @@ export default function CosmicNexusHub() {
                                         className="px-3 py-1.5 rounded-full text-[11px] uppercase tracking-[0.14em] bg-[#7c5cff22] border border-[#7c5cff44] text-[#cdb7ff]"
                                         style={{ backdropFilter: 'blur(10px)' }}
                                     >
-                                        {isCreatorPreviewRelease ? 'Creator Preview' : 'Featured Release'}
+                                        {isCreatorPreviewRelease ? 'Creator Preview' : 'Featured Portal'}
                                     </span>
 
                                     <span
@@ -957,6 +958,13 @@ export default function CosmicNexusHub() {
                                         style={{ backdropFilter: 'blur(10px)' }}
                                     >
                                         {formatReleaseLabel(creatorFeaturedRelease.releaseType)} • {formatReleaseLabel(creatorFeaturedRelease.status)}
+                                    </span>
+
+                                    <span
+                                        className="px-3 py-1.5 rounded-full text-[11px] uppercase tracking-[0.14em] bg-[#DCBA5C18] border border-[#DCBA5C33] text-[#f5dd9a]"
+                                        style={{ backdropFilter: 'blur(10px)' }}
+                                    >
+                                        {NEXUS_RELEASE_PREVIEW_VERSION}
                                     </span>
                                 </div>
 
@@ -1011,7 +1019,7 @@ export default function CosmicNexusHub() {
                                         <div className="nexus-featured-release-track-panel nexus-release-tracklist-compact">
                                             <div className="nexus-featured-release-track-heading">
                                                 <div>
-                                                    <p>Release sequence</p>
+                                                    <p>Tracklist preview</p>
                                                     <h4>{featuredReleaseTrackCount > 0 ? `${featuredReleaseTrackCount} track${featuredReleaseTrackCount === 1 ? '' : 's'}` : 'Tracklist forming'}</h4>
                                                 </div>
 
