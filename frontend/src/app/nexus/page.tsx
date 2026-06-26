@@ -323,11 +323,11 @@ function getFeaturedTrackReleaseLabel(
 }
 
 function toPlayerTrack(
-    releaseTrack: NexusReleaseTrack,
+    releaseTrack: NexusFeaturedReleaseTrack,
     releaseWorld?: NexusFeaturedReleaseWorld | null
 ) {
     return {
-        id: releaseTrack.id,
+        id: `release-${releaseTrack.id}`,
         trackTitle: releaseTrack.title,
         artist: 'Cosmic',
         realmId: 0,
