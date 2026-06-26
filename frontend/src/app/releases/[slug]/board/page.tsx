@@ -705,7 +705,7 @@ function getTrackInputFromForm(form: TrackForm) {
     unlockDate: form.unlockDate || null,
     isFocusTrack: form.isFocusTrack,
     isSecondFocus: form.isSecondFocus,
-    isPublic: form.isPublic,
+    isPublic: form.visibility === "public" || form.visibility === "listed",
   };
 }
 
@@ -737,7 +737,7 @@ function getAssetInputFromForm(form: AssetForm, releaseWorldId: string) {
     url: form.url.trim(),
     fileName: form.fileName.trim(),
     mimeType: form.mimeType.trim(),
-    isPublic: form.isPublic,
+    isPublic: form.visibility === "public" || form.visibility === "listed",
   };
 }
 
@@ -2682,7 +2682,7 @@ export default function DynamicReleaseSignalBoardPage() {
                       onChange={(event) => {
                         const value = event.target.value;
                         updateTrackForm("visibility", value);
-                        updateTrackForm("isPublic", value === "public");
+                        updateTrackForm("isPublic", value === "public" || value === "listed");
                       }}
                     >
                       {trackVisibilityOptions.map((option) => (
@@ -2691,6 +2691,9 @@ export default function DynamicReleaseSignalBoardPage() {
                         </option>
                       ))}
                     </select>
+                    <span className="signal-board-field-note">
+                      Listed shows in the release tracklist. Public is eligible for broader discovery.
+                    </span>
                   </label>
                   <label>
                     Playback
@@ -2706,6 +2709,9 @@ export default function DynamicReleaseSignalBoardPage() {
                         </option>
                       ))}
                     </select>
+                    <span className="signal-board-field-note">
+                      Controls the public button: Locked, Preview, Playable, or Coming Soon.
+                    </span>
                   </label>
                   <label>
                     BPM
@@ -2798,8 +2804,11 @@ export default function DynamicReleaseSignalBoardPage() {
                       onChange={(event) =>
                         updateTrackForm("previewAudioUrl", event.target.value)
                       }
-                      placeholder="Optional snippet / teaser audio URL"
+                      placeholder="15–30 second teaser audio URL"
                     />
+                    <span className="signal-board-field-note">
+                      Public preview uses this URL only. It will not fall back to the full track.
+                    </span>
                   </label>
                   <label className="signal-board-wide-field">
                     Platform URL
@@ -2834,17 +2843,9 @@ export default function DynamicReleaseSignalBoardPage() {
                     />
                     Second
                   </label>
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={trackForm.isPublic}
-                      onChange={(event) => {
-                        updateTrackForm("isPublic", event.target.checked);
-                        updateTrackForm("visibility", event.target.checked ? "public" : "private");
-                      }}
-                    />
-                    Show on public tracklist
-                  </label>
+                  <span className="signal-board-field-note signal-board-toggle-note">
+                    Tracklist visibility is controlled by the Visibility dropdown above.
+                  </span>
                 </div>
 
                 <div className="signal-board-panel-actions">

@@ -339,29 +339,61 @@ function getFeaturedTrackReleaseLabel(
     return `${statusLabel} • ${dropDate}`;
 }
 
-function getFeaturedTrackPlaybackLabel(track: NexusFeaturedReleaseTrack, isSignedIn: boolean) {
-    if (isSignedIn && (track.audioUrl || track.previewAudioUrl)) return 'Review';
-    if (track.playbackStatus === 'playable' && track.audioUrl) return 'Play';
-    if (track.playbackStatus === 'preview' && (track.previewAudioUrl || track.audioUrl)) return 'Preview';
-    if (track.playbackStatus === 'coming-soon') return 'Coming soon';
-    return track.visibility === 'listed' || track.isPublic ? 'Listed' : 'Locked';
-}
+function getFeaturedTrackAction(track: NexusFeaturedReleaseTrack, isSignedIn: boolean) {
+    const hasFullAudio = Boolean(track.audioUrl);
+    const hasPreviewAudio = Boolean(track.previewAudioUrl);
 
-function getFeaturedTrackState(track: NexusFeaturedReleaseTrack, isSignedIn: boolean) {
-    const hasCreatorAudio = Boolean(track.audioUrl || track.previewAudioUrl);
-    const hasPublicFullAudio = track.playbackStatus === 'playable' && Boolean(track.audioUrl);
-    const hasPreviewAudio = track.playbackStatus === 'preview' && Boolean(track.previewAudioUrl || track.audioUrl);
-
-    if (isSignedIn && hasCreatorAudio && track.playbackStatus !== 'playable') {
-        return { label: 'Review', className: 'is-review' };
+    if (isSignedIn && (hasFullAudio || hasPreviewAudio)) {
+        return {
+            label: 'Review',
+            canPlay: true,
+            url: track.audioUrl || track.previewAudioUrl || '',
+            className: 'is-review',
+        };
     }
 
-    if (hasPublicFullAudio) return { label: 'Playable', className: 'is-playable' };
-    if (hasPreviewAudio) return { label: 'Preview', className: 'is-preview' };
-    if (track.playbackStatus === 'coming-soon') return { label: 'Coming Soon', className: 'is-coming-soon' };
-    if (track.visibility === 'listed' || track.isPublic) return { label: 'Listed', className: 'is-listed' };
+    if (track.playbackStatus === 'playable' && hasFullAudio) {
+        return {
+            label: 'Play',
+            canPlay: true,
+            url: track.audioUrl || '',
+            className: 'is-playable',
+        };
+    }
 
-    return { label: 'Locked', className: 'is-locked' };
+    if (track.playbackStatus === 'preview') {
+        if (hasPreviewAudio) {
+            return {
+                label: 'Preview',
+                canPlay: true,
+                url: track.previewAudioUrl || '',
+                className: 'is-preview',
+            };
+        }
+
+        return {
+            label: 'Preview pending',
+            canPlay: false,
+            url: '',
+            className: 'is-preview-pending',
+        };
+    }
+
+    if (track.playbackStatus === 'coming-soon') {
+        return {
+            label: 'Coming soon',
+            canPlay: false,
+            url: '',
+            className: 'is-coming-soon',
+        };
+    }
+
+    return {
+        label: 'Locked',
+        canPlay: false,
+        url: '',
+        className: 'is-locked',
+    };
 }
 
 function getFeaturedTrackMetaLine(
@@ -378,10 +410,7 @@ function getFeaturedTrackMetaLine(
 }
 
 function getFeaturedTrackPlaybackUrl(track: NexusFeaturedReleaseTrack, isSignedIn: boolean) {
-    if (isSignedIn) return track.audioUrl || track.previewAudioUrl || '';
-    if (track.playbackStatus === 'playable') return track.audioUrl || '';
-    if (track.playbackStatus === 'preview') return track.previewAudioUrl || track.audioUrl || '';
-    return '';
+    return getFeaturedTrackAction(track, isSignedIn).url;
 }
 
 function toPlayerTrack(
@@ -562,8 +591,8 @@ export default function CosmicNexusHub() {
             : publicFeaturedReleaseTracksLoading;
 
     const featuredReleaseTrackCount = featuredReleaseTracks?.length ?? 0;
-    const featuredReleaseAudioCount =
-        featuredReleaseTracks?.filter((track) => Boolean(getFeaturedTrackPlaybackUrl(track, isSignedIn))).length ?? 0;
+    const featuredReleasePlayableCount =
+        featuredReleaseTracks?.filter((track) => getFeaturedTrackAction(track, isSignedIn).canPlay).length ?? 0;
 
     const playFeaturedReleaseTrack = (track: NexusFeaturedReleaseTrack) => {
         const selectedTrackUrl = getFeaturedTrackPlaybackUrl(track, isSignedIn);
@@ -966,11 +995,9 @@ export default function CosmicNexusHub() {
                                                     <h4>{featuredReleaseTrackCount > 0 ? `${featuredReleaseTrackCount} track${featuredReleaseTrackCount === 1 ? '' : 's'}` : 'Tracklist forming'}</h4>
                                                 </div>
 
-                                                <span>
-                                                    {featuredReleaseAudioCount > 0
-                                                        ? `${featuredReleaseAudioCount} playable`
-                                                        : 'Tracklist only'}
-                                                </span>
+                                                {featuredReleasePlayableCount > 0 && (
+                                                    <span>{featuredReleasePlayableCount} ready</span>
+                                                )}
                                             </div>
 
                                             {isFeaturedReleaseTracksLoading ? (
@@ -980,10 +1007,7 @@ export default function CosmicNexusHub() {
                                             ) : featuredReleaseTracks && featuredReleaseTracks.length > 0 ? (
                                                 <div className="nexus-featured-release-track-list">
                                                     {featuredReleaseTracks.map((track) => {
-                                                        const playbackUrl = getFeaturedTrackPlaybackUrl(track, isSignedIn);
-                                                        const hasPlayback = Boolean(playbackUrl);
-                                                        const playbackLabel = getFeaturedTrackPlaybackLabel(track, isSignedIn);
-                                                        const trackState = getFeaturedTrackState(track, isSignedIn);
+                                                        const trackAction = getFeaturedTrackAction(track, isSignedIn);
                                                         const playerTrackId = `release-${track.id}`;
                                                         const isCurrentDynamicTrack =
                                                             currentTrack?.id === playerTrackId && isPlaying;
@@ -1009,20 +1033,15 @@ export default function CosmicNexusHub() {
                                                                 </div>
 
                                                                 <div className="nexus-featured-release-track-actions">
-                                                                    <span className={`nexus-featured-release-state-pill ${trackState.className}`}>
-                                                                        {trackState.label}
-                                                                    </span>
-
-                                                                    {hasPlayback && (
-                                                                        <button
-                                                                            type="button"
-                                                                            className="btn-secondary nexus-featured-release-play-button"
-                                                                            onClick={() => playFeaturedReleaseTrack(track)}
-                                                                            style={{ borderRadius: '999px' }}
-                                                                        >
-                                                                            {isCurrentDynamicTrack ? 'Pause' : playbackLabel}
-                                                                        </button>
-                                                                    )}
+                                                                    <button
+                                                                        type="button"
+                                                                        className={`btn-secondary nexus-featured-release-action-button ${trackAction.className}`}
+                                                                        onClick={() => playFeaturedReleaseTrack(track)}
+                                                                        disabled={!trackAction.canPlay}
+                                                                        style={{ borderRadius: '999px' }}
+                                                                    >
+                                                                        {isCurrentDynamicTrack ? 'Pause' : trackAction.label}
+                                                                    </button>
                                                                 </div>
                                                             </div>
                                                         );
