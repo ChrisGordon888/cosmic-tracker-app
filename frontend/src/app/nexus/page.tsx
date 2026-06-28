@@ -239,8 +239,6 @@ const CURATED_PLAYLIST_ART_OVERRIDES: Record<string, string> = {
     'april-may-vault': '/april-may-vault.png',
 };
 
-const NEXUS_RELEASE_PREVIEW_VERSION = 'Portal preview v9.2 • date-safe';
-
 function getRealmTint(realmId?: number | null) {
     return getRealmTheme(realmId);
 }
@@ -975,13 +973,6 @@ export default function CosmicNexusHub() {
                                         style={{ backdropFilter: 'blur(10px)' }}
                                     >
                                         {formatReleaseLabel(creatorFeaturedRelease.releaseType)} • {formatReleaseLabel(creatorFeaturedRelease.status)}
-                                    </span>
-
-                                    <span
-                                        className="px-3 py-1.5 rounded-full text-[11px] uppercase tracking-[0.14em] bg-[#DCBA5C18] border border-[#DCBA5C33] text-[#f5dd9a]"
-                                        style={{ backdropFilter: 'blur(10px)' }}
-                                    >
-                                        {NEXUS_RELEASE_PREVIEW_VERSION}
                                     </span>
                                 </div>
 
