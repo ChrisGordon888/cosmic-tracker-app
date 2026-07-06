@@ -970,14 +970,26 @@ function mapArtifactToInput(artifact: BoardArtifact) {
 function formatDateForInput(value?: string | null) {
     if (!value) return "";
 
-    const numericValue = Number(value);
-    const date = Number.isFinite(numericValue)
+    const cleanValue = String(value).trim();
+    const datePrefixMatch = cleanValue.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+    if (datePrefixMatch) {
+        const [, year, month, day] = datePrefixMatch;
+        return `${year}-${month}-${day}`;
+    }
+
+    const numericValue = Number(cleanValue);
+    const parsedDate = Number.isFinite(numericValue)
         ? new Date(numericValue)
-        : new Date(value);
+        : new Date(cleanValue);
 
-    if (Number.isNaN(date.getTime())) return "";
+    if (Number.isNaN(parsedDate.getTime())) return "";
 
-    return date.toISOString().slice(0, 10);
+    const year = parsedDate.getUTCFullYear();
+    const month = String(parsedDate.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(parsedDate.getUTCDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
 }
 
 function getPortalSettingsFromReleaseWorld(

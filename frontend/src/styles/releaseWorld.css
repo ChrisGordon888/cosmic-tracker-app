@@ -87,6 +87,8 @@
 }
 
 .release-world-hero-actions a,
+.release-world-hero-actions button,
+.release-world-hero-actions span,
 .release-world-portal a,
 .release-world-state a {
   display: inline-flex;
@@ -109,18 +111,21 @@
     background 180ms ease;
 }
 
-.release-world-hero-actions a:first-child {
+.release-world-hero-actions a:first-child,
+.release-world-hero-actions button:first-child,
   color: #081018;
   border-color: rgba(247, 239, 228, 0.5);
   background: linear-gradient(135deg, #f7efe4, #7ed3ff);
 }
 
-.release-world-hero-actions a[aria-disabled='true'] {
+.release-world-hero-actions a[aria-disabled='true'],
+.release-world-hero-play-button-disabled {
   opacity: 0.72;
   cursor: default;
 }
 
 .release-world-hero-actions a:not([aria-disabled='true']):hover,
+.release-world-hero-actions button:hover,
 .release-world-portal a:hover,
 .release-world-state a:hover {
   transform: translateY(-2px);
@@ -771,6 +776,7 @@
 }
 
 .release-world-track-card a,
+.release-world-track-button,
 .release-world-board-card a,
 .release-world-track-pending {
   display: inline-flex;
@@ -944,4 +950,59 @@
   backdrop-filter: blur(16px);
   background:
     linear-gradient(135deg, rgba(7, 11, 20, 0.74), rgba(7, 11, 20, 0.42));
+}
+
+/* ===================================
+   RELEASE PAGE PLAYER + STATE POLISH
+   =================================== */
+
+.release-world-hero-actions button,
+.release-world-hero-actions span,
+.release-world-track-button {
+  appearance: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.release-world-hero-play-button-disabled,
+.release-world-track-button:disabled {
+  cursor: not-allowed;
+}
+
+.release-world-track-action-play {
+  border-color: rgba(243, 231, 209, 0.42);
+  color: #081018;
+  background: linear-gradient(135deg, #f7efe4, #dcbA5c 55%, #7ed3ff);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.35),
+    0 10px 24px rgba(220, 186, 92, 0.18);
+}
+
+.release-world-track-action-preview {
+  border-color: rgba(168, 132, 255, 0.40);
+  color: rgba(246, 241, 255, 0.96);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(168, 132, 255, 0.22), transparent 52%),
+    linear-gradient(135deg, rgba(168, 132, 255, 0.18), rgba(126, 211, 255, 0.10));
+  box-shadow: 0 10px 24px rgba(126, 211, 255, 0.10);
+}
+
+.release-world-track-action-review {
+  border-color: rgba(220, 186, 92, 0.38);
+  color: rgba(255, 246, 220, 0.96);
+  background:
+    radial-gradient(circle at 20% 0%, rgba(220, 186, 92, 0.18), transparent 52%),
+    linear-gradient(135deg, rgba(255,255,255,0.075), rgba(220,186,92,0.09));
+}
+
+.release-world-track-action-pending {
+  border-color: rgba(220, 186, 92, 0.22);
+  color: rgba(243, 231, 209, 0.70);
+  background: rgba(220, 186, 92, 0.075);
+}
+
+.release-world-track-action-locked {
+  border-color: rgba(214, 224, 235, 0.13);
+  color: rgba(224, 231, 240, 0.52);
+  background: rgba(255,255,255,0.035);
 }

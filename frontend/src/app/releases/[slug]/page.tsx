@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { gql, useQuery } from '@apollo/client';
 import { useSession } from 'next-auth/react';
+import { useMusicPlayer } from '@/hooks/useMusicPlayer';
 import '@/styles/releaseWorld.css';
 
 const RELEASE_WORLD_FIELDS = gql`
@@ -234,37 +235,49 @@ function formatLabel(value?: string | null) {
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
-function parseDateValue(value?: string | null) {
+function getCalendarDateParts(value?: string | null) {
   if (!value) return null;
 
-  const numericValue = Number(value);
+  const cleanValue = String(value).trim();
+  const datePrefixMatch = cleanValue.match(/^(\d{4})-(\d{2})-(\d{2})/);
 
-  if (Number.isFinite(numericValue)) {
-    const numericDate = new Date(numericValue);
-    return Number.isNaN(numericDate.getTime()) ? null : numericDate;
+  if (datePrefixMatch) {
+    const [, year, month, day] = datePrefixMatch;
+    return {
+      year: Number(year),
+      month: Number(month),
+      day: Number(day),
+    };
   }
 
-  const dateOnlyMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  const numericValue = Number(cleanValue);
+  const parsedDate = Number.isFinite(numericValue)
+    ? new Date(numericValue)
+    : new Date(cleanValue);
 
-  if (dateOnlyMatch) {
-    const [, year, month, day] = dateOnlyMatch;
-    return new Date(Number(year), Number(month) - 1, Number(day));
-  }
+  if (Number.isNaN(parsedDate.getTime())) return null;
 
-  const parsedDate = new Date(value);
-  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+  return {
+    year: parsedDate.getUTCFullYear(),
+    month: parsedDate.getUTCMonth() + 1,
+    day: parsedDate.getUTCDate(),
+  };
 }
 
 function formatDate(value?: string | null) {
-  const date = parseDateValue(value);
+  const dateParts = getCalendarDateParts(value);
 
-  if (!date) return 'TBD';
+  if (!dateParts) return 'TBD';
+
+  const localCalendarDate = new Date(dateParts.year, dateParts.month - 1, dateParts.day);
+
+  if (Number.isNaN(localCalendarDate.getTime())) return 'TBD';
 
   return new Intl.DateTimeFormat('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
-  }).format(date);
+  }).format(localCalendarDate);
 }
 
 function getTitleParts(title?: string | null) {
@@ -463,6 +476,7 @@ function ReleaseArtwork({ world, isCreatorView }: { world: ReleaseWorld; isCreat
 export default function DynamicReleasePage() {
   const params = useParams<{ slug?: string | string[] }>();
   const { status } = useSession();
+  const { playOrToggleTrack, currentTrack, isPlaying } = useMusicPlayer();
   const rawSlug = params?.slug;
   const slug = Array.isArray(rawSlug) ? rawSlug[0] ?? '' : rawSlug ?? '';
   const isCreatorView = status === 'authenticated';
@@ -589,6 +603,40 @@ export default function DynamicReleasePage() {
     ? getTrackAvailability(firstPlayableTrack, isCreatorView)
     : null;
 
+  const toPlayerTrack = (track: ReleaseTrack) => {
+    const availability = getTrackAvailability(track, isCreatorView);
+
+    return {
+      id: `release-${track.id}`,
+      trackTitle: track.title,
+      artist: 'Cosmic',
+      realmId: 0,
+      realmName: 'INTERSIDDHI',
+      realmColor: '#DCBA5C',
+      visibility: track.visibility === 'public' || track.isPublic ? 'public' : 'premium',
+      trackUrl: availability.href,
+      artworkUrl: world.coverArtUrl ?? undefined,
+    };
+  };
+
+  const playReleaseTrack = (track: ReleaseTrack) => {
+    const availability = getTrackAvailability(track, isCreatorView);
+
+    if (!availability.isPlayable || !availability.href) return;
+
+    const flowTracks = releaseTracks
+      .filter((releaseTrack) => {
+        const releaseTrackAvailability = getTrackAvailability(releaseTrack, isCreatorView);
+        return releaseTrackAvailability.isPlayable && Boolean(releaseTrackAvailability.href);
+      })
+      .map(toPlayerTrack);
+
+    void playOrToggleTrack(toPlayerTrack(track), flowTracks, {
+      source: 'nexus',
+      label: world.title,
+    });
+  };
+
   return (
     <main className="release-world-page">
       <section className="release-world-hero">
@@ -606,12 +654,20 @@ export default function DynamicReleasePage() {
             <p className="release-world-hero-summary">{heroHook}</p>
 
             <div className="release-world-hero-actions">
-              {firstPlayableAction?.href ? (
-                <a href={firstPlayableAction.href} target="_blank" rel="noreferrer">
-                  {firstPlayableAction.label}
-                </a>
+              {firstPlayableTrack && firstPlayableAction?.href ? (
+                <button
+                  type="button"
+                  className="release-world-hero-play-button"
+                  onClick={() => playReleaseTrack(firstPlayableTrack)}
+                >
+                  {currentTrack?.id === `release-${firstPlayableTrack.id}` && isPlaying
+                    ? 'Pause'
+                    : firstPlayableAction.label}
+                </button>
               ) : (
-                <a aria-disabled="true">Listen soon</a>
+                <span className="release-world-hero-play-button release-world-hero-play-button-disabled">
+                  Listen soon
+                </span>
               )}
 
               <Link href="/nexus">Back to Nexus</Link>
@@ -703,9 +759,13 @@ export default function DynamicReleasePage() {
                   )}
 
                   {action.isPlayable && action.href ? (
-                    <a href={action.href} target="_blank" rel="noreferrer" className={action.className}>
-                      {action.label}
-                    </a>
+                    <button
+                      type="button"
+                      className={`release-world-track-button ${action.className}`}
+                      onClick={() => playReleaseTrack(track)}
+                    >
+                      {currentTrack?.id === `release-${track.id}` && isPlaying ? 'Pause' : action.label}
+                    </button>
                   ) : (
                     <span className={`release-world-track-pending ${action.className}`}>
                       {action.label}
