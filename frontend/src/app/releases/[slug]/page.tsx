@@ -313,7 +313,7 @@ function getTrackAvailability(track: ReleaseTrack, isCreatorView: boolean) {
 
   if (isCreatorView && (hasFullAudio || hasPreviewAudio)) {
     return {
-      label: 'Review source',
+      label: 'Review',
       href: track.audioUrl?.trim() || track.previewAudioUrl?.trim() || '',
       isPlayable: true,
       className: 'release-world-track-action-review',
@@ -515,9 +515,9 @@ export default function DynamicReleasePage() {
     return (
       <main className="release-world-page">
         <section className="release-world-state">
-          <p className="release-world-label">Loading Release World</p>
-          <h1>Opening portal...</h1>
-          <p>Finding the project by slug and preparing the release page.</p>
+          <p className="release-world-label">Opening the World</p>
+          <h1>The door is opening...</h1>
+          <p>Gathering the sound, story, and fragments for this release.</p>
         </section>
       </main>
     );
@@ -528,9 +528,9 @@ export default function DynamicReleasePage() {
       <main className="release-world-page">
         <section className="release-world-state release-world-error">
           <p className="release-world-label">Release Portal</p>
-          <h1>Could not open this release.</h1>
+          <h1>This doorway is not opening right now.</h1>
           <p>{worldError.message}</p>
-          <Link href="/nexus">Back to Nexus</Link>
+          <Link href="/nexus">Return to Nexus</Link>
         </section>
       </main>
     );
@@ -541,12 +541,11 @@ export default function DynamicReleasePage() {
       <main className="release-world-page">
         <section className="release-world-state">
           <p className="release-world-label">Release Not Found</p>
-          <h1>No public world found for /{slug}</h1>
+          <h1>This doorway is not open yet</h1>
           <p>
-            This release may not exist yet, may still be private, or may only be available to the
-            creator.
+            This world may not be public yet, or the doorway may have moved.
           </p>
-          <Link href="/nexus">Back to Nexus</Link>
+          <Link href="/nexus">Return to Nexus</Link>
         </section>
       </main>
     );
@@ -556,7 +555,7 @@ export default function DynamicReleasePage() {
   const heroHook =
     world.oneLineSummary?.trim() ||
     world.story?.trim() ||
-    'Step inside the sound, story, and visual atmosphere of this release.';
+    'Step inside the sound, story, and atmosphere of this release.';
 
   const firstPlayableTrack = releaseTracks.find((track) => {
     const availability = getTrackAvailability(track, isCreatorView);
@@ -596,7 +595,7 @@ export default function DynamicReleasePage() {
       .map(toPlayerTrack);
 
     void playOrToggleTrack(toPlayerTrack(track), flowTracks, {
-      source: 'nexus',
+      source: 'release-page',
       label: world.title,
     });
   };
@@ -607,7 +606,7 @@ export default function DynamicReleasePage() {
         <div className="release-world-hero-grid">
           <div className="release-world-hero-copy">
             <p className="release-world-label">
-              {formatLabel(world.releaseType)} / Release Portal
+              {formatLabel(world.releaseType)} / Listener Portal
             </p>
 
             <h1>
@@ -634,12 +633,12 @@ export default function DynamicReleasePage() {
                 </span>
               )}
 
-              <Link href="/nexus">Back to Nexus</Link>
+              <Link href="/nexus">Return to Nexus</Link>
 
               {isCreatorView && (
                 <>
-                  <Link href={`/releases/${world.slug}/board`}>Open signal board</Link>
-                  <Link href="/creator/projects">Project library</Link>
+                  <Link href={`/releases/${world.slug}/board`}>Open Signal Board</Link>
+                  <Link href="/creator/projects">Project Library</Link>
                 </>
               )}
             </div>
@@ -652,19 +651,19 @@ export default function DynamicReleasePage() {
 
         <div className="release-world-meta-strip" aria-label="Release metadata">
           <div>
-            <span>Project</span>
+            <span>Release</span>
             <strong>{world.title}</strong>
           </div>
           <div>
-            <span>Lead signal</span>
+            <span>First Signal</span>
             <strong>{world.currentFocus || 'TBD'}</strong>
           </div>
           <div>
-            <span>Second signal</span>
+            <span>Second Signal</span>
             <strong>{world.secondFocus || 'TBD'}</strong>
           </div>
           <div>
-            <span>World opens</span>
+            <span>Opens</span>
             <strong>{formatDate(world.fullDropDate)}</strong>
           </div>
         </div>
@@ -676,25 +675,25 @@ export default function DynamicReleasePage() {
 
       <section className="release-world-story-section">
         <div className="release-world-section-heading">
-          <p className="release-world-label">Story</p>
-          <h2>Enter the atmosphere.</h2>
+          <p className="release-world-label">Inside the Release</p>
+          <h2>Enter the feeling.</h2>
         </div>
         <p>
           {world.story?.trim() ||
-            'This is the listening room for the release: sound, story, visuals, and selected fragments from the world.'}
+            'A world of sound, desire, memory, and return. Listen closely — every song opens another room.'}
         </p>
       </section>
 
       <section className="release-world-track-section">
         <div className="release-world-section-heading release-world-section-heading-split">
           <div>
-            <p className="release-world-label">Tracklist</p>
-            <h2>Listen through the world.</h2>
+            <p className="release-world-label">Songs</p>
+            <h2>Follow the songs.</h2>
           </div>
           <p>
             {pageLoading
-              ? 'Loading tracklist...'
-              : `${releaseTracks.length} track${releaseTracks.length === 1 ? '' : 's'} available in this portal.`}
+              ? 'Opening the tracklist...'
+              : `${releaseTracks.length} song${releaseTracks.length === 1 ? '' : 's'} inside this world.`}
           </p>
         </div>
 
@@ -740,7 +739,7 @@ export default function DynamicReleasePage() {
             })}
           </div>
         ) : (
-          <p className="release-world-inline-empty">The public tracklist is still forming.</p>
+          <p className="release-world-inline-empty">The tracklist is still coming into focus.</p>
         )}
       </section>
 
@@ -748,12 +747,12 @@ export default function DynamicReleasePage() {
         <section className="release-world-board-section">
           <div className="release-world-section-heading release-world-section-heading-split">
             <div>
-              <p className="release-world-label">World Fragments</p>
-              <h2>Selected pieces from inside the release.</h2>
+              <p className="release-world-label">Fragments</p>
+              <h2>Pieces left inside the world.</h2>
             </div>
             <p>
-              {publicArtifacts.length} public fragment
-              {publicArtifacts.length === 1 ? '' : 's'} curated for the listener portal.
+              {publicArtifacts.length} fragment
+              {publicArtifacts.length === 1 ? '' : 's'} from the release world.
             </p>
           </div>
 
@@ -787,7 +786,7 @@ export default function DynamicReleasePage() {
                           )}
                         </div>
                         {artifact.href && (
-                          <Link href={artifact.href}>Open fragment</Link>
+                          <Link href={artifact.href}>Enter fragment</Link>
                         )}
                       </article>
                     ))}
@@ -801,11 +800,10 @@ export default function DynamicReleasePage() {
 
       <section className="release-world-afterglow-section">
         <div className="release-world-afterglow-inner">
-          <p className="release-world-label">From the Nexus</p>
-          <h2>This portal is one doorway.</h2>
+          <p className="release-world-label">The Door Remains Open</p>
+          <h2>Return whenever the signal calls.</h2>
           <p>
-            The release lives here as a focused world. The Nexus remains the front door — the wider map
-            of realms, signals, songs, and future portals.
+            This page holds one release. The Nexus holds the wider map — the realms, signals, and songs still unfolding.
           </p>
           <Link href="/nexus">Return to the Nexus</Link>
         </div>
@@ -815,12 +813,12 @@ export default function DynamicReleasePage() {
         <section className="release-world-portal">
           <div>
             <p className="release-world-label">Creator tools</p>
-            <h2>Keep shaping the world behind the portal.</h2>
+            <h2>Keep shaping what the listener will feel.</h2>
             <p>
-              The listener sees the polished portal. The Signal Board remains the private studio wall for story, notes, assets, rollout ideas, and world-building direction.
+              The public page is the doorway. The Signal Board remains the private studio wall where the story, sound, visuals, and fragments keep evolving.
             </p>
           </div>
-          <Link href={`/releases/${world.slug}/board`}>Open signal board</Link>
+          <Link href={`/releases/${world.slug}/board`}>Open Signal Board</Link>
         </section>
       )}
     </main>
