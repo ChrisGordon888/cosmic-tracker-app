@@ -436,3 +436,217 @@ button.creator-projects-primary-button {
     border-radius: 24px;
   }
 }
+
+/* ===================================
+   CREATOR PROJECTS â€” READINESS V1
+   Append to frontend/src/styles/creatorProjects.css
+   =================================== */
+
+.creator-project-card-v2 {
+  position: relative;
+  overflow: hidden;
+}
+
+.creator-project-card-v2::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(126, 211, 255, 0.10), transparent 28rem),
+    radial-gradient(circle at 88% 8%, rgba(220, 186, 92, 0.10), transparent 26rem);
+  opacity: 0.92;
+}
+
+.creator-project-card-v2 > * {
+  position: relative;
+  z-index: 1;
+}
+
+.creator-project-card-v2.is-featured {
+  border-color: rgba(220, 186, 92, 0.32);
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.32),
+    0 0 28px rgba(220, 186, 92, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+
+.creator-project-card-mainline {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr);
+  gap: 18px;
+  align-items: center;
+  margin-top: 14px;
+}
+
+.creator-project-card-cover {
+  position: relative;
+  width: 104px;
+  aspect-ratio: 1 / 1;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid rgba(247, 239, 228, 0.16);
+  background:
+    radial-gradient(circle at 30% 20%, rgba(126, 211, 255, 0.20), transparent 50%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.025));
+  box-shadow:
+    0 18px 38px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+
+.creator-project-card-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.creator-project-card-cover-empty {
+  display: grid;
+  place-items: center;
+}
+
+.creator-project-card-cover-empty span {
+  color: rgba(247, 239, 228, 0.74);
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.creator-project-readiness-panel {
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid rgba(247, 239, 228, 0.12);
+  border-radius: 24px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.022)),
+    rgba(0, 0, 0, 0.16);
+}
+
+.creator-project-readiness-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.creator-project-readiness-header span {
+  display: block;
+  margin-bottom: 4px;
+  color: rgba(247, 239, 228, 0.50);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.creator-project-readiness-header strong {
+  color: rgba(247, 239, 228, 0.95);
+  font-size: 1rem;
+}
+
+.creator-project-readiness-score {
+  display: grid;
+  place-items: center;
+  min-width: 56px;
+  height: 42px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(126, 211, 255, 0.22);
+  color: rgba(126, 211, 255, 0.95);
+  background: rgba(126, 211, 255, 0.07);
+  font-weight: 900;
+}
+
+.creator-project-readiness-bar {
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 14px;
+}
+
+.creator-project-readiness-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(126, 211, 255, 0.86), rgba(220, 186, 92, 0.92));
+  box-shadow: 0 0 18px rgba(126, 211, 255, 0.18);
+}
+
+.creator-project-readiness-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.creator-project-readiness-list div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 9px 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(247, 239, 228, 0.09);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.creator-project-readiness-list div span {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.creator-project-readiness-list div strong {
+  overflow: hidden;
+  color: rgba(247, 239, 228, 0.76);
+  font-size: 0.78rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.creator-project-readiness-list .is-complete span {
+  color: #091018;
+  background: linear-gradient(135deg, rgba(247, 239, 228, 0.96), rgba(126, 211, 255, 0.92));
+}
+
+.creator-project-readiness-list .is-incomplete {
+  opacity: 0.68;
+}
+
+.creator-project-readiness-list .is-incomplete span {
+  color: rgba(247, 239, 228, 0.46);
+  border: 1px solid rgba(247, 239, 228, 0.14);
+}
+
+.creator-project-card-meta-v2 {
+  margin-top: 18px;
+}
+
+.creator-project-card-actions-v2 {
+  margin-top: 18px;
+}
+
+@media (max-width: 720px) {
+  .creator-project-card-mainline {
+    grid-template-columns: 78px minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .creator-project-card-cover {
+    width: 78px;
+    border-radius: 18px;
+  }
+
+  .creator-project-readiness-list {
+    grid-template-columns: 1fr;
+  }
+}

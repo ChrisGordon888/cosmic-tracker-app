@@ -30,6 +30,10 @@ const MY_RELEASE_WORLDS = gql`
       visibility
       isFeatured
       oneLineSummary
+      story
+      fullDropDate
+      coverArtUrl
+      coverAssetId
       currentFocus
       secondFocus
       updatedAt
@@ -49,6 +53,10 @@ const CREATE_RELEASE_WORLD = gql`
       visibility
       isFeatured
       oneLineSummary
+      story
+      fullDropDate
+      coverArtUrl
+      coverAssetId
       currentFocus
       secondFocus
       updatedAt
@@ -75,6 +83,10 @@ type ReleaseWorld = {
   visibility: string;
   isFeatured: boolean;
   oneLineSummary?: string | null;
+  story?: string | null;
+  fullDropDate?: string | null;
+  coverArtUrl?: string | null;
+  coverAssetId?: string | null;
   currentFocus?: string | null;
   secondFocus?: string | null;
   updatedAt?: string | null;
@@ -107,21 +119,49 @@ const initialForm: NewProjectForm = {
   fullDropDate: "",
 };
 
-function formatDate(value?: string | null) {
-  if (!value) return "Not opened yet";
+function getCalendarDateParts(value?: string | null) {
+  if (!value) return null;
 
-  const numericValue = Number(value);
-  const date = Number.isFinite(numericValue)
+  const cleanValue = String(value).trim();
+  const datePrefixMatch = cleanValue.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+  if (datePrefixMatch) {
+    const [, year, month, day] = datePrefixMatch;
+    return {
+      year: Number(year),
+      month: Number(month),
+      day: Number(day),
+    };
+  }
+
+  const numericValue = Number(cleanValue);
+  const parsedDate = Number.isFinite(numericValue)
     ? new Date(numericValue)
-    : new Date(value);
+    : new Date(cleanValue);
 
-  if (Number.isNaN(date.getTime())) return "Unknown";
+  if (Number.isNaN(parsedDate.getTime())) return null;
+
+  return {
+    year: parsedDate.getUTCFullYear(),
+    month: parsedDate.getUTCMonth() + 1,
+    day: parsedDate.getUTCDate(),
+  };
+}
+
+function formatDate(value?: string | null) {
+  const dateParts = getCalendarDateParts(value);
+
+  if (!dateParts) return "Not opened yet";
+
+  const localCalendarDate = new Date(dateParts.year, dateParts.month - 1, dateParts.day);
+
+  if (Number.isNaN(localCalendarDate.getTime())) return "Unknown";
 
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
-  }).format(date);
+  }).format(localCalendarDate);
 }
 
 function formatLabel(value?: string | null) {
@@ -140,6 +180,74 @@ function slugify(value: string) {
     .replace(/['"]/g, "")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+}
+
+type ReadinessItem = {
+  label: string;
+  isComplete: boolean;
+  hint: string;
+};
+
+function getReadinessItems(world: ReleaseWorld): ReadinessItem[] {
+  return [
+    {
+      label: "Portal public",
+      isComplete: world.visibility === "public",
+      hint: world.visibility === "public" ? "Public release page can be shared." : "Set release visibility to Public in the Signal Board.",
+    },
+    {
+      label: "Cover art",
+      isComplete: Boolean(world.coverArtUrl?.trim()),
+      hint: world.coverArtUrl?.trim() ? "Artwork is attached." : "Add cover art in the Signal Board assets.",
+    },
+    {
+      label: "Story",
+      isComplete: Boolean(world.story?.trim() || world.oneLineSummary?.trim()),
+      hint: world.story?.trim() ? "Story is ready for the portal." : "Add a stronger release story or summary.",
+    },
+    {
+      label: "Drop date",
+      isComplete: Boolean(world.fullDropDate),
+      hint: world.fullDropDate ? `World opens ${formatDate(world.fullDropDate)}.` : "Set the release drop date.",
+    },
+    {
+      label: "Focus signals",
+      isComplete: Boolean(world.currentFocus?.trim() || world.secondFocus?.trim()),
+      hint: world.currentFocus?.trim() || world.secondFocus?.trim() ? "Lead/contrast signals are named." : "Name a lead signal or second signal.",
+    },
+    {
+      label: "Nexus feature",
+      isComplete: Boolean(world.isFeatured),
+      hint: world.isFeatured ? "Eligible as the Nexus front-door feature." : "Feature this when the portal is ready.",
+    },
+  ];
+}
+
+function getReadinessScore(world: ReleaseWorld) {
+  const items = getReadinessItems(world);
+  const completeCount = items.filter((item) => item.isComplete).length;
+  const percent = Math.round((completeCount / items.length) * 100);
+
+  return {
+    items,
+    completeCount,
+    totalCount: items.length,
+    percent,
+    label:
+      percent >= 85
+        ? "Ready for soft share"
+        : percent >= 55
+          ? "Close to shareable"
+          : "Needs setup",
+  };
+}
+
+function getProjectTypeCopy(world: ReleaseWorld) {
+  const releaseType = formatLabel(world.releaseType);
+  const status = formatLabel(world.status);
+  const visibility = formatLabel(world.visibility);
+
+  return `${releaseType} • ${status} • ${visibility}`;
 }
 
 export default function CreatorProjectsPage() {
@@ -246,8 +354,7 @@ export default function CreatorProjectsPage() {
             <p className="creator-projects-kicker">Creator Console</p>
             <h1>Project Library</h1>
             <p className="creator-projects-subtitle">
-              Create release worlds, open signal boards, and manage each project as a real
-              Mongo-backed creative system.
+              Manage EPs, campaigns, and release worlds from one launch dashboard — then send the strongest worlds into the Nexus.
             </p>
           </div>
 
@@ -263,11 +370,11 @@ export default function CreatorProjectsPage() {
 
         <div className="creator-projects-status-strip">
           <div>
-            <span className="creator-projects-status-label">Backend</span>
-            <strong>MongoDB + GraphQL</strong>
+            <span className="creator-projects-status-label">Release system</span>
+            <strong>Creator OS + Nexus</strong>
           </div>
           <div>
-            <span className="creator-projects-status-label">Current view</span>
+            <span className="creator-projects-status-label">Library</span>
             <strong>
               {releaseWorlds.length} release world{releaseWorlds.length === 1 ? "" : "s"}
             </strong>
@@ -322,8 +429,7 @@ export default function CreatorProjectsPage() {
                 <p className="creator-projects-kicker">New Release World</p>
                 <h2>Create a project</h2>
                 <p>
-                  Use this to prove the system is reusable: create a second EP, single, album, or
-                  campaign, then open its signal board.
+                  Start a new single, EP, album, or campaign. The Signal Board becomes the private workbench; the Release Page becomes the public portal.
                 </p>
               </div>
 
@@ -492,58 +598,113 @@ export default function CreatorProjectsPage() {
 
         {status === "authenticated" && !error && releaseWorlds.length > 0 && (
           <section className="creator-projects-grid">
-            {releaseWorlds.map((world) => (
-              <article className="creator-projects-card creator-project-card" key={world.id}>
-                <div className="creator-project-card-topline">
-                  <span>{formatLabel(world.releaseType)}</span>
-                  {world.isFeatured && <span>Featured</span>}
-                </div>
+            {releaseWorlds.map((world) => {
+              const readiness = getReadinessScore(world);
+              const featuredClassName = world.isFeatured ? " is-featured" : "";
 
-                <h2>{world.title}</h2>
-
-                <p className="creator-project-card-slug">/{world.slug}</p>
-
-                {world.oneLineSummary && (
-                  <p className="creator-project-card-summary">{world.oneLineSummary}</p>
-                )}
-
-                <div className="creator-project-card-meta">
-                  <div>
-                    <span>Status</span>
-                    <strong>{formatLabel(world.status)}</strong>
+              return (
+                <article
+                  className={`creator-projects-card creator-project-card creator-project-card-v2${featuredClassName}`}
+                  key={world.id}
+                >
+                  <div className="creator-project-card-topline">
+                    <span>{getProjectTypeCopy(world)}</span>
+                    {world.isFeatured && <span>Nexus Featured</span>}
                   </div>
-                  <div>
-                    <span>Visibility</span>
-                    <strong>{formatLabel(world.visibility)}</strong>
-                  </div>
-                  <div>
-                    <span>Updated</span>
-                    <strong>{formatDate(world.updatedAt)}</strong>
-                  </div>
-                  <div>
-                    <span>Last opened</span>
-                    <strong>{formatDate(world.lastOpenedAt)}</strong>
-                  </div>
-                </div>
 
-                <div className="creator-project-card-actions">
-                  <Link
-                    href={`/releases/${world.slug}`}
-                    className="creator-projects-primary-button"
-                  >
-                    Open Release Page
-                  </Link>
-                  <Link
-                    href={`/releases/${world.slug}/board`}
-                    className="creator-projects-secondary-button"
-                  >
-                    Open Signal Board
-                  </Link>
-                </div>
+                  <div className="creator-project-card-mainline">
+                    {world.coverArtUrl?.trim() ? (
+                      <div className="creator-project-card-cover" aria-label={`${world.title} cover art`}>
+                        <img src={world.coverArtUrl} alt={`${world.title} cover art`} />
+                      </div>
+                    ) : (
+                      <div className="creator-project-card-cover creator-project-card-cover-empty" aria-hidden="true">
+                        <span>{formatLabel(world.releaseType).slice(0, 2)}</span>
+                      </div>
+                    )}
 
-                <p className="creator-project-card-id">ReleaseWorld ID: {world.id}</p>
-              </article>
-            ))}
+                    <div>
+                      <h2>{world.title}</h2>
+                      <p className="creator-project-card-slug">/{world.slug}</p>
+
+                      <p className="creator-project-card-summary">
+                        {world.oneLineSummary?.trim() ||
+                          world.story?.trim() ||
+                          "No public summary yet. Add a one-line signal or story from the Signal Board."}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="creator-project-readiness-panel">
+                    <div className="creator-project-readiness-header">
+                      <div>
+                        <span>Release readiness</span>
+                        <strong>{readiness.label}</strong>
+                      </div>
+                      <div className="creator-project-readiness-score">
+                        {readiness.completeCount}/{readiness.totalCount}
+                      </div>
+                    </div>
+
+                    <div className="creator-project-readiness-bar" aria-hidden="true">
+                      <span style={{ width: `${readiness.percent}%` }} />
+                    </div>
+
+                    <div className="creator-project-readiness-list">
+                      {readiness.items.map((item) => (
+                        <div
+                          key={item.label}
+                          className={item.isComplete ? "is-complete" : "is-incomplete"}
+                          title={item.hint}
+                        >
+                          <span>{item.isComplete ? "✓" : "○"}</span>
+                          <strong>{item.label}</strong>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="creator-project-card-meta creator-project-card-meta-v2">
+                    <div>
+                      <span>World opens</span>
+                      <strong>{formatDate(world.fullDropDate)}</strong>
+                    </div>
+                    <div>
+                      <span>Lead signal</span>
+                      <strong>{world.currentFocus || "TBD"}</strong>
+                    </div>
+                    <div>
+                      <span>Second signal</span>
+                      <strong>{world.secondFocus || "TBD"}</strong>
+                    </div>
+                    <div>
+                      <span>Updated</span>
+                      <strong>{formatDate(world.updatedAt)}</strong>
+                    </div>
+                  </div>
+
+                  <div className="creator-project-card-actions creator-project-card-actions-v2">
+                    <Link
+                      href={`/releases/${world.slug}`}
+                      className="creator-projects-primary-button"
+                    >
+                      Preview Portal
+                    </Link>
+                    <Link
+                      href={`/releases/${world.slug}/board`}
+                      className="creator-projects-secondary-button"
+                    >
+                      Signal Board
+                    </Link>
+                    <Link href="/nexus" className="creator-projects-secondary-button">
+                      View Nexus
+                    </Link>
+                  </div>
+
+                  <p className="creator-project-card-id">ReleaseWorld ID: {world.id}</p>
+                </article>
+              );
+            })}
           </section>
         )}
       </section>
