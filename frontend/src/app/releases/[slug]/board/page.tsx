@@ -1270,14 +1270,14 @@ export default function DynamicReleaseSignalBoardPage() {
         getEmptyTrackForm(1),
     );
     const [trackMessage, setTrackMessage] = useState(
-        "Tracks load from this release world. Add songs here, then attach hooks below.",
+        "Tracks shape the public listening path. Set visibility, playback, dates, and audio before previewing the Release Page.",
     );
 
     const [assetForm, setAssetForm] = useState<AssetForm>(() =>
         getEmptyAssetForm(),
     );
     const [assetMessage, setAssetMessage] = useState(
-        "Assets register cover art, audio, and visual references to this release world.",
+        "Assets power the portal: cover art updates the hero, track audio connects to songs, and public references support the world.",
     );
     const [selectedAssetFile, setSelectedAssetFile] = useState<File | null>(null);
     const [assetUploadPreviewUrl, setAssetUploadPreviewUrl] = useState("");
@@ -1287,7 +1287,7 @@ export default function DynamicReleaseSignalBoardPage() {
         getPortalSettingsFromReleaseWorld(null),
     );
     const [portalMessage, setPortalMessage] = useState(
-        "Portal settings are synced from the release world.",
+        "Portal settings control the public Release Page hero, story, cover, and opening date.",
     );
 
     const {
@@ -1392,6 +1392,62 @@ export default function DynamicReleaseSignalBoardPage() {
         [releaseAssets],
     );
 
+    const publishedArtifacts = useMemo(
+        () => artifacts.filter((artifact) => artifact.isPublic),
+        [artifacts],
+    );
+
+    const visibleReleaseTracks = useMemo(
+        () =>
+            releaseTracks.filter(
+                (track) =>
+                    track.visibility === "listed" ||
+                    track.visibility === "public" ||
+                    track.isPublic,
+            ),
+        [releaseTracks],
+    );
+
+    const playableReleaseTracks = useMemo(
+        () =>
+            visibleReleaseTracks.filter(
+                (track) =>
+                    track.playbackStatus === "playable" &&
+                    Boolean(track.audioUrl?.trim()),
+            ),
+        [visibleReleaseTracks],
+    );
+
+    const previewReleaseTracks = useMemo(
+        () =>
+            visibleReleaseTracks.filter(
+                (track) =>
+                    track.playbackStatus === "preview" &&
+                    Boolean(track.previewAudioUrl?.trim()),
+            ),
+        [visibleReleaseTracks],
+    );
+
+    const lockedReleaseTracks = useMemo(
+        () =>
+            visibleReleaseTracks.filter(
+                (track) =>
+                    track.playbackStatus === "locked" ||
+                    track.playbackStatus === "coming-soon" ||
+                    (track.playbackStatus === "preview" && !track.previewAudioUrl?.trim()),
+            ),
+        [visibleReleaseTracks],
+    );
+
+    const releasePageOutputStats = [
+        { label: "Portal", value: releaseWorld?.visibility === "public" ? "Public" : formatLabel(releaseWorld?.visibility) },
+        { label: "Cover", value: releaseWorld?.coverArtUrl ? "Added" : "Needed" },
+        { label: "Story", value: releaseWorld?.story?.trim() || releaseWorld?.oneLineSummary?.trim() ? "Added" : "Needed" },
+        { label: "Tracks", value: `${visibleReleaseTracks.length}/${releaseTracks.length} visible` },
+        { label: "Playable", value: `${playableReleaseTracks.length} play • ${previewReleaseTracks.length} preview` },
+        { label: "Fragments", value: `${publishedArtifacts.length} published` },
+    ];
+
     useEffect(() => {
         if (!selectedAssetFile || !selectedAssetFile.type.startsWith("image/")) {
             setAssetUploadPreviewUrl("");
@@ -1452,7 +1508,7 @@ export default function DynamicReleaseSignalBoardPage() {
         if (!releaseWorld) return;
 
         setPortalSettings(getPortalSettingsFromReleaseWorld(releaseWorld));
-        setPortalMessage("Portal settings loaded from MongoDB.");
+        setPortalMessage("Portal settings loaded. These fields feed the public Release Page hero and story.");
     }, [releaseWorld]);
 
     useEffect(() => {
@@ -2313,7 +2369,7 @@ export default function DynamicReleaseSignalBoardPage() {
                             : "Release Signal Board"}
                     </h1>
                     <span>
-                        {artifacts.length} artifacts • {releaseTracks.length} tracks •{" "}
+                        {artifacts.length} artifacts • {releaseTracks.length} tracks • {releaseAssets.length} assets •{" "}
                         {cloudStatus}
                     </span>
                 </div>
@@ -2348,9 +2404,29 @@ export default function DynamicReleaseSignalBoardPage() {
                     <div className="signal-board-board-meta" aria-label="Board status">
                         <span>{artifacts.length} artifacts</span>
                         <span>{releaseTracks.length} tracks</span>
+                        <span>{releaseAssets.length} assets</span>
                         <span>{cloudStatus}</span>
                     </div>
                 </div>
+
+                <aside className="signal-board-release-output" aria-label="Release page output summary">
+                    <div className="signal-board-release-output-copy">
+                        <p className="signal-board-panel-kicker">Release Page Output</p>
+                        <h3>What the public portal is pulling from this board.</h3>
+                        <span>Portal settings, visible tracks, uploaded assets, and published artifacts become the fan-facing Release Page.</span>
+                    </div>
+
+                    <div className="signal-board-release-output-grid">
+                        {releasePageOutputStats.map((item) => (
+                            <div key={item.label}>
+                                <span>{item.label}</span>
+                                <strong>{item.value}</strong>
+                            </div>
+                        ))}
+                    </div>
+
+                    <Link href={`/releases/${slug}`}>Preview Portal</Link>
+                </aside>
 
                 <section
                     className="signal-board-canvas-zone"
@@ -2452,7 +2528,7 @@ export default function DynamicReleaseSignalBoardPage() {
                             </label>
 
                             <label className="signal-board-public-toggle">
-                                Release Page
+                                Publish to Portal
                                 <button
                                     type="button"
                                     className={selectedArtifact.isPublic ? "is-active" : ""}
@@ -2464,6 +2540,9 @@ export default function DynamicReleaseSignalBoardPage() {
                                 >
                                     {selectedArtifact.isPublic ? "Showing" : "Hidden"}
                                 </button>
+                                <span className="signal-board-field-note">
+                                    Showing publishes this card as a World Fragment on the Release Page.
+                                </span>
                             </label>
 
                             <label>
@@ -2601,6 +2680,24 @@ export default function DynamicReleaseSignalBoardPage() {
                                     {tracksError?.message || trackMessage}
                                 </p>
 
+                                <div className="signal-board-publish-guide" aria-label="Track publishing guide">
+                                    <article>
+                                        <span>Visibility</span>
+                                        <strong>Private / Listed / Public</strong>
+                                        <p>Listed and Public tracks appear in the Release Page tracklist. Private stays creator-only.</p>
+                                    </article>
+                                    <article>
+                                        <span>Playback</span>
+                                        <strong>Locked / Preview / Playable</strong>
+                                        <p>Playback decides what fans can hear: full audio, preview audio, or a locked coming-soon state.</p>
+                                    </article>
+                                    <article>
+                                        <span>Dates</span>
+                                        <strong>Drop + unlock timing</strong>
+                                        <p>Dates shape the portal copy: Available now, Preview available, or Opens on a calendar day.</p>
+                                    </article>
+                                </div>
+
                                 <div
                                     className="signal-board-track-strip"
                                     aria-label="Release tracks"
@@ -2704,7 +2801,7 @@ export default function DynamicReleaseSignalBoardPage() {
                                             ))}
                                         </select>
                                         <span className="signal-board-field-note">
-                                            Listed shows in the release tracklist. Public is eligible for broader discovery.
+                                            Private stays hidden. Listed appears inside this release. Public can appear on broader surfaces later.
                                         </span>
                                     </label>
                                     <label>
@@ -2722,7 +2819,7 @@ export default function DynamicReleaseSignalBoardPage() {
                                             ))}
                                         </select>
                                         <span className="signal-board-field-note">
-                                            Controls the public button: Locked, Preview, Playable, or Coming Soon.
+                                            Locked shows the track without audio. Preview needs Preview Audio URL. Playable uses full Audio URL.
                                         </span>
                                     </label>
                                     <label>
@@ -2904,6 +3001,24 @@ export default function DynamicReleaseSignalBoardPage() {
                                 <p className="signal-board-panel-message">
                                     {assetsError?.message || assetMessage}
                                 </p>
+
+                                <div className="signal-board-publish-guide signal-board-publish-guide-assets" aria-label="Asset publishing guide">
+                                    <article>
+                                        <span>Cover art</span>
+                                        <strong>Updates the portal hero</strong>
+                                        <p>Use Cover Art for the main release image shown in Nexus, Creator Projects, and the Release Page.</p>
+                                    </article>
+                                    <article>
+                                        <span>Track audio</span>
+                                        <strong>Attach to one song</strong>
+                                        <p>Choose Track Audio and select a track so playback can flow through the mini-player.</p>
+                                    </article>
+                                    <article>
+                                        <span>References</span>
+                                        <strong>Support the world</strong>
+                                        <p>Visual references and promo assets can stay internal or become public fragments later.</p>
+                                    </article>
+                                </div>
 
                                 <div className="signal-board-asset-overview">
                                     <article className="signal-board-toolbox-card signal-board-toolbox-card-flat">
@@ -3384,6 +3499,19 @@ export default function DynamicReleaseSignalBoardPage() {
                                 </div>
 
                                 <p className="signal-board-panel-message">{portalMessage}</p>
+
+                                <div className="signal-board-portal-output-card" aria-label="Portal output preview">
+                                    <div>
+                                        <p className="signal-board-panel-kicker">Public Portal Source</p>
+                                        <h3>{portalSettings.title || releaseTitle}</h3>
+                                        <span>These fields feed the Release Page hero, story block, cover art, and opening date.</span>
+                                    </div>
+                                    <div className="signal-board-portal-output-stats">
+                                        <span>{visibleReleaseTracks.length} visible track{visibleReleaseTracks.length === 1 ? "" : "s"}</span>
+                                        <span>{publishedArtifacts.length} fragment{publishedArtifacts.length === 1 ? "" : "s"}</span>
+                                        <span>{releaseWorld?.coverArtUrl ? "Cover added" : "Cover needed"}</span>
+                                    </div>
+                                </div>
 
                                 <div className="signal-board-portal-grid signal-board-portal-grid-compact">
                                     <label>

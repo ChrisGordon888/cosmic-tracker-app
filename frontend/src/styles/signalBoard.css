@@ -1920,3 +1920,193 @@
     width: 100%;
   }
 }
+
+/* ===================================
+   SIGNAL BOARD PUBLISH POLISH V1
+   Clarifies what feeds the public Release Page
+   =================================== */
+
+.signal-board-release-output {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 1.2fr) auto;
+  align-items: center;
+  gap: 1rem;
+  margin: 0 0 1rem;
+  padding: 1rem;
+  border: 1px solid rgba(126, 211, 255, 0.18);
+  border-radius: var(--sb-radius);
+  background:
+    radial-gradient(circle at 12% 0%, rgba(126, 211, 255, 0.10), transparent 34%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.028));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 16px 34px rgba(0, 0, 0, 0.18);
+}
+
+.signal-board-release-output-copy {
+  min-width: 0;
+  display: grid;
+  gap: 0.28rem;
+}
+
+.signal-board-release-output-copy h3,
+.signal-board-portal-output-card h3 {
+  margin: 0;
+  color: rgba(245, 247, 252, 0.96);
+  font-family: var(--sb-font-display);
+  font-size: 0.98rem;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.signal-board-release-output-copy span,
+.signal-board-portal-output-card span,
+.signal-board-publish-guide p {
+  color: var(--sb-muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.signal-board-release-output-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.signal-board-release-output-grid div,
+.signal-board-portal-output-stats span {
+  border: 1px solid rgba(214, 224, 235, 0.12);
+  border-radius: 0.9rem;
+  padding: 0.68rem;
+  background: rgba(0, 0, 0, 0.16);
+}
+
+.signal-board-release-output-grid span {
+  display: block;
+  margin-bottom: 0.22rem;
+  color: var(--sb-soft);
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.signal-board-release-output-grid strong {
+  color: rgba(238, 243, 250, 0.94);
+  font-size: 0.86rem;
+}
+
+.signal-board-release-output > a,
+.signal-board-panel-heading a,
+.signal-board-portal-output-card a {
+  min-height: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(126, 211, 255, 0.24);
+  border-radius: 999px;
+  padding: 0.65rem 0.9rem;
+  color: rgba(238, 243, 250, 0.92);
+  background: rgba(126, 211, 255, 0.07);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.signal-board-publish-guide {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+}
+
+.signal-board-publish-guide article {
+  min-height: 8.5rem;
+  border: 1px solid rgba(214, 224, 235, 0.12);
+  border-radius: var(--sb-radius-sm);
+  padding: 0.85rem;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(126, 211, 255, 0.075), transparent 38%),
+    rgba(255, 255, 255, 0.04);
+}
+
+.signal-board-publish-guide span {
+  display: block;
+  margin-bottom: 0.38rem;
+  color: rgba(126, 211, 255, 0.82);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.signal-board-publish-guide strong {
+  display: block;
+  margin-bottom: 0.38rem;
+  color: rgba(245, 247, 252, 0.94);
+  font-size: 0.86rem;
+}
+
+.signal-board-portal-output-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(220, 186, 92, 0.18);
+  border-radius: var(--sb-radius);
+  padding: 1rem;
+  background:
+    radial-gradient(circle at 92% 0%, rgba(220, 186, 92, 0.10), transparent 34%),
+    rgba(255, 255, 255, 0.045);
+}
+
+.signal-board-portal-output-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.signal-board-portal-output-stats span {
+  color: rgba(238, 243, 250, 0.86);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.signal-board-public-toggle .signal-board-field-note {
+  display: block;
+  margin-top: 0.35rem;
+  max-width: 12rem;
+  line-height: 1.35;
+}
+
+@media (max-width: 980px) {
+  .signal-board-release-output,
+  .signal-board-portal-output-card {
+    grid-template-columns: 1fr;
+  }
+
+  .signal-board-release-output-grid,
+  .signal-board-publish-guide {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .signal-board-release-output > a {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .signal-board-release-output-grid,
+  .signal-board-publish-guide {
+    grid-template-columns: 1fr;
+  }
+
+  .signal-board-portal-output-stats {
+    justify-content: flex-start;
+  }
+}
