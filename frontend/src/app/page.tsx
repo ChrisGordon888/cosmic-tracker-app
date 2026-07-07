@@ -61,10 +61,13 @@ export default function LandingPage() {
             </Link>
 
             {isAuthenticated ? (
-              <div className="landing-gateway-creator-actions landing-gateway-v3-creator-actions" aria-label="Creator shortcuts">
+              <div
+                className="landing-gateway-creator-actions landing-gateway-v3-creator-actions"
+                aria-label="Creator shortcuts"
+              >
                 <Link href="/creator">Creator OS</Link>
                 <Link href="/creator/projects">Project Library</Link>
-                <Link href="/daily">Daily Flow</Link>
+                <Link href="/practice">Practice</Link>
               </div>
             ) : (
               <button
@@ -84,7 +87,10 @@ export default function LandingPage() {
             <span>Return</span>
           </div>
 
-          <div className="landing-realm-grid landing-gateway-realm-grid landing-gateway-v3-realm-grid" aria-label="Cosmic realms">
+          <div
+            className="landing-realm-grid landing-gateway-realm-grid landing-gateway-v3-realm-grid"
+            aria-label="Cosmic realms"
+          >
             {REALMS.map((realm) => (
               <Link
                 key={realm.id}
