@@ -1,0 +1,310 @@
+/* ===================================
+   PRACTICE PORTAL V1
+   Use for src/styles/homePage.css
+   =================================== */
+
+.home-page,
+.practice-page {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  color: rgba(238, 243, 250, 0.94);
+  font-family: 'Orbitron', Arial, sans-serif;
+  padding: clamp(5rem, 8vw, 7rem) clamp(1rem, 3vw, 2rem) 4rem;
+  isolation: isolate;
+}
+
+.practice-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(126, 211, 255, 0.15), transparent 30rem),
+    radial-gradient(circle at 88% 22%, rgba(168, 132, 255, 0.12), transparent 32rem),
+    radial-gradient(circle at 50% 100%, rgba(220, 186, 92, 0.10), transparent 34rem),
+    linear-gradient(135deg, rgba(3, 5, 10, 0.92), rgba(7, 12, 23, 0.88));
+  pointer-events: none;
+}
+
+.practice-page a,
+.practice-page button {
+  font: inherit;
+}
+
+.practice-page a {
+  color: inherit;
+}
+
+.practice-state-page {
+  display: grid;
+  place-items: center;
+}
+
+.practice-state-card,
+.practice-hero,
+.practice-pillar-grid,
+.practice-dashboard-grid,
+.practice-coming-soon {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+}
+
+.practice-state-card,
+.practice-hero,
+.practice-pillar-card,
+.practice-module,
+.practice-coming-soon {
+  border: 1px solid rgba(224, 232, 244, 0.14);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(126, 211, 255, 0.10), transparent 34%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.074), rgba(8, 12, 22, 0.72));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    0 28px 80px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(18px) saturate(128%);
+  -webkit-backdrop-filter: blur(18px) saturate(128%);
+}
+
+.practice-kicker {
+  margin: 0 0 0.85rem;
+  color: rgba(126, 211, 255, 0.86);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.practice-state-card {
+  max-width: 760px;
+  border-radius: 2rem;
+  padding: clamp(1.5rem, 4vw, 2.8rem);
+  text-align: center;
+}
+
+.practice-state-card h1,
+.practice-hero h1,
+.practice-coming-soon h2 {
+  margin: 0;
+  color: rgba(248, 250, 255, 0.96);
+  font-size: clamp(2.2rem, 6vw, 5.4rem);
+  line-height: 0.94;
+  letter-spacing: -0.07em;
+}
+
+.practice-state-card p,
+.practice-hero-copy p,
+.practice-pillar-card p,
+.practice-coming-soon p {
+  color: rgba(224, 231, 240, 0.70);
+  line-height: 1.75;
+}
+
+.practice-actions,
+.practice-hero-links,
+.practice-coming-soon a {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.7rem;
+}
+
+.practice-actions {
+  margin-top: 1.5rem;
+}
+
+.practice-actions button,
+.practice-actions a,
+.practice-hero-links a,
+.practice-coming-soon a {
+  min-height: 2.65rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(238, 243, 250, 0.16);
+  border-radius: 999px;
+  padding: 0.65rem 0.95rem;
+  color: rgba(238, 243, 250, 0.86);
+  background: rgba(255, 255, 255, 0.055);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.practice-actions button,
+.practice-coming-soon a {
+  color: #081018;
+  border-color: rgba(247, 239, 228, 0.48);
+  background: linear-gradient(135deg, rgba(247, 239, 228, 0.96), rgba(126, 211, 255, 0.86));
+}
+
+.practice-actions button:hover,
+.practice-actions a:hover,
+.practice-hero-links a:hover,
+.practice-coming-soon a:hover {
+  transform: translateY(-2px);
+  border-color: rgba(126, 211, 255, 0.42);
+}
+
+.practice-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  gap: clamp(1.2rem, 4vw, 2rem);
+  align-items: stretch;
+  border-radius: 2.4rem;
+  padding: clamp(1.4rem, 4vw, 3rem);
+}
+
+.practice-hero-copy {
+  align-self: center;
+}
+
+.practice-hero-copy p:last-child {
+  max-width: 760px;
+  margin: 1.35rem 0 0;
+  font-size: clamp(0.98rem, 2vw, 1.15rem);
+}
+
+.practice-hero-panel {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 1rem;
+  border: 1px solid rgba(238, 243, 250, 0.12);
+  border-radius: 1.8rem;
+  padding: clamp(1.2rem, 3vw, 1.8rem);
+  background:
+    radial-gradient(circle at top, rgba(220, 186, 92, 0.11), transparent 35%),
+    rgba(255, 255, 255, 0.045);
+  text-align: center;
+}
+
+.practice-hero-panel > span {
+  color: rgba(220, 186, 92, 0.82);
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.practice-clock {
+  color: rgba(247, 239, 228, 0.94);
+  font-size: clamp(1.5rem, 4vw, 2.6rem);
+  text-shadow: 0 0 20px rgba(126, 211, 255, 0.22);
+}
+
+.practice-pillar-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.practice-pillar-card {
+  border-radius: 1.45rem;
+  padding: 1.15rem;
+}
+
+.practice-pillar-card span {
+  display: inline-flex;
+  margin-bottom: 1rem;
+  color: rgba(220, 186, 92, 0.86);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.practice-pillar-card h2,
+.practice-module-heading h2 {
+  margin: 0;
+  color: rgba(248, 250, 255, 0.95);
+  line-height: 1.05;
+}
+
+.practice-dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.practice-module {
+  border-radius: 1.65rem;
+  padding: clamp(1rem, 2.5vw, 1.35rem);
+}
+
+.practice-module-wide {
+  grid-column: 1 / -1;
+}
+
+.practice-module-heading {
+  margin-bottom: 1rem;
+}
+
+.practice-module :where(section, article, div) {
+  max-width: 100%;
+}
+
+.practice-module :where(p, h1, h2, h3, label, span, strong) {
+  color: inherit;
+}
+
+.practice-coming-soon {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.2rem;
+  margin-top: 1rem;
+  border-radius: 2rem;
+  padding: clamp(1.3rem, 4vw, 2.1rem);
+}
+
+.practice-coming-soon div {
+  max-width: 760px;
+}
+
+@media (max-width: 900px) {
+  .practice-hero,
+  .practice-pillar-grid,
+  .practice-dashboard-grid,
+  .practice-coming-soon {
+    grid-template-columns: 1fr;
+  }
+
+  .practice-coming-soon {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .practice-coming-soon a {
+    width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .practice-page {
+    padding-inline: 0.85rem;
+  }
+
+  .practice-state-card h1,
+  .practice-hero h1,
+  .practice-coming-soon h2 {
+    font-size: clamp(2.3rem, 13vw, 3.4rem);
+  }
+
+  .practice-hero-links,
+  .practice-actions {
+    width: 100%;
+  }
+
+  .practice-hero-links a,
+  .practice-actions a,
+  .practice-actions button {
+    width: 100%;
+  }
+}
