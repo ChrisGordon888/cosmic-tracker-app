@@ -429,3 +429,187 @@
     color: rgba(245, 247, 252, 0.94);
     opacity: 0.9;
 }
+
+/* ===================================
+   LANDING PAGE â€” NEXUS GATEWAY V2
+   Append to src/styles/landingPage.css
+   =================================== */
+
+.landing-gateway-page {
+  color: rgba(244, 248, 255, 0.96);
+}
+
+.landing-gateway-orb {
+  position: absolute;
+  border-radius: 999px;
+  pointer-events: none;
+  filter: blur(28px);
+  opacity: 0.72;
+}
+
+.landing-gateway-orb-a {
+  width: min(42vw, 34rem);
+  aspect-ratio: 1;
+  left: -8rem;
+  top: 10%;
+  background: radial-gradient(circle, rgba(126, 211, 255, 0.22), transparent 68%);
+}
+
+.landing-gateway-orb-b {
+  width: min(44vw, 36rem);
+  aspect-ratio: 1;
+  right: -10rem;
+  bottom: 0;
+  background: radial-gradient(circle, rgba(220, 186, 92, 0.16), transparent 70%);
+}
+
+.landing-gateway-shell {
+  min-height: 100vh;
+  display: grid;
+  align-content: center;
+  gap: 1.1rem;
+  padding-block: clamp(5.5rem, 10vw, 8rem);
+}
+
+.landing-gateway-hero-card {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(224, 232, 244, 0.18);
+  background:
+    radial-gradient(circle at 20% 0%, rgba(126, 211, 255, 0.13), transparent 34%),
+    radial-gradient(circle at 90% 10%, rgba(220, 186, 92, 0.10), transparent 30%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.088), rgba(8, 12, 22, 0.64));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.13),
+    0 34px 110px rgba(0, 0, 0, 0.42),
+    0 0 70px rgba(126, 211, 255, 0.08);
+}
+
+.landing-gateway-hero-card::before {
+  content: '';
+  position: absolute;
+  inset: 1rem;
+  border: 1px solid rgba(238, 243, 250, 0.08);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.landing-gateway-badge,
+.landing-gateway-eyebrow,
+.landing-gateway-title,
+.landing-gateway-subtitle,
+.landing-gateway-description,
+.landing-gateway-actions,
+.landing-gateway-system-line,
+.landing-gateway-realm-grid {
+  position: relative;
+  z-index: 1;
+}
+
+.landing-gateway-eyebrow {
+  margin: 1rem 0 0;
+  color: rgba(220, 186, 92, 0.86);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.landing-gateway-title {
+  text-shadow:
+    0 0 20px rgba(126, 211, 255, 0.12),
+    0 20px 70px rgba(0, 0, 0, 0.42);
+}
+
+.landing-gateway-title span {
+  color: rgba(232, 238, 248, 0.76);
+}
+
+.landing-gateway-description {
+  max-width: 46rem;
+}
+
+.landing-gateway-actions {
+  align-items: center;
+}
+
+.landing-gateway-creator-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.landing-gateway-creator-actions a {
+  display: inline-flex;
+  min-height: 2.35rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(224, 232, 244, 0.14);
+  border-radius: 999px;
+  padding: 0.55rem 0.78rem;
+  color: rgba(232, 238, 248, 0.78);
+  background: rgba(255, 255, 255, 0.045);
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.landing-gateway-realm-grid a {
+  text-decoration: none;
+}
+
+.landing-gateway-realm-glyph {
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.landing-gateway-realm-glyph:hover {
+  transform: translateY(-2px);
+  border-color: rgba(126, 211, 255, 0.36);
+  background: rgba(126, 211, 255, 0.07);
+}
+
+.landing-gateway-release-card {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(220, 186, 92, 0.20);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(220, 186, 92, 0.12), transparent 30%),
+    rgba(255, 255, 255, 0.045);
+}
+
+.landing-gateway-release-card a {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 0.85rem;
+  border: 1px solid rgba(243, 231, 209, 0.28);
+  border-radius: 999px;
+  padding: 0.58rem 0.82rem;
+  color: rgba(8, 16, 24, 0.92);
+  background: linear-gradient(135deg, rgba(247, 239, 228, 0.96), rgba(126, 211, 255, 0.86));
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+@media (max-width: 720px) {
+  .landing-gateway-shell {
+    padding-inline: 1rem;
+  }
+
+  .landing-gateway-creator-actions,
+  .landing-gateway-actions {
+    width: 100%;
+  }
+
+  .landing-gateway-creator-actions a,
+  .landing-gateway-actions > a,
+  .landing-gateway-actions > button {
+    width: 100%;
+  }
+}

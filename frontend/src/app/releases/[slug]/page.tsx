@@ -595,7 +595,7 @@ export default function DynamicReleasePage() {
       .map(toPlayerTrack);
 
     void playOrToggleTrack(toPlayerTrack(track), flowTracks, {
-      source: 'release-page',
+      source: 'nexus',
       label: world.title,
     });
   };
