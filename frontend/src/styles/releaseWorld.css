@@ -1006,3 +1006,117 @@
   color: rgba(224, 231, 240, 0.52);
   background: rgba(255,255,255,0.035);
 }
+
+
+/* Release Page Fan Portal V3 additions
+   Append to frontend/src/styles/releaseWorld.css
+   Keeps the page listener-facing: story, tracklist, fragments, and Nexus return. */
+
+.release-world-track-section,
+.release-world-board-section,
+.release-world-afterglow-section {
+  width: min(1180px, 100%);
+  margin: 28px auto 0;
+  padding: clamp(24px, 4vw, 42px);
+  border: 1px solid rgba(247, 239, 228, 0.12);
+  border-radius: 32px;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(126, 211, 255, 0.08), transparent 24rem),
+    rgba(255, 255, 255, 0.04);
+}
+
+.release-world-track-section {
+  border-color: rgba(126, 211, 255, 0.16);
+}
+
+.release-world-board-section {
+  border-color: rgba(247, 239, 228, 0.13);
+}
+
+.release-world-afterglow-section {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(126, 211, 255, 0.18);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(126, 211, 255, 0.14), transparent 28rem),
+    radial-gradient(circle at 82% 100%, rgba(210, 180, 255, 0.10), transparent 26rem),
+    rgba(255, 255, 255, 0.045);
+}
+
+.release-world-afterglow-section::before {
+  content: "";
+  position: absolute;
+  inset: 18px;
+  border: 1px solid rgba(247, 239, 228, 0.07);
+  border-radius: 26px;
+  pointer-events: none;
+}
+
+.release-world-afterglow-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 840px;
+}
+
+.release-world-afterglow-inner h2 {
+  margin: 0;
+  color: #fff8ef;
+  font-size: clamp(2.3rem, 6vw, 5.3rem);
+  line-height: 0.92;
+  letter-spacing: -0.075em;
+}
+
+.release-world-afterglow-inner p:not(.release-world-label) {
+  margin: 18px 0 0;
+  max-width: 720px;
+  color: rgba(247, 239, 228, 0.72);
+  font-size: clamp(1rem, 2vw, 1.16rem);
+  line-height: 1.8;
+}
+
+.release-world-afterglow-inner a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  margin-top: 26px;
+  padding: 0 18px;
+  border: 1px solid rgba(126, 211, 255, 0.38);
+  border-radius: 999px;
+  color: #081018;
+  background: linear-gradient(135deg, #f7efe4, #7ed3ff);
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.release-world-afterglow-inner a:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px rgba(126, 211, 255, 0.12);
+}
+
+.release-world-board-group-heading span {
+  color: rgba(247, 239, 228, 0.64);
+}
+
+.release-world-board-card h4,
+.release-world-track-card h3 {
+  letter-spacing: -0.03em;
+}
+
+@media (max-width: 760px) {
+  .release-world-track-section,
+  .release-world-board-section,
+  .release-world-afterglow-section {
+    border-radius: 24px;
+    padding: 22px;
+  }
+
+  .release-world-afterglow-section::before {
+    inset: 12px;
+    border-radius: 20px;
+  }
+}

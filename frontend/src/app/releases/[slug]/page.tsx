@@ -190,39 +190,39 @@ const artifactSections: Array<{
 }> = [
   {
     key: 'quote',
-    eyebrow: 'Featured signals',
-    title: 'Hooks, quotes, and phrases.',
-    body: 'Fragments selected from the Signal Board — the lines, hooks, and emotional anchors that define the world.',
+    eyebrow: 'Words',
+    title: 'Lines that stay with you.',
+    body: 'Selected phrases, hooks, and emotional anchors from inside the world.',
   },
   {
     key: 'track',
-    eyebrow: 'Track notes',
-    title: 'Signals attached to songs.',
-    body: 'Song-level notes, emotional tags, and creative signals that connect board ideas to the track path.',
+    eyebrow: 'Song notes',
+    title: 'What each song carries.',
+    body: 'Small context pieces that deepen the listening path without turning the page into a workspace.',
   },
   {
     key: 'visual',
-    eyebrow: 'Visual language',
-    title: 'Images, palettes, and symbols.',
-    body: 'Cover direction, clips, colors, motifs, and the visual world forming around the release.',
+    eyebrow: 'Visual world',
+    title: 'Images, colors, and symbols.',
+    body: 'Cover direction, references, motifs, and atmosphere surrounding the release.',
   },
   {
     key: 'rollout',
-    eyebrow: 'Rollout path',
-    title: 'Campaign beats and movement.',
-    body: 'Teasers, story moments, launch ideas, and follow-up signals from the studio wall.',
+    eyebrow: 'Afterglow',
+    title: 'Moments around the release.',
+    body: 'Public-facing context, memories, teasers, and fragments from the wider world.',
   },
   {
     key: 'story',
-    eyebrow: 'World notes',
-    title: 'Mythology and meaning.',
-    body: 'Public-facing world-building notes pulled from the private board.',
+    eyebrow: 'Mythology',
+    title: 'The meaning underneath.',
+    body: 'Story fragments and world notes chosen for the listener-facing portal.',
   },
   {
     key: 'asset',
-    eyebrow: 'Assets',
-    title: 'Public files and references.',
-    body: 'Published board assets, references, links, and supporting material.',
+    eyebrow: 'Artifacts',
+    title: 'Objects from the world.',
+    body: 'Selected files, references, links, and supporting pieces for the release.',
   },
 ];
 
@@ -304,41 +304,6 @@ function getTitleParts(title?: string | null) {
     primary: cleanTitle,
     secondary: 'Release World',
   };
-}
-
-function getReleasePath(world: ReleaseWorld) {
-  const steps = [];
-
-  if (world.currentFocus?.trim()) {
-    steps.push({
-      number: '01',
-      title: world.currentFocus.trim(),
-      label: 'Front door',
-      body:
-        'The first signal. The hook, image, feeling, or song that invites people into the world.',
-    });
-  }
-
-  if (world.secondFocus?.trim()) {
-    steps.push({
-      number: '02',
-      title: world.secondFocus.trim(),
-      label: 'Contrast signal',
-      body:
-        'The second doorway. A second angle, pressure point, or emotional shift inside the release.',
-    });
-  }
-
-  steps.push({
-    number: String(steps.length + 1).padStart(2, '0'),
-    title: world.title,
-    label: 'Full world',
-    body:
-      world.story?.trim() ||
-      'The completed release world: sound, symbols, visuals, rollout, story, and the emotional container around the project.',
-  });
-
-  return steps;
 }
 
 function getTrackAvailability(track: ReleaseTrack, isCreatorView: boolean) {
@@ -588,11 +553,10 @@ export default function DynamicReleasePage() {
   }
 
   const titleParts = getTitleParts(world.title);
-  const releasePath = getReleasePath(world);
   const heroHook =
     world.oneLineSummary?.trim() ||
     world.story?.trim() ||
-    'A release world is forming: sound, story, visuals, and signal all moving toward one portal.';
+    'Step inside the sound, story, and visual atmosphere of this release.';
 
   const firstPlayableTrack = releaseTracks.find((track) => {
     const availability = getTrackAvailability(track, isCreatorView);
@@ -712,25 +676,25 @@ export default function DynamicReleasePage() {
 
       <section className="release-world-story-section">
         <div className="release-world-section-heading">
-          <p className="release-world-label">The world</p>
-          <h2>Not just a project. A place.</h2>
+          <p className="release-world-label">Story</p>
+          <h2>Enter the atmosphere.</h2>
         </div>
         <p>
           {world.story?.trim() ||
-            'This release page is the polished portal: sound, story, visuals, rollout, and selected signals from the studio wall.'}
+            'This is the listening room for the release: sound, story, visuals, and selected fragments from the world.'}
         </p>
       </section>
 
       <section className="release-world-track-section">
         <div className="release-world-section-heading release-world-section-heading-split">
           <div>
-            <p className="release-world-label">Track Path</p>
-            <h2>The songs inside the world.</h2>
+            <p className="release-world-label">Tracklist</p>
+            <h2>Listen through the world.</h2>
           </div>
           <p>
             {pageLoading
-              ? 'Loading track path...'
-              : `${releaseTracks.length} track${releaseTracks.length === 1 ? '' : 's'} in the release sequence.`}
+              ? 'Loading tracklist...'
+              : `${releaseTracks.length} track${releaseTracks.length === 1 ? '' : 's'} available in this portal.`}
           </p>
         </div>
 
@@ -776,7 +740,7 @@ export default function DynamicReleasePage() {
             })}
           </div>
         ) : (
-          <p className="release-world-inline-empty">The public track sequence is still forming.</p>
+          <p className="release-world-inline-empty">The public tracklist is still forming.</p>
         )}
       </section>
 
@@ -784,12 +748,12 @@ export default function DynamicReleasePage() {
         <section className="release-world-board-section">
           <div className="release-world-section-heading release-world-section-heading-split">
             <div>
-              <p className="release-world-label">Board to Portal</p>
-              <h2>Published signals from the studio wall.</h2>
+              <p className="release-world-label">World Fragments</p>
+              <h2>Selected pieces from inside the release.</h2>
             </div>
             <p>
-              {publicArtifacts.length} published artifact
-              {publicArtifacts.length === 1 ? '' : 's'} selected from the Signal Board.
+              {publicArtifacts.length} public fragment
+              {publicArtifacts.length === 1 ? '' : 's'} curated for the listener portal.
             </p>
           </div>
 
@@ -823,7 +787,7 @@ export default function DynamicReleasePage() {
                           )}
                         </div>
                         {artifact.href && (
-                          <Link href={artifact.href}>Open linked signal</Link>
+                          <Link href={artifact.href}>Open fragment</Link>
                         )}
                       </article>
                     ))}
@@ -835,83 +799,15 @@ export default function DynamicReleasePage() {
         </section>
       )}
 
-      <section className="release-world-path-section">
-        <div className="release-world-section-heading">
-          <p className="release-world-label">Release path</p>
-          <h2>Signal, contrast, full world.</h2>
-        </div>
-
-        <div className="release-world-path-list">
-          {releasePath.map((step) => (
-            <article key={`${step.number}-${step.title}`}>
-              <span>{step.number}</span>
-              <div>
-                <p>{step.label}</p>
-                <h3>{step.title}</h3>
-                <strong>{step.body}</strong>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="release-world-signal-section">
-        <div className="release-world-section-heading">
-          <p className="release-world-label">Project signals</p>
-          <h2>What this world needs next.</h2>
-        </div>
-
-        <div className="release-world-signal-grid">
-          <article>
-            <span>01</span>
-            <h3>Core hook</h3>
-            <p>Remember the phrase, melody, or concept that opens the world.</p>
-          </article>
-
-          <article>
-            <span>02</span>
-            <h3>Visual identity</h3>
-            <p>Follow the cover direction, colors, symbols, clips, and emotional palette.</p>
-          </article>
-
-          <article>
-            <span>03</span>
-            <h3>Rollout rhythm</h3>
-            <p>Move through the teaser, first signal, contrast push, full release, and afterglow.</p>
-          </article>
-        </div>
-      </section>
-
-      <section className="release-world-rollout-section">
-        <div className="release-world-section-heading">
-          <p className="release-world-label">Rollout cadence</p>
-          <h2>Build the path outward.</h2>
-        </div>
-
-        <div className="release-world-rollout-list">
-          <article>
-            <span>Seed</span>
-            <div>
-              <h3>Establish the world</h3>
-              <p>Title, cover, first hook, and the feeling that carries the project.</p>
-            </div>
-          </article>
-
-          <article>
-            <span>Open</span>
-            <div>
-              <h3>Release the first signal</h3>
-              <p>Push the lead idea, first cover direction, or first public-facing clip.</p>
-            </div>
-          </article>
-
-          <article>
-            <span>Release</span>
-            <div>
-              <h3>Turn the project into a portal</h3>
-              <p>Connect the page, board, assets, tracks, and story into one world.</p>
-            </div>
-          </article>
+      <section className="release-world-afterglow-section">
+        <div className="release-world-afterglow-inner">
+          <p className="release-world-label">From the Nexus</p>
+          <h2>This portal is one doorway.</h2>
+          <p>
+            The release lives here as a focused world. The Nexus remains the front door — the wider map
+            of realms, signals, songs, and future portals.
+          </p>
+          <Link href="/nexus">Return to the Nexus</Link>
         </div>
       </section>
 
@@ -921,8 +817,7 @@ export default function DynamicReleasePage() {
             <p className="release-world-label">Creator tools</p>
             <h2>Keep shaping the world behind the portal.</h2>
             <p>
-              The public page is the polished portal. The Signal Board remains the working canvas:
-              hooks, notes, asset fragments, rollout ideas, and world-building direction.
+              The listener sees the polished portal. The Signal Board remains the private studio wall for story, notes, assets, rollout ideas, and world-building direction.
             </p>
           </div>
           <Link href={`/releases/${world.slug}/board`}>Open signal board</Link>
