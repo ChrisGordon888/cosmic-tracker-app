@@ -1,0 +1,334 @@
+.scroll-page {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  isolation: isolate;
+  padding: clamp(5rem, 9vw, 7rem) clamp(1rem, 4vw, 2rem) 4rem;
+  color: rgba(238, 243, 250, 0.94);
+  background: #03050a;
+  font-family: 'Orbitron', Arial, sans-serif;
+}
+
+.scroll-background {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 18% 10%, rgba(126, 211, 255, 0.16), transparent 32rem),
+    radial-gradient(circle at 86% 18%, rgba(168, 132, 255, 0.13), transparent 34rem),
+    radial-gradient(circle at 50% 100%, rgba(220, 186, 92, 0.10), transparent 36rem),
+    linear-gradient(135deg, #03050a 0%, #080d17 48%, #03050a 100%);
+}
+
+.scroll-orb {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(32px);
+  opacity: 0.72;
+  pointer-events: none;
+}
+
+.scroll-orb-a {
+  width: min(44vw, 36rem);
+  aspect-ratio: 1;
+  left: -12rem;
+  top: 8%;
+  background: radial-gradient(circle, rgba(126, 211, 255, 0.20), transparent 70%);
+}
+
+.scroll-orb-b {
+  width: min(44vw, 36rem);
+  aspect-ratio: 1;
+  right: -12rem;
+  bottom: 0;
+  background: radial-gradient(circle, rgba(220, 186, 92, 0.14), transparent 70%);
+}
+
+.scroll-grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.28;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: radial-gradient(circle at center, black, transparent 76%);
+}
+
+.scroll-hero,
+.scroll-mirror-list,
+.scroll-closing {
+  width: min(1080px, 100%);
+  margin: 0 auto;
+}
+
+.scroll-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.65rem;
+  margin-bottom: 1.4rem;
+}
+
+.scroll-nav a,
+.scroll-actions a {
+  min-height: 2.65rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(238, 243, 250, 0.16);
+  border-radius: 999px;
+  padding: 0.65rem 0.95rem;
+  color: rgba(238, 243, 250, 0.84);
+  background: rgba(255, 255, 255, 0.055);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.scroll-nav a:hover,
+.scroll-actions a:hover {
+  transform: translateY(-2px);
+  border-color: rgba(126, 211, 255, 0.42);
+  background: rgba(126, 211, 255, 0.08);
+}
+
+.scroll-hero {
+  border: 1px solid rgba(224, 232, 244, 0.14);
+  border-radius: clamp(1.8rem, 4vw, 2.6rem);
+  padding: clamp(1.5rem, 5vw, 4rem);
+  background:
+    radial-gradient(circle at 20% 0%, rgba(126, 211, 255, 0.12), transparent 36%),
+    radial-gradient(circle at 92% 12%, rgba(220, 186, 92, 0.10), transparent 32%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.082), rgba(8, 12, 22, 0.74));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.10),
+    0 34px 100px rgba(0, 0, 0, 0.38);
+  text-align: center;
+  backdrop-filter: blur(20px) saturate(128%);
+}
+
+.scroll-kicker {
+  margin: 0 0 0.85rem;
+  color: rgba(126, 211, 255, 0.86);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.scroll-hero h1 {
+  margin: 0;
+  color: rgba(248, 250, 255, 0.98);
+  font-size: clamp(3rem, 10vw, 8.8rem);
+  line-height: 0.82;
+  letter-spacing: -0.08em;
+  text-transform: uppercase;
+  text-shadow:
+    0 0 24px rgba(126, 211, 255, 0.12),
+    0 24px 70px rgba(0, 0, 0, 0.42);
+}
+
+.scroll-hero h1 span {
+  display: block;
+  color: rgba(238, 243, 250, 0.72);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 0.42em;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.04em;
+  text-transform: none;
+}
+
+.scroll-subtitle {
+  margin: 1.2rem auto 0;
+  color: rgba(220, 186, 92, 0.86);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.25rem, 3vw, 2rem);
+  font-style: italic;
+}
+
+.scroll-intro {
+  max-width: 820px;
+  margin: 1.4rem auto 0;
+  color: rgba(224, 231, 240, 0.74);
+  font-size: clamp(1rem, 2vw, 1.15rem);
+  line-height: 1.85;
+}
+
+.scroll-mirror-list {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.scroll-mirror-card {
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr);
+  gap: clamp(1rem, 4vw, 2rem);
+  border: 1px solid rgba(224, 232, 244, 0.12);
+  border-radius: 1.8rem;
+  padding: clamp(1.2rem, 4vw, 2rem);
+  background:
+    radial-gradient(circle at 0% 0%, rgba(168, 132, 255, 0.10), transparent 34%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.062), rgba(8, 12, 22, 0.72));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 24px 70px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(18px) saturate(125%);
+}
+
+.scroll-mirror-number {
+  min-height: 9rem;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  border: 1px solid rgba(126, 211, 255, 0.16);
+  border-radius: 1.35rem;
+  background:
+    radial-gradient(circle at top, rgba(126, 211, 255, 0.12), transparent 46%),
+    rgba(255, 255, 255, 0.045);
+}
+
+.scroll-mirror-number span {
+  color: rgba(220, 186, 92, 0.78);
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.scroll-mirror-number strong {
+  color: rgba(248, 250, 255, 0.96);
+  font-size: 3.8rem;
+  line-height: 1;
+}
+
+.scroll-mirror-copy h2 {
+  margin: 0;
+  color: rgba(248, 250, 255, 0.96);
+  font-size: clamp(1.7rem, 4vw, 3.4rem);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+}
+
+.scroll-mirror-copy h3 {
+  margin: 0.65rem 0 0;
+  color: rgba(220, 186, 92, 0.78);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.18rem;
+  font-style: italic;
+  font-weight: 400;
+}
+
+.scroll-mirror-copy > p {
+  margin: 1rem 0 0;
+  color: rgba(224, 231, 240, 0.72);
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.scroll-question {
+  margin-top: 1.2rem;
+  border-left: 2px solid rgba(126, 211, 255, 0.42);
+  padding: 0.4rem 0 0.4rem 1rem;
+}
+
+.scroll-question span {
+  display: block;
+  margin-bottom: 0.4rem;
+  color: rgba(126, 211, 255, 0.78);
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.scroll-question strong {
+  color: rgba(248, 250, 255, 0.92);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.15rem, 2.4vw, 1.7rem);
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+.scroll-closing {
+  margin-top: 1rem;
+  border: 1px solid rgba(220, 186, 92, 0.18);
+  border-radius: 2rem;
+  padding: clamp(1.4rem, 4vw, 2.4rem);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(220, 186, 92, 0.12), transparent 34%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.065), rgba(8, 12, 22, 0.76));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 24px 80px rgba(0, 0, 0, 0.30);
+  text-align: center;
+}
+
+.scroll-closing h2 {
+  max-width: 860px;
+  margin: 0 auto;
+  color: rgba(248, 250, 255, 0.96);
+  font-size: clamp(2rem, 5vw, 4.8rem);
+  line-height: 0.96;
+  letter-spacing: -0.06em;
+}
+
+.scroll-closing p {
+  max-width: 760px;
+  margin: 1rem auto 0;
+  color: rgba(224, 231, 240, 0.72);
+  line-height: 1.75;
+}
+
+.scroll-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.scroll-actions a:first-child {
+  color: #081018;
+  border-color: rgba(247, 239, 228, 0.48);
+  background: linear-gradient(135deg, rgba(247, 239, 228, 0.96), rgba(126, 211, 255, 0.86));
+}
+
+@media (max-width: 820px) {
+  .scroll-mirror-card {
+    grid-template-columns: 1fr;
+  }
+
+  .scroll-mirror-number {
+    min-height: 6rem;
+  }
+
+  .scroll-mirror-number strong {
+    font-size: 3rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .scroll-page {
+    padding-inline: 0.85rem;
+  }
+
+  .scroll-hero h1 {
+    font-size: clamp(3rem, 18vw, 4.6rem);
+  }
+
+  .scroll-actions a,
+  .scroll-nav a {
+    width: 100%;
+  }
+}
