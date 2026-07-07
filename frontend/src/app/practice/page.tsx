@@ -10,6 +10,41 @@ import MoodSection from "@/components/MoodSection";
 import PracticeQuestsSection from "@/components/PracticeQuestsSection";
 import CosmicBackground from "@/components/CosmicBackground";
 
+const PRACTICE_ROOMS = [
+  {
+    title: "Practice Calendar",
+    eyebrow: "Moon / Mood / Quests",
+    description:
+      "Review your moods, completed quests, and moon phase patterns across time.",
+    href: "/calendar",
+    cta: "Open Calendar",
+  },
+  {
+    title: "Ritual Library",
+    eyebrow: "Daily Anchors",
+    description:
+      "Create, edit, and manage the rituals that keep your signal consistent.",
+    href: "/rituals",
+    cta: "Open Rituals",
+  },
+  {
+    title: "Discipline Tracker",
+    eyebrow: "Practice / Quests",
+    description:
+      "Track today’s ritual practices and add quests that strengthen your rhythm.",
+    href: "/tracker",
+    cta: "Open Tracker",
+  },
+  {
+    title: "Cosmic Scroll",
+    eyebrow: "Reflection / Lore",
+    description:
+      "Read traveler reflections and mythic writing connected to the realm system.",
+    href: "/scroll",
+    cta: "Read Scroll",
+  },
+];
+
 const PRACTICE_PILLARS = [
   {
     label: "Body",
@@ -89,6 +124,27 @@ export default function PracticePortal() {
             <Link href="/creator/projects">Projects</Link>
             <Link href="/creator">Creator OS</Link>
           </div>
+        </div>
+      </section>
+
+      <section className="practice-room-section" aria-labelledby="practice-room-heading">
+        <div className="practice-section-heading">
+          <p className="practice-kicker">Practice Rooms</p>
+          <h2 id="practice-room-heading">Choose the layer you need today.</h2>
+          <p>
+            Calendar, rituals, tracker, and scroll are now connected as rooms inside the Practice pillar.
+          </p>
+        </div>
+
+        <div className="practice-room-grid" aria-label="Practice rooms">
+          {PRACTICE_ROOMS.map((room) => (
+            <Link key={room.href} href={room.href} className="practice-room-card">
+              <span>{room.eyebrow}</span>
+              <h3>{room.title}</h3>
+              <p>{room.description}</p>
+              <strong>{room.cta}</strong>
+            </Link>
+          ))}
         </div>
       </section>
 
