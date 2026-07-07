@@ -19,50 +19,49 @@ export default function LandingPage() {
   const isAuthenticated = !!session?.user;
 
   return (
-    <main className="landing-page landing-gateway-page min-h-screen relative overflow-hidden isolate">
+    <main className="landing-page landing-gateway-page landing-gateway-v3-page min-h-screen relative overflow-hidden isolate">
       <div className="fixed inset-0 z-0 w-full h-full overflow-hidden" aria-hidden="true">
         <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover">
           <source src="/cosmic-landing-intro.mp4" type="video/mp4" />
         </video>
-        <div className="landing-video-overlay" />
+        <div className="landing-video-overlay landing-gateway-v3-overlay" />
         <div className="landing-gateway-orb landing-gateway-orb-a" />
         <div className="landing-gateway-orb landing-gateway-orb-b" />
+        <div className="landing-gateway-v3-starfield" />
       </div>
 
-      <section className="landing-shell landing-gateway-shell relative z-10">
-        <div className="landing-hero-card landing-gateway-hero-card">
-          <div className="landing-system-badge landing-gateway-badge">
+      <section className="landing-shell landing-gateway-shell landing-gateway-v3-shell relative z-10">
+        <div className="landing-hero-card landing-gateway-hero-card landing-gateway-v3-hero-card">
+          <div className="landing-system-badge landing-gateway-badge landing-gateway-v3-badge">
             <span className="landing-system-dot" />
             <span>Cosmic Nexus</span>
           </div>
 
-          <p className="landing-gateway-eyebrow">Music worlds / Release portals / Realms</p>
+          <p className="landing-gateway-eyebrow landing-gateway-v3-eyebrow">
+            Music worlds / Realm soundtracks / Living signal
+          </p>
 
-          <h1 className="landing-title landing-gateway-title">
+          <h1 className="landing-title landing-gateway-title landing-gateway-v3-title">
             COSMIC
             <span>NEXUS</span>
           </h1>
 
-          <p className="landing-subtitle landing-gateway-subtitle">
-            Step into the front door of the multiverse.
+          <p className="landing-subtitle landing-gateway-subtitle landing-gateway-v3-subtitle">
+            Enter the front door of the multiverse.
           </p>
 
-          <p className="landing-description landing-gateway-description">
-            Explore featured releases, realm soundtracks, and artist-built worlds where sound,
-            story, visuals, and signal move through one living portal.
+          <p className="landing-description landing-gateway-description landing-gateway-v3-description">
+            A cinematic music universe of realms, soundtracks, and artist-built worlds — made to
+            explore, feel, and follow from one signal to the next.
           </p>
 
-          <div className="landing-actions landing-actions-stacked landing-gateway-actions">
-            <Link href="/nexus" className="landing-button-primary">
+          <div className="landing-actions landing-actions-stacked landing-gateway-actions landing-gateway-v3-actions">
+            <Link href="/nexus" className="landing-button-primary landing-gateway-v3-primary">
               Enter the Nexus
             </Link>
 
-            <Link href="/releases/sirens-in-neverland" className="landing-button-secondary-subtle">
-              Featured Release
-            </Link>
-
             {isAuthenticated ? (
-              <div className="landing-gateway-creator-actions" aria-label="Creator shortcuts">
+              <div className="landing-gateway-creator-actions landing-gateway-v3-creator-actions" aria-label="Creator shortcuts">
                 <Link href="/creator">Creator OS</Link>
                 <Link href="/creator/projects">Project Library</Link>
                 <Link href="/daily">Daily Flow</Link>
@@ -71,7 +70,7 @@ export default function LandingPage() {
               <button
                 type="button"
                 onClick={() => signIn("github", { callbackUrl: "/nexus" })}
-                className="landing-button-secondary-subtle"
+                className="landing-button-secondary-subtle landing-gateway-v3-secondary"
                 disabled={status === "loading"}
               >
                 {status === "loading" ? "Checking session..." : "Sign in to save progress"}
@@ -79,18 +78,18 @@ export default function LandingPage() {
             )}
           </div>
 
-          <div className="landing-system-line landing-gateway-system-line">
-            <span>Nexus</span>
-            <span>Release Portals</span>
-            <span>Realm Soundtracks</span>
+          <div className="landing-system-line landing-gateway-system-line landing-gateway-v3-system-line">
+            <span>Enter</span>
+            <span>Explore</span>
+            <span>Return</span>
           </div>
 
-          <div className="landing-realm-grid landing-gateway-realm-grid" aria-label="Cosmic realms">
+          <div className="landing-realm-grid landing-gateway-realm-grid landing-gateway-v3-realm-grid" aria-label="Cosmic realms">
             {REALMS.map((realm) => (
               <Link
                 key={realm.id}
                 href={`/realms/${realm.id}`}
-                className="landing-realm-glyph landing-gateway-realm-glyph"
+                className="landing-realm-glyph landing-gateway-realm-glyph landing-gateway-v3-realm-glyph"
                 title={`${realm.name} — ${realm.state}`}
               >
                 <span className="landing-realm-number">{realm.id}</span>
@@ -101,18 +100,9 @@ export default function LandingPage() {
           </div>
         </div>
 
-        <div className="landing-future-card landing-gateway-release-card">
-          <div className="landing-future-icon">✦</div>
-          <div>
-            <p className="landing-future-label">Featured Portal</p>
-            <h2>SIRENS IN NEVERLAND</h2>
-            <p>
-              A listener-facing release world connected to the Nexus — tracks, cover art, story,
-              and selected fragments from the signal board.
-            </p>
-            <Link href="/releases/sirens-in-neverland">Open the release</Link>
-          </div>
-        </div>
+        <p className="landing-gateway-v3-footnote">
+          Six realms. One Nexus. Follow the sound inward.
+        </p>
       </section>
     </main>
   );
