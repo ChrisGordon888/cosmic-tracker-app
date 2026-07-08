@@ -10,6 +10,10 @@ type Offer = {
   title: string;
   price: string;
   body: string;
+  bestFor: string;
+  youSend: string;
+  youReceive: string;
+  outcome: string;
   includes: string[];
   href: string;
   cta: string;
@@ -22,7 +26,11 @@ const START_HERE_OFFERS: Offer[] = [
     title: "Cosmic Clarity Call",
     price: "30 min — $55",
     body:
-      "A focused call for creative direction, emotional clarity, workflow questions, artist blocks, or choosing your next move.",
+      "A focused call for quick creative, emotional, workflow, or next-step clarity.",
+    bestFor: "Quick direction, creative stuckness, or choosing the next move.",
+    youSend: "Your question, current challenge, or what you are trying to decide.",
+    youReceive: "A focused call with notes, perspective, and direct next steps.",
+    outcome: "You leave with a clearer direction and one simple action path.",
     includes: ["Quick diagnosis", "Next-step clarity", "Action notes"],
     href: "mailto:chris.c.gordon777@gmail.com?subject=Cosmic%20Clarity%20Call",
     cta: "Book Call",
@@ -32,7 +40,11 @@ const START_HERE_OFFERS: Offer[] = [
     title: "Creative Direction Session",
     price: "60 min — $111",
     body:
-      "A deeper session for artists, creators, and seekers who need help shaping a project, release, brand direction, story, or creative path.",
+      "A deeper session for shaping a project, release, brand direction, story, creative identity, or personal creative path.",
+    bestFor: "Artists, creators, and seekers who need deeper creative direction.",
+    youSend: "Music, visuals, links, notes, questions, or a short project summary.",
+    youReceive: "Live direction, creative feedback, and a practical next-step roadmap.",
+    outcome: "Your idea becomes more organized, grounded, and ready to move.",
     includes: ["Project direction", "Creative feedback", "Next-step roadmap"],
     href: "mailto:chris.c.gordon777@gmail.com?subject=Creative%20Direction%20Session",
     cta: "Book Session",
@@ -43,7 +55,11 @@ const START_HERE_OFFERS: Offer[] = [
     title: "Music / DAW Workflow Lesson",
     price: "60 min — $88",
     body:
-      "Beginner-friendly help with Ableton, Pro Tools, recording workflow, basic theory, chords, melodies, arrangement, and vocal session setup.",
+      "Beginner-friendly help with Ableton, Pro Tools, recording workflow, basic music theory, chords, melodies, arrangement, and vocal session setup.",
+    bestFor: "Beginners or returning creatives who want practical music help.",
+    youSend: "Your DAW questions, current setup, song idea, or what you want to learn.",
+    youReceive: "A live lesson, screen-share guidance, and practice steps.",
+    outcome: "You understand your tools better and can keep creating with less friction.",
     includes: ["DAW workflow", "Music basics", "Recording setup"],
     href: "mailto:chris.c.gordon777@gmail.com?subject=Music%20DAW%20Workflow%20Lesson",
     cta: "Book Lesson",
@@ -56,21 +72,15 @@ const AUDIT_OFFERS: Offer[] = [
     title: "Artist World Audit",
     price: "$222",
     body:
-      "For artists with music, visuals, ideas, or a release page who want a clearer world, story, rollout, and listener pathway.",
+      "For artists with music, visuals, ideas, content, or a release page who want a clearer world, story, rollout, and listener pathway.",
+    bestFor: "Independent artists building identity, story, and release direction.",
+    youSend: "Songs, visuals, socials, website/release page, notes, and goals.",
+    youReceive: "A written audit with world notes, positioning, and rollout suggestions.",
+    outcome: "You understand what your artist world is saying and how to strengthen it.",
     includes: ["Music/project review", "World + story notes", "Rollout suggestions"],
     href: "mailto:chris.c.gordon777@gmail.com?subject=Artist%20World%20Audit",
     cta: "Buy Audit",
     featured: true,
-  },
-  {
-    tier: "Studio",
-    title: "Studio / Workflow Audit",
-    price: "$333",
-    body:
-      "A review of your recording setup, DAW sessions, templates, file organization, vocal workflow, and creative productivity system.",
-    includes: ["Setup review", "Workflow map", "Template suggestions"],
-    href: "mailto:chris.c.gordon777@gmail.com?subject=Studio%20Workflow%20Audit",
-    cta: "Request Audit",
   },
   {
     tier: "Project",
@@ -78,9 +88,28 @@ const AUDIT_OFFERS: Offer[] = [
     price: "3 sessions — $333",
     body:
       "Three focused sessions to develop a song, EP idea, rollout concept, lyrics, hooks, melodies, arrangement, or project direction.",
+    bestFor: "Artists who want hands-on support moving one project forward.",
+    youSend: "Demos, lyrics, references, project notes, and what feels unfinished.",
+    youReceive: "Three development sessions with feedback, direction, and assignments.",
+    outcome: "Your song or project gets clearer, stronger, and closer to release.",
     includes: ["Song feedback", "Development calls", "Project direction"],
     href: "mailto:chris.c.gordon777@gmail.com?subject=Song%20Project%20Development%20Pack",
     cta: "Develop Project",
+    featured: true,
+  },
+  {
+    tier: "Studio",
+    title: "Studio / Workflow Audit",
+    price: "$444",
+    body:
+      "A deeper review of your recording setup, DAW sessions, templates, file organization, vocal workflow, and creative productivity system.",
+    bestFor: "Artists/producers with messy sessions, setup confusion, or workflow drag.",
+    youSend: "Setup photos, DAW screenshots, session notes, template questions, and workflow pain points.",
+    youReceive: "A written workflow map, setup notes, template suggestions, and a walkthrough.",
+    outcome: "Your creative machine becomes cleaner, faster, and easier to return to.",
+    includes: ["Setup review", "Workflow map", "Template suggestions"],
+    href: "mailto:chris.c.gordon777@gmail.com?subject=Studio%20Workflow%20Audit",
+    cta: "Request Audit",
   },
 ];
 
@@ -91,9 +120,28 @@ const BUILD_WITH_COSMIC: Offer[] = [
     price: "Starting at $777",
     body:
       "A done-with-you build for artists who want help shaping, customizing, and launching a release portal with story, visuals, track direction, and fan pathway.",
+    bestFor: "Artists with a single, EP, album, or campaign they want to launch better.",
+    youSend: "Music, cover art, photos, links, story notes, rollout goals, and references.",
+    youReceive: "Guided portal setup, world copy, release direction, and launch support.",
+    outcome: "Your release has a stronger home, clearer story, and better fan pathway.",
     includes: ["Portal setup", "World copy", "Launch direction"],
     href: "mailto:chris.c.gordon777@gmail.com?subject=Release%20Portal%20Accelerator",
     cta: "Request Portal",
+    featured: true,
+  },
+  {
+    tier: "Sprint",
+    title: "Cosmic Artist Sprint",
+    price: "4 weeks — starting at $888",
+    body:
+      "A focused artist development sprint with weekly calls, music feedback, workflow setup, identity work, practice rhythm, and rollout direction.",
+    bestFor: "Artists who want support across music, identity, workflow, and discipline.",
+    youSend: "Your music, goals, creative blocks, current systems, and weekly progress.",
+    youReceive: "Weekly coaching, feedback, assignments, and a personalized artist roadmap.",
+    outcome: "You build momentum, clarity, and a stronger creative system over one month.",
+    includes: ["Weekly coaching", "Music + workflow feedback", "Artist roadmap"],
+    href: "mailto:chris.c.gordon777@gmail.com?subject=Cosmic%20Artist%20Sprint",
+    cta: "Apply for Sprint",
     featured: true,
   },
   {
@@ -102,20 +150,13 @@ const BUILD_WITH_COSMIC: Offer[] = [
     price: "Starting at $1,500",
     body:
       "A custom website, portfolio, dashboard, fan portal, creative OS, or digital workflow system built around your actual creative process.",
+    bestFor: "Creators, artists, and small brands who need something custom.",
+    youSend: "Project goals, references, content, features, pages, and workflow needs.",
+    youReceive: "A scoped custom build with design, structure, implementation, and launch support.",
+    outcome: "You get a digital system built around your real work, not a generic template.",
     includes: ["Custom build", "Workflow design", "Launch support"],
     href: "mailto:chris.c.gordon777@gmail.com?subject=Creator%20System%20Custom%20Build",
     cta: "Request Quote",
-  },
-  {
-    tier: "Sprint",
-    title: "Cosmic Artist Sprint",
-    price: "4 weeks — starting at $888",
-    body:
-      "A focused artist development sprint with weekly calls, music feedback, workflow setup, identity work, practice rhythm, and rollout direction.",
-    includes: ["Weekly coaching", "Music + workflow feedback", "Artist roadmap"],
-    href: "mailto:chris.c.gordon777@gmail.com?subject=Cosmic%20Artist%20Sprint",
-    cta: "Apply for Sprint",
-    featured: true,
   },
 ];
 
@@ -167,6 +208,26 @@ function OfferCard({ offer }: { offer: Offer }) {
       <h3>{offer.title}</h3>
       <p className="services-price">{offer.price}</p>
       <p className="services-offer-body">{offer.body}</p>
+
+      <div className="services-offer-detail">
+        <span>Best For</span>
+        <p>{offer.bestFor}</p>
+      </div>
+
+      <div className="services-offer-detail">
+        <span>You Send</span>
+        <p>{offer.youSend}</p>
+      </div>
+
+      <div className="services-offer-detail">
+        <span>You Receive</span>
+        <p>{offer.youReceive}</p>
+      </div>
+
+      <div className="services-offer-detail services-outcome">
+        <span>Outcome</span>
+        <p>{offer.outcome}</p>
+      </div>
 
       <ul>
         {offer.includes.map((item) => (

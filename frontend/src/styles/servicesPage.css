@@ -1,5 +1,5 @@
 /* ===================================
-   SERVICES — OFFER CLARITY V3
+   SERVICES — OFFER CLARITY V4
    src/styles/servicesPage.css
    =================================== */
 
@@ -265,7 +265,7 @@
 
 .services-offer-card {
   position: relative;
-  min-height: 28rem;
+  min-height: 37rem;
   display: flex;
   flex-direction: column;
   border: 1px solid rgba(238, 243, 250, 0.12);
@@ -347,29 +347,62 @@
   line-height: 1.65;
 }
 
+.services-offer-detail {
+  margin-top: 0.75rem;
+  border: 1px solid rgba(238, 243, 250, 0.09);
+  border-radius: 1rem;
+  padding: 0.72rem;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.services-offer-detail span {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: rgba(126, 211, 255, 0.86);
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.services-offer-detail p {
+  margin: 0;
+  color: rgba(224, 231, 240, 0.70);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.services-outcome {
+  border-color: rgba(220, 186, 92, 0.18);
+  background:
+    radial-gradient(circle at 0% 0%, rgba(220, 186, 92, 0.08), transparent 50%),
+    rgba(255, 255, 255, 0.035);
+}
+
+.services-outcome span {
+  color: rgba(220, 186, 92, 0.88);
+}
+
 .services-offer-card ul {
-  display: grid;
-  gap: 0.48rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.42rem;
   margin: 1rem 0 1.2rem;
   padding: 0;
   list-style: none;
 }
 
 .services-offer-card li {
-  position: relative;
-  padding-left: 1rem;
-  color: rgba(238, 243, 250, 0.76);
-  font-size: 0.82rem;
-  line-height: 1.45;
-}
-
-.services-offer-card li::before {
-  content: "✦";
-  position: absolute;
-  left: 0;
-  top: 0;
-  color: rgba(220, 186, 92, 0.82);
+  border: 1px solid rgba(238, 243, 250, 0.10);
+  border-radius: 999px;
+  padding: 0.38rem 0.58rem;
+  color: rgba(238, 243, 250, 0.74);
+  background: rgba(255, 255, 255, 0.035);
   font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-transform: uppercase;
 }
 
 .services-offer-card a {
