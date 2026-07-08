@@ -5,144 +5,179 @@ import Link from "next/link";
 import "@/styles/servicesPage.css";
 import CosmicBackground from "@/components/CosmicBackground";
 
-const FREE_SIGNALS = [
+type Offer = {
+  tier: string;
+  title: string;
+  price: string;
+  body: string;
+  includes: string[];
+  href: string;
+  cta: string;
+  featured?: boolean;
+};
+
+const START_HERE_OFFERS: Offer[] = [
+  {
+    tier: "Call",
+    title: "Cosmic Clarity Call",
+    price: "30 min — $55",
+    body:
+      "A focused call for creative direction, emotional clarity, workflow questions, artist blocks, or choosing your next move.",
+    includes: ["Quick diagnosis", "Next-step clarity", "Action notes"],
+    href: "mailto:chris.c.gordon777@gmail.com?subject=Cosmic%20Clarity%20Call",
+    cta: "Book Call",
+  },
+  {
+    tier: "Session",
+    title: "Creative Direction Session",
+    price: "60 min — $111",
+    body:
+      "A deeper session for artists, creators, and seekers who need help shaping a project, release, brand direction, story, or creative path.",
+    includes: ["Project direction", "Creative feedback", "Next-step roadmap"],
+    href: "mailto:chris.c.gordon777@gmail.com?subject=Creative%20Direction%20Session",
+    cta: "Book Session",
+    featured: true,
+  },
+  {
+    tier: "Lesson",
+    title: "Music / DAW Workflow Lesson",
+    price: "60 min — $88",
+    body:
+      "Beginner-friendly help with Ableton, Pro Tools, recording workflow, basic theory, chords, melodies, arrangement, and vocal session setup.",
+    includes: ["DAW workflow", "Music basics", "Recording setup"],
+    href: "mailto:chris.c.gordon777@gmail.com?subject=Music%20DAW%20Workflow%20Lesson",
+    cta: "Book Lesson",
+  },
+];
+
+const AUDIT_OFFERS: Offer[] = [
+  {
+    tier: "Artist",
+    title: "Artist World Audit",
+    price: "$222",
+    body:
+      "For artists with music, visuals, ideas, or a release page who want a clearer world, story, rollout, and listener pathway.",
+    includes: ["Music/project review", "World + story notes", "Rollout suggestions"],
+    href: "mailto:chris.c.gordon777@gmail.com?subject=Artist%20World%20Audit",
+    cta: "Buy Audit",
+    featured: true,
+  },
+  {
+    tier: "Studio",
+    title: "Studio / Workflow Audit",
+    price: "$333",
+    body:
+      "A review of your recording setup, DAW sessions, templates, file organization, vocal workflow, and creative productivity system.",
+    includes: ["Setup review", "Workflow map", "Template suggestions"],
+    href: "mailto:chris.c.gordon777@gmail.com?subject=Studio%20Workflow%20Audit",
+    cta: "Request Audit",
+  },
+  {
+    tier: "Project",
+    title: "Song / Project Development Pack",
+    price: "3 sessions — $333",
+    body:
+      "Three focused sessions to develop a song, EP idea, rollout concept, lyrics, hooks, melodies, arrangement, or project direction.",
+    includes: ["Song feedback", "Development calls", "Project direction"],
+    href: "mailto:chris.c.gordon777@gmail.com?subject=Song%20Project%20Development%20Pack",
+    cta: "Develop Project",
+  },
+];
+
+const BUILD_WITH_COSMIC: Offer[] = [
+  {
+    tier: "Release",
+    title: "Release Portal Accelerator",
+    price: "Starting at $777",
+    body:
+      "A done-with-you build for artists who want help shaping, customizing, and launching a release portal with story, visuals, track direction, and fan pathway.",
+    includes: ["Portal setup", "World copy", "Launch direction"],
+    href: "mailto:chris.c.gordon777@gmail.com?subject=Release%20Portal%20Accelerator",
+    cta: "Request Portal",
+    featured: true,
+  },
+  {
+    tier: "System",
+    title: "Creator System Custom Build",
+    price: "Starting at $1,500",
+    body:
+      "A custom website, portfolio, dashboard, fan portal, creative OS, or digital workflow system built around your actual creative process.",
+    includes: ["Custom build", "Workflow design", "Launch support"],
+    href: "mailto:chris.c.gordon777@gmail.com?subject=Creator%20System%20Custom%20Build",
+    cta: "Request Quote",
+  },
+  {
+    tier: "Sprint",
+    title: "Cosmic Artist Sprint",
+    price: "4 weeks — starting at $888",
+    body:
+      "A focused artist development sprint with weekly calls, music feedback, workflow setup, identity work, practice rhythm, and rollout direction.",
+    includes: ["Weekly coaching", "Music + workflow feedback", "Artist roadmap"],
+    href: "mailto:chris.c.gordon777@gmail.com?subject=Cosmic%20Artist%20Sprint",
+    cta: "Apply for Sprint",
+    featured: true,
+  },
+];
+
+const FREE_UNIVERSE = [
   {
     title: "Nexus",
-    eyebrow: "Free Portal",
-    body: "Explore the public music universe, realm soundtracks, release portals, and open signals.",
+    eyebrow: "Explore",
+    body: "Enter the public music universe, realm soundtracks, release portals, and open signals.",
     href: "/nexus",
     cta: "Enter Nexus",
   },
   {
     title: "Find Your Realm",
-    eyebrow: "Free Tool",
-    body: "Discover the realm that matches your current creative, emotional, or energetic signal.",
+    eyebrow: "Discover",
+    body: "Find the realm that matches your current creative, emotional, or energetic signal.",
     href: "/find-your-realm",
     cta: "Find Realm",
   },
   {
     title: "Traveler Scroll",
-    eyebrow: "Free Reflection",
-    body: "Read the mirrors, explore the mythology, and connect the practice layer to the realm system.",
+    eyebrow: "Reflect",
+    body: "Read the mirrors and connect the mythology to the realm system.",
     href: "/scroll",
     cta: "Read Scroll",
   },
 ];
 
-const FEATURED_OFFERS = [
-  {
-    tier: "Entry",
-    title: "Creative Direction Session",
-    price: "Starting at $88",
-    body:
-      "A focused session to clarify your next release, brand, offer, creative block, or digital direction.",
-    includes: ["Creative audit", "Signal clarity", "Next-step roadmap"],
-    href: "mailto:chris.c.gordon777@gmail.com?subject=Creative%20Direction%20Session",
-    cta: "Book Session",
-  },
-  {
-    tier: "Artist",
-    title: "Artist World Audit",
-    price: "Starting at $188",
-    body:
-      "A deeper review of your music, visuals, story, rollout, listener journey, and creative identity.",
-    includes: ["Music feedback", "World notes", "Rollout suggestions"],
-    href: "mailto:chris.c.gordon777@gmail.com?subject=Artist%20World%20Audit",
-    cta: "Request Audit",
-    featured: true,
-  },
-  {
-    tier: "Build",
-    title: "Release Portal Build",
-    price: "Custom build",
-    body:
-      "A custom release page or landing experience for a single, EP, album, launch, or creative campaign.",
-    includes: ["Release page", "Fan pathway", "World copy"],
-    href: "mailto:chris.c.gordon777@gmail.com?subject=Release%20Portal%20Build",
-    cta: "Start Portal",
-  },
-  {
-    tier: "System",
-    title: "Creator System Build",
-    price: "Custom quote",
-    body:
-      "A website, dashboard, creative OS, fan portal, or workflow tool built around your creative process.",
-    includes: ["Web app", "Dashboard", "Workflow design"],
-    href: "mailto:chris.c.gordon777@gmail.com?subject=Creator%20System%20Build",
-    cta: "Build System",
-  },
-  {
-    tier: "Practice",
-    title: "Practice + Performance Coaching",
-    price: "Limited openings",
-    body:
-      "Yoga, mobility, training, rhythm, discipline, and accountability for creators building themselves and their work.",
-    includes: ["Movement", "Accountability", "Practice rhythm"],
-    href: "mailto:chris.c.gordon777@gmail.com?subject=Practice%20and%20Performance%20Coaching",
-    cta: "Ask Availability",
-  },
-  {
-    tier: "Exclusive",
-    title: "Private Build Partnership",
-    price: "Application only",
-    body:
-      "A deeper collaboration across world-building, creative technology, release strategy, and long-form direction.",
-    includes: ["Strategy", "Creative tech", "World-building"],
-    href: "mailto:chris.c.gordon777@gmail.com?subject=Private%20Build%20Partnership",
-    cta: "Apply to Build",
-    featured: true,
-  },
+const SKILL_AREAS = [
+  "Artist identity",
+  "Release strategy",
+  "Song feedback",
+  "Ableton / Pro Tools workflow",
+  "Vocal recording",
+  "Creative systems",
+  "Basic theory",
+  "Yoga + practice rhythm",
+  "Custom web builds",
+  "World-building",
 ];
 
-const SERVICE_PATHS = [
-  {
-    eyebrow: "Creative Worlds",
-    title: "Artist worlds, release portals, and mythic brand systems.",
-    body:
-      "Build immersive release experiences, story systems, realm concepts, visual language, and fan-facing worlds that make the music feel bigger than a drop.",
-    items: ["Release worlds", "Artist identity", "Story systems", "Rollout direction"],
-  },
-  {
-    eyebrow: "Creative Technology",
-    title: "Websites, dashboards, and interactive tools for creators.",
-    body:
-      "Design and build modern digital experiences: landing pages, fan portals, creator dashboards, portfolio systems, and custom tools that support real creative workflow.",
-    items: ["Web apps", "Creator dashboards", "Fan portals", "Interactive experiences"],
-  },
-  {
-    eyebrow: "Music + Artist Development",
-    title: "Direction for sound, concept, catalog, and release strategy.",
-    body:
-      "Support artists and creators with concept development, track feedback, world-building, sequencing, and the deeper strategy behind a body of work.",
-    items: ["Song feedback", "Project direction", "Release planning", "World-building"],
-  },
-  {
-    eyebrow: "Practice + Performance",
-    title: "Rhythm, discipline, movement, and creative accountability.",
-    body:
-      "Yoga, mobility, training, daily practice design, creative discipline, and accountability systems for people building themselves while building their work.",
-    items: ["Yoga", "Training", "Accountability", "Creative practice"],
-  },
-];
+function OfferCard({ offer }: { offer: Offer }) {
+  return (
+    <article className={`services-offer-card ${offer.featured ? "is-featured" : ""}`}>
+      <div className="services-offer-topline">
+        <span>{offer.tier}</span>
+        {offer.featured && <em>Featured</em>}
+      </div>
 
-const BUILD_MODES = [
-  {
-    label: "For Artists",
-    text: "Build a release world, clarify the project, and give fans a deeper place to enter.",
-  },
-  {
-    label: "For Creators",
-    text: "Turn your ideas, content, or workflow into a more intentional digital system.",
-  },
-  {
-    label: "For Brands",
-    text: "Create a world, campaign, landing experience, or interactive identity system.",
-  },
-  {
-    label: "For Seekers",
-    text: "Build rhythm through practice, movement, accountability, and creative discipline.",
-  },
-];
+      <h3>{offer.title}</h3>
+      <p className="services-price">{offer.price}</p>
+      <p className="services-offer-body">{offer.body}</p>
+
+      <ul>
+        {offer.includes.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+
+      <a href={offer.href}>{offer.cta}</a>
+    </article>
+  );
+}
 
 export default function ServicesPage() {
   return (
@@ -162,40 +197,118 @@ export default function ServicesPage() {
           <strong>Services</strong>
         </div>
 
-        <p className="services-kicker">Free signal / Paid builds / Exclusive collaboration</p>
+        <p className="services-kicker">Calls / Audits / Lessons / Custom Builds</p>
 
         <h1>
-          Ways to build
-          <span>with Cosmic.</span>
+          Work with
+          <span>Cosmic.</span>
         </h1>
 
         <p className="services-intro">
-          Explore the free universe — or step into a direct build path for artist
-          world-building, release portals, creative technology, practice coaching,
-          and deeper collaboration.
+          Book a focused session, buy an audit, or build deeper with Cosmic through
+          artist development, music workflow, release portals, creative systems, and
+          practice-based coaching.
         </p>
 
         <div className="services-hero-actions">
-          <a href="mailto:chris.c.gordon777@gmail.com?subject=Ways%20to%20Build%20with%20Cosmic">
-            Send the Signal
+          <a href="#start-here">View Offers</a>
+          <a href="mailto:chris.c.gordon777@gmail.com?subject=Services%20Question">
+            Ask a Question
           </a>
-          <a href="#offers">Browse Offers</a>
         </div>
       </section>
 
-      <section className="services-free-section" aria-labelledby="free-signal-heading">
+      <section className="services-note">
+        <p className="services-kicker">How this works</p>
+        <h2>The free universe is open. Paid services are for direct support.</h2>
+        <p>
+          Anyone can explore the Nexus, realms, scroll, and creative tools. Services are
+          for people who want direct feedback, guided setup, customization, coaching,
+          accountability, or a deeper build with Cosmic.
+        </p>
+      </section>
+
+      <section id="start-here" className="services-offers-section" aria-labelledby="start-here-heading">
         <div className="services-section-heading">
-          <p className="services-kicker">Free Signal</p>
-          <h2 id="free-signal-heading">Enter the universe before you buy anything.</h2>
+          <p className="services-kicker">Start Here</p>
+          <h2 id="start-here-heading">Book a focused call, session, or lesson.</h2>
           <p>
-            The free layer gives people a way to experience the world, the music, the
-            mythology, and the tools. Paid offers are for those who want direct help
-            building their own release, brand, system, or rhythm.
+            The easiest way to work together. These offers are for clarity, direction,
+            music workflow, beginner theory, creative confidence, and next-step support.
+          </p>
+        </div>
+
+        <div className="services-offer-grid">
+          {START_HERE_OFFERS.map((offer) => (
+            <OfferCard key={offer.title} offer={offer} />
+          ))}
+        </div>
+      </section>
+
+      <section className="services-offers-section" aria-labelledby="audits-heading">
+        <div className="services-section-heading">
+          <p className="services-kicker">Audits + Reviews</p>
+          <h2 id="audits-heading">Get your project, world, or workflow reviewed.</h2>
+          <p>
+            For artists and creators who already have music, ideas, pages, sessions, or
+            systems in motion — and want a clearer roadmap for what to improve next.
+          </p>
+        </div>
+
+        <div className="services-offer-grid">
+          {AUDIT_OFFERS.map((offer) => (
+            <OfferCard key={offer.title} offer={offer} />
+          ))}
+        </div>
+      </section>
+
+      <section className="services-offers-section" aria-labelledby="build-heading">
+        <div className="services-section-heading">
+          <p className="services-kicker">Build with Cosmic</p>
+          <h2 id="build-heading">Go deeper than the free tools.</h2>
+          <p>
+            The free system gives creators a place to begin. These offers are for artists,
+            creators, and brands who want guided setup, custom direction, implementation,
+            or a longer transformation arc.
+          </p>
+        </div>
+
+        <div className="services-offer-grid">
+          {BUILD_WITH_COSMIC.map((offer) => (
+            <OfferCard key={offer.title} offer={offer} />
+          ))}
+        </div>
+      </section>
+
+      <section className="services-skills">
+        <div>
+          <p className="services-kicker">What I can help with</p>
+          <h2>Music, systems, story, workflow, and practice.</h2>
+          <p>
+            These services sit at the intersection of artist development, emotional clarity,
+            creative technology, music workflow, and personal rhythm.
+          </p>
+        </div>
+
+        <div className="services-skill-cloud" aria-label="Service skill areas">
+          {SKILL_AREAS.map((skill) => (
+            <span key={skill}>{skill}</span>
+          ))}
+        </div>
+      </section>
+
+      <section className="services-free-section" aria-labelledby="free-universe-heading">
+        <div className="services-section-heading">
+          <p className="services-kicker">Free Universe</p>
+          <h2 id="free-universe-heading">Explore before you book anything.</h2>
+          <p>
+            Start with the free Cosmic ecosystem. Listen, explore, reflect, find your
+            realm, and feel the world before choosing a paid service.
           </p>
         </div>
 
         <div className="services-free-grid">
-          {FREE_SIGNALS.map((signal) => (
+          {FREE_UNIVERSE.map((signal) => (
             <Link key={signal.href} href={signal.href} className="services-free-card">
               <span>{signal.eyebrow}</span>
               <h3>{signal.title}</h3>
@@ -206,129 +319,68 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      <section id="offers" className="services-offers-section" aria-labelledby="offers-heading">
-        <div className="services-section-heading">
-          <p className="services-kicker">Featured Offers</p>
-          <h2 id="offers-heading">Choose the depth of the build.</h2>
-          <p>
-            Start with a session, request a creative audit, or build something custom.
-            Each offer is designed to turn scattered energy into a clearer creative system.
-          </p>
-        </div>
-
-        <div className="services-offer-grid">
-          {FEATURED_OFFERS.map((offer) => (
-            <article
-              key={offer.title}
-              className={`services-offer-card ${offer.featured ? "is-featured" : ""}`}
-            >
-              <div className="services-offer-topline">
-                <span>{offer.tier}</span>
-                {offer.featured && <em>Featured</em>}
-              </div>
-
-              <h3>{offer.title}</h3>
-              <p className="services-price">{offer.price}</p>
-              <p className="services-offer-body">{offer.body}</p>
-
-              <ul>
-                {offer.includes.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-
-              <a href={offer.href}>{offer.cta}</a>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="services-mode-grid" aria-label="Who this is for">
-        {BUILD_MODES.map((mode) => (
-          <article key={mode.label} className="services-mode-card">
-            <span>{mode.label}</span>
-            <p>{mode.text}</p>
-          </article>
-        ))}
-      </section>
-
-      <section className="services-path-grid" aria-label="Ways to build">
-        {SERVICE_PATHS.map((path) => (
-          <article key={path.eyebrow} className="services-path-card">
-            <p className="services-kicker">{path.eyebrow}</p>
-            <h2>{path.title}</h2>
-            <p>{path.body}</p>
-
-            <div className="services-chip-list">
-              {path.items.map((item) => (
-                <span key={item}>{item}</span>
-              ))}
-            </div>
-          </article>
-        ))}
-      </section>
-
       <section className="services-process">
         <div>
-          <p className="services-kicker">The Build Flow</p>
-          <h2>Signal → System → World</h2>
+          <p className="services-kicker">The build flow</p>
+          <h2>Clarity → Direction → Action</h2>
           <p>
-            We start with the core signal: what you are making, why it matters,
-            and what people should feel. Then we shape the system around it —
-            the page, story, visuals, release path, practice rhythm, or creator workflow.
+            Every offer is designed to move you from scattered ideas into a clearer next
+            step: a stronger song, a better workflow, a sharper release, a cleaner page,
+            or a more grounded creative rhythm.
           </p>
         </div>
 
         <div className="services-process-steps">
           <article>
             <span>01</span>
-            <h3>Clarify the Signal</h3>
-            <p>Define the idea, audience, feeling, offer, release, or transformation.</p>
+            <h3>Choose the offer</h3>
+            <p>Pick a call, lesson, audit, project pack, or custom build.</p>
           </article>
 
           <article>
             <span>02</span>
-            <h3>Shape the System</h3>
-            <p>Turn the signal into structure: pages, tools, rituals, worlds, or strategy.</p>
+            <h3>Share your context</h3>
+            <p>Send your music, page, workflow, questions, goals, or current challenge.</p>
           </article>
 
           <article>
             <span>03</span>
-            <h3>Open the Portal</h3>
-            <p>Launch the experience and give people a clear way to enter, follow, or build.</p>
+            <h3>Build the next step</h3>
+            <p>Leave with direction, notes, a roadmap, a cleaner system, or a custom build path.</p>
           </article>
         </div>
       </section>
 
-      <section className="services-exclusive">
-        <div className="services-exclusive-sigil">✦</div>
-
+      <section className="services-payment">
         <div>
-          <p className="services-kicker">Exclusive Layer</p>
-          <h2>Some builds are not packages.</h2>
+          <p className="services-kicker">Payment options</p>
+          <h2>Simple payment links can be added as each offer goes live.</h2>
           <p>
-            For deeper collaborations, Cosmic can support world-building, creative tech,
-            release strategy, practice systems, and brand direction across a longer arc.
-            If the signal is real, we can shape the container around it.
+            For now, each button opens an inquiry email. As the offers become active, the
+            buttons can point to PayPal, Cash App, Stripe Payment Links, Calendly, or
+            invoices depending on the offer.
           </p>
         </div>
 
-        <a href="mailto:chris.c.gordon777@gmail.com?subject=Exclusive%20Cosmic%20Build">
-          Propose a Build
-        </a>
+        <div className="services-payment-list">
+          <span>Calls → book/pay link</span>
+          <span>Audits → payment link</span>
+          <span>Custom builds → quote + deposit</span>
+          <span>Sprints → application first</span>
+        </div>
       </section>
 
       <section className="services-cta">
-        <p className="services-kicker">Build Together</p>
-        <h2>The free universe is open. The deeper builds are intentional.</h2>
+        <p className="services-kicker">Ready to work?</p>
+        <h2>Choose the offer that matches your stage.</h2>
         <p>
-          Send the signal. Share what you are building, where you are stuck, and what
-          you want people to experience.
+          Not sure what fits? Send a short message with what you are building, where you
+          are stuck, and what kind of support you are looking for.
         </p>
 
         <div className="services-cta-actions">
-          <a href="mailto:chris.c.gordon777@gmail.com?subject=Ways%20to%20Build%20with%20Cosmic">
-            Contact Cosmic
+          <a href="mailto:chris.c.gordon777@gmail.com?subject=Services%20Question">
+            Ask What Fits
           </a>
           <Link href="/nexus">Return to Nexus</Link>
         </div>
