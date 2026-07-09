@@ -1,5 +1,5 @@
 /* ===================================
-   SERVICES â€” COMMERCE V1
+   SERVICES â€” MARKETPLACE V2
    src/styles/servicesPage.css
    =================================== */
 
@@ -45,8 +45,8 @@
 .services-note,
 .services-offers-section,
 .services-free-section,
-.services-toolkit,
 .services-skills,
+.services-toolkit,
 .services-process,
 .services-payment,
 .services-cta,
@@ -65,7 +65,9 @@
 
 .services-nav a,
 .services-hero-actions a,
-.services-card-actions a,
+.services-offer-card a,
+.services-toolkit-card a,
+.services-section-support a,
 .services-cta-actions a,
 .services-inquire-actions a {
   min-height: 2.65rem;
@@ -92,9 +94,11 @@
 .services-hero-actions a:hover,
 .services-free-card:hover,
 .services-offer-card:hover,
-.services-card-actions a:hover,
-.services-cta-actions a:hover,
+.services-offer-card a:hover,
 .services-toolkit-card:hover,
+.services-toolkit-card a:hover,
+.services-section-support a:hover,
+.services-cta-actions a:hover,
 .services-inquire-actions a:hover {
   transform: translateY(-2px);
   border-color: rgba(126, 211, 255, 0.42);
@@ -192,7 +196,6 @@
 
 .services-hero-actions,
 .services-cta-actions,
-.services-card-actions,
 .services-inquire-actions {
   display: flex;
   justify-content: center;
@@ -201,12 +204,10 @@
   margin-top: 1.6rem;
 }
 
-.services-card-actions {
-  margin-top: auto;
-}
-
 .services-hero-actions a:first-child,
-.services-card-actions a:first-child,
+.services-offer-card a,
+.services-toolkit-card a,
+.services-section-support a,
 .services-cta-actions a:first-child,
 .services-inquire-actions a:first-child {
   color: #081018;
@@ -214,21 +215,11 @@
   background: linear-gradient(135deg, rgba(247, 239, 228, 0.96), rgba(126, 211, 255, 0.86));
 }
 
-.services-card-actions a {
-  flex: 1 1 10rem;
-}
-
-.services-card-actions .services-secondary-action {
-  color: rgba(238, 243, 250, 0.84);
-  border-color: rgba(220, 186, 92, 0.20);
-  background: rgba(220, 186, 92, 0.075);
-}
-
 .services-note,
 .services-offers-section,
 .services-free-section,
-.services-toolkit,
 .services-skills,
+.services-toolkit,
 .services-process,
 .services-payment,
 .services-cta,
@@ -246,20 +237,17 @@
   backdrop-filter: blur(18px) saturate(125%);
 }
 
-.services-note,
-.services-inquire-card,
-.services-cta {
+.services-note {
   text-align: center;
 }
 
 .services-note h2,
 .services-section-heading h2,
-.services-toolkit h2,
 .services-skills h2,
 .services-process h2,
 .services-payment h2,
 .services-cta h2,
-.services-inquire-card h1 {
+.services-inquire-heading h1 {
   max-width: 860px;
   margin: 0 auto;
   color: rgba(248, 250, 255, 0.96);
@@ -270,32 +258,30 @@
 
 .services-note p:not(.services-kicker),
 .services-section-heading p:not(.services-kicker),
-.services-toolkit p,
 .services-skills p,
 .services-process p,
 .services-payment p,
 .services-cta p,
-.services-inquire-card > p {
+.services-inquire-heading p {
   max-width: 780px;
   margin: 1rem auto 0;
   color: rgba(224, 231, 240, 0.72);
   line-height: 1.75;
 }
 
-.services-section-heading {
+.services-section-heading,
+.services-inquire-heading {
   margin: 0 auto 1rem;
   text-align: center;
 }
 
-.services-offer-grid,
-.services-toolkit-grid {
+.services-offer-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
 }
 
-.services-offer-card,
-.services-toolkit-card {
+.services-offer-card {
   position: relative;
   min-height: 39rem;
   display: flex;
@@ -303,8 +289,6 @@
   border: 1px solid rgba(238, 243, 250, 0.12);
   border-radius: 1.55rem;
   padding: 1.15rem;
-  color: rgba(238, 243, 250, 0.88);
-  text-decoration: none;
   background:
     radial-gradient(circle at 14% 0%, rgba(126, 211, 255, 0.10), transparent 38%),
     linear-gradient(145deg, rgba(255, 255, 255, 0.062), rgba(3, 6, 14, 0.56));
@@ -317,10 +301,6 @@
     background 180ms ease;
 }
 
-.services-toolkit-card {
-  min-height: 16rem;
-}
-
 .services-offer-card.is-featured {
   border-color: rgba(220, 186, 92, 0.30);
   background:
@@ -329,12 +309,13 @@
     linear-gradient(145deg, rgba(255, 255, 255, 0.078), rgba(3, 6, 14, 0.62));
 }
 
-.services-offer-topline {
+.services-offer-topline,
+.services-offer-meta {
   display: flex;
   justify-content: space-between;
   gap: 0.75rem;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .services-offer-topline span,
@@ -348,7 +329,9 @@
   text-transform: uppercase;
 }
 
-.services-offer-topline em {
+.services-offer-topline em,
+.services-status,
+.services-action-type {
   border: 1px solid rgba(220, 186, 92, 0.28);
   border-radius: 999px;
   padding: 0.32rem 0.52rem;
@@ -361,17 +344,23 @@
   text-transform: uppercase;
 }
 
+.services-action-type {
+  color: rgba(126, 211, 255, 0.86);
+  border-color: rgba(126, 211, 255, 0.22);
+  background: rgba(126, 211, 255, 0.07);
+}
+
 .services-offer-card h3,
-.services-toolkit-card h3 {
+.services-toolkit-card h3,
+.services-free-card h3 {
   margin: 0;
   color: rgba(248, 250, 255, 0.96);
-  font-size: clamp(1.45rem, 3vw, 2.35rem);
   line-height: 0.98;
   letter-spacing: -0.04em;
 }
 
-.services-toolkit-card h3 {
-  font-size: clamp(1.35rem, 2.3vw, 2rem);
+.services-offer-card h3 {
+  font-size: clamp(1.45rem, 3vw, 2.35rem);
 }
 
 .services-price,
@@ -385,25 +374,15 @@
 }
 
 .services-format {
-  margin-top: 0.4rem;
-  color: rgba(220, 186, 92, 0.86);
-  font-size: 0.66rem;
+  margin-top: 0.45rem;
+  color: rgba(238, 243, 250, 0.62);
 }
 
-.services-offer-body,
-.services-toolkit-card p {
+.services-offer-body {
   margin: 1rem 0 0;
   color: rgba(224, 231, 240, 0.70);
   font-size: 0.92rem;
   line-height: 1.65;
-}
-
-.services-toolkit-card strong {
-  margin-top: auto;
-  color: rgba(126, 211, 255, 0.88);
-  font-size: 0.68rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
 }
 
 .services-offer-detail {
@@ -464,6 +443,82 @@
   text-transform: uppercase;
 }
 
+.services-offer-card a {
+  width: 100%;
+  margin-top: auto;
+}
+
+.services-section-support {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1rem;
+  border: 1px solid rgba(238, 243, 250, 0.10);
+  border-radius: 1.4rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.services-section-support p {
+  margin: 0;
+  color: rgba(224, 231, 240, 0.74);
+}
+
+.services-toolkit-grid,
+.services-free-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.services-toolkit-card,
+.services-free-card {
+  min-height: 14rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.72rem;
+  border: 1px solid rgba(238, 243, 250, 0.12);
+  border-radius: 1.35rem;
+  padding: 1rem;
+  color: rgba(238, 243, 250, 0.88);
+  background:
+    radial-gradient(circle at 0% 0%, rgba(126, 211, 255, 0.12), transparent 42%),
+    rgba(255, 255, 255, 0.045);
+  text-align: left;
+  text-decoration: none;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.services-toolkit-card h3,
+.services-free-card h3 {
+  font-size: 1.15rem;
+  text-transform: uppercase;
+}
+
+.services-toolkit-card p,
+.services-free-card p {
+  margin: 0;
+  color: rgba(224, 231, 240, 0.68);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.services-toolkit-card a,
+.services-free-card strong {
+  margin-top: auto;
+}
+
+.services-free-card strong {
+  color: rgba(126, 211, 255, 0.88);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
 .services-skills,
 .services-process,
 .services-payment {
@@ -501,55 +556,6 @@
   color: rgba(238, 243, 250, 0.78);
 }
 
-.services-free-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.9rem;
-}
-
-.services-free-card {
-  min-height: 13rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.72rem;
-  border: 1px solid rgba(238, 243, 250, 0.12);
-  border-radius: 1.35rem;
-  padding: 1rem;
-  color: rgba(238, 243, 250, 0.88);
-  background:
-    radial-gradient(circle at 0% 0%, rgba(126, 211, 255, 0.12), transparent 42%),
-    rgba(255, 255, 255, 0.045);
-  text-align: left;
-  text-decoration: none;
-  transition:
-    transform 180ms ease,
-    border-color 180ms ease,
-    background 180ms ease;
-}
-
-.services-free-card h3 {
-  margin: 0;
-  color: rgba(248, 250, 255, 0.96);
-  font-size: 1.15rem;
-  line-height: 1.1;
-  text-transform: uppercase;
-}
-
-.services-free-card p {
-  margin: 0;
-  color: rgba(224, 231, 240, 0.68);
-  font-size: 0.88rem;
-  line-height: 1.55;
-}
-
-.services-free-card strong {
-  margin-top: auto;
-  color: rgba(126, 211, 255, 0.88);
-  font-size: 0.68rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
 .services-process-steps {
   display: grid;
   gap: 0.75rem;
@@ -579,6 +585,10 @@
   font-size: 0.9rem;
 }
 
+.services-cta {
+  text-align: center;
+}
+
 .services-inquire-page {
   display: grid;
   place-items: start center;
@@ -588,63 +598,56 @@
   margin-top: 0;
 }
 
-.services-inquire-grid {
+.services-inquire-form {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.85rem;
-  margin-top: 1.5rem;
-  text-align: left;
+  gap: 1rem;
+  margin-top: 1.2rem;
 }
 
-.services-inquire-grid label {
+.services-inquire-form label {
   display: grid;
-  gap: 0.45rem;
-}
-
-.services-inquire-grid label span {
-  color: rgba(220, 186, 92, 0.84);
-  font-size: 0.68rem;
+  gap: 0.5rem;
+  color: rgba(220, 186, 92, 0.86);
+  font-size: 0.7rem;
   font-weight: 900;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
-.services-inquire-grid input,
-.services-inquire-grid select,
-.services-inquire-grid textarea {
+.services-inquire-form input,
+.services-inquire-form select,
+.services-inquire-form textarea {
   width: 100%;
   border: 1px solid rgba(238, 243, 250, 0.14);
   border-radius: 1rem;
-  padding: 0.85rem 0.95rem;
-  color: rgba(248, 250, 255, 0.92);
+  padding: 0.9rem 1rem;
+  color: rgba(248, 250, 255, 0.94);
   background: rgba(255, 255, 255, 0.055);
   font: inherit;
-  font-family: Arial, sans-serif;
+  font-size: 0.92rem;
+  letter-spacing: normal;
+  text-transform: none;
   outline: none;
 }
 
-.services-inquire-grid textarea {
-  min-height: 10rem;
+.services-inquire-form textarea {
+  min-height: 7rem;
   resize: vertical;
 }
 
-.services-inquire-grid input:focus,
-.services-inquire-grid select:focus,
-.services-inquire-grid textarea:focus {
-  border-color: rgba(126, 211, 255, 0.46);
-  box-shadow: 0 0 0 3px rgba(126, 211, 255, 0.08);
-}
-
-.services-inquire-wide {
-  grid-column: 1 / -1;
+.services-inquire-form input:focus,
+.services-inquire-form select:focus,
+.services-inquire-form textarea:focus {
+  border-color: rgba(126, 211, 255, 0.45);
+  box-shadow: 0 0 0 3px rgba(126, 211, 255, 0.10);
 }
 
 @media (max-width: 1080px) {
-  .services-offer-grid,
-  .services-toolkit-grid {
+  .services-offer-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .services-toolkit-grid,
   .services-free-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -665,19 +668,23 @@
     font-size: clamp(3rem, 17vw, 4.8rem);
   }
 
-  .services-free-grid,
-  .services-offer-grid,
   .services-toolkit-grid,
-  .services-inquire-grid {
+  .services-free-grid,
+  .services-offer-grid {
     grid-template-columns: 1fr;
   }
 
   .services-nav a,
   .services-hero-actions a,
   .services-cta-actions a,
-  .services-card-actions a,
+  .services-section-support a,
   .services-inquire-actions a {
     width: 100%;
+  }
+
+  .services-section-support {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .services-offer-card {

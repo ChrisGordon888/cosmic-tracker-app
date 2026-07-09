@@ -5,34 +5,36 @@ import Link from "next/link";
 import "@/styles/servicesPage.css";
 import CosmicBackground from "@/components/CosmicBackground";
 
+type OfferStatus = "Available Now" | "Limited Openings" | "Application Only" | "Custom Quote" | "Coming Soon";
+type ActionType = "book" | "buy" | "request" | "apply" | "quote";
+
 type Offer = {
   slug: string;
   tier: string;
   title: string;
   price: string;
   format: string;
+  status: OfferStatus;
+  actionType: ActionType;
+  actionLabel: string;
+  actionHref: string;
   body: string;
   bestFor: string;
   youSend: string;
   youReceive: string;
   outcome: string;
   includes: string[];
-  cta: string;
-  paymentHref?: string;
-  paymentCta?: string;
   featured?: boolean;
 };
 
-type ToolkitLink = {
+type ToolkitItem = {
   category: string;
   title: string;
   description: string;
   href: string;
-  tag: string;
-  affiliate?: boolean;
+  cta: string;
+  status: "Coming Soon" | "Recommended" | "Affiliate Ready";
 };
-
-const inquiryHref = (slug: string) => `/services/inquire?offer=${slug}`;
 
 const START_HERE_OFFERS: Offer[] = [
   {
@@ -41,6 +43,10 @@ const START_HERE_OFFERS: Offer[] = [
     title: "Cosmic Clarity Call",
     price: "30 min — $55",
     format: "1 live call",
+    status: "Available Now",
+    actionType: "book",
+    actionLabel: "Book Call",
+    actionHref: "/services/inquire?offer=cosmic-clarity-call&intent=book",
     body:
       "A focused call for quick creative, emotional, workflow, or next-step clarity.",
     bestFor: "Quick direction, creative stuckness, or choosing the next move.",
@@ -48,9 +54,6 @@ const START_HERE_OFFERS: Offer[] = [
     youReceive: "A focused call with notes, perspective, and direct next steps.",
     outcome: "You leave with a clearer direction and one simple action path.",
     includes: ["Quick diagnosis", "Next-step clarity", "Action notes"],
-    cta: "Inquire",
-    paymentHref: "#payment-link-coming-soon",
-    paymentCta: "Pay / Book Soon",
   },
   {
     slug: "creative-direction-session",
@@ -58,6 +61,10 @@ const START_HERE_OFFERS: Offer[] = [
     title: "Creative Direction Session",
     price: "60 min — $111",
     format: "1 live session",
+    status: "Available Now",
+    actionType: "book",
+    actionLabel: "Book Session",
+    actionHref: "/services/inquire?offer=creative-direction-session&intent=book",
     body:
       "A deeper session for shaping a project, release, brand direction, story, creative identity, or personal creative path.",
     bestFor: "Artists, creators, and seekers who need deeper creative direction.",
@@ -65,9 +72,6 @@ const START_HERE_OFFERS: Offer[] = [
     youReceive: "Live direction, creative feedback, and a practical next-step roadmap.",
     outcome: "Your idea becomes more organized, grounded, and ready to move.",
     includes: ["Project direction", "Creative feedback", "Next-step roadmap"],
-    cta: "Inquire",
-    paymentHref: "#payment-link-coming-soon",
-    paymentCta: "Pay / Book Soon",
     featured: true,
   },
   {
@@ -76,6 +80,10 @@ const START_HERE_OFFERS: Offer[] = [
     title: "Music / DAW Workflow Lesson",
     price: "60 min — $88",
     format: "1 live lesson",
+    status: "Available Now",
+    actionType: "book",
+    actionLabel: "Book Lesson",
+    actionHref: "/services/inquire?offer=music-daw-workflow-lesson&intent=book",
     body:
       "Beginner-friendly help with Ableton, Pro Tools, recording workflow, basic music theory, chords, melodies, arrangement, and vocal session setup.",
     bestFor: "Beginners or returning creatives who want practical music help.",
@@ -83,9 +91,6 @@ const START_HERE_OFFERS: Offer[] = [
     youReceive: "A live lesson, screen-share guidance, and practice steps.",
     outcome: "You understand your tools better and can keep creating with less friction.",
     includes: ["DAW workflow", "Music basics", "Recording setup"],
-    cta: "Inquire",
-    paymentHref: "#payment-link-coming-soon",
-    paymentCta: "Pay / Book Soon",
   },
 ];
 
@@ -96,6 +101,10 @@ const AUDIT_OFFERS: Offer[] = [
     title: "Artist World Audit",
     price: "$222",
     format: "Written audit + optional walkthrough",
+    status: "Available Now",
+    actionType: "buy",
+    actionLabel: "Buy Audit",
+    actionHref: "/services/inquire?offer=artist-world-audit&intent=buy",
     body:
       "For artists with music, visuals, ideas, content, or a release page who want a clearer world, story, rollout, and listener pathway.",
     bestFor: "Independent artists building identity, story, and release direction.",
@@ -103,9 +112,6 @@ const AUDIT_OFFERS: Offer[] = [
     youReceive: "A written audit with world notes, positioning, and rollout suggestions.",
     outcome: "You understand what your artist world is saying and how to strengthen it.",
     includes: ["Music/project review", "World + story notes", "Rollout suggestions"],
-    cta: "Request Audit",
-    paymentHref: "#payment-link-coming-soon",
-    paymentCta: "Pay Soon",
     featured: true,
   },
   {
@@ -114,16 +120,17 @@ const AUDIT_OFFERS: Offer[] = [
     title: "Song / Project Development Pack",
     price: "3 sessions — $333",
     format: "3 live development sessions",
+    status: "Available Now",
+    actionType: "book",
+    actionLabel: "Start Pack",
+    actionHref: "/services/inquire?offer=song-project-development-pack&intent=book",
     body:
       "Three focused sessions to develop a song, EP idea, rollout concept, lyrics, hooks, melodies, arrangement, or project direction.",
-    bestFor: "Artists who want hands-on support moving one project forward.",
+    bestFor: "Artists who want hands-on support moving one song or project forward.",
     youSend: "Demos, lyrics, references, project notes, and what feels unfinished.",
     youReceive: "Three development sessions with feedback, direction, and assignments.",
     outcome: "Your song or project gets clearer, stronger, and closer to release.",
     includes: ["Song feedback", "Development calls", "Project direction"],
-    cta: "Develop Project",
-    paymentHref: "#payment-link-coming-soon",
-    paymentCta: "Pay Soon",
     featured: true,
   },
   {
@@ -132,14 +139,20 @@ const AUDIT_OFFERS: Offer[] = [
     title: "Studio Systems Reset",
     price: "$444",
     format: "Audit + workflow map + walkthrough",
+    status: "Limited Openings",
+    actionType: "request",
+    actionLabel: "Request Reset",
+    actionHref: "/services/inquire?offer=studio-systems-reset&intent=request",
     body:
       "A deeper reset for your recording setup, DAW sessions, templates, file organization, vocal workflow, and creative productivity system.",
     bestFor: "Artists/producers with messy sessions, setup confusion, or workflow drag.",
-    youSend: "Setup photos, DAW screenshots, session notes, template questions, and workflow pain points.",
-    youReceive: "A written workflow map, setup notes, template suggestions, and a walkthrough.",
-    outcome: "Your creative machine becomes cleaner, faster, and easier to return to.",
+    youSend:
+      "Setup photos, DAW screenshots, session notes, template questions, gear/software list, and workflow pain points.",
+    youReceive:
+      "A written systems map, setup notes, template suggestions, priority fixes, and a walkthrough call.",
+    outcome:
+      "Your creative machine becomes cleaner, faster, and easier to return to across all future songs.",
     includes: ["Setup review", "Workflow map", "Template suggestions"],
-    cta: "Request Reset",
   },
 ];
 
@@ -150,6 +163,10 @@ const BUILD_WITH_COSMIC: Offer[] = [
     title: "Release Portal Accelerator",
     price: "Starting at $777",
     format: "Done-with-you release build",
+    status: "Limited Openings",
+    actionType: "request",
+    actionLabel: "Request Portal",
+    actionHref: "/services/inquire?offer=release-portal-accelerator&intent=request",
     body:
       "A guided build for artists who want help shaping, customizing, and launching a release portal with story, visuals, track direction, and fan pathway.",
     bestFor: "Artists with a single, EP, album, or campaign they want to launch better.",
@@ -157,7 +174,6 @@ const BUILD_WITH_COSMIC: Offer[] = [
     youReceive: "Guided portal setup, world copy, release direction, and launch support.",
     outcome: "Your release has a stronger home, clearer story, and better fan pathway.",
     includes: ["Portal setup", "World copy", "Launch direction"],
-    cta: "Request Portal",
     featured: true,
   },
   {
@@ -166,6 +182,10 @@ const BUILD_WITH_COSMIC: Offer[] = [
     title: "Cosmic Artist Sprint",
     price: "4 weeks — starting at $888",
     format: "Weekly coaching sprint",
+    status: "Application Only",
+    actionType: "apply",
+    actionLabel: "Apply for Sprint",
+    actionHref: "/services/inquire?offer=cosmic-artist-sprint&intent=apply",
     body:
       "A focused artist development sprint with weekly calls, music feedback, workflow setup, identity work, practice rhythm, and rollout direction.",
     bestFor: "Artists who want support across music, identity, workflow, and discipline.",
@@ -173,7 +193,6 @@ const BUILD_WITH_COSMIC: Offer[] = [
     youReceive: "Weekly coaching, feedback, assignments, and a personalized artist roadmap.",
     outcome: "You build momentum, clarity, and a stronger creative system over one month.",
     includes: ["Weekly coaching", "Music + workflow feedback", "Artist roadmap"],
-    cta: "Apply for Sprint",
     featured: true,
   },
   {
@@ -182,6 +201,10 @@ const BUILD_WITH_COSMIC: Offer[] = [
     title: "Creator System Custom Build",
     price: "Starting at $1,500",
     format: "Scoped custom project",
+    status: "Custom Quote",
+    actionType: "quote",
+    actionLabel: "Request Quote",
+    actionHref: "/services/inquire?offer=creator-system-custom-build&intent=quote",
     body:
       "A custom website, portfolio, dashboard, fan portal, creative OS, or digital workflow system built around your actual creative process.",
     bestFor: "Creators, artists, and small brands who need something custom.",
@@ -189,7 +212,45 @@ const BUILD_WITH_COSMIC: Offer[] = [
     youReceive: "A scoped custom build with design, structure, implementation, and launch support.",
     outcome: "You get a digital system built around your real work, not a generic template.",
     includes: ["Custom build", "Workflow design", "Launch support"],
-    cta: "Request Quote",
+  },
+];
+
+const TOOLKIT_ITEMS: ToolkitItem[] = [
+  {
+    category: "Studio",
+    title: "Beginner Vocal Recording Chain",
+    description:
+      "A simple home-studio path for cleaner vocals: mic, interface, headphones, gain staging, and room basics.",
+    href: "#toolkit-coming-soon",
+    cta: "Coming Soon",
+    status: "Coming Soon",
+  },
+  {
+    category: "Music",
+    title: "Ableton / Pro Tools Starter Stack",
+    description:
+      "DAW workflow tools, templates, and learning resources for artists getting organized inside their sessions.",
+    href: "#toolkit-coming-soon",
+    cta: "Coming Soon",
+    status: "Coming Soon",
+  },
+  {
+    category: "Creator Systems",
+    title: "Release Planning Toolkit",
+    description:
+      "Checklists, prompts, and planning resources for moving from song idea to rollout, page, and content path.",
+    href: "#toolkit-coming-soon",
+    cta: "Coming Soon",
+    status: "Coming Soon",
+  },
+  {
+    category: "Practice",
+    title: "Creative Rhythm Starter Kit",
+    description:
+      "Practice, movement, journaling, and accountability resources for building consistency without burning out.",
+    href: "#toolkit-coming-soon",
+    cta: "Coming Soon",
+    status: "Coming Soon",
   },
 ];
 
@@ -217,45 +278,6 @@ const FREE_UNIVERSE = [
   },
 ];
 
-const TOOLKIT_LINKS: ToolkitLink[] = [
-  {
-    category: "Studio",
-    title: "Beginner Vocal Recording Chain",
-    description:
-      "A future gear list for recording cleaner vocals at home: mic, interface, headphones, room treatment, and simple signal flow.",
-    href: "#toolkit-coming-soon",
-    tag: "Coming soon",
-    affiliate: true,
-  },
-  {
-    category: "Music",
-    title: "DAW + Workflow Resources",
-    description:
-      "Recommended tools, templates, and learning resources for Ableton, Pro Tools, writing, arranging, and finishing songs.",
-    href: "#toolkit-coming-soon",
-    tag: "Affiliate ready",
-    affiliate: true,
-  },
-  {
-    category: "Creator",
-    title: "Creator Systems Stack",
-    description:
-      "Hosting, domains, dashboards, design tools, and productivity systems for artists building their online world.",
-    href: "#toolkit-coming-soon",
-    tag: "Recommended",
-    affiliate: true,
-  },
-  {
-    category: "Practice",
-    title: "Practice + Performance Kit",
-    description:
-      "Future resources for yoga, mobility, recovery, journaling, breathwork, and daily creative rhythm.",
-    href: "#toolkit-coming-soon",
-    tag: "Coming soon",
-    affiliate: true,
-  },
-];
-
 const SKILL_AREAS = [
   "Artist identity",
   "Release strategy",
@@ -275,6 +297,11 @@ function OfferCard({ offer }: { offer: Offer }) {
       <div className="services-offer-topline">
         <span>{offer.tier}</span>
         {offer.featured && <em>Featured</em>}
+      </div>
+
+      <div className="services-offer-meta">
+        <span className="services-status">{offer.status}</span>
+        <span className="services-action-type">{offer.actionType}</span>
       </div>
 
       <h3>{offer.title}</h3>
@@ -308,14 +335,9 @@ function OfferCard({ offer }: { offer: Offer }) {
         ))}
       </ul>
 
-      <div className="services-card-actions">
-        <Link href={inquiryHref(offer.slug)}>{offer.cta}</Link>
-        {offer.paymentHref && (
-          <a className="services-secondary-action" href={offer.paymentHref}>
-            {offer.paymentCta || "Pay Now"}
-          </a>
-        )}
-      </div>
+      <Link className="services-offer-action" href={offer.actionHref}>
+        {offer.actionLabel}
+      </Link>
     </article>
   );
 }
@@ -353,7 +375,7 @@ export default function ServicesPage() {
 
         <div className="services-hero-actions">
           <a href="#start-here">View Offers</a>
-          <Link href="/services/inquire?offer=not-sure">Ask What Fits</Link>
+          <Link href="/services/inquire?intent=question">Ask a Question</Link>
         </div>
       </section>
 
@@ -379,8 +401,13 @@ export default function ServicesPage() {
 
         <div className="services-offer-grid">
           {START_HERE_OFFERS.map((offer) => (
-            <OfferCard key={offer.title} offer={offer} />
+            <OfferCard key={offer.slug} offer={offer} />
           ))}
+        </div>
+
+        <div className="services-section-support">
+          <p>Not sure which entry offer fits?</p>
+          <Link href="/services/inquire?intent=question">Ask a Question</Link>
         </div>
       </section>
 
@@ -396,7 +423,7 @@ export default function ServicesPage() {
 
         <div className="services-offer-grid">
           {AUDIT_OFFERS.map((offer) => (
-            <OfferCard key={offer.title} offer={offer} />
+            <OfferCard key={offer.slug} offer={offer} />
           ))}
         </div>
       </section>
@@ -414,7 +441,7 @@ export default function ServicesPage() {
 
         <div className="services-offer-grid">
           {BUILD_WITH_COSMIC.map((offer) => (
-            <OfferCard key={offer.title} offer={offer} />
+            <OfferCard key={offer.slug} offer={offer} />
           ))}
         </div>
       </section>
@@ -422,24 +449,25 @@ export default function ServicesPage() {
       <section className="services-toolkit" aria-labelledby="toolkit-heading">
         <div className="services-section-heading">
           <p className="services-kicker">Cosmic Toolkit</p>
-          <h2 id="toolkit-heading">Tools, gear, templates, and resources I recommend.</h2>
+          <h2 id="toolkit-heading">Tools, templates, gear, and resources.</h2>
           <p>
-            This section is affiliate-ready. Some links may eventually be affiliate links;
-            I only want to share tools I use, trust, or genuinely recommend.
+            This section is affiliate-ready for future recommendations, templates, and
+            resources. Some links may become affiliate links. I only share tools I use,
+            trust, or genuinely recommend.
           </p>
         </div>
 
         <div className="services-toolkit-grid">
-          {TOOLKIT_LINKS.map((tool) => (
-            <a key={tool.title} href={tool.href} className="services-toolkit-card">
-              <div className="services-offer-topline">
-                <span>{tool.category}</span>
-                {tool.affiliate && <em>Affiliate Ready</em>}
+          {TOOLKIT_ITEMS.map((item) => (
+            <article key={item.title} className="services-toolkit-card">
+              <div className="services-offer-meta">
+                <span className="services-status">{item.status}</span>
+                <span className="services-action-type">{item.category}</span>
               </div>
-              <h3>{tool.title}</h3>
-              <p>{tool.description}</p>
-              <strong>{tool.tag}</strong>
-            </a>
+              <h3>{item.title}</h3>
+              <p>{item.description}</p>
+              <a href={item.href}>{item.cta}</a>
+            </article>
           ))}
         </div>
       </section>
@@ -517,21 +545,20 @@ export default function ServicesPage() {
 
       <section className="services-payment">
         <div>
-          <p className="services-kicker">Payment options</p>
-          <h2>Payment links can be added offer-by-offer.</h2>
+          <p className="services-kicker">Payment + accounts</p>
+          <h2>Payment links can be added as each offer goes live.</h2>
           <p>
-            The inquiry flow is live first. As each offer becomes active, the buttons can
-            point to PayPal, Cash App, Stripe Payment Links, Calendly, or invoices depending
-            on the offer.
+            Calls, lessons, and audits can later point to PayPal, Cash App, Stripe Payment
+            Links, Calendly, or invoices. After purchase, clients can be invited to create
+            an account for future project notes, resources, and status tracking.
           </p>
         </div>
 
         <div className="services-payment-list">
-          <span>Calls → book/pay link</span>
-          <span>Audits → payment link</span>
+          <span>Simple offers → book/pay link</span>
+          <span>Audits → payment or intake first</span>
           <span>Custom builds → quote + deposit</span>
-          <span>Sprints → application first</span>
-          <span>Toolkit → affiliate links</span>
+          <span>Future clients → account portal</span>
         </div>
       </section>
 
@@ -544,7 +571,7 @@ export default function ServicesPage() {
         </p>
 
         <div className="services-cta-actions">
-          <Link href="/services/inquire?offer=not-sure">Ask What Fits</Link>
+          <Link href="/services/inquire?intent=question">Ask What Fits</Link>
           <Link href="/nexus">Return to Nexus</Link>
         </div>
       </section>
