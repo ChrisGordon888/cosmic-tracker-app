@@ -121,6 +121,7 @@ export default function PracticePortal() {
                     <CosmicClock className="practice-clock" />
                     <div className="practice-hero-links">
                         <Link href="/nexus">Nexus</Link>
+                        <Link href="/services">Services</Link>
                         <Link href="/creator/projects">Projects</Link>
                         <Link href="/creator">Creator OS</Link>
                     </div>
@@ -194,15 +195,15 @@ export default function PracticePortal() {
 
             <section className="practice-coming-soon">
                 <div>
-                    <p className="practice-kicker">Future Service Layer</p>
-                    <h2>Training, yoga, accountability, and creative practice can live here.</h2>
+                    <p className="practice-kicker">Work With Cosmic</p>
+                    <h2>Build your rhythm with direct support.</h2>
                     <p>
-                        This is the seed for personal training, yoga flows, artist development, daily rituals,
-                        community challenges, and practice-based offerings under the Cosmic umbrella.
+                        Explore creative direction, music workflow lessons, artist development, practice coaching,
+                        and deeper build paths connected to the Cosmic ecosystem.
                     </p>
                 </div>
                 <div className="practice-actions">
-                    <Link href="/services">Ways to Build</Link>
+                    <Link href="/services">Explore Services</Link>
                     <Link href="/nexus">Return to the Nexus</Link>
                 </div>
             </section>

@@ -68,7 +68,7 @@ export default function LandingPage() {
                                 <Link href="/creator">Creator OS</Link>
                                 <Link href="/creator/projects">Project Library</Link>
                                 <Link href="/practice">Practice</Link>
-                                <Link href="/services">Build With Cosmic</Link>
+                                <Link href="/services">Services</Link>
                             </div>
                         ) : (
                             <button

@@ -391,3 +391,106 @@
     width: 100%;
   }
 }
+
+/* ===================================
+   PRACTICE MOBILE POLISH
+   =================================== */
+
+@media (max-width: 760px) {
+  .practice-page {
+    overflow-x: hidden;
+  }
+
+  .practice-hero {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding-inline: 0.9rem;
+  }
+
+  .practice-hero-copy h1 {
+    font-size: clamp(2.4rem, 13vw, 4.2rem);
+    line-height: 0.95;
+    letter-spacing: -0.06em;
+  }
+
+  .practice-hero-copy p {
+    font-size: 0.96rem;
+    line-height: 1.7;
+  }
+
+  .practice-hero-panel {
+    width: 100%;
+  }
+
+  .practice-hero-links {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.55rem;
+  }
+
+  .practice-hero-links a,
+  .practice-actions a,
+  .practice-actions button {
+    width: 100%;
+    min-height: 2.75rem;
+  }
+
+  .practice-room-section,
+  .practice-dashboard-grid,
+  .practice-coming-soon {
+    padding-inline: 0.9rem;
+  }
+
+  .practice-room-grid,
+  .practice-pillar-grid,
+  .practice-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .practice-section-heading h2,
+  .practice-module-heading h2,
+  .practice-coming-soon h2 {
+    font-size: clamp(1.9rem, 10vw, 3.2rem);
+    line-height: 1;
+  }
+
+  .practice-module,
+  .practice-room-card,
+  .practice-pillar-card,
+  .practice-coming-soon {
+    border-radius: 1.35rem;
+  }
+
+  .practice-coming-soon {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    text-align: left;
+  }
+
+  .practice-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .practice-hero,
+  .practice-room-section,
+  .practice-dashboard-grid,
+  .practice-coming-soon {
+    padding-inline: 0.7rem;
+  }
+
+  .practice-kicker {
+    font-size: 0.62rem;
+    letter-spacing: 0.16em;
+  }
+
+  .practice-room-card,
+  .practice-pillar-card,
+  .practice-module {
+    padding: 1rem;
+  }
+}
