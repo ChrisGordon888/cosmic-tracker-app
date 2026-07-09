@@ -8,23 +8,35 @@ import CosmicBackground from "@/components/CosmicBackground";
 type Offer = {
   tier: string;
   title: string;
+  slug: string;
   price: string;
+  format: string;
   body: string;
   bestFor: string;
   youSend: string;
   youReceive: string;
   outcome: string;
   includes: string[];
-  href: string;
   cta: string;
   featured?: boolean;
+};
+
+type ToolkitItem = {
+  category: string;
+  title: string;
+  body: string;
+  href: string;
+  cta: string;
+  tag: string;
 };
 
 const START_HERE_OFFERS: Offer[] = [
   {
     tier: "Call",
     title: "Cosmic Clarity Call",
+    slug: "cosmic-clarity-call",
     price: "30 min — $55",
+    format: "1 live call",
     body:
       "A focused call for quick creative, emotional, workflow, or next-step clarity.",
     bestFor: "Quick direction, creative stuckness, or choosing the next move.",
@@ -32,13 +44,14 @@ const START_HERE_OFFERS: Offer[] = [
     youReceive: "A focused call with notes, perspective, and direct next steps.",
     outcome: "You leave with a clearer direction and one simple action path.",
     includes: ["Quick diagnosis", "Next-step clarity", "Action notes"],
-    href: "mailto:chris.c.gordon777@gmail.com?subject=Cosmic%20Clarity%20Call",
     cta: "Book Call",
   },
   {
     tier: "Session",
     title: "Creative Direction Session",
+    slug: "creative-direction-session",
     price: "60 min — $111",
+    format: "1 live session",
     body:
       "A deeper session for shaping a project, release, brand direction, story, creative identity, or personal creative path.",
     bestFor: "Artists, creators, and seekers who need deeper creative direction.",
@@ -46,14 +59,15 @@ const START_HERE_OFFERS: Offer[] = [
     youReceive: "Live direction, creative feedback, and a practical next-step roadmap.",
     outcome: "Your idea becomes more organized, grounded, and ready to move.",
     includes: ["Project direction", "Creative feedback", "Next-step roadmap"],
-    href: "mailto:chris.c.gordon777@gmail.com?subject=Creative%20Direction%20Session",
     cta: "Book Session",
     featured: true,
   },
   {
     tier: "Lesson",
     title: "Music / DAW Workflow Lesson",
+    slug: "music-daw-workflow-lesson",
     price: "60 min — $88",
+    format: "1 live lesson",
     body:
       "Beginner-friendly help with Ableton, Pro Tools, recording workflow, basic music theory, chords, melodies, arrangement, and vocal session setup.",
     bestFor: "Beginners or returning creatives who want practical music help.",
@@ -61,7 +75,6 @@ const START_HERE_OFFERS: Offer[] = [
     youReceive: "A live lesson, screen-share guidance, and practice steps.",
     outcome: "You understand your tools better and can keep creating with less friction.",
     includes: ["DAW workflow", "Music basics", "Recording setup"],
-    href: "mailto:chris.c.gordon777@gmail.com?subject=Music%20DAW%20Workflow%20Lesson",
     cta: "Book Lesson",
   },
 ];
@@ -70,7 +83,9 @@ const AUDIT_OFFERS: Offer[] = [
   {
     tier: "Artist",
     title: "Artist World Audit",
+    slug: "artist-world-audit",
     price: "$222",
+    format: "Written audit + optional walkthrough",
     body:
       "For artists with music, visuals, ideas, content, or a release page who want a clearer world, story, rollout, and listener pathway.",
     bestFor: "Independent artists building identity, story, and release direction.",
@@ -78,14 +93,15 @@ const AUDIT_OFFERS: Offer[] = [
     youReceive: "A written audit with world notes, positioning, and rollout suggestions.",
     outcome: "You understand what your artist world is saying and how to strengthen it.",
     includes: ["Music/project review", "World + story notes", "Rollout suggestions"],
-    href: "mailto:chris.c.gordon777@gmail.com?subject=Artist%20World%20Audit",
     cta: "Buy Audit",
     featured: true,
   },
   {
     tier: "Project",
     title: "Song / Project Development Pack",
+    slug: "song-project-development-pack",
     price: "3 sessions — $333",
+    format: "3 live sessions",
     body:
       "Three focused sessions to develop a song, EP idea, rollout concept, lyrics, hooks, melodies, arrangement, or project direction.",
     bestFor: "Artists who want hands-on support moving one project forward.",
@@ -93,23 +109,23 @@ const AUDIT_OFFERS: Offer[] = [
     youReceive: "Three development sessions with feedback, direction, and assignments.",
     outcome: "Your song or project gets clearer, stronger, and closer to release.",
     includes: ["Song feedback", "Development calls", "Project direction"],
-    href: "mailto:chris.c.gordon777@gmail.com?subject=Song%20Project%20Development%20Pack",
     cta: "Develop Project",
     featured: true,
   },
   {
     tier: "Studio",
-    title: "Studio / Workflow Audit",
+    title: "Studio Systems Reset",
+    slug: "studio-systems-reset",
     price: "$444",
+    format: "Audit + workflow map + walkthrough",
     body:
-      "A deeper review of your recording setup, DAW sessions, templates, file organization, vocal workflow, and creative productivity system.",
+      "A deeper reset for your recording setup, DAW sessions, templates, file organization, vocal workflow, and creative productivity system.",
     bestFor: "Artists/producers with messy sessions, setup confusion, or workflow drag.",
     youSend: "Setup photos, DAW screenshots, session notes, template questions, and workflow pain points.",
     youReceive: "A written workflow map, setup notes, template suggestions, and a walkthrough.",
     outcome: "Your creative machine becomes cleaner, faster, and easier to return to.",
     includes: ["Setup review", "Workflow map", "Template suggestions"],
-    href: "mailto:chris.c.gordon777@gmail.com?subject=Studio%20Workflow%20Audit",
-    cta: "Request Audit",
+    cta: "Request Reset",
   },
 ];
 
@@ -117,7 +133,9 @@ const BUILD_WITH_COSMIC: Offer[] = [
   {
     tier: "Release",
     title: "Release Portal Accelerator",
+    slug: "release-portal-accelerator",
     price: "Starting at $777",
+    format: "Done-with-you build",
     body:
       "A done-with-you build for artists who want help shaping, customizing, and launching a release portal with story, visuals, track direction, and fan pathway.",
     bestFor: "Artists with a single, EP, album, or campaign they want to launch better.",
@@ -125,14 +143,15 @@ const BUILD_WITH_COSMIC: Offer[] = [
     youReceive: "Guided portal setup, world copy, release direction, and launch support.",
     outcome: "Your release has a stronger home, clearer story, and better fan pathway.",
     includes: ["Portal setup", "World copy", "Launch direction"],
-    href: "mailto:chris.c.gordon777@gmail.com?subject=Release%20Portal%20Accelerator",
     cta: "Request Portal",
     featured: true,
   },
   {
     tier: "Sprint",
     title: "Cosmic Artist Sprint",
+    slug: "cosmic-artist-sprint",
     price: "4 weeks — starting at $888",
+    format: "Weekly coaching sprint",
     body:
       "A focused artist development sprint with weekly calls, music feedback, workflow setup, identity work, practice rhythm, and rollout direction.",
     bestFor: "Artists who want support across music, identity, workflow, and discipline.",
@@ -140,14 +159,15 @@ const BUILD_WITH_COSMIC: Offer[] = [
     youReceive: "Weekly coaching, feedback, assignments, and a personalized artist roadmap.",
     outcome: "You build momentum, clarity, and a stronger creative system over one month.",
     includes: ["Weekly coaching", "Music + workflow feedback", "Artist roadmap"],
-    href: "mailto:chris.c.gordon777@gmail.com?subject=Cosmic%20Artist%20Sprint",
     cta: "Apply for Sprint",
     featured: true,
   },
   {
     tier: "System",
     title: "Creator System Custom Build",
+    slug: "creator-system-custom-build",
     price: "Starting at $1,500",
+    format: "Scoped custom project",
     body:
       "A custom website, portfolio, dashboard, fan portal, creative OS, or digital workflow system built around your actual creative process.",
     bestFor: "Creators, artists, and small brands who need something custom.",
@@ -155,7 +175,6 @@ const BUILD_WITH_COSMIC: Offer[] = [
     youReceive: "A scoped custom build with design, structure, implementation, and launch support.",
     outcome: "You get a digital system built around your real work, not a generic template.",
     includes: ["Custom build", "Workflow design", "Launch support"],
-    href: "mailto:chris.c.gordon777@gmail.com?subject=Creator%20System%20Custom%20Build",
     cta: "Request Quote",
   },
 ];
@@ -197,6 +216,40 @@ const SKILL_AREAS = [
   "World-building",
 ];
 
+const TOOLKIT_LINKS: ToolkitItem[] = [
+  {
+    category: "Studio",
+    title: "Starter Vocal Chain",
+    body:
+      "A future gear/tool list for microphones, interfaces, headphones, vocal templates, and recording setup basics.",
+    href: "#",
+    cta: "Coming Soon",
+    tag: "Affiliate-ready",
+  },
+  {
+    category: "Music",
+    title: "DAW + Plugin Toolkit",
+    body:
+      "Recommended software, sample packs, plugins, templates, and workflow tools for writing and producing.",
+    href: "#",
+    cta: "Coming Soon",
+    tag: "Affiliate-ready",
+  },
+  {
+    category: "Creator",
+    title: "Creative Systems Stack",
+    body:
+      "Tools for websites, content systems, notes, calendars, domains, hosting, and creator operations.",
+    href: "#",
+    cta: "Coming Soon",
+    tag: "Affiliate-ready",
+  },
+];
+
+function inquiryHref(offer: Offer) {
+  return `/services/inquire?offer=${encodeURIComponent(offer.slug)}`;
+}
+
 function OfferCard({ offer }: { offer: Offer }) {
   return (
     <article className={`services-offer-card ${offer.featured ? "is-featured" : ""}`}>
@@ -207,6 +260,7 @@ function OfferCard({ offer }: { offer: Offer }) {
 
       <h3>{offer.title}</h3>
       <p className="services-price">{offer.price}</p>
+      <p className="services-format">Format: {offer.format}</p>
       <p className="services-offer-body">{offer.body}</p>
 
       <div className="services-offer-detail">
@@ -235,7 +289,7 @@ function OfferCard({ offer }: { offer: Offer }) {
         ))}
       </ul>
 
-      <a href={offer.href}>{offer.cta}</a>
+      <Link href={inquiryHref(offer)}>{offer.cta}</Link>
     </article>
   );
 }
@@ -273,9 +327,7 @@ export default function ServicesPage() {
 
         <div className="services-hero-actions">
           <a href="#start-here">View Offers</a>
-          <a href="mailto:chris.c.gordon777@gmail.com?subject=Services%20Question">
-            Ask a Question
-          </a>
+          <Link href="/services/inquire">Ask What Fits</Link>
         </div>
       </section>
 
@@ -358,6 +410,37 @@ export default function ServicesPage() {
         </div>
       </section>
 
+      <section className="services-toolkit" aria-labelledby="toolkit-heading">
+        <div className="services-section-heading">
+          <p className="services-kicker">Cosmic Toolkit</p>
+          <h2 id="toolkit-heading">Affiliate-ready tools and resources.</h2>
+          <p>
+            This section is prepared for future affiliate links, recommended products,
+            templates, gear lists, and creator resources. Use it for tools you genuinely
+            use, trust, or would recommend.
+          </p>
+        </div>
+
+        <div className="services-toolkit-grid">
+          {TOOLKIT_LINKS.map((tool) => (
+            <article key={tool.title} className="services-toolkit-card">
+              <span>{tool.category}</span>
+              <h3>{tool.title}</h3>
+              <p>{tool.body}</p>
+              <div className="services-toolkit-card-footer">
+                <small>{tool.tag}</small>
+                <a href={tool.href}>{tool.cta}</a>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <p className="services-affiliate-note">
+          Affiliate note: some future toolkit links may earn a commission. Only add tools
+          you actually use, trust, or feel comfortable recommending.
+        </p>
+      </section>
+
       <section className="services-free-section" aria-labelledby="free-universe-heading">
         <div className="services-section-heading">
           <p className="services-kicker">Free Universe</p>
@@ -415,11 +498,11 @@ export default function ServicesPage() {
       <section className="services-payment">
         <div>
           <p className="services-kicker">Payment options</p>
-          <h2>Simple payment links can be added as each offer goes live.</h2>
+          <h2>Inquiry first now. Payment links later.</h2>
           <p>
-            For now, each button opens an inquiry email. As the offers become active, the
-            buttons can point to PayPal, Cash App, Stripe Payment Links, Calendly, or
-            invoices depending on the offer.
+            Every offer button now points to the inquiry page with the offer preselected.
+            As offers go live, calls can use a booking link, audits can use payment links,
+            and custom builds can move through quote, deposit, and invoice.
           </p>
         </div>
 
@@ -435,14 +518,12 @@ export default function ServicesPage() {
         <p className="services-kicker">Ready to work?</p>
         <h2>Choose the offer that matches your stage.</h2>
         <p>
-          Not sure what fits? Send a short message with what you are building, where you
-          are stuck, and what kind of support you are looking for.
+          Not sure what fits? Open the inquiry page and share what you are building,
+          where you are stuck, and what kind of support you are looking for.
         </p>
 
         <div className="services-cta-actions">
-          <a href="mailto:chris.c.gordon777@gmail.com?subject=Services%20Question">
-            Ask What Fits
-          </a>
+          <Link href="/services/inquire">Ask What Fits</Link>
           <Link href="/nexus">Return to Nexus</Link>
         </div>
       </section>

@@ -1,5 +1,5 @@
 /* ===================================
-   SERVICES — OFFER CLARITY V4
+   SERVICES â€” FUNCTIONALITY V1
    src/styles/servicesPage.css
    =================================== */
 
@@ -46,9 +46,11 @@
 .services-offers-section,
 .services-free-section,
 .services-skills,
+.services-toolkit,
 .services-process,
 .services-payment,
-.services-cta {
+.services-cta,
+.services-inquiry-card {
   width: min(1160px, 100%);
   margin: 0 auto;
 }
@@ -64,7 +66,9 @@
 .services-nav a,
 .services-hero-actions a,
 .services-offer-card a,
-.services-cta-actions a {
+.services-toolkit-card a,
+.services-cta-actions a,
+.services-inquiry-actions a {
   min-height: 2.65rem;
   display: inline-flex;
   align-items: center;
@@ -90,7 +94,10 @@
 .services-free-card:hover,
 .services-offer-card:hover,
 .services-offer-card a:hover,
-.services-cta-actions a:hover {
+.services-toolkit-card:hover,
+.services-toolkit-card a:hover,
+.services-cta-actions a:hover,
+.services-inquiry-actions a:hover {
   transform: translateY(-2px);
   border-color: rgba(126, 211, 255, 0.42);
 }
@@ -154,7 +161,8 @@
   text-transform: uppercase;
 }
 
-.services-hero h1 {
+.services-hero h1,
+.services-inquiry-card h1 {
   margin: 0;
   color: rgba(248, 250, 255, 0.98);
   font-size: clamp(3rem, 10vw, 8.4rem);
@@ -186,7 +194,8 @@
 }
 
 .services-hero-actions,
-.services-cta-actions {
+.services-cta-actions,
+.services-inquiry-actions {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
@@ -196,7 +205,9 @@
 
 .services-hero-actions a:first-child,
 .services-offer-card a,
-.services-cta-actions a:first-child {
+.services-toolkit-card a,
+.services-cta-actions a:first-child,
+.services-inquiry-actions a:first-child {
   color: #081018;
   border-color: rgba(247, 239, 228, 0.48);
   background: linear-gradient(135deg, rgba(247, 239, 228, 0.96), rgba(126, 211, 255, 0.86));
@@ -206,9 +217,11 @@
 .services-offers-section,
 .services-free-section,
 .services-skills,
+.services-toolkit,
 .services-process,
 .services-payment,
-.services-cta {
+.services-cta,
+.services-inquiry-card {
   margin-top: 1rem;
   border: 1px solid rgba(224, 232, 244, 0.12);
   border-radius: 2rem;
@@ -229,6 +242,7 @@
 .services-note h2,
 .services-section-heading h2,
 .services-skills h2,
+.services-toolkit h2,
 .services-process h2,
 .services-payment h2,
 .services-cta h2 {
@@ -243,9 +257,11 @@
 .services-note p:not(.services-kicker),
 .services-section-heading p:not(.services-kicker),
 .services-skills p,
+.services-toolkit p,
 .services-process p,
 .services-payment p,
-.services-cta p {
+.services-cta p,
+.services-inquiry-card p {
   max-width: 780px;
   margin: 1rem auto 0;
   color: rgba(224, 231, 240, 0.72);
@@ -257,15 +273,16 @@
   text-align: center;
 }
 
-.services-offer-grid {
+.services-offer-grid,
+.services-toolkit-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
 }
 
-.services-offer-card {
+.services-offer-card,
+.services-toolkit-card {
   position: relative;
-  min-height: 37rem;
   display: flex;
   flex-direction: column;
   border: 1px solid rgba(238, 243, 250, 0.12);
@@ -281,6 +298,14 @@
     transform 180ms ease,
     border-color 180ms ease,
     background 180ms ease;
+}
+
+.services-offer-card {
+  min-height: 38rem;
+}
+
+.services-toolkit-card {
+  min-height: 16rem;
 }
 
 .services-offer-card.is-featured {
@@ -301,6 +326,7 @@
 
 .services-offer-topline span,
 .services-free-card span,
+.services-toolkit-card span,
 .services-skill-cloud span,
 .services-payment-list span {
   color: rgba(220, 186, 92, 0.84);
@@ -323,7 +349,8 @@
   text-transform: uppercase;
 }
 
-.services-offer-card h3 {
+.services-offer-card h3,
+.services-toolkit-card h3 {
   margin: 0;
   color: rgba(248, 250, 255, 0.96);
   font-size: clamp(1.45rem, 3vw, 2.35rem);
@@ -331,7 +358,8 @@
   letter-spacing: -0.04em;
 }
 
-.services-price {
+.services-price,
+.services-format {
   margin: 0.8rem 0 0;
   color: rgba(126, 211, 255, 0.90);
   font-size: 0.75rem;
@@ -340,7 +368,13 @@
   text-transform: uppercase;
 }
 
-.services-offer-body {
+.services-format {
+  margin-top: 0.45rem;
+  color: rgba(220, 186, 92, 0.84);
+}
+
+.services-offer-body,
+.services-toolkit-card p {
   margin: 1rem 0 0;
   color: rgba(224, 231, 240, 0.70);
   font-size: 0.92rem;
@@ -405,9 +439,30 @@
   text-transform: uppercase;
 }
 
-.services-offer-card a {
+.services-offer-card a,
+.services-toolkit-card a {
   width: 100%;
   margin-top: auto;
+}
+
+.services-toolkit-card-footer {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: auto;
+  padding-top: 1rem;
+}
+
+.services-toolkit-card small,
+.services-affiliate-note {
+  color: rgba(224, 231, 240, 0.62);
+  font-size: 0.74rem;
+  line-height: 1.55;
+}
+
+.services-affiliate-note {
+  max-width: 820px;
+  margin: 1.1rem auto 0;
+  text-align: center;
 }
 
 .services-skills {
@@ -535,8 +590,75 @@
   text-align: center;
 }
 
+.services-inquiry-page {
+  display: grid;
+  align-items: start;
+}
+
+.services-inquiry-card {
+  margin-top: 0;
+}
+
+.services-inquiry-card h1 {
+  max-width: 900px;
+  margin-inline: auto;
+  text-align: center;
+  font-size: clamp(2.8rem, 8vw, 6.8rem);
+}
+
+.services-inquiry-form {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.services-inquiry-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.services-inquiry-form label {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.services-inquiry-form label span {
+  color: rgba(220, 186, 92, 0.84);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.services-inquiry-form input,
+.services-inquiry-form select,
+.services-inquiry-form textarea {
+  width: 100%;
+  border: 1px solid rgba(238, 243, 250, 0.14);
+  border-radius: 1rem;
+  padding: 0.9rem 1rem;
+  color: rgba(248, 250, 255, 0.92);
+  background: rgba(255, 255, 255, 0.055);
+  font: inherit;
+  outline: none;
+}
+
+.services-inquiry-form textarea {
+  min-height: 8rem;
+  resize: vertical;
+}
+
+.services-inquiry-form input:focus,
+.services-inquiry-form select:focus,
+.services-inquiry-form textarea:focus {
+  border-color: rgba(126, 211, 255, 0.42);
+  box-shadow: 0 0 0 3px rgba(126, 211, 255, 0.08);
+}
+
 @media (max-width: 1080px) {
-  .services-offer-grid {
+  .services-offer-grid,
+  .services-toolkit-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -561,17 +683,21 @@
   }
 
   .services-free-grid,
-  .services-offer-grid {
+  .services-offer-grid,
+  .services-toolkit-grid,
+  .services-inquiry-row {
     grid-template-columns: 1fr;
   }
 
   .services-nav a,
   .services-hero-actions a,
-  .services-cta-actions a {
+  .services-cta-actions a,
+  .services-inquiry-actions a {
     width: 100%;
   }
 
-  .services-offer-card {
+  .services-offer-card,
+  .services-toolkit-card {
     min-height: auto;
   }
 }
