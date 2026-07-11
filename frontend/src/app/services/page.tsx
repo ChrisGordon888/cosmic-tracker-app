@@ -309,27 +309,27 @@ function OfferCard({ offer }: { offer: Offer }) {
       <p className="services-format">Format: {offer.format}</p>
       <p className="services-offer-body">{offer.body}</p>
 
-      <div className="services-offer-detail">
+      <div className="services-offer-detail services-detail-core">
         <span>Best For</span>
         <p>{offer.bestFor}</p>
       </div>
 
-      <div className="services-offer-detail">
+      <div className="services-offer-detail services-detail-extra">
         <span>You Send</span>
         <p>{offer.youSend}</p>
       </div>
 
-      <div className="services-offer-detail">
+      <div className="services-offer-detail services-detail-extra">
         <span>You Receive</span>
         <p>{offer.youReceive}</p>
       </div>
 
-      <div className="services-offer-detail services-outcome">
+      <div className="services-offer-detail services-detail-core services-outcome">
         <span>Outcome</span>
         <p>{offer.outcome}</p>
       </div>
 
-      <ul>
+      <ul className="services-offer-includes">
         {offer.includes.map((item) => (
           <li key={item}>{item}</li>
         ))}
@@ -399,7 +399,9 @@ export default function ServicesPage() {
           </p>
         </div>
 
-        <div className="services-offer-grid">
+        <p className="services-mobile-hint">Swipe offers →</p>
+
+        <div className="services-offer-grid" aria-label="Start here offers">
           {START_HERE_OFFERS.map((offer) => (
             <OfferCard key={offer.slug} offer={offer} />
           ))}
@@ -421,7 +423,9 @@ export default function ServicesPage() {
           </p>
         </div>
 
-        <div className="services-offer-grid">
+        <p className="services-mobile-hint">Swipe audits →</p>
+
+        <div className="services-offer-grid" aria-label="Audit and review offers">
           {AUDIT_OFFERS.map((offer) => (
             <OfferCard key={offer.slug} offer={offer} />
           ))}
@@ -439,7 +443,9 @@ export default function ServicesPage() {
           </p>
         </div>
 
-        <div className="services-offer-grid">
+        <p className="services-mobile-hint">Swipe build paths →</p>
+
+        <div className="services-offer-grid" aria-label="Build with Cosmic offers">
           {BUILD_WITH_COSMIC.map((offer) => (
             <OfferCard key={offer.slug} offer={offer} />
           ))}
@@ -457,7 +463,9 @@ export default function ServicesPage() {
           </p>
         </div>
 
-        <div className="services-toolkit-grid">
+        <p className="services-mobile-hint">Swipe toolkit →</p>
+
+        <div className="services-toolkit-grid" aria-label="Cosmic toolkit resources">
           {TOOLKIT_ITEMS.map((item) => (
             <article key={item.title} className="services-toolkit-card">
               <div className="services-offer-meta">
@@ -499,7 +507,9 @@ export default function ServicesPage() {
           </p>
         </div>
 
-        <div className="services-free-grid">
+        <p className="services-mobile-hint">Swipe free paths →</p>
+
+        <div className="services-free-grid" aria-label="Free Cosmic universe paths">
           {FREE_UNIVERSE.map((signal) => (
             <Link key={signal.href} href={signal.href} className="services-free-card">
               <span>{signal.eyebrow}</span>
