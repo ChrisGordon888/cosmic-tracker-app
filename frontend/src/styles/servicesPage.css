@@ -1022,3 +1022,144 @@
     min-width: 86%;
   }
 }
+
+/* ===================================
+   SERVICES INQUIRY POLISH V1
+   =================================== */
+
+.services-inquire-card-v2 {
+  overflow: hidden;
+}
+
+.services-inquire-nav {
+  margin-bottom: 1rem;
+}
+
+.services-inquire-layout {
+  display: grid;
+  grid-template-columns: minmax(16rem, 0.78fr) minmax(0, 1.22fr);
+  gap: 1rem;
+  align-items: start;
+  margin-top: 1.4rem;
+}
+
+.services-inquire-summary,
+.services-inquire-form-v2 {
+  min-width: 0;
+}
+
+.services-inquire-selected-card,
+.services-inquire-path article,
+.services-inquire-note {
+  border: 1px solid rgba(238, 243, 250, 0.11);
+  border-radius: 1.35rem;
+  padding: 1rem;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(126, 211, 255, 0.10), transparent 40%),
+    rgba(255, 255, 255, 0.042);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.services-inquire-selected-card h2 {
+  margin: 0;
+  color: rgba(248, 250, 255, 0.96);
+  font-size: clamp(1.75rem, 4vw, 2.7rem);
+  line-height: 0.95;
+  letter-spacing: -0.055em;
+}
+
+.services-inquire-selected-card > p:not(.services-price) {
+  margin: 0.95rem 0 0;
+  color: rgba(224, 231, 240, 0.72);
+  line-height: 1.65;
+}
+
+.services-inquire-path {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.services-inquire-path article span {
+  display: inline-flex;
+  margin-bottom: 0.45rem;
+  color: rgba(220, 186, 92, 0.88);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+}
+
+.services-inquire-path article strong {
+  display: block;
+  color: rgba(248, 250, 255, 0.92);
+  line-height: 1.25;
+}
+
+.services-inquire-path article p {
+  margin: 0.4rem 0 0;
+  color: rgba(224, 231, 240, 0.66);
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+.services-inquire-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.services-inquire-note {
+  color: rgba(224, 231, 240, 0.72);
+  line-height: 1.6;
+}
+
+.services-inquire-note strong {
+  display: block;
+  margin-bottom: 0.3rem;
+  color: rgba(220, 186, 92, 0.88);
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.services-inquire-note p {
+  margin: 0;
+}
+
+@media (max-width: 880px) {
+  .services-inquire-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .services-inquire-summary {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .services-inquire-path {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .services-inquire-card-v2 {
+    padding-inline: 1rem;
+  }
+
+  .services-inquire-grid,
+  .services-inquire-path {
+    grid-template-columns: 1fr;
+  }
+
+  .services-inquire-selected-card,
+  .services-inquire-path article,
+  .services-inquire-note {
+    border-radius: 1.1rem;
+    padding: 0.9rem;
+  }
+
+  .services-inquire-form textarea {
+    min-height: 8rem;
+  }
+}
