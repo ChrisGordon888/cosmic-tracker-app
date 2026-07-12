@@ -38,7 +38,7 @@ export default function LandingPage() {
                     </div>
 
                     <p className="landing-gateway-eyebrow landing-gateway-v3-eyebrow">
-                        Music worlds / Realm soundtracks / Living signal
+                        Music multiverse / Mood-based signals / Creative transformation
                     </p>
 
                     <h1 className="landing-title landing-gateway-title landing-gateway-v3-title">
@@ -47,17 +47,21 @@ export default function LandingPage() {
                     </h1>
 
                     <p className="landing-subtitle landing-gateway-subtitle landing-gateway-v3-subtitle">
-                        Enter the front door of the multiverse.
+                        A music multiverse for mood, energy, and creative transformation.
                     </p>
 
                     <p className="landing-description landing-gateway-description landing-gateway-v3-description">
-                        A cinematic music universe of realms, soundtracks, and artist-built worlds — made to
-                        explore, feel, and follow from one signal to the next.
+                        The Cosmic Nexus is a growing experiment where sound, story, and energetic
+                        reflection become portals for reorganizing your inner world and shaping what comes next.
                     </p>
 
                     <div className="landing-actions landing-actions-stacked landing-gateway-actions landing-gateway-v3-actions">
                         <Link href="/nexus" className="landing-button-primary landing-gateway-v3-primary">
                             Enter the Nexus
+                        </Link>
+
+                        <Link href="/services" className="landing-button-secondary-subtle landing-gateway-v3-secondary">
+                            Explore Services
                         </Link>
 
                         {isAuthenticated ? (
@@ -83,9 +87,9 @@ export default function LandingPage() {
                     </div>
 
                     <div className="landing-system-line landing-gateway-system-line landing-gateway-v3-system-line">
-                        <span>Enter</span>
-                        <span>Explore</span>
-                        <span>Return</span>
+                        <span>Listen</span>
+                        <span>Reflect</span>
+                        <span>Become</span>
                     </div>
 
                     <div
@@ -108,7 +112,7 @@ export default function LandingPage() {
                 </div>
 
                 <p className="landing-gateway-v3-footnote">
-                    Six realms. One Nexus. Follow the sound inward.
+                    Six realms. Mood, sound, and story as portals inward.
                 </p>
             </section>
         </main>

@@ -910,7 +910,8 @@ export default function CosmicNexusHub() {
                         </h1>
 
                         <p className="text-lg text-secondary max-w-3xl mx-auto">
-                            Explore the world through music — play what is open now, preview what is coming, and follow the vault pieces as they evolve into releases, EPs, artwork, and deeper stories.
+                            A music multiverse for mood, energy, and creative transformation — explore songs,
+                            realms, and reflections that meet where you are and point toward where you’re becoming.
                         </p>
                     </header>
 
@@ -1484,13 +1485,13 @@ export default function CosmicNexusHub() {
                                         lineHeight: 1,
                                     }}
                                 >
-                                    Building your own world?
+                                    Build your artist world.
                                 </h2>
 
                                 <p className="text-secondary text-sm md:text-base leading-relaxed max-w-2xl">
                                     If the Nexus sparks ideas for your music, rollout, workflow, or creative system,
-                                    you can work directly with Cosmic on direction, audits, lessons, release portals,
-                                    and custom builds.
+                                    you can work directly with Cosmic on direction, artist-world audits, music workflow,
+                                    release portals, and custom builds.
                                 </p>
                             </div>
 

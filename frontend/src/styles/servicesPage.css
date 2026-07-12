@@ -43,6 +43,7 @@
 
 .services-hero,
 .services-note,
+.services-live-offer,
 .services-offers-section,
 .services-free-section,
 .services-skills,
@@ -216,6 +217,7 @@
 }
 
 .services-note,
+.services-live-offer,
 .services-offers-section,
 .services-free-section,
 .services-skills,
@@ -236,6 +238,103 @@
     0 24px 80px rgba(0, 0, 0, 0.30);
   backdrop-filter: blur(18px) saturate(125%);
 }
+
+
+.services-live-offer {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.services-live-copy {
+  display: grid;
+  align-content: center;
+}
+
+.services-live-copy h2 {
+  max-width: 780px;
+  margin: 0;
+  color: rgba(248, 250, 255, 0.96);
+  font-size: clamp(2.2rem, 5vw, 5rem);
+  line-height: 0.92;
+  letter-spacing: -0.07em;
+}
+
+.services-live-copy p:not(.services-kicker) {
+  max-width: 760px;
+  margin: 1rem 0 0;
+  color: rgba(224, 231, 240, 0.74);
+  line-height: 1.75;
+}
+
+.services-live-card {
+  display: grid;
+  align-content: center;
+  gap: 0.8rem;
+  border: 1px solid rgba(220, 186, 92, 0.22);
+  border-radius: 1.5rem;
+  padding: 1rem;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(220, 186, 92, 0.12), transparent 42%),
+    radial-gradient(circle at 100% 12%, rgba(126, 211, 255, 0.10), transparent 36%),
+    rgba(255, 255, 255, 0.045);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.services-live-card span {
+  width: fit-content;
+  border: 1px solid rgba(220, 186, 92, 0.28);
+  border-radius: 999px;
+  padding: 0.32rem 0.55rem;
+  color: rgba(220, 186, 92, 0.92);
+  background: rgba(220, 186, 92, 0.08);
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.services-live-card strong {
+  color: rgba(248, 250, 255, 0.95);
+  font-size: clamp(1.6rem, 3vw, 2.35rem);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+}
+
+.services-live-card p {
+  margin: 0;
+  color: rgba(224, 231, 240, 0.72);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.services-live-card a {
+  min-height: 2.65rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(247, 239, 228, 0.48);
+  border-radius: 999px;
+  padding: 0.65rem 0.95rem;
+  color: #081018;
+  background: linear-gradient(135deg, rgba(247, 239, 228, 0.96), rgba(126, 211, 255, 0.86));
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.services-live-card a:hover {
+  transform: translateY(-2px);
+  border-color: rgba(126, 211, 255, 0.42);
+}
+
 
 .services-note {
   text-align: center;
@@ -654,7 +753,8 @@
 
   .services-skills,
   .services-process,
-  .services-payment {
+  .services-payment,
+  .services-live-offer {
     grid-template-columns: 1fr;
   }
 }
@@ -685,6 +785,10 @@
   .services-section-support {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .services-live-card a {
+    width: 100%;
   }
 
   .services-offer-card {

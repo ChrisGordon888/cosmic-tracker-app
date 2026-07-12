@@ -368,9 +368,8 @@ export default function ServicesPage() {
         </h1>
 
         <p className="services-intro">
-          Book a focused session, buy an audit, or build deeper with Cosmic through
-          artist development, music workflow, release portals, creative systems, and
-          practice-based coaching.
+          Build your artist world with focused direction, music workflow help, release
+          strategy, creative systems, and practice-based support connected to the Cosmic Nexus.
         </p>
 
         <div className="services-hero-actions">
@@ -381,12 +380,34 @@ export default function ServicesPage() {
 
       <section className="services-note">
         <p className="services-kicker">How this works</p>
-        <h2>The free universe is open. Paid services are for direct support.</h2>
+        <h2>The music multiverse is open. Services are for direct support.</h2>
         <p>
           Anyone can explore the Nexus, realms, scroll, and creative tools. Services are
-          for people who want direct feedback, guided setup, customization, coaching,
-          accountability, or a deeper build with Cosmic.
+          for artists, creators, and seekers who want direct feedback, guided setup,
+          customization, coaching, accountability, or a deeper build with Cosmic.
         </p>
+      </section>
+
+
+      <section className="services-live-offer" aria-labelledby="live-offer-heading">
+        <div className="services-live-copy">
+          <p className="services-kicker">Best place to start</p>
+          <h2 id="live-offer-heading">Creative Direction Session</h2>
+          <p>
+            A focused 60-minute session for shaping a song, release, artist world, workflow,
+            story, or next creative move. Bring what you have — links, questions, ideas,
+            demos, notes, or confusion — and leave with clearer direction.
+          </p>
+        </div>
+
+        <div className="services-live-card">
+          <span>Available Now</span>
+          <strong>60 min — $111</strong>
+          <p>Best for artists, creators, and builders who need a grounded next step.</p>
+          <Link href="/services/inquire?offer=creative-direction-session&intent=book">
+            Book Session
+          </Link>
+        </div>
       </section>
 
       <section id="start-here" className="services-offers-section" aria-labelledby="start-here-heading">
