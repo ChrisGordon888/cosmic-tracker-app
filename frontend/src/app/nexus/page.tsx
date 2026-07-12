@@ -1463,6 +1463,78 @@ export default function CosmicNexusHub() {
                     </div>
 
                     <section
+                        id="build-with-cosmic"
+                        className="glass-card nexus-panel p-5 md:p-6 mb-5 fade-in"
+                        style={{
+                            ...sectionStyle,
+                            animationDelay: '0.20s',
+                            borderRadius: '30px',
+                        }}
+                    >
+                        <div className="grid grid-cols-1 md:grid-cols-[1.15fr_0.85fr] gap-4 items-center">
+                            <div>
+                                <p className="text-xs uppercase tracking-[0.18em] text-muted mb-2">
+                                    Build With Cosmic
+                                </p>
+
+                                <h2
+                                    className="text-3xl md:text-4xl font-display mb-2 text-glow"
+                                    style={{
+                                        letterSpacing: '-0.03em',
+                                        lineHeight: 1,
+                                    }}
+                                >
+                                    Building your own world?
+                                </h2>
+
+                                <p className="text-secondary text-sm md:text-base leading-relaxed max-w-2xl">
+                                    If the Nexus sparks ideas for your music, rollout, workflow, or creative system,
+                                    you can work directly with Cosmic on direction, audits, lessons, release portals,
+                                    and custom builds.
+                                </p>
+                            </div>
+
+                            <div
+                                className="rounded-3xl border border-white/10 p-4"
+                                style={{
+                                    background:
+                                        'radial-gradient(circle at 12% 0%, rgba(220,186,92,0.12), transparent 42%), rgba(255,255,255,0.04)',
+                                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
+                                }}
+                            >
+                                <p className="text-[10px] uppercase tracking-[0.16em] text-muted mb-2">
+                                    Best first step
+                                </p>
+
+                                <h3 className="text-2xl font-display mb-1">Creative Direction Session</h3>
+
+                                <p className="text-sm text-secondary mb-4 leading-relaxed">
+                                    A focused 60-minute session for shaping a song, release, artist world,
+                                    workflow, or next creative move.
+                                </p>
+
+                                <div className="flex flex-wrap gap-2">
+                                    <Link
+                                        href="/services"
+                                        className="btn-primary inline-flex"
+                                        style={{ borderRadius: '999px' }}
+                                    >
+                                        Explore Services
+                                    </Link>
+
+                                    <Link
+                                        href="/services/inquire?offer=creative-direction-session&intent=book"
+                                        className="btn-secondary inline-flex"
+                                        style={{ borderRadius: '999px' }}
+                                    >
+                                        Book Session
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section
                         id="realm-soundtracks"
                         className="glass-card nexus-panel nexus-soundtracks p-6 mb-5 fade-in"
                         style={{
