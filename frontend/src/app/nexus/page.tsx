@@ -792,6 +792,11 @@ export default function CosmicNexusHub() {
     const guidanceRealmTint = getRealmTint(guidanceRealmId);
     const moonRealmId = getRealmIdFromAlignmentName(realmAlignment?.primaryRealm);
     const moonRealmTint = getRealmTint(moonRealmId);
+    const moonRealmHref = moonRealmId !== null
+        ? isSignedIn
+            ? `/realms/${moonRealmId}`
+            : '/auth'
+        : '/find-your-realm';
 
     const handlePlayOrbitTrack = (track: { id: string }) => {
         const fullTrack = MUSIC_REGISTRY.find((musicTrack) => musicTrack.id === track.id);
@@ -1395,15 +1400,16 @@ export default function CosmicNexusHub() {
                                         {realmAlignment ? (
                                             <>
                                                 Aligned Realm:{' '}
-                                                <span
-                                                    className="font-medium"
+                                                <Link
+                                                    href={moonRealmHref}
+                                                    className="font-medium underline-offset-4 hover:underline"
                                                     style={{
                                                         color: moonRealmTint.accent,
                                                         textShadow: moonRealmTint.textShadow,
                                                     }}
                                                 >
                                                     {realmAlignment.primaryRealm}
-                                                </span>
+                                                </Link>
                                             </>
                                         ) : (
                                             'Reading alignment'
@@ -1417,8 +1423,9 @@ export default function CosmicNexusHub() {
                             </p>
 
                             {realmAlignment?.primaryRealm && (
-                                <div
-                                    className="rounded-2xl px-3 py-3 mb-3"
+                                <Link
+                                    href={moonRealmHref}
+                                    className="block rounded-2xl px-3 py-3 mb-3 transition-transform hover:-translate-y-0.5"
                                     style={{
                                         border: `1px solid ${moonRealmTint.border}`,
                                         background: `linear-gradient(135deg, ${moonRealmTint.soft}, rgba(255,255,255,0.028))`,
@@ -1441,7 +1448,7 @@ export default function CosmicNexusHub() {
                                         </span>{' '}
                                         as today’s listening doorway.
                                     </p>
-                                </div>
+                                </Link>
                             )}
 
                             <Link
@@ -1641,12 +1648,12 @@ export default function CosmicNexusHub() {
 }
 
 .realm-carousel-item {
-    flex: 0 0 min(88%, 24rem);
+    flex: 0 0 86%;
     scroll-snap-align: start;
     min-width: 0;
-    max-width: 24rem;
+    max-width: 86%;
+    height: 430px;
     display: flex;
-    align-self: stretch;
 }
 
 .realm-carousel-item > :global(*) {
@@ -1655,35 +1662,7 @@ export default function CosmicNexusHub() {
     height: 100%;
 }
 
-.realm-carousel-hint {
-    display: none;
-}
-
-@media (max-width: 767px) {
-    .nexus-soundtracks {
-        padding: 1rem !important;
-        border-radius: 26px !important;
-    }
-
-    .realm-carousel {
-        width: calc(100% + 1rem);
-        margin-left: -0.5rem;
-        margin-right: -0.5rem;
-        padding: 0.15rem 0.5rem 0.65rem;
-        gap: 0.85rem;
-    }
-
-    .realm-carousel-hint {
-        display: block;
-        margin-top: 0.65rem;
-        color: rgba(255,255,255,0.46);
-        font-size: 0.68rem;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-    }
-}
-
-@media (min-width: 768px) {
+        @media (min-width: 768px) {
     .realm-carousel-item {
         flex-basis: calc((100% - 16px) / 2);
         max-width: calc((100% - 16px) / 2);
@@ -1696,6 +1675,20 @@ export default function CosmicNexusHub() {
         max-width: calc((100% - 32px) / 3);
     }
 }
+
+
+@media (max-width: 640px) {
+    .realm-carousel {
+        gap: 0.85rem;
+        padding-right: 0;
+        scroll-padding-inline: 0;
+    }
+
+    .realm-carousel-item {
+        flex-basis: 100%;
+        max-width: 100%;
+    }
+}
     `}</style>
 
                         <div className="flex items-start justify-between gap-4 mb-5">
@@ -1706,7 +1699,6 @@ export default function CosmicNexusHub() {
                                 <p className="text-secondary text-sm mt-1 leading-relaxed max-w-2xl">
                                     Each realm holds a living soundtrack. Play what is open now, preview what is coming, and enter the realm to go deeper.
                                 </p>
-                                <p className="realm-carousel-hint">Swipe realm soundtracks</p>
                             </div>
 
                             <div className="hidden md:flex items-center gap-2 shrink-0">

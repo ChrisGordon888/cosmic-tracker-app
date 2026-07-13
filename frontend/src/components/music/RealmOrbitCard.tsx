@@ -346,9 +346,7 @@ export default function RealmOrbitCard({
                 }}
                 title={locked && lockLabel ? lockLabel : track.trackTitle}
             >
-                {locked
-                    ? `${track.trackTitle}${lockLabel ? ` • ${lockLabel}` : ' • Locked'}`
-                    : `${isCurrent && isPlaying ? 'Playing' : isCurrent ? 'Selected' : 'Play'} • ${track.trackTitle}`}
+                {track.trackTitle}
             </button>
         );
     };
@@ -377,7 +375,7 @@ export default function RealmOrbitCard({
                     background: `radial-gradient(circle at top left, ${realmSoft}, transparent 46%), linear-gradient(145deg, rgba(255,255,255,0.035), rgba(8,10,18,0.82))`,
                     boxShadow: `0 10px 28px ${realmGlow}, inset 0 1px 0 rgba(255,255,255,0.055)`,
                     minHeight: carouselMode ? '430px' : undefined,
-                    height: carouselMode ? '100%' : undefined,
+                    height: carouselMode ? '430px' : undefined,
                 }}
             >
                 <div
@@ -397,6 +395,22 @@ export default function RealmOrbitCard({
                         display: none;
                     }
 
+                    .nexus-compact-orbit :global(.nexus-compact-head) {
+                        min-height: 122px;
+                    }
+
+                    .nexus-compact-orbit :global(.nexus-compact-selected) {
+                        min-height: 54px;
+                    }
+
+                    .nexus-compact-orbit :global(.nexus-compact-pills) {
+                        height: 48px;
+                    }
+
+                    .nexus-compact-orbit :global(.nexus-compact-footer) {
+                        margin-top: auto;
+                    }
+
                     @media (max-width: 420px) {
                         .nexus-compact-orbit {
                             padding: 0.85rem !important;
@@ -406,7 +420,7 @@ export default function RealmOrbitCard({
 
                 <div className="relative flex flex-col h-full min-w-0">
                     <div
-                        className="grid items-center gap-4 min-w-0"
+                        className="nexus-compact-head grid items-center gap-4 min-w-0"
                         style={{
                             gridTemplateColumns: `${miniSize + 2}px minmax(0, 1fr)`,
                         }}
@@ -565,6 +579,7 @@ export default function RealmOrbitCard({
                         </div>
 
                         <div className="min-w-0 self-center">
+                            <div className="nexus-compact-selected">
                             <div className="flex flex-wrap items-center gap-2 mb-2">
                                 <p className="text-[9px] uppercase tracking-[0.18em] text-white/45">
                                     Realm Soundtrack
@@ -628,6 +643,7 @@ export default function RealmOrbitCard({
                                     No track selected yet.
                                 </p>
                             )}
+                            </div>
                         </div>
                     </div>
 
@@ -689,7 +705,7 @@ export default function RealmOrbitCard({
                         )}
                     </div>
 
-                    <div className="relative mt-4 min-h-[48px] w-full rounded-2xl border border-white/10 bg-white/[0.025] px-2 py-2 overflow-hidden">
+                    <div className="nexus-compact-pills relative mt-4 w-full rounded-2xl border border-white/10 bg-white/[0.025] px-2 py-2 overflow-hidden">
                         {sortedTracks.length > 1 ? (
                             <div className="flex gap-2 overflow-x-auto pb-1 w-full">
                                 {sortedTracks.map(renderTrackPill)}
@@ -702,7 +718,7 @@ export default function RealmOrbitCard({
                     </div>
 
                     {compactPathLabel && (
-                        <div className="mt-auto pt-4">
+                        <div className="nexus-compact-footer pt-4">
                             <div
                                 className="rounded-2xl border px-3 py-2.5 flex items-center justify-between gap-3"
                                 style={{
