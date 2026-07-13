@@ -1526,12 +1526,107 @@ export default function CosmicNexusHub() {
                         </div>
                     </section>
 
+                    <section className="fade-in mb-5" style={{ animationDelay: '0.22s' }}>
+                    <div>
+                        <button
+                            className="glass-card nexus-panel w-full p-4 flex items-center justify-between text-left mb-3"
+                            onClick={() => setShowArchive((prev) => !prev)}
+                            style={{
+                                ...sectionStyle,
+                                borderRadius: '26px',
+                            }}
+                        >
+                            <div>
+                                <p className="text-xs uppercase tracking-[0.2em] text-muted mb-1">
+                                    Featured Signal
+                                </p>
+                                <h3 className="text-lg font-display">
+                                    {flagshipTrack?.trackTitle ?? 'Featured Signal'}
+                                </h3>
+                            </div>
+                            <span className="text-xl text-secondary">{showArchive ? '−' : '+'}</span>
+                        </button>
+
+                        {showArchive && (
+                            <div
+                                className="glass-card nexus-panel overflow-hidden"
+                                style={{
+                                    ...sectionStyle,
+                                    borderRadius: '24px',
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        position: 'relative',
+                                        minHeight: '220px',
+                                        background: featuredSignalArtwork
+                                            ? `linear-gradient(180deg, rgba(8,10,18,0.04), rgba(8,10,18,0.56)), url(${featuredSignalArtwork}) center/cover`
+                                            : 'linear-gradient(135deg, rgba(18,20,34,0.96), rgba(8,10,18,0.98))',
+                                    }}
+                                >
+                                    <div
+                                        style={{
+                                            position: 'absolute',
+                                            inset: 0,
+                                            background:
+                                                'linear-gradient(180deg, rgba(6,8,14,0.10) 0%, rgba(6,8,14,0.18) 30%, rgba(6,8,14,0.84) 100%)',
+                                        }}
+                                    />
+
+                                    <div className="relative p-5 md:p-6 flex flex-col justify-end min-h-[220px]">
+                                        <div className="flex flex-wrap gap-2 mb-3">
+                                            <span className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.16em] bg-white/10 border border-white/12 text-white/90">
+                                                Featured signal
+                                            </span>
+                                            <span className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.16em] bg-white/6 border border-white/10 text-white/72">
+                                                Direct entry
+                                            </span>
+                                        </div>
+
+                                        <h4 className="text-2xl md:text-3xl font-display mb-2 text-white">
+                                            {flagshipTrack?.trackTitle ?? 'Featured Signal'}
+                                        </h4>
+                                        <p className="text-sm md:text-base text-white/78 max-w-xl leading-relaxed">
+                                            A direct entry point into the Cosmic world — one track, one image, one clear doorway into the sound.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="p-5">
+                                    <p className="text-sm text-secondary mb-3 leading-relaxed">
+                                        This track stands on its own within the Nexus: a first door for new listeners and a quick return point for travelers.
+                                    </p>
+
+                                    {flagshipTrack && (
+                                        <button
+                                            className="btn-secondary"
+                                            onClick={() => tryPlayTrack(flagshipTrack)}
+                                            disabled={isTrackLocked(flagshipTrack)}
+                                            style={{
+                                                borderRadius: '999px',
+                                                opacity: isTrackLocked(flagshipTrack) ? 0.55 : 1,
+                                                cursor: isTrackLocked(flagshipTrack) ? 'not-allowed' : 'pointer',
+                                            }}
+                                        >
+                                            {isTrackLocked(flagshipTrack)
+                                                ? `Opens ${getTrackUnlockLabel(flagshipTrack)}`
+                                                : currentTrack?.id === flagshipTrack.id && isPlaying
+                                                    ? 'Pause Track'
+                                                    : '▶ Play Track'}
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                    </section>
+
                     <section
                         id="realm-soundtracks"
                         className="glass-card nexus-panel nexus-soundtracks p-6 mb-5 fade-in"
                         style={{
                             ...sectionStyle,
-                            animationDelay: '0.24s',
+                            animationDelay: '0.28s',
                         }}
                     >
                         <style jsx>{`
@@ -2031,100 +2126,6 @@ export default function CosmicNexusHub() {
                         )}
                     </section>
 
-                    <section className="fade-in" style={{ animationDelay: '0.32s' }}>
-                    <div>
-                        <button
-                            className="glass-card nexus-panel w-full p-4 flex items-center justify-between text-left mb-3"
-                            onClick={() => setShowArchive((prev) => !prev)}
-                            style={{
-                                ...sectionStyle,
-                                borderRadius: '26px',
-                            }}
-                        >
-                            <div>
-                                <p className="text-xs uppercase tracking-[0.2em] text-muted mb-1">
-                                    Featured Signal
-                                </p>
-                                <h3 className="text-lg font-display">
-                                    {flagshipTrack?.trackTitle ?? 'Featured Signal'}
-                                </h3>
-                            </div>
-                            <span className="text-xl text-secondary">{showArchive ? '−' : '+'}</span>
-                        </button>
-
-                        {showArchive && (
-                            <div
-                                className="glass-card nexus-panel overflow-hidden"
-                                style={{
-                                    ...sectionStyle,
-                                    borderRadius: '24px',
-                                }}
-                            >
-                                <div
-                                    style={{
-                                        position: 'relative',
-                                        minHeight: '220px',
-                                        background: featuredSignalArtwork
-                                            ? `linear-gradient(180deg, rgba(8,10,18,0.04), rgba(8,10,18,0.56)), url(${featuredSignalArtwork}) center/cover`
-                                            : 'linear-gradient(135deg, rgba(18,20,34,0.96), rgba(8,10,18,0.98))',
-                                    }}
-                                >
-                                    <div
-                                        style={{
-                                            position: 'absolute',
-                                            inset: 0,
-                                            background:
-                                                'linear-gradient(180deg, rgba(6,8,14,0.10) 0%, rgba(6,8,14,0.18) 30%, rgba(6,8,14,0.84) 100%)',
-                                        }}
-                                    />
-
-                                    <div className="relative p-5 md:p-6 flex flex-col justify-end min-h-[220px]">
-                                        <div className="flex flex-wrap gap-2 mb-3">
-                                            <span className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.16em] bg-white/10 border border-white/12 text-white/90">
-                                                Featured signal
-                                            </span>
-                                            <span className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.16em] bg-white/6 border border-white/10 text-white/72">
-                                                Direct entry
-                                            </span>
-                                        </div>
-
-                                        <h4 className="text-2xl md:text-3xl font-display mb-2 text-white">
-                                            {flagshipTrack?.trackTitle ?? 'Featured Signal'}
-                                        </h4>
-                                        <p className="text-sm md:text-base text-white/78 max-w-xl leading-relaxed">
-                                            A direct entry point into the Cosmic world — one track, one image, one clear doorway into the sound.
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div className="p-5">
-                                    <p className="text-sm text-secondary mb-3 leading-relaxed">
-                                        This track stands on its own within the Nexus: a first door for new listeners and a quick return point for travelers.
-                                    </p>
-
-                                    {flagshipTrack && (
-                                        <button
-                                            className="btn-secondary"
-                                            onClick={() => tryPlayTrack(flagshipTrack)}
-                                            disabled={isTrackLocked(flagshipTrack)}
-                                            style={{
-                                                borderRadius: '999px',
-                                                opacity: isTrackLocked(flagshipTrack) ? 0.55 : 1,
-                                                cursor: isTrackLocked(flagshipTrack) ? 'not-allowed' : 'pointer',
-                                            }}
-                                        >
-                                            {isTrackLocked(flagshipTrack)
-                                                ? `Opens ${getTrackUnlockLabel(flagshipTrack)}`
-                                                : currentTrack?.id === flagshipTrack.id && isPlaying
-                                                    ? 'Pause Track'
-                                                    : '▶ Play Track'}
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                    </section>
                 </div>
             </div>
         </>
