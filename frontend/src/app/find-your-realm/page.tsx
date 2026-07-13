@@ -196,7 +196,7 @@ export default function FindYourRealmPage() {
                 <div className="container mx-auto px-4 py-8 max-w-5xl">
                     <header className="text-center mb-10 fade-in">
                         <h1 className="text-5xl md:text-6xl font-display neon-glow mb-4">
-                            ✨ FIND YOUR REALM ✨
+                            FIND YOUR REALM
                         </h1>
                         <p className="text-xl text-secondary max-w-3xl mx-auto">
                             Cosmic Multiverse helps you navigate inner states through symbolic realms,

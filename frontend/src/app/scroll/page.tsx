@@ -108,7 +108,7 @@ export default function CosmicScroll() {
                     <span>the Traveler</span>
                 </h1>
 
-                <p className="scroll-subtitle">The Three Mirrors of Becoming</p>
+                <p className="scroll-subtitle">The Three Mirrors</p>
 
                 <p className="scroll-intro">
                     Before there were realms, there were reflections. Before the map, there was the

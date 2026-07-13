@@ -14,7 +14,6 @@ import {
     MUSIC_REGISTRY,
     PUBLIC_THREE_PIECE_COLLECTIONS,
     REALM_NAMES,
-    VAULT_TRACKS,
     getCurrentReleaseTracks,
     getTrackById,
     getTracksByCollection,
@@ -236,7 +235,6 @@ const CURATED_PLAYLIST_ART_OVERRIDES: Record<string, string> = {
     'realm-44-price-of-focus': '/price-of-focus.png',
     'realm-0-same-self-higher-form': '/same-self-higher-form.png',
     'cosmic-featured-signal': '/featured-signal.png',
-    'april-may-vault': '/april-may-vault.png',
 };
 
 function getRealmTint(realmId?: number | null) {
@@ -498,7 +496,6 @@ export default function CosmicNexusHub() {
     const [storedGuidance, setStoredGuidance] = useState<StoredRealmGuidance | null>(null);
 
     const [showJourneys, setShowJourneys] = useState(false);
-    const [showVault, setShowVault] = useState(false);
     const [showArchive, setShowArchive] = useState(false);
     const [showReleaseDetails, setShowReleaseDetails] = useState(false);
 
@@ -666,7 +663,7 @@ export default function CosmicNexusHub() {
     const getTrackLockLabel = (track: any) => {
         if (!track) return null;
 
-        if (track.visibility === 'premium') return 'Premium Vault';
+        if (track.visibility === 'premium') return 'Premium';
 
         if (!isSignedIn && track.visibility === 'signup') return 'Join to unlock';
 
@@ -809,16 +806,11 @@ export default function CosmicNexusHub() {
 
     const flagshipTrack = FLAGSHIP_TRACKS[0] ?? null;
     const publicThreePieceCollections = PUBLIC_THREE_PIECE_COLLECTIONS;
-    const vaultTracks = useMemo(() => getTracksByCollection('april-may-vault'), []);
-    const vaultTrackCount = vaultTracks.length;
-
     const releaseArtworkUrl = currentRelease?.coverArtUrl ?? null;
     const featuredSignalArtwork =
         CURATED_PLAYLIST_ART_OVERRIDES['cosmic-featured-signal'] ??
         releaseArtworkUrl ??
         null;
-    const vaultArtwork = CURATED_PLAYLIST_ART_OVERRIDES['april-may-vault'] ?? null;
-
     const getCuratedCollectionArtwork = (collection: any) => {
         return (
             CURATED_PLAYLIST_ART_OVERRIDES[collection.id] ??
@@ -910,8 +902,7 @@ export default function CosmicNexusHub() {
                         </h1>
 
                         <p className="text-lg text-secondary max-w-3xl mx-auto">
-                            A music multiverse for mood, energy, and creative transformation — explore songs,
-                            realms, and reflections that meet where you are and point toward where you’re becoming.
+                            Explore the world through music — play what is open now, preview what is coming, and follow the catalog pieces as they evolve into releases, EPs, artwork, and deeper stories.
                         </p>
                     </header>
 
@@ -1236,7 +1227,7 @@ export default function CosmicNexusHub() {
 
                                 {premiumCatalogCount > 0 && (
                                     <p className="text-xs text-muted mb-4">
-                                        {premiumCatalogCount} premium vault pieces are visible in the catalog.
+                                        {premiumCatalogCount} premium pieces are visible in the catalog.
                                     </p>
                                 )}
 
@@ -1485,13 +1476,13 @@ export default function CosmicNexusHub() {
                                         lineHeight: 1,
                                     }}
                                 >
-                                    Build your artist world.
+                                    Building your own world?
                                 </h2>
 
                                 <p className="text-secondary text-sm md:text-base leading-relaxed max-w-2xl">
                                     If the Nexus sparks ideas for your music, rollout, workflow, or creative system,
-                                    you can work directly with Cosmic on direction, artist-world audits, music workflow,
-                                    release portals, and custom builds.
+                                    you can work directly with Cosmic on direction, audits, lessons, release portals,
+                                    and custom builds.
                                 </p>
                             </div>
 
@@ -2040,174 +2031,99 @@ export default function CosmicNexusHub() {
                         )}
                     </section>
 
-                    <section className="grid grid-cols-1 xl:grid-cols-2 gap-4 fade-in" style={{ animationDelay: '0.32s' }}>
-                        <div>
-                            <button
-                                className="glass-card nexus-panel w-full p-4 flex items-center justify-between text-left mb-3"
-                                onClick={() => setShowVault((prev) => !prev)}
+                    <section className="fade-in" style={{ animationDelay: '0.32s' }}>
+                    <div>
+                        <button
+                            className="glass-card nexus-panel w-full p-4 flex items-center justify-between text-left mb-3"
+                            onClick={() => setShowArchive((prev) => !prev)}
+                            style={{
+                                ...sectionStyle,
+                                borderRadius: '26px',
+                            }}
+                        >
+                            <div>
+                                <p className="text-xs uppercase tracking-[0.2em] text-muted mb-1">
+                                    Featured Signal
+                                </p>
+                                <h3 className="text-lg font-display">
+                                    {flagshipTrack?.trackTitle ?? 'Featured Signal'}
+                                </h3>
+                            </div>
+                            <span className="text-xl text-secondary">{showArchive ? '−' : '+'}</span>
+                        </button>
+
+                        {showArchive && (
+                            <div
+                                className="glass-card nexus-panel overflow-hidden"
                                 style={{
                                     ...sectionStyle,
-                                    borderRadius: '26px',
+                                    borderRadius: '24px',
                                 }}
                             >
-                                <div>
-                                    <p className="text-xs uppercase tracking-[0.2em] text-muted mb-1">
-                                        Archive
-                                    </p>
-                                    <h3 className="text-lg font-display">April–May Vault</h3>
-                                </div>
-                                <span className="text-xl text-secondary">{showVault ? '−' : '+'}</span>
-                            </button>
-
-                            {showVault && (
                                 <div
-                                    className="glass-card nexus-panel overflow-hidden"
                                     style={{
-                                        ...sectionStyle,
-                                        borderRadius: '24px',
+                                        position: 'relative',
+                                        minHeight: '220px',
+                                        background: featuredSignalArtwork
+                                            ? `linear-gradient(180deg, rgba(8,10,18,0.04), rgba(8,10,18,0.56)), url(${featuredSignalArtwork}) center/cover`
+                                            : 'linear-gradient(135deg, rgba(18,20,34,0.96), rgba(8,10,18,0.98))',
                                     }}
                                 >
                                     <div
                                         style={{
-                                            position: 'relative',
-                                            minHeight: '220px',
-                                            background: vaultArtwork
-                                                ? `linear-gradient(180deg, rgba(8,10,18,0.04), rgba(8,10,18,0.56)), url(${vaultArtwork}) center/cover`
-                                                : 'linear-gradient(135deg, rgba(30,34,48,0.95), rgba(8,10,18,0.98))',
+                                            position: 'absolute',
+                                            inset: 0,
+                                            background:
+                                                'linear-gradient(180deg, rgba(6,8,14,0.10) 0%, rgba(6,8,14,0.18) 30%, rgba(6,8,14,0.84) 100%)',
                                         }}
-                                    >
-                                        <div
-                                            style={{
-                                                position: 'absolute',
-                                                inset: 0,
-                                                background:
-                                                    'linear-gradient(180deg, rgba(6,8,14,0.10) 0%, rgba(6,8,14,0.20) 30%, rgba(6,8,14,0.82) 100%)',
-                                            }}
-                                        />
+                                    />
 
-                                        <div className="relative p-5 md:p-6 flex flex-col justify-end min-h-[220px]">
-                                            <div className="flex flex-wrap gap-2 mb-3">
-                                                <span className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.16em] bg-white/10 border border-white/12 text-white/90">
-                                                    Listening Vault
-                                                </span>
-                                                <span className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.16em] bg-white/6 border border-white/10 text-white/72">
-                                                    {vaultTrackCount} songs & sketches
-                                                </span>
-                                                <span className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.16em] bg-white/6 border border-white/10 text-white/72">
-                                                    Member preview
-                                                </span>
-                                            </div>
-
-                                            <h4 className="text-2xl md:text-3xl font-display mb-2 text-white">
-                                                April–May Vault
-                                            </h4>
-                                            <p className="text-sm md:text-base text-white/78 max-w-xl leading-relaxed">
-                                                A private listening room for the April–May sessions — early songs, sketches, and unreleased moments from the world before they fully open.
-                                            </p>
+                                    <div className="relative p-5 md:p-6 flex flex-col justify-end min-h-[220px]">
+                                        <div className="flex flex-wrap gap-2 mb-3">
+                                            <span className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.16em] bg-white/10 border border-white/12 text-white/90">
+                                                Featured signal
+                                            </span>
+                                            <span className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.16em] bg-white/6 border border-white/10 text-white/72">
+                                                Direct entry
+                                            </span>
                                         </div>
-                                    </div>
 
-                                    <div className="p-5">
-                                        <p className="text-sm text-secondary leading-relaxed">
-                                            Step inside a quieter corner of the Nexus. These pieces show the sound in motion — some are early sparks, some are closer to release, and all of them trace the path from first idea to finished world.
+                                        <h4 className="text-2xl md:text-3xl font-display mb-2 text-white">
+                                            {flagshipTrack?.trackTitle ?? 'Featured Signal'}
+                                        </h4>
+                                        <p className="text-sm md:text-base text-white/78 max-w-xl leading-relaxed">
+                                            A direct entry point into the Cosmic world — one track, one image, one clear doorway into the sound.
                                         </p>
                                     </div>
                                 </div>
-                            )}
-                        </div>
 
-                        <div>
-                            <button
-                                className="glass-card nexus-panel w-full p-4 flex items-center justify-between text-left mb-3"
-                                onClick={() => setShowArchive((prev) => !prev)}
-                                style={{
-                                    ...sectionStyle,
-                                    borderRadius: '26px',
-                                }}
-                            >
-                                <div>
-                                    <p className="text-xs uppercase tracking-[0.2em] text-muted mb-1">
-                                        Featured Signal
+                                <div className="p-5">
+                                    <p className="text-sm text-secondary mb-3 leading-relaxed">
+                                        This track stands on its own within the Nexus: a first door for new listeners and a quick return point for travelers.
                                     </p>
-                                    <h3 className="text-lg font-display">
-                                        {flagshipTrack?.trackTitle ?? 'Featured Signal'}
-                                    </h3>
-                                </div>
-                                <span className="text-xl text-secondary">{showArchive ? '−' : '+'}</span>
-                            </button>
 
-                            {showArchive && (
-                                <div
-                                    className="glass-card nexus-panel overflow-hidden"
-                                    style={{
-                                        ...sectionStyle,
-                                        borderRadius: '24px',
-                                    }}
-                                >
-                                    <div
-                                        style={{
-                                            position: 'relative',
-                                            minHeight: '220px',
-                                            background: featuredSignalArtwork
-                                                ? `linear-gradient(180deg, rgba(8,10,18,0.04), rgba(8,10,18,0.56)), url(${featuredSignalArtwork}) center/cover`
-                                                : 'linear-gradient(135deg, rgba(18,20,34,0.96), rgba(8,10,18,0.98))',
-                                        }}
-                                    >
-                                        <div
+                                    {flagshipTrack && (
+                                        <button
+                                            className="btn-secondary"
+                                            onClick={() => tryPlayTrack(flagshipTrack)}
+                                            disabled={isTrackLocked(flagshipTrack)}
                                             style={{
-                                                position: 'absolute',
-                                                inset: 0,
-                                                background:
-                                                    'linear-gradient(180deg, rgba(6,8,14,0.10) 0%, rgba(6,8,14,0.18) 30%, rgba(6,8,14,0.84) 100%)',
+                                                borderRadius: '999px',
+                                                opacity: isTrackLocked(flagshipTrack) ? 0.55 : 1,
+                                                cursor: isTrackLocked(flagshipTrack) ? 'not-allowed' : 'pointer',
                                             }}
-                                        />
-
-                                        <div className="relative p-5 md:p-6 flex flex-col justify-end min-h-[220px]">
-                                            <div className="flex flex-wrap gap-2 mb-3">
-                                                <span className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.16em] bg-white/10 border border-white/12 text-white/90">
-                                                    Featured signal
-                                                </span>
-                                                <span className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.16em] bg-white/6 border border-white/10 text-white/72">
-                                                    Direct entry
-                                                </span>
-                                            </div>
-
-                                            <h4 className="text-2xl md:text-3xl font-display mb-2 text-white">
-                                                {flagshipTrack?.trackTitle ?? 'Featured Signal'}
-                                            </h4>
-                                            <p className="text-sm md:text-base text-white/78 max-w-xl leading-relaxed">
-                                                A direct entry point into the Cosmic world — one track, one image, one clear doorway into the sound.
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div className="p-5">
-                                        <p className="text-sm text-secondary mb-3 leading-relaxed">
-                                            This track stands on its own within the Nexus: a first door for new listeners and a quick return point for travelers.
-                                        </p>
-
-                                        {flagshipTrack && (
-                                            <button
-                                                className="btn-secondary"
-                                                onClick={() => tryPlayTrack(flagshipTrack)}
-                                                disabled={isTrackLocked(flagshipTrack)}
-                                                style={{
-                                                    borderRadius: '999px',
-                                                    opacity: isTrackLocked(flagshipTrack) ? 0.55 : 1,
-                                                    cursor: isTrackLocked(flagshipTrack) ? 'not-allowed' : 'pointer',
-                                                }}
-                                            >
-                                                {isTrackLocked(flagshipTrack)
-                                                    ? `Opens ${getTrackUnlockLabel(flagshipTrack)}`
-                                                    : currentTrack?.id === flagshipTrack.id && isPlaying
-                                                        ? 'Pause Track'
-                                                        : '▶ Play Track'}
-                                            </button>
-                                        )}
-                                    </div>
+                                        >
+                                            {isTrackLocked(flagshipTrack)
+                                                ? `Opens ${getTrackUnlockLabel(flagshipTrack)}`
+                                                : currentTrack?.id === flagshipTrack.id && isPlaying
+                                                    ? 'Pause Track'
+                                                    : '▶ Play Track'}
+                                        </button>
+                                    )}
                                 </div>
-                            )}
-                        </div>
+                            </div>
+                        )}
+                    </div>
                     </section>
                 </div>
             </div>
