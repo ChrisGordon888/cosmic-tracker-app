@@ -1641,19 +1641,49 @@ export default function CosmicNexusHub() {
 }
 
 .realm-carousel-item {
-    flex: 0 0 86%;
+    flex: 0 0 min(88%, 24rem);
     scroll-snap-align: start;
     min-width: 0;
-    max-width: 86%;
+    max-width: 24rem;
     display: flex;
+    align-self: stretch;
 }
 
 .realm-carousel-item > :global(*) {
     width: 100%;
     min-width: 0;
+    height: 100%;
 }
 
-        @media (min-width: 768px) {
+.realm-carousel-hint {
+    display: none;
+}
+
+@media (max-width: 767px) {
+    .nexus-soundtracks {
+        padding: 1rem !important;
+        border-radius: 26px !important;
+    }
+
+    .realm-carousel {
+        width: calc(100% + 1rem);
+        margin-left: -0.5rem;
+        margin-right: -0.5rem;
+        padding: 0.15rem 0.5rem 0.65rem;
+        gap: 0.85rem;
+    }
+
+    .realm-carousel-hint {
+        display: block;
+        margin-top: 0.65rem;
+        color: rgba(255,255,255,0.46);
+        font-size: 0.68rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+    }
+}
+
+@media (min-width: 768px) {
     .realm-carousel-item {
         flex-basis: calc((100% - 16px) / 2);
         max-width: calc((100% - 16px) / 2);
@@ -1676,6 +1706,7 @@ export default function CosmicNexusHub() {
                                 <p className="text-secondary text-sm mt-1 leading-relaxed max-w-2xl">
                                     Each realm holds a living soundtrack. Play what is open now, preview what is coming, and enter the realm to go deeper.
                                 </p>
+                                <p className="realm-carousel-hint">Swipe realm soundtracks</p>
                             </div>
 
                             <div className="hidden md:flex items-center gap-2 shrink-0">

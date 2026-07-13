@@ -347,8 +347,8 @@ export default function RealmOrbitCard({
                 title={locked && lockLabel ? lockLabel : track.trackTitle}
             >
                 {locked
-                    ? `🔒 ${track.trackTitle}${lockLabel ? ` • ${lockLabel}` : ''}`
-                    : `${isCurrent && isPlaying ? '⏸' : '♪'} ${track.trackTitle}`}
+                    ? `${track.trackTitle}${lockLabel ? ` • ${lockLabel}` : ' • Locked'}`
+                    : `${isCurrent && isPlaying ? 'Playing' : isCurrent ? 'Selected' : 'Play'} • ${track.trackTitle}`}
             </button>
         );
     };
@@ -376,7 +376,8 @@ export default function RealmOrbitCard({
                     borderColor: realmBorder,
                     background: `radial-gradient(circle at top left, ${realmSoft}, transparent 46%), linear-gradient(145deg, rgba(255,255,255,0.035), rgba(8,10,18,0.82))`,
                     boxShadow: `0 10px 28px ${realmGlow}, inset 0 1px 0 rgba(255,255,255,0.055)`,
-                    minHeight: carouselMode ? '388px' : undefined,
+                    minHeight: carouselMode ? '430px' : undefined,
+                    height: carouselMode ? '100%' : undefined,
                 }}
             >
                 <div
@@ -385,6 +386,23 @@ export default function RealmOrbitCard({
                         background: `radial-gradient(circle at 40% 30%, ${realmGlow}, transparent 58%)`,
                     }}
                 />
+
+                <style jsx>{`
+                    .nexus-compact-orbit :global(.overflow-x-auto) {
+                        scrollbar-width: none;
+                        -ms-overflow-style: none;
+                    }
+
+                    .nexus-compact-orbit :global(.overflow-x-auto::-webkit-scrollbar) {
+                        display: none;
+                    }
+
+                    @media (max-width: 420px) {
+                        .nexus-compact-orbit {
+                            padding: 0.85rem !important;
+                        }
+                    }
+                `}</style>
 
                 <div className="relative flex flex-col h-full min-w-0">
                     <div
@@ -493,9 +511,9 @@ export default function RealmOrbitCard({
                                     aria-label={selectedTrack ? `Play ${selectedTrack.trackTitle}` : `Play ${realmName}`}
                                 >
                                     {selectedTrackLocked
-                                        ? '🔒'
+                                        ? 'LOCK'
                                         : selectedIsCurrent && isPlaying
-                                            ? '⏸'
+                                            ? 'II'
                                             : realmIcon}
                                 </button>
 
@@ -539,7 +557,7 @@ export default function RealmOrbitCard({
                                             title={track.trackTitle}
                                             aria-label={locked ? `${track.trackTitle} locked` : `Play ${track.trackTitle}`}
                                         >
-                                            {locked ? '🔒' : isCurrent && isPlaying ? 'Ⅱ' : '♪'}
+                                            {locked ? 'L' : isCurrent && isPlaying ? 'II' : '•'}
                                         </button>
                                     );
                                 })}
@@ -580,7 +598,7 @@ export default function RealmOrbitCard({
                             {selectedTrack ? (
                                 <>
                                     <p className="text-[9px] uppercase tracking-[0.16em] text-white/38 mb-1">
-                                        Now playing
+                                        Selected signal
                                     </p>
 
                                     <p
@@ -594,7 +612,6 @@ export default function RealmOrbitCard({
                                                 : realmTheme.textShadow,
                                         }}
                                     >
-                                        {selectedTrackLocked ? '🔒 ' : ''}
                                         {selectedTrack.trackTitle}
                                     </p>
                                     <p className="text-xs text-white/55 truncate">
@@ -664,7 +681,7 @@ export default function RealmOrbitCard({
                                         borderRadius: '999px',
                                     }}
                                 >
-                                    Enter →
+                                    Enter
                                 </button>
                             </Link>
                         ) : (
@@ -672,11 +689,17 @@ export default function RealmOrbitCard({
                         )}
                     </div>
 
-                    {sortedTracks.length > 1 && (
-                        <div className="relative mt-4 flex gap-2 overflow-x-auto pb-1 w-full">
-                            {sortedTracks.map(renderTrackPill)}
-                        </div>
-                    )}
+                    <div className="relative mt-4 min-h-[48px] w-full rounded-2xl border border-white/10 bg-white/[0.025] px-2 py-2 overflow-hidden">
+                        {sortedTracks.length > 1 ? (
+                            <div className="flex gap-2 overflow-x-auto pb-1 w-full">
+                                {sortedTracks.map(renderTrackPill)}
+                            </div>
+                        ) : (
+                            <p className="px-1 text-[11px] uppercase tracking-[0.14em] text-white/38">
+                                Single signal
+                            </p>
+                        )}
+                    </div>
 
                     {compactPathLabel && (
                         <div className="mt-auto pt-4">
@@ -989,7 +1012,7 @@ export default function RealmOrbitCard({
                                 aria-label={locked ? `${track.trackTitle} locked` : `Play ${track.trackTitle}`}
                             >
                                 <span className="text-base">
-                                    {locked ? '🔒' : isCurrentAndPlaying ? 'Ⅱ' : isCurrent ? '▶' : '♪'}
+                                    {locked ? 'L' : isCurrentAndPlaying ? 'II' : isCurrent ? 'PLAY' : '•'}
                                 </span>
                             </button>
                         );
@@ -1043,7 +1066,6 @@ export default function RealmOrbitCard({
                                                     : 'white',
                                         }}
                                     >
-                                        {selectedTrackLocked ? '🔒 ' : ''}
                                         {selectedTrack.trackTitle}
                                     </p>
 
