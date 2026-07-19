@@ -496,7 +496,6 @@ export default function CosmicNexusHub() {
     const [storedGuidance, setStoredGuidance] = useState<StoredRealmGuidance | null>(null);
 
     const [showJourneys, setShowJourneys] = useState(false);
-    const [showArchive, setShowArchive] = useState(false);
     const [showReleaseDetails, setShowReleaseDetails] = useState(false);
 
     const soundtrackCarouselRef = useRef<HTMLDivElement | null>(null);
@@ -792,11 +791,6 @@ export default function CosmicNexusHub() {
     const guidanceRealmTint = getRealmTint(guidanceRealmId);
     const moonRealmId = getRealmIdFromAlignmentName(realmAlignment?.primaryRealm);
     const moonRealmTint = getRealmTint(moonRealmId);
-    const moonRealmHref = moonRealmId !== null
-        ? isSignedIn
-            ? `/realms/${moonRealmId}`
-            : '/auth'
-        : '/find-your-realm';
 
     const handlePlayOrbitTrack = (track: { id: string }) => {
         const fullTrack = MUSIC_REGISTRY.find((musicTrack) => musicTrack.id === track.id);
@@ -810,6 +804,14 @@ export default function CosmicNexusHub() {
     };
 
     const flagshipTrack = FLAGSHIP_TRACKS[0] ?? null;
+    const flagshipTrackLocked = flagshipTrack ? isTrackLocked(flagshipTrack) : false;
+    const flagshipUnlockLabel = flagshipTrack ? getTrackUnlockLabel(flagshipTrack) : null;
+    const flagshipIsCurrent = Boolean(flagshipTrack && currentTrack?.id === flagshipTrack.id);
+    const flagshipRealmHref = flagshipTrack
+        ? isSignedIn
+            ? `/realms/${flagshipTrack.realmId}`
+            : '/auth'
+        : '/nexus';
     const publicThreePieceCollections = PUBLIC_THREE_PIECE_COLLECTIONS;
     const releaseArtworkUrl = currentRelease?.coverArtUrl ?? null;
     const featuredSignalArtwork =
@@ -1400,16 +1402,15 @@ export default function CosmicNexusHub() {
                                         {realmAlignment ? (
                                             <>
                                                 Aligned Realm:{' '}
-                                                <Link
-                                                    href={moonRealmHref}
-                                                    className="font-medium underline-offset-4 hover:underline"
+                                                <span
+                                                    className="font-medium"
                                                     style={{
                                                         color: moonRealmTint.accent,
                                                         textShadow: moonRealmTint.textShadow,
                                                     }}
                                                 >
                                                     {realmAlignment.primaryRealm}
-                                                </Link>
+                                                </span>
                                             </>
                                         ) : (
                                             'Reading alignment'
@@ -1423,9 +1424,8 @@ export default function CosmicNexusHub() {
                             </p>
 
                             {realmAlignment?.primaryRealm && (
-                                <Link
-                                    href={moonRealmHref}
-                                    className="block rounded-2xl px-3 py-3 mb-3 transition-transform hover:-translate-y-0.5"
+                                <div
+                                    className="rounded-2xl px-3 py-3 mb-3"
                                     style={{
                                         border: `1px solid ${moonRealmTint.border}`,
                                         background: `linear-gradient(135deg, ${moonRealmTint.soft}, rgba(255,255,255,0.028))`,
@@ -1448,7 +1448,7 @@ export default function CosmicNexusHub() {
                                         </span>{' '}
                                         as today’s listening doorway.
                                     </p>
-                                </Link>
+                                </div>
                             )}
 
                             <Link
@@ -1533,99 +1533,106 @@ export default function CosmicNexusHub() {
                         </div>
                     </section>
 
-                    <section className="fade-in mb-5" style={{ animationDelay: '0.22s' }}>
-                    <div>
-                        <button
-                            className="glass-card nexus-panel w-full p-4 flex items-center justify-between text-left mb-3"
-                            onClick={() => setShowArchive((prev) => !prev)}
-                            style={{
-                                ...sectionStyle,
-                                borderRadius: '26px',
-                            }}
-                        >
-                            <div>
-                                <p className="text-xs uppercase tracking-[0.2em] text-muted mb-1">
-                                    Featured Signal
-                                </p>
-                                <h3 className="text-lg font-display">
-                                    {flagshipTrack?.trackTitle ?? 'Featured Signal'}
-                                </h3>
-                            </div>
-                            <span className="text-xl text-secondary">{showArchive ? '−' : '+'}</span>
-                        </button>
-
-                        {showArchive && (
+                    <section
+                        className="glass-card nexus-panel fade-in mb-5 overflow-hidden"
+                        style={{
+                            ...sectionStyle,
+                            animationDelay: '0.22s',
+                            borderRadius: '28px',
+                        }}
+                    >
+                        <div className="grid grid-cols-1 md:grid-cols-[0.72fr_1.28fr] gap-0 items-stretch">
                             <div
-                                className="glass-card nexus-panel overflow-hidden"
+                                className="relative min-h-[180px] md:min-h-[240px]"
                                 style={{
-                                    ...sectionStyle,
-                                    borderRadius: '24px',
+                                    background: featuredSignalArtwork
+                                        ? `linear-gradient(180deg, rgba(6,8,14,0.08), rgba(6,8,14,0.60)), url(${featuredSignalArtwork}) center/cover`
+                                        : 'linear-gradient(135deg, rgba(18,20,34,0.96), rgba(8,10,18,0.98))',
                                 }}
                             >
                                 <div
+                                    className="absolute inset-0"
                                     style={{
-                                        position: 'relative',
-                                        minHeight: '220px',
-                                        background: featuredSignalArtwork
-                                            ? `linear-gradient(180deg, rgba(8,10,18,0.04), rgba(8,10,18,0.56)), url(${featuredSignalArtwork}) center/cover`
-                                            : 'linear-gradient(135deg, rgba(18,20,34,0.96), rgba(8,10,18,0.98))',
+                                        background:
+                                            'radial-gradient(circle at 18% 8%, rgba(220,186,92,0.16), transparent 44%), linear-gradient(90deg, rgba(6,8,14,0.10), rgba(6,8,14,0.72))',
+                                    }}
+                                />
+
+                                <div className="absolute left-4 top-4 flex flex-wrap gap-2">
+                                    <span className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.16em] bg-black/28 border border-white/12 text-white/88 backdrop-blur-md">
+                                        Featured Signal
+                                    </span>
+                                    <span className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.16em] bg-black/24 border border-white/10 text-white/70 backdrop-blur-md">
+                                        {flagshipTrackLocked && flagshipUnlockLabel ? `Opens ${flagshipUnlockLabel}` : 'Available Signal'}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="p-5 md:p-6 flex flex-col justify-center">
+                                <p className="text-xs uppercase tracking-[0.2em] text-muted mb-2">
+                                    Nexus Beacon
+                                </p>
+
+                                <h3
+                                    className="text-3xl md:text-4xl font-display mb-2 text-glow"
+                                    style={{
+                                        letterSpacing: '-0.03em',
+                                        lineHeight: 1,
                                     }}
                                 >
-                                    <div
-                                        style={{
-                                            position: 'absolute',
-                                            inset: 0,
-                                            background:
-                                                'linear-gradient(180deg, rgba(6,8,14,0.10) 0%, rgba(6,8,14,0.18) 30%, rgba(6,8,14,0.84) 100%)',
-                                        }}
-                                    />
+                                    {flagshipTrack?.trackTitle ?? 'Featured Signal'}
+                                </h3>
 
-                                    <div className="relative p-5 md:p-6 flex flex-col justify-end min-h-[220px]">
-                                        <div className="flex flex-wrap gap-2 mb-3">
-                                            <span className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.16em] bg-white/10 border border-white/12 text-white/90">
-                                                Featured signal
-                                            </span>
-                                            <span className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.16em] bg-white/6 border border-white/10 text-white/72">
-                                                Direct entry
-                                            </span>
-                                        </div>
+                                <p className="text-secondary text-sm md:text-base leading-relaxed max-w-2xl mb-4">
+                                    The current sound the Nexus is pointing toward — one track, one image, and one clear doorway back into the world.
+                                </p>
 
-                                        <h4 className="text-2xl md:text-3xl font-display mb-2 text-white">
-                                            {flagshipTrack?.trackTitle ?? 'Featured Signal'}
-                                        </h4>
-                                        <p className="text-sm md:text-base text-white/78 max-w-xl leading-relaxed">
-                                            A direct entry point into the Cosmic world — one track, one image, one clear doorway into the sound.
-                                        </p>
-                                    </div>
+                                <div className="flex flex-wrap gap-2 mb-4">
+                                    <span className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.15em] bg-white/5 border border-white/10 text-white/68">
+                                        Cosmic
+                                    </span>
+                                    <span className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.15em] bg-white/5 border border-white/10 text-white/68">
+                                        Direct Entry
+                                    </span>
+                                    {flagshipTrack?.realmName && (
+                                        <span className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.15em] bg-white/5 border border-white/10 text-white/68">
+                                            {flagshipTrack.realmName}
+                                        </span>
+                                    )}
                                 </div>
 
-                                <div className="p-5">
-                                    <p className="text-sm text-secondary mb-3 leading-relaxed">
-                                        This track stands on its own within the Nexus: a first door for new listeners and a quick return point for travelers.
-                                    </p>
-
+                                <div className="flex flex-wrap gap-2">
                                     {flagshipTrack && (
                                         <button
                                             className="btn-secondary"
                                             onClick={() => tryPlayTrack(flagshipTrack)}
-                                            disabled={isTrackLocked(flagshipTrack)}
+                                            disabled={flagshipTrackLocked}
                                             style={{
                                                 borderRadius: '999px',
-                                                opacity: isTrackLocked(flagshipTrack) ? 0.55 : 1,
-                                                cursor: isTrackLocked(flagshipTrack) ? 'not-allowed' : 'pointer',
+                                                opacity: flagshipTrackLocked ? 0.55 : 1,
+                                                cursor: flagshipTrackLocked ? 'not-allowed' : 'pointer',
                                             }}
                                         >
-                                            {isTrackLocked(flagshipTrack)
-                                                ? `Opens ${getTrackUnlockLabel(flagshipTrack)}`
-                                                : currentTrack?.id === flagshipTrack.id && isPlaying
-                                                    ? 'Pause Track'
-                                                    : '▶ Play Track'}
+                                            {flagshipTrackLocked
+                                                ? flagshipUnlockLabel
+                                                    ? `Opens ${flagshipUnlockLabel}`
+                                                    : 'Coming Soon'
+                                                : flagshipIsCurrent && isPlaying
+                                                    ? 'Pause Signal'
+                                                    : 'Play Signal'}
                                         </button>
                                     )}
+
+                                    <Link
+                                        href={flagshipRealmHref}
+                                        className="btn-primary inline-flex"
+                                        style={{ borderRadius: '999px' }}
+                                    >
+                                        Enter Realm
+                                    </Link>
                                 </div>
                             </div>
-                        )}
-                    </div>
+                        </div>
                     </section>
 
                     <section
@@ -1652,14 +1659,12 @@ export default function CosmicNexusHub() {
     scroll-snap-align: start;
     min-width: 0;
     max-width: 86%;
-    height: 430px;
     display: flex;
 }
 
 .realm-carousel-item > :global(*) {
     width: 100%;
     min-width: 0;
-    height: 100%;
 }
 
         @media (min-width: 768px) {
