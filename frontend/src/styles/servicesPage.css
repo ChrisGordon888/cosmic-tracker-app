@@ -44,7 +44,7 @@
 .services-hero,
 .services-note,
 .services-live-offer,
-.services-question-card,
+.services-support-card,
 .services-offers-section,
 .services-free-section,
 .services-skills,
@@ -70,7 +70,6 @@
 .services-offer-card a,
 .services-toolkit-card a,
 .services-section-support a,
-.services-question-card a,
 .services-cta-actions a,
 .services-inquire-actions a {
   min-height: 2.65rem;
@@ -101,7 +100,6 @@
 .services-toolkit-card:hover,
 .services-toolkit-card a:hover,
 .services-section-support a:hover,
-.services-question-card a:hover,
 .services-cta-actions a:hover,
 .services-inquire-actions a:hover {
   transform: translateY(-2px);
@@ -212,7 +210,6 @@
 .services-offer-card a,
 .services-toolkit-card a,
 .services-section-support a,
-.services-question-card a,
 .services-cta-actions a:first-child,
 .services-inquire-actions a:first-child {
   color: #081018;
@@ -222,7 +219,7 @@
 
 .services-note,
 .services-live-offer,
-.services-question-card,
+.services-support-card,
 .services-offers-section,
 .services-free-section,
 .services-skills,
@@ -340,60 +337,156 @@
   border-color: rgba(126, 211, 255, 0.42);
 }
 
-
-.services-live-card ul {
+.services-support-card {
   display: grid;
-  gap: 0.42rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 1rem;
+  border: 1px solid rgba(126, 211, 255, 0.16);
+  border-radius: 1.7rem;
+  padding: clamp(1rem, 3vw, 1.4rem);
+  background:
+    radial-gradient(circle at 0% 0%, rgba(126, 211, 255, 0.10), transparent 42%),
+    rgba(255, 255, 255, 0.045);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(16px) saturate(125%);
+}
+
+.services-support-card h2 {
+  max-width: 680px;
+  margin: 0;
+  color: rgba(248, 250, 255, 0.96);
+  font-size: clamp(1.45rem, 3vw, 2.3rem);
+  line-height: 0.98;
+  letter-spacing: -0.05em;
+}
+
+.services-support-card p:not(.services-kicker) {
+  max-width: 720px;
+  margin: 0.7rem 0 0;
+  color: rgba(224, 231, 240, 0.72);
+  line-height: 1.65;
+}
+
+.services-support-card a {
+  min-height: 2.65rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(247, 239, 228, 0.48);
+  border-radius: 999px;
+  padding: 0.65rem 0.95rem;
+  color: #081018;
+  background: linear-gradient(135deg, rgba(247, 239, 228, 0.96), rgba(126, 211, 255, 0.86));
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.services-offer-visual {
+  position: relative;
+  min-height: 5rem;
+  margin-bottom: 1rem;
+  overflow: hidden;
+  border: 1px solid rgba(238, 243, 250, 0.10);
+  border-radius: 1.15rem;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(126, 211, 255, 0.16), transparent 42%),
+    linear-gradient(135deg, rgba(255,255,255,0.06), rgba(3,6,14,0.54));
+}
+
+.services-offer-visual span,
+.services-offer-visual i {
+  position: absolute;
+  display: block;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.services-offer-visual span {
+  width: 4.2rem;
+  height: 4.2rem;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 1px solid rgba(126, 211, 255, 0.26);
+  box-shadow: 0 0 30px rgba(126, 211, 255, 0.12), inset 0 0 24px rgba(126, 211, 255, 0.08);
+}
+
+.services-offer-visual i {
+  width: 70%;
+  height: 1px;
+  left: 1rem;
+  top: 50%;
+  background: linear-gradient(90deg, rgba(220,186,92,0.0), rgba(220,186,92,0.72), rgba(126,211,255,0.0));
+  transform: rotate(-8deg);
+}
+
+.services-visual-prism span { border-radius: 1.1rem; transform: translateY(-50%) rotate(12deg); border-color: rgba(220,186,92,0.32); }
+.services-visual-waveform i { height: 2px; box-shadow: 0 -10px 0 rgba(126,211,255,0.16), 0 10px 0 rgba(220,186,92,0.12); }
+.services-visual-mirror span { border-radius: 50% 50% 44% 44%; border-color: rgba(220,186,92,0.28); }
+.services-visual-notebook span { border-radius: 0.75rem; width: 3.2rem; border-color: rgba(238,243,250,0.22); }
+.services-visual-console span { width: 4.6rem; height: 2.6rem; border-radius: 0.75rem; }
+.services-visual-portal span { width: 3.4rem; height: 4.4rem; border-radius: 999px 999px 1rem 1rem; }
+.services-visual-path i { transform: rotate(-14deg); box-shadow: 16px 12px 0 rgba(126,211,255,0.16); }
+.services-visual-blueprint span { border-radius: 0.85rem; box-shadow: inset 14px 0 0 rgba(126,211,255,0.05), inset 0 14px 0 rgba(220,186,92,0.05); }
+
+.services-session-flow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.7rem;
+  margin-top: 1.1rem;
+}
+
+.services-session-flow article {
+  border: 1px solid rgba(238, 243, 250, 0.10);
+  border-radius: 1rem;
+  padding: 0.85rem;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.services-session-flow span {
+  color: rgba(220, 186, 92, 0.86);
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+}
+
+.services-session-flow strong {
+  display: block;
+  margin-top: 0.35rem;
+  color: rgba(248, 250, 255, 0.92);
+}
+
+.services-session-flow p {
+  margin: 0.35rem 0 0 !important;
+  font-size: 0.78rem;
+  line-height: 1.45 !important;
+}
+
+.services-live-card-sellable ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.services-live-card li {
-  position: relative;
-  padding-left: 0.85rem;
-  color: rgba(224, 231, 240, 0.70);
-  font-size: 0.78rem;
-  line-height: 1.45;
-}
-
-.services-live-card li::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0.58em;
-  width: 0.34rem;
-  height: 0.34rem;
+.services-live-card-sellable li {
+  border: 1px solid rgba(238, 243, 250, 0.10);
   border-radius: 999px;
-  background: rgba(220, 186, 92, 0.88);
-  box-shadow: 0 0 12px rgba(220, 186, 92, 0.34);
-}
-
-.services-question-card {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 1.25rem;
-}
-
-.services-question-card h2 {
-  max-width: 720px;
-  margin: 0;
-  color: rgba(248, 250, 255, 0.96);
-  font-size: clamp(1.9rem, 4vw, 3.7rem);
-  line-height: 0.96;
-  letter-spacing: -0.06em;
-}
-
-.services-question-card p:not(.services-kicker) {
-  max-width: 760px;
-  margin: 0.85rem 0 0;
-  color: rgba(224, 231, 240, 0.72);
-  line-height: 1.7;
-}
-
-.services-question-card a {
-  min-width: 12rem;
+  padding: 0.4rem 0.58rem;
+  color: rgba(238, 243, 250, 0.74);
+  background: rgba(255, 255, 255, 0.035);
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 
@@ -468,88 +561,6 @@
     radial-gradient(circle at 80% 12%, rgba(126, 211, 255, 0.10), transparent 34%),
     linear-gradient(145deg, rgba(255, 255, 255, 0.078), rgba(3, 6, 14, 0.62));
 }
-
-
-.services-offer-visual {
-  position: relative;
-  height: 4.2rem;
-  margin: 0.1rem 0 1rem;
-  border: 1px solid rgba(238, 243, 250, 0.09);
-  border-radius: 1.15rem;
-  overflow: hidden;
-  background:
-    radial-gradient(circle at 20% 18%, rgba(126, 211, 255, 0.16), transparent 34%),
-    radial-gradient(circle at 82% 26%, rgba(220, 186, 92, 0.12), transparent 36%),
-    rgba(255, 255, 255, 0.035);
-}
-
-.services-offer-visual::before,
-.services-offer-visual::after,
-.services-offer-visual span,
-.services-offer-visual i,
-.services-offer-visual b {
-  content: "";
-  position: absolute;
-  display: block;
-  pointer-events: none;
-}
-
-.services-offer-visual span {
-  inset: 0.85rem auto auto 0.9rem;
-  width: 2.1rem;
-  height: 2.1rem;
-  border: 1px solid rgba(126, 211, 255, 0.32);
-  border-radius: 999px;
-  box-shadow: 0 0 24px rgba(126, 211, 255, 0.12);
-}
-
-.services-offer-visual i {
-  left: 50%;
-  top: 50%;
-  width: 52%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(238, 243, 250, 0.36), transparent);
-  transform: translate(-50%, -50%);
-}
-
-.services-offer-visual b {
-  right: 1rem;
-  bottom: 0.85rem;
-  width: 2.2rem;
-  height: 2.2rem;
-  border: 1px solid rgba(220, 186, 92, 0.32);
-  border-radius: 0.7rem;
-  transform: rotate(12deg);
-}
-
-.services-offer-visual::before {
-  inset: 0;
-  opacity: 0.22;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
-  background-size: 18px 18px;
-}
-
-.services-offer-visual::after {
-  left: 50%;
-  top: 50%;
-  width: 5rem;
-  height: 5rem;
-  border: 1px solid rgba(238, 243, 250, 0.10);
-  border-radius: 999px;
-  transform: translate(-50%, -50%);
-}
-
-.visual-compass span { border-style: dashed; }
-.visual-prism b { border-radius: 0.25rem; transform: rotate(45deg); }
-.visual-waveform i { height: 1.6rem; background: repeating-linear-gradient(90deg, rgba(126,211,255,0.16), rgba(126,211,255,0.16) 3px, transparent 3px, transparent 8px); }
-.visual-mirror span { border-radius: 45% 55% 48% 52%; }
-.visual-notebook::before { background-size: 100% 12px; }
-.visual-console b { border-radius: 0.25rem; box-shadow: -2.2rem -0.6rem 0 -0.82rem rgba(126,211,255,0.30); }
-.visual-portal span { width: 2.8rem; border-radius: 48% 52% 52% 48%; }
-.visual-sprint i { transform: translate(-50%, -50%) rotate(-12deg); }
-.visual-blueprint::before { opacity: 0.30; background-size: 14px 14px; }
 
 .services-offer-topline,
 .services-offer-meta {
@@ -897,7 +908,8 @@
   .services-skills,
   .services-process,
   .services-payment,
-  .services-live-offer {
+  .services-live-offer,
+  .services-support-card {
     grid-template-columns: 1fr;
   }
 }
@@ -934,22 +946,6 @@
     width: 100%;
   }
 
-  .services-question-card {
-    grid-template-columns: 1fr;
-    gap: 0.9rem;
-    text-align: center;
-  }
-
-  .services-question-card a {
-    width: 100%;
-    min-width: 0;
-  }
-
-  .services-offer-visual {
-    height: 3.25rem;
-    margin-bottom: 0.8rem;
-  }
-
   .services-offer-card {
     min-height: auto;
   }
@@ -973,12 +969,11 @@
 
   .services-hero,
   .services-note,
-  .services-live-offer,
-  .services-question-card,
   .services-offers-section,
   .services-free-section,
   .services-skills,
   .services-toolkit,
+  .services-support-card,
   .services-process,
   .services-payment,
   .services-cta,
@@ -1037,12 +1032,11 @@
   }
 
   .services-note,
-  .services-live-offer,
-  .services-question-card,
   .services-offers-section,
   .services-free-section,
   .services-skills,
   .services-toolkit,
+  .services-support-card,
   .services-process,
   .services-payment,
   .services-cta {
@@ -1428,5 +1422,34 @@
 
   .services-inquire-form textarea {
     min-height: 8rem;
+  }
+}
+
+@media (max-width: 760px) {
+  .services-live-offer {
+    gap: 0.8rem;
+  }
+
+  .services-support-card {
+    grid-template-columns: 1fr;
+    text-align: left;
+  }
+
+  .services-support-card a {
+    width: 100%;
+  }
+
+  .services-session-flow {
+    grid-template-columns: 1fr;
+  }
+
+  .services-offer-visual {
+    min-height: 4.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .services-offer-visual span {
+    width: 3.3rem;
+    height: 3.3rem;
   }
 }

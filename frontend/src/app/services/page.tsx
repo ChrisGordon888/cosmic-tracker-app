@@ -25,7 +25,7 @@ type Offer = {
   outcome: string;
   includes: string[];
   featured?: boolean;
-  visual: string;
+  visual?: string;
 };
 
 type ToolkitItem = {
@@ -41,7 +41,6 @@ const START_HERE_OFFERS: Offer[] = [
   {
     slug: "cosmic-clarity-call",
     tier: "Call",
-    visual: "compass",
     title: "Cosmic Clarity Call",
     price: "30 min — $55",
     format: "1 live call",
@@ -56,11 +55,11 @@ const START_HERE_OFFERS: Offer[] = [
     youReceive: "A focused call with notes, perspective, and direct next steps.",
     outcome: "You leave with a clearer direction and one simple action path.",
     includes: ["Quick diagnosis", "Next-step clarity", "Action notes"],
+    visual: "signal-orb",
   },
   {
     slug: "creative-direction-session",
     tier: "Session",
-    visual: "prism",
     title: "Creative Direction Session",
     price: "60 min — $111",
     format: "1 live session",
@@ -76,11 +75,11 @@ const START_HERE_OFFERS: Offer[] = [
     outcome: "Your idea becomes more organized, grounded, and ready to move.",
     includes: ["Project direction", "Creative feedback", "Next-step roadmap"],
     featured: true,
+    visual: "prism",
   },
   {
     slug: "music-daw-workflow-lesson",
     tier: "Lesson",
-    visual: "waveform",
     title: "Music / DAW Workflow Lesson",
     price: "60 min — $88",
     format: "1 live lesson",
@@ -95,6 +94,7 @@ const START_HERE_OFFERS: Offer[] = [
     youReceive: "A live lesson, screen-share guidance, and practice steps.",
     outcome: "You understand your tools better and can keep creating with less friction.",
     includes: ["DAW workflow", "Music basics", "Recording setup"],
+    visual: "waveform",
   },
 ];
 
@@ -102,7 +102,6 @@ const AUDIT_OFFERS: Offer[] = [
   {
     slug: "artist-world-audit",
     tier: "Artist",
-    visual: "mirror",
     title: "Artist World Audit",
     price: "$222",
     format: "Written audit + optional walkthrough",
@@ -118,11 +117,11 @@ const AUDIT_OFFERS: Offer[] = [
     outcome: "You understand what your artist world is saying and how to strengthen it.",
     includes: ["Music/project review", "World + story notes", "Rollout suggestions"],
     featured: true,
+    visual: "mirror",
   },
   {
     slug: "song-project-development-pack",
     tier: "Project",
-    visual: "notebook",
     title: "Song / Project Development Pack",
     price: "3 sessions — $333",
     format: "3 live development sessions",
@@ -138,11 +137,11 @@ const AUDIT_OFFERS: Offer[] = [
     outcome: "Your song or project gets clearer, stronger, and closer to release.",
     includes: ["Song feedback", "Development calls", "Project direction"],
     featured: true,
+    visual: "notebook",
   },
   {
     slug: "studio-systems-reset",
     tier: "Studio",
-    visual: "console",
     title: "Studio Systems Reset",
     price: "$444",
     format: "Audit + workflow map + walkthrough",
@@ -160,6 +159,7 @@ const AUDIT_OFFERS: Offer[] = [
     outcome:
       "Your creative machine becomes cleaner, faster, and easier to return to across all future songs.",
     includes: ["Setup review", "Workflow map", "Template suggestions"],
+    visual: "console",
   },
 ];
 
@@ -167,7 +167,6 @@ const BUILD_WITH_COSMIC: Offer[] = [
   {
     slug: "release-portal-accelerator",
     tier: "Release",
-    visual: "portal",
     title: "Release Portal Accelerator",
     price: "Starting at $777",
     format: "Done-with-you release build",
@@ -183,11 +182,11 @@ const BUILD_WITH_COSMIC: Offer[] = [
     outcome: "Your release has a stronger home, clearer story, and better fan pathway.",
     includes: ["Portal setup", "World copy", "Launch direction"],
     featured: true,
+    visual: "portal",
   },
   {
     slug: "cosmic-artist-sprint",
     tier: "Sprint",
-    visual: "sprint",
     title: "Cosmic Artist Sprint",
     price: "4 weeks — starting at $888",
     format: "Weekly coaching sprint",
@@ -203,11 +202,11 @@ const BUILD_WITH_COSMIC: Offer[] = [
     outcome: "You build momentum, clarity, and a stronger creative system over one month.",
     includes: ["Weekly coaching", "Music + workflow feedback", "Artist roadmap"],
     featured: true,
+    visual: "path",
   },
   {
     slug: "creator-system-custom-build",
     tier: "System",
-    visual: "blueprint",
     title: "Creator System Custom Build",
     price: "Starting at $1,500",
     format: "Scoped custom project",
@@ -222,6 +221,7 @@ const BUILD_WITH_COSMIC: Offer[] = [
     youReceive: "A scoped custom build with design, structure, implementation, and launch support.",
     outcome: "You get a digital system built around your real work, not a generic template.",
     includes: ["Custom build", "Workflow design", "Launch support"],
+    visual: "blueprint",
   },
 ];
 
@@ -304,6 +304,11 @@ const SKILL_AREAS = [
 function OfferCard({ offer }: { offer: Offer }) {
   return (
     <article className={`services-offer-card ${offer.featured ? "is-featured" : ""}`}>
+      <div className={`services-offer-visual services-visual-${offer.visual || "signal-orb"}`} aria-hidden="true">
+        <span />
+        <i />
+      </div>
+
       <div className="services-offer-topline">
         <span>{offer.tier}</span>
         {offer.featured && <em>Featured</em>}
@@ -312,12 +317,6 @@ function OfferCard({ offer }: { offer: Offer }) {
       <div className="services-offer-meta">
         <span className="services-status">{offer.status}</span>
         <span className="services-action-type">{offer.actionType}</span>
-      </div>
-
-      <div className={`services-offer-visual visual-${offer.visual}`} aria-hidden="true">
-        <span />
-        <i />
-        <b />
       </div>
 
       <h3>{offer.title}</h3>
@@ -389,24 +388,34 @@ export default function ServicesPage() {
         </p>
 
         <div className="services-hero-actions">
+          <a href="#creative-direction">Book Creative Direction</a>
           <a href="#start-here">View Offers</a>
-          <a href="#help-choose">Ask What Fits</a>
         </div>
+      </section>
+
+      <section className="services-support-card" aria-label="Help choosing a service">
+        <div>
+          <p className="services-kicker">Need help choosing?</p>
+          <h2>Send the context. I’ll point you toward the cleanest next step.</h2>
+          <p>
+            Not sure whether you need a call, audit, lesson, or build? Start with a question and I’ll help you choose without forcing the fit.
+          </p>
+        </div>
+        <Link href="/services/inquire?intent=question">Ask What Fits</Link>
       </section>
 
       <section className="services-note">
         <p className="services-kicker">How this works</p>
         <h2>The music multiverse is open. Services are for direct support.</h2>
         <p>
-          Anyone can enter the public Nexus, explore the scroll, and follow the open
-          signals. Services are for artists, creators, and seekers who want direct
-          feedback, guided setup, customization, coaching, accountability, or a
-          deeper build with Cosmic.
+          Anyone can explore the public Nexus, scroll, open signals, and creative pathways. Services are
+          for artists, creators, and seekers who want direct feedback, guided setup,
+          customization, coaching, accountability, or a deeper build with Cosmic.
         </p>
       </section>
 
 
-      <section className="services-live-offer" aria-labelledby="live-offer-heading">
+      <section id="creative-direction" className="services-live-offer services-live-offer-featured" aria-labelledby="live-offer-heading">
         <div className="services-live-copy">
           <p className="services-kicker">Best place to start</p>
           <h2 id="live-offer-heading">Creative Direction Session</h2>
@@ -415,34 +424,39 @@ export default function ServicesPage() {
             story, or next creative move. Bring what you have — links, questions, ideas,
             demos, notes, or confusion — and leave with clearer direction.
           </p>
+
+          <div className="services-session-flow" aria-label="Creative Direction session flow">
+            <article>
+              <span>01</span>
+              <strong>Send context</strong>
+              <p>Music, links, questions, notes, goals, or the part that feels unclear.</p>
+            </article>
+            <article>
+              <span>02</span>
+              <strong>Meet for 60 minutes</strong>
+              <p>We clarify the project, story, workflow, direction, and next move.</p>
+            </article>
+            <article>
+              <span>03</span>
+              <strong>Leave with a path</strong>
+              <p>You get grounded direction, action notes, and a clean next-step map.</p>
+            </article>
+          </div>
         </div>
 
-        <div className="services-live-card">
-          <span>First Live Offer</span>
+        <div className="services-live-card services-live-card-sellable">
+          <span>Available Now</span>
           <strong>60 min — $111</strong>
           <p>Best for artists, creators, and builders who need a grounded next step.</p>
           <ul>
-            <li>Bring links, demos, notes, or questions</li>
-            <li>Leave with clear next steps</li>
+            <li>Project direction</li>
+            <li>Creative feedback</li>
+            <li>Action roadmap</li>
           </ul>
           <Link href="/services/inquire?offer=creative-direction-session&intent=book">
             Book Session
           </Link>
         </div>
-      </section>
-
-      <section id="help-choose" className="services-question-card" aria-labelledby="help-choose-heading">
-        <div>
-          <p className="services-kicker">Need help choosing?</p>
-          <h2 id="help-choose-heading">Ask what fits before you book.</h2>
-          <p>
-            Send a quick note with what you are building, where you feel stuck, and
-            what kind of support you are considering. I’ll point you toward the
-            cleanest first step.
-          </p>
-        </div>
-
-        <Link href="/services/inquire?intent=question">Ask What Fits</Link>
       </section>
 
       <section id="start-here" className="services-offers-section" aria-labelledby="start-here-heading">
@@ -462,6 +476,7 @@ export default function ServicesPage() {
             <OfferCard key={offer.slug} offer={offer} />
           ))}
         </div>
+
       </section>
 
       <section className="services-offers-section" aria-labelledby="audits-heading">

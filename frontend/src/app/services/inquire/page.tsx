@@ -14,6 +14,9 @@ type OfferOption = {
   price: string;
   short: string;
   bestFor: string;
+  outcome?: string;
+  sendPrompt?: string;
+  messagePrompt?: string;
 };
 
 const OFFER_OPTIONS: OfferOption[] = [
@@ -40,6 +43,9 @@ const OFFER_OPTIONS: OfferOption[] = [
     price: "60 min — $111",
     short: "A deeper session for shaping a project, release, brand direction, story, or creative path.",
     bestFor: "Artists, creators, and seekers who need deeper creative direction.",
+    outcome: "You leave with clearer positioning, feedback, and a practical next-step roadmap.",
+    sendPrompt: "Paste demos, socials, visuals, notes, references, release pages, or any links that show what you are building.",
+    messagePrompt: "Tell me what you are making, what feels unclear, what decision you need help with, and what you would love to leave the session knowing.",
   },
   {
     slug: "music-daw-workflow-lesson",
@@ -151,6 +157,14 @@ function InquiryForm() {
     [intent],
   );
 
+  const isCreativeDirection = selectedOffer.slug === "creative-direction-session";
+  const linkPlaceholder =
+    selectedOffer.sendPrompt ||
+    "Paste Spotify, SoundCloud, Google Drive, socials, website, release page, references, or project links.";
+  const messagePlaceholder =
+    selectedOffer.messagePrompt ||
+    "Tell me what you are building, where you feel stuck, what you want support with, and what a good outcome would look like.";
+
   const mailtoHref = useMemo(() => {
     const subject = `Services Inquiry — ${selectedOffer.label}`;
     const body = [
@@ -163,10 +177,12 @@ function InquiryForm() {
       `Payment preference: ${paymentPreference}`,
       `Timeline / preferred timing: ${timeline}`,
       "",
-      "Links to music / socials / website / project:",
+      "Links / references / project materials:",
       links,
       "",
-      "What I'm building / what I need help with:",
+      isCreativeDirection
+        ? "Creative Direction focus — what I'm building, what feels unclear, and what I want to leave with:"
+        : "What I'm building / what I need help with:",
       message,
       "",
       "Anything else Chris should know:",
@@ -180,6 +196,7 @@ function InquiryForm() {
     message,
     name,
     paymentPreference,
+    isCreativeDirection,
     selectedIntent.label,
     selectedOffer.label,
     selectedOffer.price,
@@ -196,10 +213,11 @@ function InquiryForm() {
         </nav>
 
         <p className="services-kicker">Services Front Desk</p>
-        <h1>Tell me what you are building.</h1>
+        <h1>{isCreativeDirection ? "Book Creative Direction." : "Tell me what you are building."}</h1>
         <p>
-          You do not need to have everything perfect. Choose the closest offer, send the
-          context you have, and I’ll help clarify the cleanest next step.
+          {isCreativeDirection
+            ? "Send the project context you already have. A few links, notes, questions, or demos are enough to start the session cleanly."
+            : "You do not need to have everything perfect. Choose the closest offer, send the context you have, and I’ll help clarify the cleanest next step."}
         </p>
       </div>
 
@@ -224,20 +242,20 @@ function InquiryForm() {
           <div className="services-inquire-path">
             <article>
               <span>01</span>
-              <strong>Choose the closest offer</strong>
-              <p>You can choose “not sure” if you need direction first.</p>
+              <strong>{isCreativeDirection ? "Reserve the session" : "Choose the closest offer"}</strong>
+              <p>{isCreativeDirection ? "Use this request to start the booking conversation." : "You can choose “not sure” if you need direction first."}</p>
             </article>
 
             <article>
               <span>02</span>
               <strong>Send your context</strong>
-              <p>Links, goals, stuck points, timeline, and what you want help with.</p>
+              <p>{isCreativeDirection ? "Demos, visuals, links, questions, and the part that needs direction." : "Links, goals, stuck points, timeline, and what you want help with."}</p>
             </article>
 
             <article>
               <span>03</span>
-              <strong>Get the next step</strong>
-              <p>I’ll reply with fit, booking/payment direction, or a better recommendation.</p>
+              <strong>{isCreativeDirection ? "Confirm the path" : "Get the next step"}</strong>
+              <p>{isCreativeDirection ? "I’ll reply with timing, payment/booking direction, and how to prepare." : "I’ll reply with fit, booking/payment direction, or a better recommendation."}</p>
             </article>
           </div>
         </aside>
@@ -289,7 +307,7 @@ function InquiryForm() {
             <textarea
               value={links}
               onChange={(event) => setLinks(event.target.value)}
-              placeholder="Paste Spotify, SoundCloud, Google Drive, socials, website, release page, references, or project links."
+              placeholder={linkPlaceholder}
             />
           </label>
 
@@ -327,24 +345,25 @@ function InquiryForm() {
           </label>
 
           <label>
-            What do you need help with?
+            {isCreativeDirection ? "Creative Direction focus" : "What do you need help with?"}
             <textarea
               value={message}
               onChange={(event) => setMessage(event.target.value)}
-              placeholder="Tell me what you are building, where you feel stuck, what you want support with, and what a good outcome would look like."
+              placeholder={messagePlaceholder}
             />
           </label>
 
           <div className="services-inquire-note">
             <strong>Before you send:</strong>
             <p>
-              A few rough links and honest context are enough. This form opens your email
-              app with everything prefilled, so you can edit before sending.
+              {isCreativeDirection
+                ? "Rough links and honest context are enough. This opens your email app with a Creative Direction request prefilled so you can edit before sending."
+                : "A few rough links and honest context are enough. This form opens your email app with everything prefilled, so you can edit before sending."}
             </p>
           </div>
 
           <div className="services-inquire-actions">
-            <a href={mailtoHref}>Open Email Inquiry</a>
+            <a href={mailtoHref}>{isCreativeDirection ? "Open Booking Inquiry" : "Open Email Inquiry"}</a>
             <Link href="/services">Back to Services</Link>
           </div>
         </form>
