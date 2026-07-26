@@ -1,7 +1,17 @@
 'use client';
 
+import { useMemo } from 'react';
+import { useQuery } from '@apollo/client';
 import RealmOrbitCard from '@/components/music/RealmOrbitCard';
 import { MUSIC_REGISTRY } from '@/lib/musicRegistry';
+import { GET_PUBLIC_NEXUS_TRACKS } from '@/graphql/realms';
+import {
+    getRuntimeTracksForRealm,
+    mapReleaseTracksToMusicTracks,
+    mergeMusicCatalogs,
+    type PublicNexusReleaseTrack,
+    type RuntimeMusicTrack,
+} from '@/lib/publicMusicCatalog';
 import type { RealmId } from '@/lib/realmStateMap';
 import { useMusicPlayer } from '@/hooks/useMusicPlayer';
 
@@ -48,19 +58,21 @@ function formatUnlockDate(dateString?: string | null) {
     }
 }
 
-function isTrackLocked(track: { id: string; visibility?: string }) {
+function isTrackLocked(track: RuntimeMusicTrack) {
     if (track.visibility === 'premium') return true;
+    if (track.playbackStatus === 'locked') return true;
 
-    const unlockDate = RELEASE_UNLOCKS[track.id];
+    const unlockDate = track.unlockDate || RELEASE_UNLOCKS[track.id];
     if (!unlockDate) return false;
 
     return new Date() < new Date(unlockDate);
 }
 
-function getTrackLockLabel(track: { id: string; visibility?: string }) {
+function getTrackLockLabel(track: RuntimeMusicTrack) {
     if (track.visibility === 'premium') return 'Premium';
+    if (track.playbackStatus === 'locked') return 'Locked';
 
-    const unlockDate = RELEASE_UNLOCKS[track.id];
+    const unlockDate = track.unlockDate || RELEASE_UNLOCKS[track.id];
     const unlockLabel = formatUnlockDate(unlockDate);
 
     return unlockLabel ? `Opens ${unlockLabel}` : null;
@@ -81,23 +93,26 @@ export default function RealmSoundstage({
     compactOnMobile = false,
 }: RealmSoundstageProps) {
     const { playOrToggleTrack, currentTrack, isPlaying } = useMusicPlayer();
+    const { data: publicNexusTrackData } = useQuery(GET_PUBLIC_NEXUS_TRACKS, {
+        variables: { realmId },
+        fetchPolicy: 'cache-and-network',
+    });
 
-    const realmTracks = MUSIC_REGISTRY
-        .filter((track) => track.realmId === realmId)
-        .filter(
+    const realmTracks = useMemo(() => {
+        const creatorTracks = mapReleaseTracksToMusicTracks(
+            publicNexusTrackData?.getPublicNexusTracks as
+                | PublicNexusReleaseTrack[]
+                | undefined
+        );
+        const runtimeCatalog = mergeMusicCatalogs(MUSIC_REGISTRY, creatorTracks);
+
+        return getRuntimeTracksForRealm(runtimeCatalog, realmId).filter(
             (track) =>
                 track.visibility === 'public' ||
                 track.visibility === 'signup' ||
                 track.visibility === 'premium'
-        )
-        .sort((a, b) => {
-            const aOrder = a.sortOrder ?? 999;
-            const bOrder = b.sortOrder ?? 999;
-
-            if (aOrder !== bOrder) return aOrder - bOrder;
-
-            return a.trackTitle.localeCompare(b.trackTitle);
-        });
+        );
+    }, [publicNexusTrackData, realmId]);
 
     if (realmTracks.length === 0) {
         return (
@@ -119,10 +134,10 @@ export default function RealmSoundstage({
     const isFeaturedSelected = currentTrack?.id === featuredTrack.id;
 
     const handlePlayOrbitTrack = (track: { id: string }) => {
-        const fullTrack = MUSIC_REGISTRY.find((musicTrack) => musicTrack.id === track.id);
+        const fullTrack = realmTracks.find((musicTrack) => musicTrack.id === track.id);
 
         if (!fullTrack) {
-            console.warn('Track not found in music registry:', track.id);
+            console.warn('Track not found in runtime realm catalog:', track.id);
             return;
         }
 

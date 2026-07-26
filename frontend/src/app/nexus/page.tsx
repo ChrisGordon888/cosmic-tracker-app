@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { gql, useQuery, useMutation } from '@apollo/client';
 import { getTodayMoonPhase, getRealmMoonAlignment } from '@/lib/moonPhases';
 import RealmBackground from '@/components/realm/RealmBackground';
-import { GET_ME, LOG_DAILY_LOGIN } from '@/graphql/realms';
+import { GET_ME, GET_PUBLIC_NEXUS_TRACKS, LOG_DAILY_LOGIN } from '@/graphql/realms';
 import { useMusicPlayer } from '@/hooks/useMusicPlayer';
 import {
     CURRENT_FEATURED_RELEASE,
@@ -21,6 +21,11 @@ import {
 import { REALM_STATE_MAP, type ExperienceMode, type RealmId } from '@/lib/realmStateMap';
 import { REALM_RESULT_CONTENT } from '@/lib/realmResultContent';
 import { getRealmTheme } from '@/lib/realmTheme';
+import {
+    mapReleaseTracksToMusicTracks,
+    mergeMusicCatalogs,
+    type PublicNexusReleaseTrack,
+} from '@/lib/publicMusicCatalog';
 import RealmOrbitCard from '@/components/music/RealmOrbitCard';
 import '@/styles/realmShared.css';
 import '@/styles/nexus.css';
@@ -508,6 +513,10 @@ export default function CosmicNexusHub() {
         skip: !session,
     });
 
+    const { data: publicNexusTrackData } = useQuery(GET_PUBLIC_NEXUS_TRACKS, {
+        fetchPolicy: 'cache-and-network',
+    });
+
     const { data: myFeaturedReleaseData } = useQuery(GET_MY_FEATURED_RELEASE_WORLD, {
         skip: status !== 'authenticated',
         fetchPolicy: 'cache-and-network',
@@ -706,8 +715,18 @@ export default function CosmicNexusHub() {
         );
     };
 
+    const runtimeMusicCatalog = useMemo(() => {
+        const creatorTracks = mapReleaseTracksToMusicTracks(
+            publicNexusTrackData?.getPublicNexusTracks as
+                | PublicNexusReleaseTrack[]
+                | undefined
+        );
+
+        return mergeMusicCatalogs(MUSIC_REGISTRY, creatorTracks);
+    }, [publicNexusTrackData]);
+
     const nexusVisibleTracks = useMemo(() => {
-        return MUSIC_REGISTRY
+        return runtimeMusicCatalog
             .filter(isTrackCatalogVisible)
             .sort((a, b) => {
                 const aOrder = a.sortOrder ?? 999;
@@ -717,7 +736,7 @@ export default function CosmicNexusHub() {
 
                 return a.trackTitle.localeCompare(b.trackTitle);
             });
-    }, []);
+    }, [runtimeMusicCatalog]);
 
     const nexusPlayableFlowTracks = useMemo(() => {
         return nexusVisibleTracks
@@ -779,13 +798,13 @@ export default function CosmicNexusHub() {
         if (guidanceRealmId === null || !guidanceModeContent) return null;
 
         return (
-            MUSIC_REGISTRY.find(
+            runtimeMusicCatalog.find(
                 (track) =>
                     track.realmId === guidanceRealmId &&
                     track.trackTitle === guidanceModeContent.recommendedTrack
             ) ?? null
         );
-    }, [guidanceRealmId, guidanceModeContent]);
+    }, [guidanceRealmId, guidanceModeContent, runtimeMusicCatalog]);
 
     const guidanceTrackLocked = guidanceTrack ? isTrackLocked(guidanceTrack) : false;
     const guidanceRealmTint = getRealmTint(guidanceRealmId);
@@ -793,10 +812,10 @@ export default function CosmicNexusHub() {
     const moonRealmTint = getRealmTint(moonRealmId);
 
     const handlePlayOrbitTrack = (track: { id: string }) => {
-        const fullTrack = MUSIC_REGISTRY.find((musicTrack) => musicTrack.id === track.id);
+        const fullTrack = runtimeMusicCatalog.find((musicTrack) => musicTrack.id === track.id);
 
         if (!fullTrack) {
-            console.warn('Track not found in music registry:', track.id);
+            console.warn('Track not found in runtime Nexus catalog:', track.id);
             return;
         }
 

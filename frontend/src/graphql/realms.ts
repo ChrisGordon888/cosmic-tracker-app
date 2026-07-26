@@ -58,11 +58,7 @@ export const GET_ME = gql`
 export const COMPLETE_TRIAL_STEP = gql`
   mutation CompleteTrialStep($realmId: Int!, $trialId: String!) {
     completeTrialStep(realmId: $realmId, trialId: $trialId) {
-      user {
-        level
-        xp
-        xpToNextLevel
-      }
+      user { level xp xpToNextLevel }
       xpGained
       leveledUp
       newLevel
@@ -75,11 +71,7 @@ export const START_TRIAL = gql`
   mutation StartTrial($realmId: Int!, $trialId: String!, $trialName: String!) {
     startTrial(realmId: $realmId, trialId: $trialId, trialName: $trialName) {
       id
-      completedTrials {
-        realmId
-        trialId
-        stepsCompleted
-      }
+      completedTrials { realmId trialId stepsCompleted }
     }
   }
 `;
@@ -87,10 +79,7 @@ export const START_TRIAL = gql`
 export const LOG_MUSIC_LISTEN = gql`
   mutation LogMusicListen($realmId: Int!, $trackTitle: String!, $duration: Int!) {
     logMusicListen(realmId: $realmId, trackTitle: $trackTitle, duration: $duration) {
-      user {
-        level
-        xp
-      }
+      user { level xp }
       xpGained
       leveledUp
       newLevel
@@ -103,13 +92,7 @@ export const GET_LEADERBOARD = gql`
   query GetLeaderboard($limit: Int) {
     getLeaderboard(limit: $limit) {
       rank
-      user {
-        id
-        name
-        image
-        level
-        xp
-      }
+      user { id name image level xp }
     }
   }
 `;
@@ -121,13 +104,7 @@ export const VISIT_LOCATION = gql`
         level
         xp
         xpToNextLevel
-        visitedLocations {
-          realmId
-          locationId
-          locationName
-          visitedAt
-          xpEarned
-        }
+        visitedLocations { realmId locationId locationName visitedAt xpEarned }
       }
       xpGained
       leveledUp
@@ -139,10 +116,7 @@ export const VISIT_LOCATION = gql`
 
 export const UNLOCK_REALM = gql`
   mutation UnlockRealm($realmId: Int!) {
-    unlockRealm(realmId: $realmId) {
-      id
-      unlockedRealms
-    }
+    unlockRealm(realmId: $realmId) { id unlockedRealms }
   }
 `;
 
@@ -152,12 +126,7 @@ export const LOG_DAILY_LOGIN = gql`
       user {
         level
         xp
-        streaks {
-          currentStreak
-          longestStreak
-          lastLoginDate
-          totalLogins
-        }
+        streaks { currentStreak longestStreak lastLoginDate totalLogins }
       }
       xpGained
       message
