@@ -84,6 +84,39 @@ const ReleaseTrackSchema = new mongoose.Schema(
     isSecondFocus: { type: Boolean, default: false, index: true },
     isPublic: { type: Boolean, default: false, index: true },
 
+    // Nexus / Realm publishing layer
+    realmId: {
+      type: Number,
+      enum: [303, 202, 101, 55, 44, 0, null],
+      default: null,
+      index: true,
+    },
+
+    showInNexus: { type: Boolean, default: false, index: true },
+
+    nexusRole: {
+      type: String,
+      enum: [
+        "flagship",
+        "anchor",
+        "public",
+        "featured",
+        "expansion",
+        "vault",
+        "premium",
+      ],
+      default: "public",
+    },
+
+    isRealmAnchor: { type: Boolean, default: false, index: true },
+    isPublicPick: { type: Boolean, default: false, index: true },
+
+    nexusSortOrder: {
+      type: Number,
+      default: 999,
+      index: true,
+    },
+
     lastOpenedAt: { type: Date, default: Date.now },
   },
   { timestamps: true }
@@ -93,5 +126,7 @@ ReleaseTrackSchema.index({ ownerId: 1, releaseWorldId: 1, trackNumber: 1 });
 ReleaseTrackSchema.index({ ownerId: 1, releaseWorldId: 1, slug: 1 }, { unique: true });
 ReleaseTrackSchema.index({ releaseWorldId: 1, status: 1 });
 ReleaseTrackSchema.index({ releaseWorldId: 1, visibility: 1, playbackStatus: 1 });
+ReleaseTrackSchema.index({ showInNexus: 1, realmId: 1, visibility: 1, playbackStatus: 1, nexusSortOrder: 1 });
+ReleaseTrackSchema.index({ ownerId: 1, showInNexus: 1, realmId: 1 });
 
 module.exports = mongoose.model("ReleaseTrack", ReleaseTrackSchema);

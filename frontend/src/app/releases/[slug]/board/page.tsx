@@ -143,6 +143,12 @@ const GET_RELEASE_TRACKS = gql`
       isFocusTrack
       isSecondFocus
       isPublic
+      realmId
+      showInNexus
+      nexusRole
+      isRealmAnchor
+      isPublicPick
+      nexusSortOrder
       createdAt
       updatedAt
       lastOpenedAt
@@ -174,6 +180,12 @@ const CREATE_RELEASE_TRACK = gql`
       isFocusTrack
       isSecondFocus
       isPublic
+      realmId
+      showInNexus
+      nexusRole
+      isRealmAnchor
+      isPublicPick
+      nexusSortOrder
       createdAt
       updatedAt
       lastOpenedAt
@@ -205,6 +217,12 @@ const UPDATE_RELEASE_TRACK = gql`
       isFocusTrack
       isSecondFocus
       isPublic
+      realmId
+      showInNexus
+      nexusRole
+      isRealmAnchor
+      isPublicPick
+      nexusSortOrder
       createdAt
       updatedAt
       lastOpenedAt
@@ -365,6 +383,12 @@ interface ReleaseTrack {
     isFocusTrack: boolean;
     isSecondFocus: boolean;
     isPublic: boolean;
+    realmId?: number | null;
+    showInNexus: boolean;
+    nexusRole: string;
+    isRealmAnchor: boolean;
+    isPublicPick: boolean;
+    nexusSortOrder: number;
     createdAt?: string | null;
     updatedAt?: string | null;
     lastOpenedAt?: string | null;
@@ -390,6 +414,12 @@ interface TrackForm {
     isFocusTrack: boolean;
     isSecondFocus: boolean;
     isPublic: boolean;
+    realmId: string;
+    showInNexus: boolean;
+    nexusRole: string;
+    isRealmAnchor: boolean;
+    isPublicPick: boolean;
+    nexusSortOrder: string;
 }
 
 interface ReleaseAsset {
@@ -562,6 +592,26 @@ const playbackStatusOptions = [
     { value: "coming-soon", label: "Coming Soon" },
 ];
 
+const realmPublishingOptions = [
+    { value: "", label: "No Realm" },
+    { value: "303", label: "303 — Fractured Frontier" },
+    { value: "202", label: "202 — The Veil" },
+    { value: "101", label: "101 — Moonlit Roads" },
+    { value: "55", label: "55 — Skybound City" },
+    { value: "44", label: "44 — Astral Bazaar" },
+    { value: "0", label: "0 — InterSiddhi" },
+];
+
+const nexusRoleOptions = [
+    { value: "public", label: "Public Track" },
+    { value: "featured", label: "Featured" },
+    { value: "anchor", label: "Realm Anchor" },
+    { value: "flagship", label: "Flagship" },
+    { value: "expansion", label: "Expansion" },
+    { value: "vault", label: "Vault" },
+    { value: "premium", label: "Premium" },
+];
+
 const assetUsageOptions = [
     { value: "cover", label: "Cover Art" },
     { value: "track-audio", label: "Track Audio" },
@@ -656,6 +706,12 @@ function getEmptyTrackForm(nextTrackNumber = 1): TrackForm {
         isFocusTrack: false,
         isSecondFocus: false,
         isPublic: false,
+        realmId: "",
+        showInNexus: false,
+        nexusRole: "public",
+        isRealmAnchor: false,
+        isPublicPick: false,
+        nexusSortOrder: String(nextTrackNumber),
     };
 }
 
@@ -680,6 +736,12 @@ function getTrackFormFromReleaseTrack(track: ReleaseTrack): TrackForm {
         isFocusTrack: Boolean(track.isFocusTrack),
         isSecondFocus: Boolean(track.isSecondFocus),
         isPublic: Boolean(track.isPublic),
+        realmId: track.realmId === 0 || track.realmId ? String(track.realmId) : "",
+        showInNexus: Boolean(track.showInNexus),
+        nexusRole: track.nexusRole ?? "public",
+        isRealmAnchor: Boolean(track.isRealmAnchor),
+        isPublicPick: Boolean(track.isPublicPick),
+        nexusSortOrder: String(track.nexusSortOrder ?? track.trackNumber ?? 999),
     };
 }
 
@@ -706,6 +768,12 @@ function getTrackInputFromForm(form: TrackForm) {
         isFocusTrack: form.isFocusTrack,
         isSecondFocus: form.isSecondFocus,
         isPublic: form.visibility === "public" || form.visibility === "listed",
+        realmId: form.realmId === "" ? null : Number(form.realmId),
+        showInNexus: form.showInNexus,
+        nexusRole: form.nexusRole,
+        isRealmAnchor: form.isRealmAnchor,
+        isPublicPick: form.isPublicPick,
+        nexusSortOrder: form.nexusSortOrder.trim() ? Number(form.nexusSortOrder) : 999,
     };
 }
 
@@ -2727,6 +2795,7 @@ export default function DynamicReleaseSignalBoardPage() {
                                                 {track.role}
                                                 {track.isFocusTrack ? " • Focus" : ""}
                                                 {track.isSecondFocus ? " • Second" : ""}
+                                                {track.showInNexus ? ` • Nexus${track.realmId === 0 || track.realmId ? ` / ${track.realmId}` : ""}` : ""}
                                             </em>
                                         </button>
                                     ))}
@@ -2821,6 +2890,51 @@ export default function DynamicReleaseSignalBoardPage() {
                                         <span className="signal-board-field-note">
                                             Locked shows the track without audio. Preview needs Preview Audio URL. Playable uses full Audio URL.
                                         </span>
+                                    </label>
+                                    <label>
+                                        Realm
+                                        <select
+                                            value={trackForm.realmId}
+                                            onChange={(event) =>
+                                                updateTrackForm("realmId", event.target.value)
+                                            }
+                                        >
+                                            {realmPublishingOptions.map((option) => (
+                                                <option key={option.value || "none"} value={option.value}>
+                                                    {option.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <span className="signal-board-field-note">
+                                            Assign the song to the realm ecosystem before publishing to Nexus.
+                                        </span>
+                                    </label>
+                                    <label>
+                                        Nexus Role
+                                        <select
+                                            value={trackForm.nexusRole}
+                                            onChange={(event) =>
+                                                updateTrackForm("nexusRole", event.target.value)
+                                            }
+                                        >
+                                            {nexusRoleOptions.map((option) => (
+                                                <option key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </label>
+                                    <label>
+                                        Nexus Sort
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={trackForm.nexusSortOrder}
+                                            onChange={(event) =>
+                                                updateTrackForm("nexusSortOrder", event.target.value)
+                                            }
+                                            placeholder="999"
+                                        />
                                     </label>
                                     <label>
                                         BPM
@@ -2952,8 +3066,38 @@ export default function DynamicReleaseSignalBoardPage() {
                                         />
                                         Second
                                     </label>
+                                    <label>
+                                        <input
+                                            type="checkbox"
+                                            checked={trackForm.showInNexus}
+                                            onChange={(event) =>
+                                                updateTrackForm("showInNexus", event.target.checked)
+                                            }
+                                        />
+                                        Show in Nexus
+                                    </label>
+                                    <label>
+                                        <input
+                                            type="checkbox"
+                                            checked={trackForm.isRealmAnchor}
+                                            onChange={(event) =>
+                                                updateTrackForm("isRealmAnchor", event.target.checked)
+                                            }
+                                        />
+                                        Realm Anchor
+                                    </label>
+                                    <label>
+                                        <input
+                                            type="checkbox"
+                                            checked={trackForm.isPublicPick}
+                                            onChange={(event) =>
+                                                updateTrackForm("isPublicPick", event.target.checked)
+                                            }
+                                        />
+                                        Public Pick
+                                    </label>
                                     <span className="signal-board-field-note signal-board-toggle-note">
-                                        Tracklist visibility is controlled by the Visibility dropdown above.
+                                        Nexus tracks should have a realm, public/listed visibility, playable/preview status, and audio or preview audio attached.
                                     </span>
                                 </div>
 

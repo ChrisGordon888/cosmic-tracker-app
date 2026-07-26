@@ -553,6 +553,41 @@ module.exports = {
             });
         },
 
+        getPublicNexusTracks: async (_, { realmId }) => {
+            const query = {
+                showInNexus: true,
+                realmId: { $ne: null },
+                status: { $ne: "archived" },
+                playbackStatus: { $in: ["preview", "playable", "coming-soon"] },
+                $and: [
+                    {
+                        $or: [
+                            { visibility: { $in: ["public", "listed"] } },
+                            { isPublic: true },
+                        ],
+                    },
+                    {
+                        $or: [
+                            { audioUrl: { $exists: true, $ne: "" } },
+                            { previewAudioUrl: { $exists: true, $ne: "" } },
+                            { playbackStatus: "coming-soon" },
+                        ],
+                    },
+                ],
+            };
+
+            if (realmId !== undefined && realmId !== null) {
+                query.realmId = Number(realmId);
+            }
+
+            return await ReleaseTrack.find(query).sort({
+                realmId: 1,
+                nexusSortOrder: 1,
+                trackNumber: 1,
+                createdAt: 1,
+            });
+        },
+
         getReleaseTrack: async (_, { id }, { user }) => {
             if (!user) throw new Error("Unauthorized: Please sign in.");
 
@@ -1215,6 +1250,15 @@ module.exports = {
                     input.isPublic !== undefined
                         ? input.isPublic
                         : input.visibility === "public",
+                realmId: input.realmId === undefined ? null : input.realmId,
+                showInNexus: input.showInNexus || false,
+                nexusRole: input.nexusRole || "public",
+                isRealmAnchor: input.isRealmAnchor || false,
+                isPublicPick: input.isPublicPick || false,
+                nexusSortOrder:
+                    input.nexusSortOrder === undefined || input.nexusSortOrder === null
+                        ? 999
+                        : input.nexusSortOrder,
                 lastOpenedAt: new Date(),
             });
 

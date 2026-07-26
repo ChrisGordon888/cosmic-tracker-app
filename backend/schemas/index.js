@@ -187,6 +187,12 @@ const typeDefs = gql`
     isFocusTrack: Boolean!
     isSecondFocus: Boolean!
     isPublic: Boolean!
+    realmId: Int
+    showInNexus: Boolean!
+    nexusRole: String!
+    isRealmAnchor: Boolean!
+    isPublicPick: Boolean!
+    nexusSortOrder: Int!
     createdAt: String
     updatedAt: String
     lastOpenedAt: String
@@ -311,6 +317,12 @@ const typeDefs = gql`
     isFocusTrack: Boolean
     isSecondFocus: Boolean
     isPublic: Boolean
+    realmId: Int
+    showInNexus: Boolean
+    nexusRole: String
+    isRealmAnchor: Boolean
+    isPublicPick: Boolean
+    nexusSortOrder: Int
   }
 
   input UpdateReleaseTrackInput {
@@ -334,6 +346,12 @@ const typeDefs = gql`
     isFocusTrack: Boolean
     isSecondFocus: Boolean
     isPublic: Boolean
+    realmId: Int
+    showInNexus: Boolean
+    nexusRole: String
+    isRealmAnchor: Boolean
+    isPublicPick: Boolean
+    nexusSortOrder: Int
   }
 
   input ReleaseAssetInput {
@@ -425,6 +443,7 @@ const typeDefs = gql`
 
     getReleaseTracks(releaseWorldId: ID!): [ReleaseTrack!]!
     getPublicReleaseTracks(releaseWorldId: ID!): [ReleaseTrack!]!
+    getPublicNexusTracks(realmId: Int): [ReleaseTrack!]!
     getReleaseTrack(id: ID!): ReleaseTrack
 
     getReleaseAssets(releaseWorldId: ID!): [ReleaseAsset!]!
