@@ -4,22 +4,24 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useMusicPlayer } from '@/hooks/useMusicPlayer';
 import { getRealmTheme } from '@/lib/realmTheme';
+import type { MusicTrack } from '@/lib/musicRegistry';
 
-interface OrbitTrack {
-    id: string;
-    trackUrl?: string;
-    trackTitle: string;
-    artist: string;
-    realmName: string;
-    realmColor: string;
-    realmId: number;
-    role?: string;
-    visibility?: string;
-    isRealmAnchor?: boolean;
-    isPublicPick?: boolean;
-    vibe?: string[];
-    sortOrder?: number;
-}
+type OrbitTrack = Pick<
+    MusicTrack,
+    | 'id'
+    | 'trackUrl'
+    | 'trackTitle'
+    | 'artist'
+    | 'realmName'
+    | 'realmColor'
+    | 'realmId'
+    | 'role'
+    | 'visibility'
+    | 'isRealmAnchor'
+    | 'isPublicPick'
+    | 'vibe'
+    | 'sortOrder'
+>;
 
 interface RealmOrbitCardProps {
     realmId?: string | number;
