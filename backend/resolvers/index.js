@@ -37,6 +37,75 @@ function normalizeOptionalId(value) {
     return cleanValue ? cleanValue : null;
 }
 
+const NEXUS_REALM_IDS = new Set([303, 202, 101, 55, 44, 0]);
+
+function getNexusPublicationCandidate(existingTrack, input = {}) {
+    const existing = existingTrack?.toObject
+        ? existingTrack.toObject()
+        : existingTrack || {};
+
+    return {
+        ...existing,
+        ...input,
+        realmId:
+            input.realmId !== undefined
+                ? input.realmId
+                : existing.realmId,
+        showInNexus:
+            input.showInNexus !== undefined
+                ? input.showInNexus
+                : Boolean(existing.showInNexus),
+    };
+}
+
+function validateNexusPublication(candidate, releaseWorld) {
+    if (!candidate.showInNexus) return;
+
+    const errors = [];
+    const realmId = Number(candidate.realmId);
+    const visibility = candidate.visibility || (candidate.isPublic ? "public" : "private");
+    const playbackStatus = candidate.playbackStatus || "locked";
+    const hasAudio = Boolean(String(candidate.audioUrl || "").trim());
+    const hasPreview = Boolean(String(candidate.previewAudioUrl || "").trim());
+    const hasOpenDate = Boolean(candidate.unlockDate || candidate.dropDate);
+
+    if (!releaseWorld || releaseWorld.visibility !== "public" || releaseWorld.status === "archived") {
+        errors.push("the parent release world must be public and active");
+    }
+
+    if (!NEXUS_REALM_IDS.has(realmId)) {
+        errors.push("choose a valid realm");
+    }
+
+    if (!['public', 'listed'].includes(visibility)) {
+        errors.push("track visibility must be Public or Listed");
+    }
+
+    if (candidate.status === "archived") {
+        errors.push("archived tracks cannot be published");
+    }
+
+    if (!['playable', 'preview', 'coming-soon'].includes(playbackStatus)) {
+        errors.push("playback must be Playable, Preview, or Coming Soon");
+    }
+
+    if (playbackStatus === "playable" && !hasAudio) {
+        errors.push("Playable tracks require a full Audio URL");
+    }
+
+    if (playbackStatus === "preview" && !hasPreview && !hasAudio) {
+        errors.push("Preview tracks require Preview Audio or full Audio");
+    }
+
+    if (playbackStatus === "coming-soon" && !hasOpenDate) {
+        errors.push("Coming Soon tracks require a Drop Date or Unlock Date");
+    }
+
+    if (errors.length > 0) {
+        throw new Error(`Signal is not ready to publish: ${errors.join("; ")}.`);
+    }
+}
+
 async function getOwnedReleaseWorld(releaseWorldId, userId) {
     return await ReleaseWorld.findOne({
         _id: releaseWorldId,
@@ -554,7 +623,15 @@ module.exports = {
         },
 
         getPublicNexusTracks: async (_, { realmId }) => {
+            const publicReleaseWorldIds = await ReleaseWorld.find({
+                visibility: "public",
+                status: { $ne: "archived" },
+            }).distinct("_id");
+
+            if (publicReleaseWorldIds.length === 0) return [];
+
             const query = {
+                releaseWorldId: { $in: publicReleaseWorldIds },
                 showInNexus: true,
                 realmId: { $ne: null },
                 status: { $ne: "archived" },
@@ -1224,7 +1301,7 @@ module.exports = {
             const trackNumber = input.trackNumber || existingTracksCount + 1;
             const slug = normalizeTrackSlug(input.slug, input.title);
 
-            const track = await ReleaseTrack.create({
+            const createPayload = {
                 ownerId: user.id,
                 releaseWorldId: releaseWorld._id,
                 title: input.title,
@@ -1260,7 +1337,11 @@ module.exports = {
                         ? 999
                         : input.nexusSortOrder,
                 lastOpenedAt: new Date(),
-            });
+            };
+
+            validateNexusPublication(createPayload, releaseWorld);
+
+            const track = await ReleaseTrack.create(createPayload);
 
             await syncReleaseWorldFocusFromTrack(track, user.id);
 
@@ -1311,6 +1392,9 @@ module.exports = {
             if (input.bpm === undefined) {
                 delete update.bpm;
             }
+
+            const publicationCandidate = getNexusPublicationCandidate(existingTrack, update);
+            validateNexusPublication(publicationCandidate, releaseWorld);
 
             const updatedTrack = await ReleaseTrack.findOneAndUpdate(
                 {

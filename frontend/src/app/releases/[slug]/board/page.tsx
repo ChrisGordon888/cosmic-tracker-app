@@ -777,6 +777,92 @@ function getTrackInputFromForm(form: TrackForm) {
     };
 }
 
+interface PublishSignalCheck {
+    key: string;
+    label: string;
+    ready: boolean;
+    detail: string;
+}
+
+function getPublishSignalReadiness(
+    form: TrackForm,
+    releaseWorld?: ReleaseWorld | null,
+) {
+    const hasFullAudio = Boolean(form.audioUrl.trim());
+    const hasPreviewAudio = Boolean(form.previewAudioUrl.trim());
+    const hasOpenDate = Boolean(form.unlockDate || form.dropDate);
+    const releaseWorldIsPublic =
+        releaseWorld?.visibility === "public" && releaseWorld?.status !== "archived";
+
+    const playbackReady =
+        (form.playbackStatus === "playable" && hasFullAudio) ||
+        (form.playbackStatus === "preview" && (hasPreviewAudio || hasFullAudio)) ||
+        (form.playbackStatus === "coming-soon" && hasOpenDate);
+
+    const checks: PublishSignalCheck[] = [
+        {
+            key: "release-world",
+            label: "Public release world",
+            ready: releaseWorldIsPublic,
+            detail: releaseWorldIsPublic
+                ? "The parent release portal is public and active."
+                : "Set the release portal visibility to Public before publishing a signal.",
+        },
+        {
+            key: "realm",
+            label: "Realm assigned",
+            ready: form.realmId !== "",
+            detail:
+                form.realmId !== ""
+                    ? `Assigned to Realm ${form.realmId}.`
+                    : "Choose the realm this signal belongs to.",
+        },
+        {
+            key: "visibility",
+            label: "Catalog visibility",
+            ready: form.visibility === "public" || form.visibility === "listed",
+            detail:
+                form.visibility === "public" || form.visibility === "listed"
+                    ? `${formatLabel(form.visibility)} visibility is enabled.`
+                    : "Choose Public or Listed visibility.",
+        },
+        {
+            key: "playback",
+            label: "Playback configured",
+            ready: playbackReady,
+            detail:
+                form.playbackStatus === "playable"
+                    ? hasFullAudio
+                        ? "Full audio is ready."
+                        : "Playable signals require a full Audio URL."
+                    : form.playbackStatus === "preview"
+                        ? hasPreviewAudio || hasFullAudio
+                            ? "Preview playback is ready."
+                            : "Preview signals require Preview Audio or full Audio."
+                        : form.playbackStatus === "coming-soon"
+                            ? hasOpenDate
+                                ? "Coming-soon date is ready."
+                                : "Coming Soon requires a Drop Date or Unlock Date."
+                            : "Choose Playable, Preview, or Coming Soon.",
+        },
+        {
+            key: "status",
+            label: "Track is active",
+            ready: form.status !== "archived",
+            detail:
+                form.status !== "archived"
+                    ? `${formatLabel(form.status)} tracks can be published.`
+                    : "Archived tracks cannot enter the Nexus catalog.",
+        },
+    ];
+
+    return {
+        checks,
+        ready: checks.every((check) => check.ready),
+        missing: checks.filter((check) => !check.ready).map((check) => check.detail),
+    };
+}
+
 function getEmptyAssetForm(): AssetForm {
     return {
         title: "",
@@ -1435,6 +1521,19 @@ export default function DynamicReleaseSignalBoardPage() {
         [releaseTracks, selectedTrackId],
     );
 
+    const publishSignalReadiness = useMemo(
+        () => getPublishSignalReadiness(trackForm, releaseWorld),
+        [trackForm, releaseWorld],
+    );
+
+    const publishSignalState = trackForm.showInNexus
+        ? publishSignalReadiness.ready
+            ? "Published"
+            : "Needs attention"
+        : publishSignalReadiness.ready
+            ? "Ready to publish"
+            : "Draft";
+
     const [saveBoardArtifacts, { loading: isSaving }] =
         useMutation(SAVE_BOARD_ARTIFACTS);
     const [updateReleaseWorld, { loading: isUpdatingPortal }] =
@@ -1746,13 +1845,16 @@ export default function DynamicReleaseSignalBoardPage() {
         setTrackMessage("Creating a new track for this release world.");
     }
 
-    async function handleSaveTrack() {
+    async function saveTrackForm(
+        formToSave: TrackForm,
+        successMessage?: string,
+    ) {
         if (!releaseWorldId) {
             setTrackMessage("Track save failed: release world could not be found.");
             return;
         }
 
-        if (!trackForm.title.trim()) {
+        if (!formToSave.title.trim()) {
             setTrackMessage("Track save failed: title is required.");
             return;
         }
@@ -1767,7 +1869,7 @@ export default function DynamicReleaseSignalBoardPage() {
                     : "Creating track in MongoDB...",
             );
 
-            const input = getTrackInputFromForm(trackForm);
+            const input = getTrackInputFromForm(formToSave);
             const result = isUpdatingExistingTrack
                 ? await updateReleaseTrack({
                     variables: {
@@ -1798,7 +1900,8 @@ export default function DynamicReleaseSignalBoardPage() {
                 setSelectedTrackId(savedTrack.id);
                 setTrackForm(getTrackFormFromReleaseTrack(savedTrack));
                 setTrackMessage(
-                    `Track saved: ${savedTrack.title}. Focus fields sync to the release portal when selected.`,
+                    successMessage ||
+                        `Track saved: ${savedTrack.title}. Focus fields sync to the release portal when selected.`,
                 );
             } else {
                 setTrackMessage("Track saved, but no track was returned.");
@@ -1810,6 +1913,36 @@ export default function DynamicReleaseSignalBoardPage() {
                     : "Unknown track save error.";
             setTrackMessage(`Track save failed: ${message}`);
         }
+    }
+
+    async function handleSaveTrack() {
+        await saveTrackForm(trackForm);
+    }
+
+    async function handlePublishSignal() {
+        if (trackForm.showInNexus) {
+            const nextForm = { ...trackForm, showInNexus: false };
+            setTrackForm(nextForm);
+            await saveTrackForm(
+                nextForm,
+                "Signal removed from the Nexus and its realm soundtrack.",
+            );
+            return;
+        }
+
+        if (!publishSignalReadiness.ready) {
+            setTrackMessage(
+                `Signal is not ready: ${publishSignalReadiness.missing.join(" ")}`,
+            );
+            return;
+        }
+
+        const nextForm = { ...trackForm, showInNexus: true };
+        setTrackForm(nextForm);
+        await saveTrackForm(
+            nextForm,
+            "Signal published to the Nexus and its assigned realm soundtrack.",
+        );
     }
 
     async function handleDeleteTrack() {
@@ -3045,6 +3178,43 @@ export default function DynamicReleaseSignalBoardPage() {
                                     </label>
                                 </div>
 
+                                <div className="signal-board-publish-guide" aria-label="Publish Signal readiness">
+                                    <article>
+                                        <span>Publish Signal</span>
+                                        <strong>{publishSignalState}</strong>
+                                        <p>
+                                            Publish once to place this song in the Nexus, its assigned realm page,
+                                            and the shared global-player catalog.
+                                        </p>
+                                    </article>
+                                    {publishSignalReadiness.checks.map((check) => (
+                                        <article key={check.key}>
+                                            <span>{check.ready ? "Ready" : "Required"}</span>
+                                            <strong>{check.ready ? "✓ " : "• "}{check.label}</strong>
+                                            <p>{check.detail}</p>
+                                        </article>
+                                    ))}
+                                </div>
+
+                                <div className="signal-board-panel-actions">
+                                    <button
+                                        type="button"
+                                        onClick={handlePublishSignal}
+                                        disabled={
+                                            isCreatingTrack ||
+                                            isUpdatingTrack ||
+                                            !releaseWorldId ||
+                                            (!trackForm.showInNexus && !publishSignalReadiness.ready)
+                                        }
+                                    >
+                                        {isCreatingTrack || isUpdatingTrack
+                                            ? "Saving..."
+                                            : trackForm.showInNexus
+                                                ? "Remove from Nexus + Realm"
+                                                : "Publish to Nexus + Realm"}
+                                    </button>
+                                </div>
+
                                 <div className="signal-board-toggle-row">
                                     <label>
                                         <input
@@ -3074,7 +3244,7 @@ export default function DynamicReleaseSignalBoardPage() {
                                                 updateTrackForm("showInNexus", event.target.checked)
                                             }
                                         />
-                                        Show in Nexus
+                                        Published to Nexus + Realm
                                     </label>
                                     <label>
                                         <input
@@ -3104,7 +3274,7 @@ export default function DynamicReleaseSignalBoardPage() {
                                 <div className="signal-board-panel-actions">
                                     <button
                                         type="button"
-                                        onClick={handleSaveTrack}
+                                        onClick={() => void handleSaveTrack()}
                                         disabled={
                                             isCreatingTrack || isUpdatingTrack || !releaseWorldId
                                         }
