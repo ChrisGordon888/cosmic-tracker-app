@@ -822,7 +822,11 @@ export default function CosmicNexusHub() {
         tryPlayTrack(fullTrack);
     };
 
-    const flagshipTrack = FLAGSHIP_TRACKS[0] ?? null;
+    const dynamicFlagshipTrack =
+        runtimeMusicCatalog.find(
+            (track) => track.source === 'creator' && track.role === 'flagship'
+        ) ?? null;
+    const flagshipTrack = dynamicFlagshipTrack ?? FLAGSHIP_TRACKS[0] ?? null;
     const flagshipTrackLocked = flagshipTrack ? isTrackLocked(flagshipTrack) : false;
     const flagshipUnlockLabel = flagshipTrack ? getTrackUnlockLabel(flagshipTrack) : null;
     const flagshipIsCurrent = Boolean(flagshipTrack && currentTrack?.id === flagshipTrack.id);
@@ -833,7 +837,12 @@ export default function CosmicNexusHub() {
         : '/nexus';
     const publicThreePieceCollections = PUBLIC_THREE_PIECE_COLLECTIONS;
     const releaseArtworkUrl = currentRelease?.coverArtUrl ?? null;
+    const dynamicFlagshipArtwork =
+        dynamicFlagshipTrack?.releaseWorldId === creatorFeaturedRelease?.id
+            ? creatorFeaturedArtworkUrl
+            : null;
     const featuredSignalArtwork =
+        dynamicFlagshipArtwork ??
         CURATED_PLAYLIST_ART_OVERRIDES['cosmic-featured-signal'] ??
         releaseArtworkUrl ??
         null;

@@ -522,6 +522,7 @@ const typeDefs = gql`
     createReleaseTrack(input: ReleaseTrackInput!): ReleaseTrack!
     updateReleaseTrack(id: ID!, input: UpdateReleaseTrackInput!): ReleaseTrack!
     deleteReleaseTrack(id: ID!): ReleaseTrack
+    setFeaturedSignal(trackId: ID!): ReleaseTrack!
     reorderReleaseTracks(
       releaseWorldId: ID!
       orderedTrackIds: [ID!]!

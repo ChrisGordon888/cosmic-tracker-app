@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { gql, useQuery } from "@apollo/client";
+import { gql, useMutation, useQuery } from "@apollo/client";
 import { signIn, useSession } from "next-auth/react";
 import { useMemo, useState } from "react";
 import "@/styles/creatorLibrary.css";
@@ -43,6 +43,18 @@ const CREATOR_LIBRARY_QUERY = gql`
       isRealmAnchor
       isPublicPick
       nexusSortOrder
+      updatedAt
+    }
+  }
+`;
+
+
+const SET_FEATURED_SIGNAL = gql`
+  mutation SetFeaturedSignal($trackId: ID!) {
+    setFeaturedSignal(trackId: $trackId) {
+      id
+      showInNexus
+      nexusRole
       updatedAt
     }
   }
@@ -164,6 +176,10 @@ export default function CreatorLibraryPage() {
     fetchPolicy: "cache-and-network",
   });
 
+  const [setFeaturedSignal, { loading: isSettingFeaturedSignal }] =
+    useMutation(SET_FEATURED_SIGNAL);
+  const [featuredSignalMessage, setFeaturedSignalMessage] = useState("");
+
   const releases: ReleaseWorld[] = data?.myReleaseWorlds ?? [];
   const tracks: ReleaseTrack[] = data?.myReleaseTracks ?? [];
 
@@ -212,6 +228,26 @@ export default function CreatorLibraryPage() {
       );
     });
   }, [enrichedTracks, search, releaseFilter, realmFilter, statusFilter, publishingFilter]);
+
+  async function handleSetFeaturedSignal(track: ReleaseTrack) {
+    if (!track.showInNexus) {
+      setFeaturedSignalMessage("Publish this track to Nexus + Realm before featuring it.");
+      return;
+    }
+
+    try {
+      setFeaturedSignalMessage(`Setting ${track.title} as the Featured Signal...`);
+      await setFeaturedSignal({ variables: { trackId: track.id } });
+      setFeaturedSignalMessage(`${track.title} is now the Featured Signal.`);
+      await refetch();
+    } catch (featuredError) {
+      setFeaturedSignalMessage(
+        featuredError instanceof Error
+          ? featuredError.message
+          : "Could not update the Featured Signal."
+      );
+    }
+  }
 
   const summary = useMemo(() => {
     return {
@@ -354,6 +390,12 @@ export default function CreatorLibraryPage() {
           </div>
         </section>
 
+        {featuredSignalMessage && (
+          <section className="creator-library-featured-message">
+            {featuredSignalMessage}
+          </section>
+        )}
+
         {loading ? (
           <section className="creator-library-empty"><h2>Loading your tracks...</h2></section>
         ) : tracks.length === 0 ? (
@@ -403,6 +445,16 @@ export default function CreatorLibraryPage() {
                     {release && <Link href={`/releases/${release.slug}`}>Portal</Link>}
                     {track.showInNexus && <Link href="/nexus">Nexus</Link>}
                     {realm && <Link href={`/realms/${realm.id}`}>Realm</Link>}
+                    {track.showInNexus && (
+                      <button
+                        type="button"
+                        className={track.nexusRole === "flagship" ? "is-current-signal" : ""}
+                        disabled={isSettingFeaturedSignal || track.nexusRole === "flagship"}
+                        onClick={() => handleSetFeaturedSignal(track)}
+                      >
+                        {track.nexusRole === "flagship" ? "Current Signal" : "Set Featured"}
+                      </button>
+                    )}
                   </div>
                 </article>
               );

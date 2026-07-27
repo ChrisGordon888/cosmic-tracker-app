@@ -1423,6 +1423,48 @@ module.exports = {
             return updatedTrack;
         },
 
+        setFeaturedSignal: async (_, { trackId }, { user }) => {
+            if (!user) throw new Error("Unauthorized: Please sign in.");
+
+            const track = await getOwnedReleaseTrack(trackId, user.id);
+            if (!track) throw new Error("Track not found.");
+
+            if (!track.showInNexus) {
+                throw new Error("Publish this track to Nexus + Realm before making it the Featured Signal.");
+            }
+
+            const releaseWorld = await getOwnedReleaseWorld(track.releaseWorldId, user.id);
+
+            validateNexusPublication(
+                getNexusPublicationCandidate(track, {
+                    showInNexus: true,
+                    nexusRole: "flagship",
+                }),
+                releaseWorld
+            );
+
+            await ReleaseTrack.updateMany(
+                {
+                    ownerId: user.id,
+                    _id: { $ne: track._id },
+                    nexusRole: "flagship",
+                },
+                {
+                    $set: {
+                        nexusRole: "featured",
+                        lastOpenedAt: new Date(),
+                    },
+                }
+            );
+
+            track.nexusRole = "flagship";
+            track.showInNexus = true;
+            track.lastOpenedAt = new Date();
+            await track.save();
+
+            return track;
+        },
+
         deleteReleaseTrack: async (_, { id }, { user }) => {
             if (!user) throw new Error("Unauthorized: Please sign in.");
 
