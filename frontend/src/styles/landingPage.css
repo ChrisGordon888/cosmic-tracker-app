@@ -431,7 +431,7 @@
 }
 
 /* ===================================
-   LANDING PAGE â€” NEXUS GATEWAY V2
+   LANDING PAGE Ã¢â‚¬â€ NEXUS GATEWAY V2
    Append to src/styles/landingPage.css
    =================================== */
 
@@ -615,7 +615,7 @@
 }
 
 /* ===================================
-   LANDING PAGE â€” NEXUS GATEWAY V3
+   LANDING PAGE Ã¢â‚¬â€ NEXUS GATEWAY V3
    Cleaner root page: no release portal card, stronger readability over video
    Append to src/styles/landingPage.css
    =================================== */
@@ -803,5 +803,52 @@
 
   .landing-gateway-v3-realm-grid {
     gap: 0.45rem;
+  }
+}
+/* ===================================
+   LANDING PAGE â€” V3 NAVIGATION FOUNDATION
+   =================================== */
+
+.landing-gateway-public-paths {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.landing-gateway-public-paths a {
+  display: inline-flex;
+  min-height: 2.55rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.62rem 0.9rem;
+  border: 1px solid rgba(238, 243, 250, 0.13);
+  border-radius: 999px;
+  color: rgba(232, 238, 248, 0.82);
+  background: rgba(3, 8, 16, 0.42);
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.landing-gateway-public-paths a:hover {
+  transform: translateY(-1px);
+  border-color: rgba(126, 211, 255, 0.32);
+  background: rgba(126, 211, 255, 0.07);
+}
+
+@media (max-width: 720px) {
+  .landing-gateway-public-paths {
+    width: 100%;
+  }
+
+  .landing-gateway-public-paths a {
+    flex: 1 1 9rem;
   }
 }

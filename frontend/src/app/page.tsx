@@ -1,120 +1,120 @@
-// src/app/page.tsx
 "use client";
 
 import "@/styles/landingPage.css";
 import Link from "next/link";
-import { useSession, signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 
 const REALMS = [
-    { id: "303", mark: "∴", name: "Fractured Frontier", state: "Pressure into motion" },
-    { id: "202", mark: "◐", name: "The Veil", state: "Desire, mystery, signal" },
-    { id: "101", mark: "☾", name: "Moonlit Roads", state: "Memory and return" },
-    { id: "55", mark: "△", name: "Skybound City", state: "Ambition with direction" },
-    { id: "44", mark: "◇", name: "Astral Bazaar", state: "Worth, focus, exchange" },
-    { id: "0", mark: "∞", name: "InterSiddhi", state: "Center and source" },
+  { id: "303", mark: "∴", name: "Fractured Frontier", state: "Pressure into motion" },
+  { id: "202", mark: "◐", name: "The Veil", state: "Desire, mystery, signal" },
+  { id: "101", mark: "☾", name: "Moonlit Roads", state: "Memory and return" },
+  { id: "55", mark: "△", name: "Skybound City", state: "Ambition with direction" },
+  { id: "44", mark: "◇", name: "Astral Bazaar", state: "Worth, focus, exchange" },
+  { id: "0", mark: "∞", name: "InterSiddhi", state: "Center and source" },
 ];
 
 export default function LandingPage() {
-    const { data: session, status } = useSession();
-    const isAuthenticated = !!session?.user;
+  const { data: session, status } = useSession();
+  const isAuthenticated = Boolean(session?.user);
 
-    return (
-        <main className="landing-page landing-gateway-page landing-gateway-v3-page min-h-screen relative overflow-hidden isolate">
-            <div className="fixed inset-0 z-0 w-full h-full overflow-hidden" aria-hidden="true">
-                <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover">
-                    <source src="/cosmic-landing-intro.mp4" type="video/mp4" />
-                </video>
-                <div className="landing-video-overlay landing-gateway-v3-overlay" />
-                <div className="landing-gateway-orb landing-gateway-orb-a" />
-                <div className="landing-gateway-orb landing-gateway-orb-b" />
-                <div className="landing-gateway-v3-starfield" />
+  return (
+    <main className="landing-page landing-gateway-page landing-gateway-v3-page min-h-screen relative overflow-hidden isolate">
+      <div className="fixed inset-0 z-0 h-full w-full overflow-hidden" aria-hidden="true">
+        <video autoPlay loop muted playsInline className="absolute inset-0 h-full w-full object-cover">
+          <source src="/cosmic-landing-intro.mp4" type="video/mp4" />
+        </video>
+        <div className="landing-video-overlay landing-gateway-v3-overlay" />
+        <div className="landing-gateway-orb landing-gateway-orb-a" />
+        <div className="landing-gateway-orb landing-gateway-orb-b" />
+        <div className="landing-gateway-v3-starfield" />
+      </div>
+
+      <section className="landing-shell landing-gateway-shell landing-gateway-v3-shell relative z-10">
+        <div className="landing-hero-card landing-gateway-hero-card landing-gateway-v3-hero-card">
+          <div className="landing-system-badge landing-gateway-badge landing-gateway-v3-badge">
+            <span className="landing-system-dot" />
+            <span>Cosmic Nexus</span>
+          </div>
+
+          <p className="landing-gateway-eyebrow landing-gateway-v3-eyebrow">
+            Music multiverse / Mood-based signals / Creative transformation
+          </p>
+
+          <h1 className="landing-title landing-gateway-title landing-gateway-v3-title">
+            COSMIC
+            <span>NEXUS</span>
+          </h1>
+
+          <p className="landing-subtitle landing-gateway-subtitle landing-gateway-v3-subtitle">
+            A music multiverse for mood, energy, and creative transformation.
+          </p>
+
+          <p className="landing-description landing-gateway-description landing-gateway-v3-description">
+            Explore songs, realms, and reflections that meet where you are — and move with where
+            you&apos;re becoming.
+          </p>
+
+          <div className="landing-actions landing-actions-stacked landing-gateway-actions landing-gateway-v3-actions">
+            <Link href="/nexus" className="landing-button-primary landing-gateway-v3-primary">
+              Enter the Nexus
+            </Link>
+
+            <div className="landing-gateway-public-paths" aria-label="Explore Cosmic">
+              <Link href="/find-your-realm">Find Your Realm</Link>
+              <Link href="/services">Explore Services</Link>
             </div>
 
-            <section className="landing-shell landing-gateway-shell landing-gateway-v3-shell relative z-10">
-                <div className="landing-hero-card landing-gateway-hero-card landing-gateway-v3-hero-card">
-                    <div className="landing-system-badge landing-gateway-badge landing-gateway-v3-badge">
-                        <span className="landing-system-dot" />
-                        <span>Cosmic Nexus</span>
-                    </div>
+            {isAuthenticated ? (
+              <div
+                className="landing-gateway-creator-actions landing-gateway-v3-creator-actions"
+                aria-label="Creator shortcuts"
+              >
+                <Link href="/creator">Creator OS</Link>
+                <Link href="/creator/library">Creator Library</Link>
+                <Link href="/practice">Practice</Link>
+                <Link href="/services">Services</Link>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => signIn("github", { callbackUrl: "/nexus" })}
+                className="landing-button-secondary-subtle landing-gateway-v3-secondary"
+                disabled={status === "loading"}
+              >
+                {status === "loading" ? "Checking session..." : "Sign in to save progress"}
+              </button>
+            )}
+          </div>
 
-                    <p className="landing-gateway-eyebrow landing-gateway-v3-eyebrow">
-                        Music multiverse / Mood-based signals / Creative transformation
-                    </p>
+          <div className="landing-system-line landing-gateway-system-line landing-gateway-v3-system-line">
+            <span>Listen</span>
+            <span>Reflect</span>
+            <span>Become</span>
+          </div>
 
-                    <h1 className="landing-title landing-gateway-title landing-gateway-v3-title">
-                        COSMIC
-                        <span>NEXUS</span>
-                    </h1>
+          <div
+            className="landing-realm-grid landing-gateway-realm-grid landing-gateway-v3-realm-grid"
+            aria-label="Cosmic realms"
+          >
+            {REALMS.map((realm) => (
+              <Link
+                key={realm.id}
+                href={isAuthenticated ? `/realms/${realm.id}` : "/find-your-realm"}
+                className="landing-realm-glyph landing-gateway-realm-glyph landing-gateway-v3-realm-glyph"
+                title={`${realm.name} — ${realm.state}`}
+              >
+                <span className="landing-realm-number">{realm.id}</span>
+                <span className="landing-realm-icon">{realm.mark}</span>
+                <span className="landing-realm-name">{realm.name}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
 
-                    <p className="landing-subtitle landing-gateway-subtitle landing-gateway-v3-subtitle">
-                        A music multiverse for mood, energy, and creative transformation.
-                    </p>
-
-                    <p className="landing-description landing-gateway-description landing-gateway-v3-description">
-                        The Cosmic Nexus is a growing experiment where sound, story, and energetic
-                        reflection become portals for reorganizing your inner world and shaping what comes next.
-                    </p>
-
-                    <div className="landing-actions landing-actions-stacked landing-gateway-actions landing-gateway-v3-actions">
-                        <Link href="/nexus" className="landing-button-primary landing-gateway-v3-primary">
-                            Enter the Nexus
-                        </Link>
-
-                        <Link href="/services" className="landing-button-secondary-subtle landing-gateway-v3-secondary">
-                            Explore Services
-                        </Link>
-
-                        {isAuthenticated ? (
-                            <div
-                                className="landing-gateway-creator-actions landing-gateway-v3-creator-actions"
-                                aria-label="Creator shortcuts"
-                            >
-                                <Link href="/creator">Creator OS</Link>
-                                <Link href="/creator/projects">Project Library</Link>
-                                <Link href="/practice">Practice</Link>
-                                <Link href="/services">Services</Link>
-                            </div>
-                        ) : (
-                            <button
-                                type="button"
-                                onClick={() => signIn("github", { callbackUrl: "/nexus" })}
-                                className="landing-button-secondary-subtle landing-gateway-v3-secondary"
-                                disabled={status === "loading"}
-                            >
-                                {status === "loading" ? "Checking session..." : "Sign in to save progress"}
-                            </button>
-                        )}
-                    </div>
-
-                    <div className="landing-system-line landing-gateway-system-line landing-gateway-v3-system-line">
-                        <span>Listen</span>
-                        <span>Reflect</span>
-                        <span>Become</span>
-                    </div>
-
-                    <div
-                        className="landing-realm-grid landing-gateway-realm-grid landing-gateway-v3-realm-grid"
-                        aria-label="Cosmic realms"
-                    >
-                        {REALMS.map((realm) => (
-                            <Link
-                                key={realm.id}
-                                href={`/realms/${realm.id}`}
-                                className="landing-realm-glyph landing-gateway-realm-glyph landing-gateway-v3-realm-glyph"
-                                title={`${realm.name} — ${realm.state}`}
-                            >
-                                <span className="landing-realm-number">{realm.id}</span>
-                                <span className="landing-realm-icon">{realm.mark}</span>
-                                <span className="landing-realm-name">{realm.name}</span>
-                            </Link>
-                        ))}
-                    </div>
-                </div>
-
-                <p className="landing-gateway-v3-footnote">
-                    Six realms. Mood, sound, and story as portals inward.
-                </p>
-            </section>
-        </main>
-    );
+        <p className="landing-gateway-v3-footnote">
+          Six realms. Mood, sound, and story as portals inward.
+        </p>
+      </section>
+    </main>
+  );
 }

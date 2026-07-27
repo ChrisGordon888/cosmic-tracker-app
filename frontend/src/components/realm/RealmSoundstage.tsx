@@ -58,24 +58,37 @@ function formatUnlockDate(dateString?: string | null) {
     }
 }
 
+function getTrackOpenDate(track: RuntimeMusicTrack) {
+    return track.unlockDate || track.dropDate || RELEASE_UNLOCKS[track.id] || null;
+}
+
 function isTrackLocked(track: RuntimeMusicTrack) {
     if (track.visibility === 'premium') return true;
     if (track.playbackStatus === 'locked') return true;
 
-    const unlockDate = track.unlockDate || RELEASE_UNLOCKS[track.id];
-    if (!unlockDate) return false;
+    const openDate = getTrackOpenDate(track);
 
-    return new Date() < new Date(unlockDate);
+    if (openDate && new Date() < new Date(openDate)) {
+        return true;
+    }
+
+    // Coming-soon tracks remain visible but non-playable until Creator OS
+    // intentionally changes playback to Preview or Playable.
+    if (track.playbackStatus === 'coming-soon') return true;
+
+    return false;
 }
 
 function getTrackLockLabel(track: RuntimeMusicTrack) {
     if (track.visibility === 'premium') return 'Premium';
     if (track.playbackStatus === 'locked') return 'Locked';
 
-    const unlockDate = track.unlockDate || RELEASE_UNLOCKS[track.id];
-    const unlockLabel = formatUnlockDate(unlockDate);
+    const unlockLabel = formatUnlockDate(getTrackOpenDate(track));
 
-    return unlockLabel ? `Opens ${unlockLabel}` : null;
+    if (unlockLabel) return `Opens ${unlockLabel}`;
+    if (track.playbackStatus === 'coming-soon') return 'Coming Soon';
+
+    return null;
 }
 
 export default function RealmSoundstage({
