@@ -649,6 +649,17 @@ export default function CosmicNexusHub() {
         });
     };
 
+    const getTrackOpenDate = (track: any) => {
+        if (!track) return null;
+
+        return (
+            track.unlockDate ||
+            track.dropDate ||
+            RELEASE_UNLOCKS[track.id] ||
+            null
+        );
+    };
+
     const isTrackLocked = (track: any) => {
         if (!track) return false;
 
@@ -656,16 +667,25 @@ export default function CosmicNexusHub() {
 
         if (!isSignedIn && track.visibility === 'signup') return true;
 
-        const unlockDate = RELEASE_UNLOCKS[track.id];
-        if (!unlockDate) return false;
+        if (track.playbackStatus === 'locked') return true;
 
-        return new Date() < new Date(unlockDate);
+        const openDate = getTrackOpenDate(track);
+
+        if (openDate && new Date() < new Date(openDate)) {
+            return true;
+        }
+
+        // Coming-soon tracks stay non-playable until their playback status is
+        // intentionally changed to Preview or Playable in Creator OS.
+        if (track.playbackStatus === 'coming-soon') return true;
+
+        return false;
     };
 
     const getTrackUnlockLabel = (track: any) => {
         if (!track) return null;
 
-        return formatUnlockDate(RELEASE_UNLOCKS[track.id]);
+        return formatUnlockDate(getTrackOpenDate(track));
     };
 
     const getTrackLockLabel = (track: any) => {
@@ -676,7 +696,12 @@ export default function CosmicNexusHub() {
         if (!isSignedIn && track.visibility === 'signup') return 'Join to unlock';
 
         const unlockLabel = getTrackUnlockLabel(track);
-        return unlockLabel ? `Opens ${unlockLabel}` : null;
+
+        if (unlockLabel) return `Opens ${unlockLabel}`;
+        if (track.playbackStatus === 'coming-soon') return 'Coming Soon';
+        if (track.playbackStatus === 'locked') return 'Locked';
+
+        return null;
     };
 
     const tryPlayTrack = (track: any) => {
