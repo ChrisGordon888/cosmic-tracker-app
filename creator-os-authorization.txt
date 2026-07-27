@@ -1,0 +1,1169 @@
+===== Backend server/auth setup =====
+/**
+ * ================================
+ * 🌌 Cosmic Tracker Backend Server
+ * - Express + Apollo GraphQL API
+ * - Verifies NextAuth JWT token from Authorization header
+ * - Connects to MongoDB with Mongoose
+ * ================================
+ */
+
+require("dotenv").config();
+
+const express = require("express");
+const { ApolloServer } = require("apollo-server-express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const jwt = require("jsonwebtoken");
+
+const typeDefs = require("./schemas");
+const resolvers = require("./resolvers");
+
+// Catch hidden startup/runtime crashes so Render prints the real reason.
+process.on("uncaughtException", (error) => {
+    console.error("❌ Uncaught Exception:", error);
+    process.exit(1);
+});
+
+process.on("unhandledRejection", (reason) => {
+    console.error("❌ Unhandled Rejection:", reason);
+    process.exit(1);
+});
+
+const allowedOrigins = [
+    "http://localhost:3000",
+    "https://studio.apollographql.com",
+    "https://studio-ui-deployments.apollographql.com",
+    process.env.FRONTEND_URL,
+].filter(Boolean);
+
+function logStartupConfig() {
+    const mongoUri = process.env.MONGODB_URI || "";
+
+    console.log("🔎 Startup config check:");
+    console.log("NODE_ENV:", process.env.NODE_ENV);
+    console.log("Node version:", process.version);
+    console.log("FRONTEND_URL exists:", Boolean(process.env.FRONTEND_URL));
+    console.log("NEXTAUTH_SECRET exists:", Boolean(process.env.NEXTAUTH_SECRET));
+    console.log("MONGODB_URI exists:", Boolean(process.env.MONGODB_URI));
+    console.log(
+        "MONGODB_URI starts with mongodb+srv:",
+        mongoUri.startsWith("mongodb+srv://")
+    );
+
+    if (mongoUri.includes("@")) {
+        console.log("Mongo target:", mongoUri.split("@")[1]);
+    }
+}
+
+async function startServer() {
+    logStartupConfig();
+
+    if (!process.env.MONGODB_URI) {
+        throw new Error("MONGODB_URI is missing");
+    }
+
+    if (!process.env.NEXTAUTH_SECRET) {
+        throw new Error("NEXTAUTH_SECRET is missing");
+    }
+
+    const app = express();
+
+    app.use(
+        cors({
+            origin: allowedOrigins,
+            credentials: true,
+        })
+    );
+
+    app.get("/", (req, res) => {
+        res.send("Cosmic Tracker API is running.");
+    });
+
+    app.get("/health", (req, res) => {
+        res.json({ status: "ok" });
+    });
+
+    try {
+        console.log("🔌 Attempting MongoDB connection...");
+        await mongoose.connect(process.env.MONGODB_URI);
+        console.log("✅ Connected to MongoDB");
+    } catch (error) {
+        console.error("❌ MongoDB connection error message:", error.message);
+        console.error("❌ MongoDB connection stack:", error.stack);
+        console.error("❌ MongoDB connection full error:", error);
+        process.exit(1);
+    }
+
+    const server = new ApolloServer({
+        typeDefs,
+        resolvers,
+        cache: "bounded",
+        context: async ({ req }) => {
+            const authHeader = req.headers.authorization || "";
+
+            const token = authHeader.startsWith("Bearer ")
+                ? authHeader.slice(7).trim()
+                : null;
+
+            if (!token) {
+                return { user: null };
+            }
+
+            try {
+                const decoded = jwt.verify(token, process.env.NEXTAUTH_SECRET);
+                const User = require("./models/User");
+
+                let user = await User.findOne({ email: decoded.email });
+
+                if (!user) {
+                    user = await User.create({
+                        email: decoded.email,
+                        name:
+                            decoded.name ||
+                            decoded.email?.split("@")[0] ||
+                            "Cosmic Traveler",
+                        image: decoded.picture || null,
+                        level: 1,
+                        xp: 0,
+                        xpToNextLevel: 100,
+                        currentRealm: 303,
+                        unlockedRealms: [303, 202],
+                        completedTrials: [],
+                        visitedLocations: [],
+                        musicStats: {
+                            tracksListened: [],
+                            totalListeningTime: 0,
+                            totalTracksUnlocked: 6,
+                        },
+                        streaks: {
+                            currentStreak: 0,
+                            longestStreak: 0,
+                            lastLoginDate: new Date(),
+                            totalLogins: 1,
+                        },
+                    });
+                }
+
+                return {
+                    user: {
+                        id: user._id.toString(),
+                        email: user.email,
+                    },
+                };
+            } catch (error) {
+                console.error("❌ JWT verification failed:", error.message);
+                return { user: null };
+            }
+        },
+    });
+
+    await server.start();
+    server.applyMiddleware({ app, path: "/graphql" });
+
+    const PORT = process.env.PORT || 4000;
+
+    app.listen(PORT, () => {
+        console.log(`🚀 Server ready at http://localhost:${PORT}/graphql`);
+    });
+}
+
+startServer().catch((error) => {
+    console.error("❌ startServer failed:", error);
+    process.exit(1);
+});
+===== Resolver auth helpers =====
+const User = require("../models/User");
+const SacredYes = require("../models/SacredYes");
+const MoodEntry = require("../models/MoodEntry");
+const PracticeQuest = require("../models/PracticeQuest");
+const Ritual = require("../models/Rituals");
+
+// 🌌 Creator World Models
+const CreativeProfile = require("../models/CreativeProfile");
+const ReleaseWorld = require("../models/ReleaseWorld");
+const BoardArtifact = require("../models/BoardArtifact");
+const ReleaseTrack = require("../models/ReleaseTrack");
+const ReleaseAsset = require("../models/ReleaseAsset");
+
+function normalizeSlug(slug) {
+    return String(slug || "")
+        .trim()
+        .toLowerCase();
+}
+
+function slugifyTitle(title) {
+    return String(title || "")
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+}
+
+function normalizeTrackSlug(inputSlug, title) {
+    const fallback = slugifyTitle(title);
+    return normalizeSlug(inputSlug || fallback);
+}
+
+function normalizeOptionalId(value) {
+    if (value === undefined) return undefined;
+    if (value === null) return null;
+    const cleanValue = String(value).trim();
+    return cleanValue ? cleanValue : null;
+}
+
+const NEXUS_REALM_IDS = new Set([303, 202, 101, 55, 44, 0]);
+
+function getNexusPublicationCandidate(existingTrack, input = {}) {
+    const existing = existingTrack?.toObject
+        ? existingTrack.toObject()
+        : existingTrack || {};
+
+    return {
+        ...existing,
+        ...input,
+        realmId:
+            input.realmId !== undefined
+                ? input.realmId
+                : existing.realmId,
+        showInNexus:
+            input.showInNexus !== undefined
+                ? input.showInNexus
+                : Boolean(existing.showInNexus),
+    };
+}
+
+function validateNexusPublication(candidate, releaseWorld) {
+    if (!candidate.showInNexus) return;
+
+    const errors = [];
+    const realmId = Number(candidate.realmId);
+    const visibility = candidate.visibility || (candidate.isPublic ? "public" : "private");
+    const playbackStatus = candidate.playbackStatus || "locked";
+    const hasAudio = Boolean(String(candidate.audioUrl || "").trim());
+    const hasPreview = Boolean(String(candidate.previewAudioUrl || "").trim());
+    const hasOpenDate = Boolean(candidate.unlockDate || candidate.dropDate);
+
+    if (!releaseWorld || releaseWorld.visibility !== "public" || releaseWorld.status === "archived") {
+        errors.push("the parent release world must be public and active");
+    }
+
+    if (!NEXUS_REALM_IDS.has(realmId)) {
+        errors.push("choose a valid realm");
+    }
+
+    if (!['public', 'listed'].includes(visibility)) {
+        errors.push("track visibility must be Public or Listed");
+    }
+
+    if (candidate.status === "archived") {
+        errors.push("archived tracks cannot be published");
+    }
+
+    if (!['playable', 'preview', 'coming-soon'].includes(playbackStatus)) {
+        errors.push("playback must be Playable, Preview, or Coming Soon");
+    }
+
+    if (playbackStatus === "playable" && !hasAudio) {
+        errors.push("Playable tracks require a full Audio URL");
+    }
+
+    if (playbackStatus === "preview" && !hasPreview && !hasAudio) {
+        errors.push("Preview tracks require Preview Audio or full Audio");
+    }
+
+    if (playbackStatus === "coming-soon" && !hasOpenDate) {
+        errors.push("Coming Soon tracks require a Drop Date or Unlock Date");
+    }
+
+    if (errors.length > 0) {
+        throw new Error(`Signal is not ready to publish: ${errors.join("; ")}.`);
+    }
+}
+
+async function getOwnedReleaseWorld(releaseWorldId, userId) {
+    return await ReleaseWorld.findOne({
+        _id: releaseWorldId,
+        ownerId: userId,
+    });
+}
+
+async function getOwnedReleaseTrack(trackId, userId, releaseWorldId) {
+    if (!trackId) return null;
+
+    const query = {
+        _id: trackId,
+        ownerId: userId,
+    };
+
+    if (releaseWorldId) {
+        query.releaseWorldId = releaseWorldId;
+    }
+
+    return await ReleaseTrack.findOne(query);
+}
+
+async function getOwnedBoardArtifact(boardArtifactId, userId, releaseWorldId) {
+    if (!boardArtifactId) return null;
+
+    const query = {
+        _id: boardArtifactId,
+        ownerId: userId,
+    };
+
+    if (releaseWorldId) {
+        query.releaseWorldId = releaseWorldId;
+    }
+
+    return await BoardArtifact.findOne(query);
+}
+
+async function getPrimaryCreativeProfile(userId) {
+    const profiles = await CreativeProfile.find({ ownerId: userId }).sort({
+        isFeatured: -1,
+        updatedAt: -1,
+        createdAt: -1,
+    });
+
+    return profiles.find((profile) => profile.isFeatured) || profiles[0] || null;
+}
+
+async function getFeaturedReleaseWorldForUser(userId) {
+    const primaryProfile = await getPrimaryCreativeProfile(userId);
+
+    if (primaryProfile?.featuredReleaseWorldId) {
+        const profileFeaturedRelease = await ReleaseWorld.findOne({
+            _id: primaryProfile.featuredReleaseWorldId,
+            ownerId: userId,
+        });
+
+        if (profileFeaturedRelease) return profileFeaturedRelease;
+    }
+
+    const flaggedFeaturedRelease = await ReleaseWorld.findOne({
+        ownerId: userId,
+        isFeatured: true,
+    }).sort({
+        lastOpenedAt: -1,
+        updatedAt: -1,
+        createdAt: -1,
+    });
+
+    if (flaggedFeaturedRelease) return flaggedFeaturedRelease;
+
+    return await ReleaseWorld.findOne({ ownerId: userId }).sort({
+        lastOpenedAt: -1,
+        updatedAt: -1,
+        createdAt: -1,
+    });
+}
+
+async function getPublicFeaturedReleaseWorld() {
+    const featuredProfile = await CreativeProfile.findOne({
+        isFeatured: true,
+        isPublic: true,
+        featuredReleaseWorldId: { $ne: null },
+    }).sort({
+        updatedAt: -1,
+        createdAt: -1,
+    });
+
+    if (featuredProfile?.featuredReleaseWorldId) {
+        const profileFeaturedRelease = await ReleaseWorld.findOne({
+            _id: featuredProfile.featuredReleaseWorldId,
+            visibility: "public",
+            status: { $ne: "archived" },
+        });
+
+        if (profileFeaturedRelease) return profileFeaturedRelease;
+    }
+
+    return await ReleaseWorld.findOne({
+        isFeatured: true,
+        visibility: "public",
+        status: { $ne: "archived" },
+    }).sort({
+        lastOpenedAt: -1,
+        updatedAt: -1,
+        createdAt: -1,
+    });
+}
+
+async function syncReleaseWorldFocusFromTrack(track, userId) {
+    if (!track) return;
+
+    const update = {
+        lastOpenedAt: new Date(),
+    };
+
+    if (track.isFocusTrack) {
+        update.currentFocus = track.title;
+
+        await ReleaseTrack.updateMany(
+            {
+                ownerId: userId,
+                releaseWorldId: track.releaseWorldId,
+
+===== Release World resolvers =====
+
+            const userData = await User.findOne({ email: user.email });
+            if (!userData) throw new Error("User not found.");
+
+            const today = new Date().toDateString();
+            const lastLogin = userData.streaks.lastLoginDate
+                ? new Date(userData.streaks.lastLoginDate).toDateString()
+                : null;
+
+            if (lastLogin === today) {
+                return {
+                    user: userData,
+                    xpGained: 0,
+                    leveledUp: false,
+                    newLevel: userData.level,
+                    message: "Already logged in today!",
+                };
+            }
+
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toDateString();
+
+            if (lastLogin === yesterdayStr) {
+                userData.streaks.currentStreak += 1;
+            } else {
+                userData.streaks.currentStreak = 1;
+            }
+
+            if (userData.streaks.currentStreak > userData.streaks.longestStreak) {
+                userData.streaks.longestStreak = userData.streaks.currentStreak;
+            }
+
+            userData.streaks.lastLoginDate = new Date();
+            userData.streaks.totalLogins += 1;
+
+            const bonusXP = Math.min(userData.streaks.currentStreak * 5, 50);
+            const xpGained = 10 + bonusXP;
+
+            const { leveledUp, newLevel } = userData.awardXP(xpGained);
+
+            await userData.save();
+
+            let message = `Daily login! +${xpGained} XP! 🔥 ${userData.streaks.currentStreak} day streak!`;
+            if (leveledUp) message += ` 🎉 LEVEL UP to ${newLevel}!`;
+
+            return {
+                user: userData,
+                xpGained,
+                leveledUp,
+                newLevel,
+                message,
+            };
+        },
+
+        // ========================================
+        // 🌌 CREATOR WORLD MUTATIONS
+        // ========================================
+
+        createCreativeProfile: async (_, { input }, { user }) => {
+            if (!user) throw new Error("Unauthorized: Please sign in.");
+
+            return await CreativeProfile.create({
+                ...input,
+                slug: normalizeSlug(input.slug),
+                ownerId: user.id,
+            });
+        },
+
+        createReleaseWorld: async (_, { input }, { user }) => {
+            if (!user) throw new Error("Unauthorized: Please sign in.");
+
+            const profile = await CreativeProfile.findOne({
+                _id: input.creativeProfileId,
+                ownerId: user.id,
+            });
+
+            if (!profile) {
+                throw new Error("Creative profile not found.");
+            }
+
+            return await ReleaseWorld.create({
+                ...input,
+                slug: normalizeSlug(input.slug),
+                ownerId: user.id,
+                creativeProfileId: profile._id,
+                fullDropDate: input.fullDropDate ? new Date(input.fullDropDate) : null,
+                coverAssetId: normalizeOptionalId(input.coverAssetId),
+                coverArtUrl: input.coverArtUrl || "",
+                lastOpenedAt: new Date(),
+            });
+        },
+
+        updateReleaseWorld: async (_, { id, input }, { user }) => {
+            if (!user) throw new Error("Unauthorized: Please sign in.");
+
+            const update = {
+                ...input,
+                lastOpenedAt: new Date(),
+            };
+
+            if (input.slug !== undefined) {
+                update.slug = normalizeSlug(input.slug);
+            }
+
+            if (input.fullDropDate !== undefined) {
+                update.fullDropDate = input.fullDropDate
+                    ? new Date(input.fullDropDate)
+                    : null;
+            }
+
+            if (input.coverAssetId !== undefined) {
+                update.coverAssetId = normalizeOptionalId(input.coverAssetId);
+            }
+
+            return await ReleaseWorld.findOneAndUpdate(
+                { _id: id, ownerId: user.id },
+                update,
+                { new: true }
+            );
+        },
+
+        archiveReleaseWorld: async (_, { id }, { user }) => {
+            if (!user) throw new Error("Unauthorized: Please sign in.");
+
+            return await ReleaseWorld.findOneAndUpdate(
+                { _id: id, ownerId: user.id },
+                { status: "archived" },
+                { new: true }
+            );
+        },
+
+        setFeaturedReleaseWorld: async (_, { releaseWorldId }, { user }) => {
+            if (!user) throw new Error("Unauthorized: Please sign in.");
+
+            const releaseWorld = await getOwnedReleaseWorld(releaseWorldId, user.id);
+
+            if (!releaseWorld) {
+                throw new Error("Release world not found.");
+            }
+
+            const creativeProfile = await CreativeProfile.findOne({
+                _id: releaseWorld.creativeProfileId,
+                ownerId: user.id,
+            });
+
+            if (!creativeProfile) {
+                throw new Error("Creative profile not found for this release world.");
+            }
+
+            await ReleaseWorld.updateMany(
+                {
+                    ownerId: user.id,
+                    _id: { $ne: releaseWorld._id },
+                },
+                { isFeatured: false }
+            );
+
+            await CreativeProfile.updateMany(
+                {
+                    ownerId: user.id,
+                    _id: { $ne: creativeProfile._id },
+                },
+                { isFeatured: false }
+            );
+
+            releaseWorld.isFeatured = true;
+            releaseWorld.lastOpenedAt = new Date();
+            await releaseWorld.save();
+
+            creativeProfile.isFeatured = true;
+            creativeProfile.featuredReleaseWorldId = releaseWorld._id;
+            await creativeProfile.save();
+
+            return releaseWorld;
+        },
+
+        createReleaseTrack: async (_, { input }, { user }) => {
+            if (!user) throw new Error("Unauthorized: Please sign in.");
+
+            const releaseWorld = await getOwnedReleaseWorld(input.releaseWorldId, user.id);
+
+===== Release Track resolvers =====
+                    ownerId: user.id,
+                    _id: { $ne: creativeProfile._id },
+                },
+                { isFeatured: false }
+            );
+
+            releaseWorld.isFeatured = true;
+            releaseWorld.lastOpenedAt = new Date();
+            await releaseWorld.save();
+
+            creativeProfile.isFeatured = true;
+            creativeProfile.featuredReleaseWorldId = releaseWorld._id;
+            await creativeProfile.save();
+
+            return releaseWorld;
+        },
+
+        createReleaseTrack: async (_, { input }, { user }) => {
+            if (!user) throw new Error("Unauthorized: Please sign in.");
+
+            const releaseWorld = await getOwnedReleaseWorld(input.releaseWorldId, user.id);
+
+            if (!releaseWorld) {
+                throw new Error("Release world not found.");
+            }
+
+            const existingTracksCount = await ReleaseTrack.countDocuments({
+                ownerId: user.id,
+                releaseWorldId: input.releaseWorldId,
+            });
+
+            const trackNumber = input.trackNumber || existingTracksCount + 1;
+            const slug = normalizeTrackSlug(input.slug, input.title);
+
+            const createPayload = {
+                ownerId: user.id,
+                releaseWorldId: releaseWorld._id,
+                title: input.title,
+                slug,
+                trackNumber,
+                role: input.role || "unknown",
+                status: input.status || "idea",
+                bpm: input.bpm || null,
+                keySignature: input.keySignature || "",
+                mood: input.mood || "",
+                hook: input.hook || "",
+                notes: input.notes || "",
+                audioUrl: input.audioUrl || "",
+                previewAudioUrl: input.previewAudioUrl || "",
+                platformUrl: input.platformUrl || "",
+                visibility: input.visibility || (input.isPublic ? "public" : "private"),
+                playbackStatus: input.playbackStatus || "locked",
+                dropDate: input.dropDate || null,
+                unlockDate: input.unlockDate || null,
+                isFocusTrack: input.isFocusTrack || false,
+                isSecondFocus: input.isSecondFocus || false,
+                isPublic:
+                    input.isPublic !== undefined
+                        ? input.isPublic
+                        : input.visibility === "public",
+                realmId: input.realmId === undefined ? null : input.realmId,
+                showInNexus: input.showInNexus || false,
+                nexusRole: input.nexusRole || "public",
+                isRealmAnchor: input.isRealmAnchor || false,
+                isPublicPick: input.isPublicPick || false,
+                nexusSortOrder:
+                    input.nexusSortOrder === undefined || input.nexusSortOrder === null
+                        ? 999
+                        : input.nexusSortOrder,
+                lastOpenedAt: new Date(),
+            };
+
+            validateNexusPublication(createPayload, releaseWorld);
+
+            const track = await ReleaseTrack.create(createPayload);
+
+            await syncReleaseWorldFocusFromTrack(track, user.id);
+
+            releaseWorld.lastOpenedAt = new Date();
+            await releaseWorld.save();
+
+            return track;
+        },
+
+        updateReleaseTrack: async (_, { id, input }, { user }) => {
+            if (!user) throw new Error("Unauthorized: Please sign in.");
+
+            const existingTrack = await ReleaseTrack.findOne({
+                _id: id,
+                ownerId: user.id,
+            });
+
+            if (!existingTrack) {
+                throw new Error("Release track not found.");
+            }
+
+            const releaseWorld = await getOwnedReleaseWorld(existingTrack.releaseWorldId, user.id);
+
+            if (!releaseWorld) {
+                throw new Error("Release world not found.");
+            }
+
+            const update = {
+                ...input,
+                lastOpenedAt: new Date(),
+            };
+
+            if (input.visibility !== undefined && input.isPublic === undefined) {
+                update.isPublic = input.visibility === "public";
+            }
+
+            if (input.isPublic !== undefined && input.visibility === undefined) {
+                update.visibility = input.isPublic ? "public" : "private";
+            }
+
+            if (input.slug !== undefined || input.title !== undefined) {
+                update.slug = normalizeTrackSlug(
+                    input.slug,
+                    input.title || existingTrack.title
+                );
+            }
+
+            if (input.bpm === undefined) {
+                delete update.bpm;
+            }
+
+            const publicationCandidate = getNexusPublicationCandidate(existingTrack, update);
+            validateNexusPublication(publicationCandidate, releaseWorld);
+
+            const updatedTrack = await ReleaseTrack.findOneAndUpdate(
+                {
+                    _id: id,
+                    ownerId: user.id,
+                },
+                update,
+                { new: true }
+            );
+
+            await syncReleaseWorldFocusFromTrack(updatedTrack, user.id);
+
+            releaseWorld.lastOpenedAt = new Date();
+            await releaseWorld.save();
+
+            return updatedTrack;
+        },
+
+        setFeaturedSignal: async (_, { trackId }, { user }) => {
+            if (!user) throw new Error("Unauthorized: Please sign in.");
+
+            const track = await getOwnedReleaseTrack(trackId, user.id);
+            if (!track) throw new Error("Track not found.");
+
+            if (!track.showInNexus) {
+                throw new Error("Publish this track to Nexus + Realm before making it the Featured Signal.");
+            }
+
+            const releaseWorld = await getOwnedReleaseWorld(track.releaseWorldId, user.id);
+
+            validateNexusPublication(
+                getNexusPublicationCandidate(track, {
+                    showInNexus: true,
+                    nexusRole: "flagship",
+                }),
+                releaseWorld
+            );
+
+            await ReleaseTrack.updateMany(
+                {
+                    ownerId: user.id,
+                    _id: { $ne: track._id },
+                    nexusRole: "flagship",
+                },
+                {
+                    $set: {
+                        nexusRole: "featured",
+                        lastOpenedAt: new Date(),
+                    },
+                }
+            );
+
+            track.nexusRole = "flagship";
+            track.showInNexus = true;
+            track.lastOpenedAt = new Date();
+            await track.save();
+
+            return track;
+        },
+
+        deleteReleaseTrack: async (_, { id }, { user }) => {
+            if (!user) throw new Error("Unauthorized: Please sign in.");
+
+            const track = await ReleaseTrack.findOne({
+                _id: id,
+                ownerId: user.id,
+            });
+
+
+===== Relevant schema user/auth definitions =====
+const { gql } = require("apollo-server-express");
+
+const typeDefs = gql`
+  # 🌟 Sacred Yes
+  type SacredYes {
+    id: ID!
+    userId: String!
+    text: String!
+    date: String!
+  }
+
+  # 🪷 Mood Entry
+  type MoodEntry {
+    id: ID!
+    userId: String!
+    mood: Int!
+    note: String
+    date: String!
+  }
+
+  # 🧘 Practice Quest
+  type PracticeQuest {
+    id: ID!
+    userId: String!
+    name: String!
+    description: String
+    repetitions: Int!
+    completedReps: Int!
+    completed: Boolean!
+    date: String!
+    ritualId: ID
+    ritual: Ritual
+  }
+
+  # 🔮 Ritual
+  type Ritual {
+    id: ID!
+    userId: String!
+    title: String!
+    description: String!
+    createdAt: String
+    updatedAt: String
+  }
+
+  # 👤 USER
+  type User {
+    id: ID!
+    email: String!
+    name: String
+    image: String
+
+    level: Int!
+    xp: Int!
+    xpToNextLevel: Int!
+
+    currentRealm: Int!
+    unlockedRealms: [Int!]!
+    completedTrials: [CompletedTrial!]!
+    visitedLocations: [VisitedLocation!]!
+
+    musicStats: MusicStats!
+    streaks: Streaks!
+
+    createdAt: String
+    updatedAt: String
+  }
+
+  type CompletedTrial {
+    realmId: Int!
+    trialId: String!
+    trialName: String
+    stepsCompleted: Int!
+    totalSteps: Int!
+    isComplete: Boolean!
+    completedAt: String
+    xpEarned: Int!
+  }
+
+  type VisitedLocation {
+    realmId: Int!
+    locationId: String!
+    locationName: String!
+    visitedAt: String!
+    xpEarned: Int!
+  }
+
+  type MusicStats {
+    tracksListened: [TrackListen!]!
+    totalListeningTime: Int!
+    favoriteRealm: Int
+    totalTracksUnlocked: Int!
+  }
+
+  type TrackListen {
+    realmId: Int!
+    trackTitle: String!
+    artist: String!
+    listenCount: Int!
+    totalListenTime: Int!
+    firstListenedAt: String
+    lastListenedAt: String!
+    xpEarned: Int!
+  }
+
+  type Streaks {
+    currentStreak: Int!
+    longestStreak: Int!
+    lastLoginDate: String
+    totalLogins: Int!
+  }
+
+  type LeaderboardEntry {
+    rank: Int!
+    user: User!
+  }
+
+  type XPGainResponse {
+    user: User!
+    xpGained: Int!
+    leveledUp: Boolean!
+    newLevel: Int!
+    message: String!
+  }
+
+  # ========================================
+  # 🌌 CREATOR WORLD TYPES
+  # ========================================
+
+  type CreativeProfile {
+    id: ID!
+    ownerId: String!
+    artistName: String!
+    slug: String!
+    displayName: String
+    tagline: String
+    bio: String
+    isPublic: Boolean!
+    isFeatured: Boolean!
+    featuredReleaseWorldId: ID
+    createdAt: String
+    updatedAt: String
+  }
+
+  type ReleaseWorld {
+    id: ID!
+    ownerId: String!
+    creativeProfileId: ID!
+    title: String!
+    slug: String!
+    releaseType: String!
+
+===== Release inputs and operations =====
+    bio: String
+    isPublic: Boolean
+    isFeatured: Boolean
+  }
+
+  input ReleaseWorldInput {
+    creativeProfileId: ID!
+    title: String!
+    slug: String!
+    releaseType: String
+    status: String
+    visibility: String
+    isFeatured: Boolean
+    oneLineSummary: String
+    story: String
+    currentFocus: String
+    secondFocus: String
+    fullDropDate: String
+    coverArtUrl: String
+    coverAssetId: ID
+  }
+
+  input UpdateReleaseWorldInput {
+    title: String
+    slug: String
+    releaseType: String
+    status: String
+    visibility: String
+    isFeatured: Boolean
+    oneLineSummary: String
+    story: String
+    currentFocus: String
+    secondFocus: String
+    fullDropDate: String
+    coverArtUrl: String
+    coverAssetId: ID
+  }
+
+  input ReleaseTrackInput {
+    releaseWorldId: ID!
+    title: String!
+    slug: String
+    trackNumber: Int
+    role: String
+    status: String
+    bpm: Int
+    keySignature: String
+    mood: String
+    hook: String
+    notes: String
+    audioUrl: String
+    previewAudioUrl: String
+    platformUrl: String
+    visibility: String
+    playbackStatus: String
+    dropDate: String
+    unlockDate: String
+    isFocusTrack: Boolean
+    isSecondFocus: Boolean
+    isPublic: Boolean
+    realmId: Int
+    showInNexus: Boolean
+    nexusRole: String
+    isRealmAnchor: Boolean
+    isPublicPick: Boolean
+    nexusSortOrder: Int
+  }
+
+  input UpdateReleaseTrackInput {
+    title: String
+    slug: String
+    trackNumber: Int
+    role: String
+    status: String
+    bpm: Int
+    keySignature: String
+    mood: String
+    hook: String
+    notes: String
+    audioUrl: String
+    previewAudioUrl: String
+    platformUrl: String
+    visibility: String
+    playbackStatus: String
+    dropDate: String
+    unlockDate: String
+    isFocusTrack: Boolean
+    isSecondFocus: Boolean
+    isPublic: Boolean
+    realmId: Int
+    showInNexus: Boolean
+    nexusRole: String
+    isRealmAnchor: Boolean
+    isPublicPick: Boolean
+    nexusSortOrder: Int
+  }
+
+  input ReleaseAssetInput {
+    releaseWorldId: ID!
+    trackId: ID
+    boardArtifactId: ID
+    kind: String
+    usage: String
+    title: String!
+    description: String
+    url: String!
+
+    # Practice Quests
+    getDailyQuests(date: String!): [PracticeQuest!]!
+    allPracticeQuests: [PracticeQuest!]!
+
+    # Rituals
+    allRituals: [Ritual!]!
+    getRitual(id: ID!): Ritual
+
+    # Music Multiverse
+    me: User
+    getUserProgress: User
+    getLeaderboard(limit: Int): [LeaderboardEntry!]!
+    checkRealmUnlock(realmId: Int!): Boolean!
+
+    # Creator Worlds
+    myCreativeProfiles: [CreativeProfile!]!
+    myReleaseWorlds: [ReleaseWorld!]!
+    myReleaseTracks: [ReleaseTrack!]!
+    getMyReleaseWorld(id: ID!): ReleaseWorld
+    getMyReleaseWorldBySlug(slug: String!): ReleaseWorld
+    getMyFeaturedReleaseWorld: ReleaseWorld
+    getPublicFeaturedReleaseWorld: ReleaseWorld
+    getPublicReleaseWorldBySlug(slug: String!): ReleaseWorld
+
+    getReleaseTracks(releaseWorldId: ID!): [ReleaseTrack!]!
+    getPublicReleaseTracks(releaseWorldId: ID!): [ReleaseTrack!]!
+    getPublicNexusTracks(realmId: Int): [ReleaseTrack!]!
+    getReleaseTrack(id: ID!): ReleaseTrack
+
+    getReleaseAssets(releaseWorldId: ID!): [ReleaseAsset!]!
+    getReleaseAsset(id: ID!): ReleaseAsset
+
+    getBoardArtifacts(releaseWorldId: ID!): [BoardArtifact!]!
+    getPublicBoardArtifacts(releaseWorldId: ID!): [BoardArtifact!]!
+  }
+
+  # 🛠️ Mutations
+  type Mutation {
+    # Sacred Yes
+    addSacredYes(text: String!, date: String!): SacredYes
+    updateSacredYes(id: ID!, text: String!): SacredYes
+    deleteSacredYes(id: ID!): SacredYes
+
+    # Mood Entries
+    addMoodEntry(mood: Int!, note: String, date: String!): MoodEntry
+    updateMoodEntry(id: ID!, mood: Int!, note: String): MoodEntry
+    deleteMoodEntry(id: ID!): MoodEntry
+
+    # Practice Quests
+    addPracticeQuest(
+      name: String!
+      description: String
+      repetitions: Int!
+      date: String!
+      ritualId: ID
+    ): PracticeQuest
+
+    updatePracticeQuest(
+      id: ID!
+      name: String
+      description: String
+      repetitions: Int
+      ritualId: ID
+    ): PracticeQuest
+
+    updatePracticeQuestProgress(id: ID!, completedReps: Int!): PracticeQuest
+    markPracticeQuestComplete(id: ID!): PracticeQuest
+    deletePracticeQuest(id: ID!): PracticeQuest
+
+    # Rituals
+    addRitual(title: String!, description: String!): Ritual
+    updateRitual(id: ID!, title: String!, description: String!): Ritual
+    deleteRitual(id: ID!): Ritual
+
+    # Music Multiverse
+    startTrial(realmId: Int!, trialId: String!, trialName: String!): User!
+    completeTrialStep(realmId: Int!, trialId: String!): XPGainResponse!
+
+    visitLocation(
+      realmId: Int!
+      locationId: String!
+      locationName: String!
+    ): XPGainResponse!
+
+    logMusicListen(
+      realmId: Int!
+      trackTitle: String!
+      duration: Int!
+    ): XPGainResponse!
+
+    unlockRealm(realmId: Int!): User!
+    setCurrentRealm(realmId: Int!): User!
+    logDailyLogin: XPGainResponse!
+
+    # Creator Worlds
+    createCreativeProfile(input: CreativeProfileInput!): CreativeProfile!
+    createReleaseWorld(input: ReleaseWorldInput!): ReleaseWorld!
+    updateReleaseWorld(id: ID!, input: UpdateReleaseWorldInput!): ReleaseWorld!
+    archiveReleaseWorld(id: ID!): ReleaseWorld!
+    setFeaturedReleaseWorld(releaseWorldId: ID!): ReleaseWorld!
+
+    createReleaseTrack(input: ReleaseTrackInput!): ReleaseTrack!
+    updateReleaseTrack(id: ID!, input: UpdateReleaseTrackInput!): ReleaseTrack!
+    deleteReleaseTrack(id: ID!): ReleaseTrack
+    setFeaturedSignal(trackId: ID!): ReleaseTrack!
+    reorderReleaseTracks(
+      releaseWorldId: ID!
+      orderedTrackIds: [ID!]!
+    ): [ReleaseTrack!]!
+
+    createReleaseAsset(input: ReleaseAssetInput!): ReleaseAsset!
+    updateReleaseAsset(id: ID!, input: UpdateReleaseAssetInput!): ReleaseAsset!
+    deleteReleaseAsset(id: ID!, deleteBlob: Boolean): ReleaseAsset
+
+    saveBoardArtifacts(
+      releaseWorldId: ID!
+      artifacts: [BoardArtifactInput!]!
+    ): [BoardArtifact!]!
+  }
+`;
+
+module.exports = typeDefs;

@@ -1,3 +1,35 @@
+===== Auth API files =====
+./frontend/src/pages/api/auth/[...nextauth].ts
+
+===== SessionWrapper.tsx =====
+"use client";
+
+import { SessionProvider } from "next-auth/react";
+import { ReactNode } from "react";
+
+export default function SessionWrapper({ children }: { children: ReactNode }) {
+  return <SessionProvider>{children}</SessionProvider>;
+}
+===== next-auth types =====
+import { DefaultSession } from "next-auth";
+import "next-auth";
+import "next-auth/jwt";
+
+declare module "next-auth" {
+  interface Session {
+    accessToken?: string;
+    user: {
+      id?: string;
+    } & DefaultSession["user"];
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    accessToken?: string;
+  }
+}
+===== User model =====
 const mongoose = require('mongoose');
 
 const UserSchema = new mongoose.Schema({
@@ -11,7 +43,7 @@ const UserSchema = new mongoose.Schema({
   },
   name: String,
   image: String, // GitHub avatar
-
+  
   // OAuth provider data
   accounts: [{
     provider: String,      // 'github'
@@ -19,57 +51,40 @@ const UserSchema = new mongoose.Schema({
     type: String,
     access_token: String
   }],
-
+  
   // ==========================================
-  // PLATFORM ACCESS
+  // GAMIFICATION (NEW!)
   // ==========================================
-  role: {
-    type: String,
-    enum: ['listener', 'creator', 'admin', 'owner'],
-    default: 'listener',
-    index: true
+  level: { 
+    type: Number, 
+    default: 1 
   },
-
-  creatorStatus: {
-    type: String,
-    enum: ['none', 'invited', 'active', 'suspended'],
-    default: 'none',
-    index: true
+  
+  xp: { 
+    type: Number, 
+    default: 0 
   },
-
-  // ==========================================
-  // GAMIFICATION
-  // ==========================================
-  level: {
-    type: Number,
-    default: 1
+  
+  xpToNextLevel: { 
+    type: Number, 
+    default: 100 
   },
-
-  xp: {
-    type: Number,
-    default: 0
-  },
-
-  xpToNextLevel: {
-    type: Number,
-    default: 100
-  },
-
+  
   // ==========================================
-  // REALM PROGRESS
+  // REALM PROGRESS (NEW!)
   // ==========================================
-  currentRealm: {
-    type: Number,
+  currentRealm: { 
+    type: Number, 
     default: 303 // Starting realm: Fractured Frontier
   },
-
-  unlockedRealms: {
-    type: [Number],
+  
+  unlockedRealms: { 
+    type: [Number], 
     default: [303, 202] // Start with 2 realms unlocked
   },
-
+  
   // ==========================================
-  // TRIAL COMPLETION
+  // TRIAL COMPLETION (NEW!)
   // ==========================================
   completedTrials: [{
     realmId: { type: Number, required: true },
@@ -81,9 +96,9 @@ const UserSchema = new mongoose.Schema({
     completedAt: Date,
     xpEarned: { type: Number, default: 0 }
   }],
-
+  
   // ==========================================
-  // LOCATION VISITS
+  // LOCATION VISITS (NEW!)
   // ==========================================
   visitedLocations: [{
     realmId: { type: Number, required: true },
@@ -92,9 +107,9 @@ const UserSchema = new mongoose.Schema({
     visitedAt: Date,
     xpEarned: { type: Number, default: 25 }
   }],
-
+  
   // ==========================================
-  // MUSIC TRACKING
+  // MUSIC TRACKING (NEW!)
   // ==========================================
   musicStats: {
     tracksListened: [{
@@ -111,9 +126,9 @@ const UserSchema = new mongoose.Schema({
     favoriteRealm: Number,
     totalTracksUnlocked: { type: Number, default: 6 }
   },
-
+  
   // ==========================================
-  // STREAKS
+  // STREAKS (NEW!)
   // ==========================================
   streaks: {
     currentStreak: { type: Number, default: 0 },
@@ -121,52 +136,58 @@ const UserSchema = new mongoose.Schema({
     lastLoginDate: Date,
     totalLogins: { type: Number, default: 0 }
   },
-
+  
   // ==========================================
-  // EXISTING RITUAL DATA
+  // EXISTING RITUAL DATA (KEEP THESE!)
   // ==========================================
+  // You can keep references to your existing models if needed
   moodEntries: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MoodEntry' }],
   practiceQuests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PracticeQuest' }],
   rituals: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Rituals' }],
   sacredYes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'SacredYes' }]
-
+  
 }, {
-  timestamps: true
+  timestamps: true // adds createdAt, updatedAt
 });
 
 // ==========================================
 // HELPER METHODS
 // ==========================================
 
+// Calculate XP for next level (exponential curve)
 UserSchema.methods.calculateXPForNextLevel = function() {
   return Math.floor(100 * Math.pow(1.5, this.level - 1));
 };
 
+// Check if user leveled up
 UserSchema.methods.checkLevelUp = function() {
   const xpNeeded = this.calculateXPForNextLevel();
   if (this.xp >= xpNeeded) {
     this.level += 1;
-    this.xp -= xpNeeded;
+    this.xp -= xpNeeded; // Carry over excess XP
     this.xpToNextLevel = this.calculateXPForNextLevel();
     return true;
   }
   return false;
 };
 
+// Award XP
 UserSchema.methods.awardXP = function(amount) {
   this.xp += amount;
   const leveledUp = this.checkLevelUp();
-  return {
-    leveledUp,
-    newLevel: this.level,
-    totalXP: this.xp
+  return { 
+    leveledUp, 
+    newLevel: this.level, 
+    totalXP: this.xp 
   };
 };
 
+// Check if realm is unlocked
 UserSchema.methods.isRealmUnlocked = function(realmId) {
   return this.unlockedRealms.includes(realmId);
 };
 
+// Unlock realm
 UserSchema.methods.unlockRealm = function(realmId) {
   if (!this.isRealmUnlocked(realmId)) {
     this.unlockedRealms.push(realmId);

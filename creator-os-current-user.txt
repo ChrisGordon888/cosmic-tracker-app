@@ -1,0 +1,1126 @@
+===== GET_ME frontend query =====
+1-// frontend/src/graphql/realms.ts
+2-import { gql } from '@apollo/client';
+3-
+4:export const GET_ME = gql`
+5-  query GetMe {
+6-    me {
+7-      id
+8-      email
+9-      name
+10-      image
+11-      level
+12-      xp
+13-      xpToNextLevel
+14-      currentRealm
+15-      unlockedRealms
+16-      completedTrials {
+17-        realmId
+18-        trialId
+19-        trialName
+20-        stepsCompleted
+21-        totalSteps
+22-        isComplete
+23-        completedAt
+24-        xpEarned
+25-      }
+26-      visitedLocations {
+27-        realmId
+28-        locationId
+29-        locationName
+30-        visitedAt
+31-        xpEarned
+32-      }
+33-      musicStats {
+34-        tracksListened {
+35-          realmId
+36-          trackTitle
+37-          artist
+38-          listenCount
+39-          totalListenTime
+40-          firstListenedAt
+41-          lastListenedAt
+42-          xpEarned
+43-        }
+44-        totalListeningTime
+45-        favoriteRealm
+46-        totalTracksUnlocked
+47-      }
+48-      streaks {
+49-        currentStreak
+50-        longestStreak
+51-        lastLoginDate
+52-        totalLogins
+53-      }
+54-    }
+55-  }
+56-`;
+57-
+58-export const COMPLETE_TRIAL_STEP = gql`
+59-  mutation CompleteTrialStep($realmId: Int!, $trialId: String!) {
+60-    completeTrialStep(realmId: $realmId, trialId: $trialId) {
+61-      user { level xp xpToNextLevel }
+62-      xpGained
+63-      leveledUp
+64-      newLevel
+65-      message
+66-    }
+67-  }
+68-`;
+69-
+70-export const START_TRIAL = gql`
+71-  mutation StartTrial($realmId: Int!, $trialId: String!, $trialName: String!) {
+72-    startTrial(realmId: $realmId, trialId: $trialId, trialName: $trialName) {
+73-      id
+74-      completedTrials { realmId trialId stepsCompleted }
+75-    }
+76-  }
+77-`;
+78-
+79-export const LOG_MUSIC_LISTEN = gql`
+80-  mutation LogMusicListen($realmId: Int!, $trackTitle: String!, $duration: Int!) {
+81-    logMusicListen(realmId: $realmId, trackTitle: $trackTitle, duration: $duration) {
+82-      user { level xp }
+83-      xpGained
+84-      leveledUp
+85-      newLevel
+86-      message
+87-    }
+88-  }
+89-`;
+90-
+91-export const GET_LEADERBOARD = gql`
+92-  query GetLeaderboard($limit: Int) {
+93-    getLeaderboard(limit: $limit) {
+94-      rank
+
+===== GraphQL User types =====
+15-    userId: String!
+16-    mood: Int!
+17-    note: String
+18-    date: String!
+19-  }
+20-
+21-  # 🧘 Practice Quest
+22-  type PracticeQuest {
+23-    id: ID!
+24-    userId: String!
+25:    name: String!
+26-    description: String
+27-    repetitions: Int!
+28-    completedReps: Int!
+29-    completed: Boolean!
+30-    date: String!
+31-    ritualId: ID
+32-    ritual: Ritual
+33-  }
+34-
+35-  # 🔮 Ritual
+36-  type Ritual {
+37-    id: ID!
+38-    userId: String!
+39-    title: String!
+40-    description: String!
+41-    createdAt: String
+42-    updatedAt: String
+43-  }
+44-
+45-  # 👤 USER
+46:  type User {
+47-    id: ID!
+48-    email: String!
+49:    name: String
+50-    image: String
+51-
+52-    level: Int!
+53-    xp: Int!
+54-    xpToNextLevel: Int!
+55-
+56-    currentRealm: Int!
+57-    unlockedRealms: [Int!]!
+58-    completedTrials: [CompletedTrial!]!
+59-    visitedLocations: [VisitedLocation!]!
+60-
+61-    musicStats: MusicStats!
+62-    streaks: Streaks!
+63-
+64-    createdAt: String
+65-    updatedAt: String
+66-  }
+67-
+68-  type CompletedTrial {
+69-    realmId: Int!
+70-    trialId: String!
+71:    trialName: String
+72-    stepsCompleted: Int!
+73-    totalSteps: Int!
+74-    isComplete: Boolean!
+75-    completedAt: String
+76-    xpEarned: Int!
+77-  }
+78-
+79-  type VisitedLocation {
+80-    realmId: Int!
+81-    locationId: String!
+82:    locationName: String!
+83-    visitedAt: String!
+84-    xpEarned: Int!
+85-  }
+86-
+87-  type MusicStats {
+88-    tracksListened: [TrackListen!]!
+89:    totalListeningTime: Int!
+90-    favoriteRealm: Int
+91-    totalTracksUnlocked: Int!
+92-  }
+93-
+94-  type TrackListen {
+95-    realmId: Int!
+96-    trackTitle: String!
+97-    artist: String!
+98-    listenCount: Int!
+99:    totalListenTime: Int!
+100-    firstListenedAt: String
+101-    lastListenedAt: String!
+102-    xpEarned: Int!
+103-  }
+104-
+105-  type Streaks {
+106-    currentStreak: Int!
+107-    longestStreak: Int!
+108-    lastLoginDate: String
+109-    totalLogins: Int!
+110-  }
+111-
+112-  type LeaderboardEntry {
+113-    rank: Int!
+114-    user: User!
+115-  }
+116-
+117-  type XPGainResponse {
+118-    user: User!
+119-    xpGained: Int!
+120-    leveledUp: Boolean!
+121-    newLevel: Int!
+122-    message: String!
+123-  }
+124-
+125-  # ========================================
+126-  # 🌌 CREATOR WORLD TYPES
+127-  # ========================================
+128-
+129-  type CreativeProfile {
+130-    id: ID!
+131-    ownerId: String!
+132:    artistName: String!
+133-    slug: String!
+134:    displayName: String
+135-    tagline: String
+136-    bio: String
+137-    isPublic: Boolean!
+138-    isFeatured: Boolean!
+139-    featuredReleaseWorldId: ID
+140-    createdAt: String
+141-    updatedAt: String
+142-  }
+143-
+144-  type ReleaseWorld {
+145-    id: ID!
+146-    ownerId: String!
+147-    creativeProfileId: ID!
+148-    title: String!
+149-    slug: String!
+150-    releaseType: String!
+151-    status: String!
+152-    visibility: String!
+153-    isFeatured: Boolean!
+154-    oneLineSummary: String
+155-    story: String
+156-    currentFocus: String
+157-    secondFocus: String
+158-    fullDropDate: String
+159-    coverArtUrl: String
+160-    coverAssetId: ID
+161-    createdAt: String
+162-    updatedAt: String
+163-    lastOpenedAt: String
+164-  }
+165-
+166-  type ReleaseTrack {
+167-    id: ID!
+168-    ownerId: String!
+169-    releaseWorldId: ID!
+170-    title: String!
+171-    slug: String!
+172-    trackNumber: Int!
+173-    role: String!
+174-    status: String!
+175-    bpm: Int
+176-    keySignature: String
+177-    mood: String
+178-    hook: String
+179-    notes: String
+180-    audioUrl: String
+181-    previewAudioUrl: String
+182-    platformUrl: String
+183-    visibility: String!
+184-    playbackStatus: String!
+185-    dropDate: String
+186-    unlockDate: String
+187-    isFocusTrack: Boolean!
+188-    isSecondFocus: Boolean!
+189-    isPublic: Boolean!
+190-    realmId: Int
+191-    showInNexus: Boolean!
+192-    nexusRole: String!
+193-    isRealmAnchor: Boolean!
+194-    isPublicPick: Boolean!
+195-    nexusSortOrder: Int!
+196-    createdAt: String
+197-    updatedAt: String
+198-    lastOpenedAt: String
+199-  }
+200-
+201-  type ReleaseAsset {
+202-    id: ID!
+203-    ownerId: String!
+204-    releaseWorldId: ID!
+205-    trackId: ID
+206-    boardArtifactId: ID
+207-    kind: String!
+208-    usage: String!
+209-    title: String!
+210-    description: String
+211-    url: String!
+212:    fileName: String
+213-    mimeType: String
+214-    size: Int
+215-    isPublic: Boolean!
+216-    createdAt: String
+217-    updatedAt: String
+218-    lastOpenedAt: String
+219-  }
+220-
+221-  type BoardArtifact {
+222-    id: ID!
+223-    ownerId: String!
+224-    releaseWorldId: ID!
+225-    kind: String!
+226-    eyebrow: String
+227-    title: String!
+228-    body: String
+229-    meta: String
+230-    href: String
+231-    connectedTrackSlug: String
+232-    position: BoardArtifactPosition!
+233-    style: BoardArtifactStyle!
+234-    isGenerated: Boolean!
+235-    isUserCreated: Boolean!
+236-    isPublic: Boolean!
+237-    pageSection: String
+238-    pageOrder: Int
+239-    createdAt: String
+240-    updatedAt: String
+241-  }
+242-
+243-  type BoardArtifactPosition {
+244-    x: Float!
+245-    y: Float!
+246-    rotate: Float!
+247-  }
+248-
+249-  type BoardArtifactStyle {
+250-    color: String!
+251-    size: String!
+252-    layer: Int!
+253-  }
+254-
+255-  input CreativeProfileInput {
+256:    artistName: String!
+257-    slug: String!
+258:    displayName: String
+259-    tagline: String
+260-    bio: String
+261-    isPublic: Boolean
+262-    isFeatured: Boolean
+263-  }
+264-
+265-  input ReleaseWorldInput {
+266-    creativeProfileId: ID!
+267-    title: String!
+268-    slug: String!
+269-    releaseType: String
+270-    status: String
+271-    visibility: String
+272-    isFeatured: Boolean
+273-    oneLineSummary: String
+274-    story: String
+275-    currentFocus: String
+276-    secondFocus: String
+277-    fullDropDate: String
+278-    coverArtUrl: String
+279-    coverAssetId: ID
+280-  }
+281-
+282-  input UpdateReleaseWorldInput {
+283-    title: String
+284-    slug: String
+285-    releaseType: String
+286-    status: String
+287-    visibility: String
+288-    isFeatured: Boolean
+289-    oneLineSummary: String
+290-    story: String
+291-    currentFocus: String
+292-    secondFocus: String
+293-    fullDropDate: String
+294-    coverArtUrl: String
+295-    coverAssetId: ID
+296-  }
+297-
+298-  input ReleaseTrackInput {
+299-    releaseWorldId: ID!
+300-    title: String!
+301-    slug: String
+302-    trackNumber: Int
+303-    role: String
+304-    status: String
+305-    bpm: Int
+306-    keySignature: String
+307-    mood: String
+308-    hook: String
+309-    notes: String
+310-    audioUrl: String
+311-    previewAudioUrl: String
+312-    platformUrl: String
+313-    visibility: String
+314-    playbackStatus: String
+315-    dropDate: String
+316-    unlockDate: String
+317-    isFocusTrack: Boolean
+318-    isSecondFocus: Boolean
+319-    isPublic: Boolean
+320-    realmId: Int
+321-    showInNexus: Boolean
+322-    nexusRole: String
+323-    isRealmAnchor: Boolean
+324-    isPublicPick: Boolean
+325-    nexusSortOrder: Int
+326-  }
+327-
+328-  input UpdateReleaseTrackInput {
+329-    title: String
+330-    slug: String
+331-    trackNumber: Int
+332-    role: String
+333-    status: String
+334-    bpm: Int
+335-    keySignature: String
+336-    mood: String
+337-    hook: String
+338-    notes: String
+339-    audioUrl: String
+340-    previewAudioUrl: String
+341-    platformUrl: String
+342-    visibility: String
+343-    playbackStatus: String
+344-    dropDate: String
+345-    unlockDate: String
+346-    isFocusTrack: Boolean
+347-    isSecondFocus: Boolean
+348-    isPublic: Boolean
+349-    realmId: Int
+350-    showInNexus: Boolean
+351-    nexusRole: String
+352-    isRealmAnchor: Boolean
+353-    isPublicPick: Boolean
+354-    nexusSortOrder: Int
+355-  }
+356-
+357-  input ReleaseAssetInput {
+358-    releaseWorldId: ID!
+359-    trackId: ID
+360-    boardArtifactId: ID
+361-    kind: String
+362-    usage: String
+363-    title: String!
+364-    description: String
+365-    url: String!
+366:    fileName: String
+367-    mimeType: String
+368-    size: Int
+369-    isPublic: Boolean
+370-  }
+371-
+372-  input UpdateReleaseAssetInput {
+373-    trackId: ID
+374-    boardArtifactId: ID
+375-    kind: String
+376-    usage: String
+377-    title: String
+378-    description: String
+379-    url: String
+380:    fileName: String
+381-    mimeType: String
+382-    size: Int
+383-    isPublic: Boolean
+384-  }
+385-
+386-  input BoardArtifactInput {
+387-    id: ID
+388-    kind: String!
+389-    eyebrow: String
+390-    title: String!
+391-    body: String
+392-    meta: String
+393-    href: String
+394-    connectedTrackSlug: String
+395-    x: Float!
+396-    y: Float!
+397-    rotate: Float
+398-    color: String
+399-    size: String
+400-    layer: Int
+401-    isGenerated: Boolean
+402-    isUserCreated: Boolean
+403-    isPublic: Boolean
+404-    pageSection: String
+405-    pageOrder: Int
+406-  }
+407-
+408-  # 📖 Queries
+409:  type Query {
+410-    hello: String
+411-    todayMoonPhase: String
+412-
+413-    # Sacred Yes
+414-    getSacredYes(date: String!): SacredYes
+415-    allSacredYes: [SacredYes!]!
+416-
+417-    # Mood Entries
+418-    getMoodEntry(date: String!): MoodEntry
+419-    allMoodEntries: [MoodEntry!]!
+420-
+421-    # Practice Quests
+422-    getDailyQuests(date: String!): [PracticeQuest!]!
+423-    allPracticeQuests: [PracticeQuest!]!
+424-
+425-    # Rituals
+426-    allRituals: [Ritual!]!
+427-    getRitual(id: ID!): Ritual
+428-
+429-    # Music Multiverse
+430:    me: User
+431-    getUserProgress: User
+432-    getLeaderboard(limit: Int): [LeaderboardEntry!]!
+433-    checkRealmUnlock(realmId: Int!): Boolean!
+434-
+435-    # Creator Worlds
+436-    myCreativeProfiles: [CreativeProfile!]!
+437-    myReleaseWorlds: [ReleaseWorld!]!
+438-    myReleaseTracks: [ReleaseTrack!]!
+439-    getMyReleaseWorld(id: ID!): ReleaseWorld
+440-    getMyReleaseWorldBySlug(slug: String!): ReleaseWorld
+441-    getMyFeaturedReleaseWorld: ReleaseWorld
+442-    getPublicFeaturedReleaseWorld: ReleaseWorld
+443-    getPublicReleaseWorldBySlug(slug: String!): ReleaseWorld
+444-
+445-    getReleaseTracks(releaseWorldId: ID!): [ReleaseTrack!]!
+446-    getPublicReleaseTracks(releaseWorldId: ID!): [ReleaseTrack!]!
+447-    getPublicNexusTracks(realmId: Int): [ReleaseTrack!]!
+448-    getReleaseTrack(id: ID!): ReleaseTrack
+449-
+450-    getReleaseAssets(releaseWorldId: ID!): [ReleaseAsset!]!
+451-    getReleaseAsset(id: ID!): ReleaseAsset
+452-
+453-    getBoardArtifacts(releaseWorldId: ID!): [BoardArtifact!]!
+454-    getPublicBoardArtifacts(releaseWorldId: ID!): [BoardArtifact!]!
+455-  }
+456-
+457-  # 🛠️ Mutations
+458-  type Mutation {
+459-    # Sacred Yes
+460-    addSacredYes(text: String!, date: String!): SacredYes
+461-    updateSacredYes(id: ID!, text: String!): SacredYes
+462-    deleteSacredYes(id: ID!): SacredYes
+463-
+464-    # Mood Entries
+465-    addMoodEntry(mood: Int!, note: String, date: String!): MoodEntry
+466-    updateMoodEntry(id: ID!, mood: Int!, note: String): MoodEntry
+467-    deleteMoodEntry(id: ID!): MoodEntry
+468-
+469-    # Practice Quests
+470-    addPracticeQuest(
+471:      name: String!
+472-      description: String
+473-      repetitions: Int!
+474-      date: String!
+475-      ritualId: ID
+476-    ): PracticeQuest
+477-
+478-    updatePracticeQuest(
+479-      id: ID!
+480:      name: String
+481-      description: String
+482-      repetitions: Int
+483-      ritualId: ID
+484-    ): PracticeQuest
+485-
+486-    updatePracticeQuestProgress(id: ID!, completedReps: Int!): PracticeQuest
+487-    markPracticeQuestComplete(id: ID!): PracticeQuest
+488-    deletePracticeQuest(id: ID!): PracticeQuest
+489-
+490-    # Rituals
+491-    addRitual(title: String!, description: String!): Ritual
+492-    updateRitual(id: ID!, title: String!, description: String!): Ritual
+493-    deleteRitual(id: ID!): Ritual
+494-
+495-    # Music Multiverse
+496:    startTrial(realmId: Int!, trialId: String!, trialName: String!): User!
+497-    completeTrialStep(realmId: Int!, trialId: String!): XPGainResponse!
+498-
+499-    visitLocation(
+500-      realmId: Int!
+501-      locationId: String!
+502:      locationName: String!
+503-    ): XPGainResponse!
+504-
+505-    logMusicListen(
+506-      realmId: Int!
+507-      trackTitle: String!
+508-      duration: Int!
+509-    ): XPGainResponse!
+510-
+511-    unlockRealm(realmId: Int!): User!
+512-    setCurrentRealm(realmId: Int!): User!
+513-    logDailyLogin: XPGainResponse!
+514-
+515-    # Creator Worlds
+516-    createCreativeProfile(input: CreativeProfileInput!): CreativeProfile!
+517-    createReleaseWorld(input: ReleaseWorldInput!): ReleaseWorld!
+518-    updateReleaseWorld(id: ID!, input: UpdateReleaseWorldInput!): ReleaseWorld!
+519-    archiveReleaseWorld(id: ID!): ReleaseWorld!
+520-    setFeaturedReleaseWorld(releaseWorldId: ID!): ReleaseWorld!
+521-
+522-    createReleaseTrack(input: ReleaseTrackInput!): ReleaseTrack!
+523-    updateReleaseTrack(id: ID!, input: UpdateReleaseTrackInput!): ReleaseTrack!
+524-    deleteReleaseTrack(id: ID!): ReleaseTrack
+525-    setFeaturedSignal(trackId: ID!): ReleaseTrack!
+526-    reorderReleaseTracks(
+527-      releaseWorldId: ID!
+528-      orderedTrackIds: [ID!]!
+529-    ): [ReleaseTrack!]!
+530-
+531-    createReleaseAsset(input: ReleaseAssetInput!): ReleaseAsset!
+532-    updateReleaseAsset(id: ID!, input: UpdateReleaseAssetInput!): ReleaseAsset!
+533-    deleteReleaseAsset(id: ID!, deleteBlob: Boolean): ReleaseAsset
+534-
+535-    saveBoardArtifacts(
+536-      releaseWorldId: ID!
+537-      artifacts: [BoardArtifactInput!]!
+538-    ): [BoardArtifact!]!
+539-  }
+540-`;
+541-
+542-module.exports = typeDefs;
+
+===== GET_ME resolver =====
+441-
+442-        allSacredYes: async (_, __, { user }) => {
+443-            if (!user) throw new Error("Unauthorized: Please sign in.");
+444-            return await SacredYes.find({ userId: user.id }).sort({ date: -1 });
+445-        },
+446-
+447-        // 🪷 Mood Entries
+448-        getMoodEntry: async (_, { date }, { user }) => {
+449-            if (!user) throw new Error("Unauthorized: Please sign in.");
+450-            return await MoodEntry.findOne({ userId: user.id, date });
+451-        },
+452-
+453-        allMoodEntries: async (_, __, { user }) => {
+454-            if (!user) throw new Error("Unauthorized: Please sign in.");
+455-            return await MoodEntry.find({ userId: user.id }).sort({ date: -1 });
+456-        },
+457-
+458-        // 🧘 Practice Quests
+459-        getDailyQuests: async (_, { date }, { user }) => {
+460-            if (!user) throw new Error("Unauthorized: Please sign in.");
+461:            return await PracticeQuest.find({ userId: user.id, date }).sort({ name: 1 });
+462-        },
+463-
+464-        allPracticeQuests: async (_, __, { user }) => {
+465-            if (!user) throw new Error("Unauthorized: Please sign in.");
+466-            return await PracticeQuest.find({ userId: user.id }).sort({ date: -1 });
+467-        },
+468-
+469-        // 🔮 Rituals
+470-        allRituals: async (_, __, { user }) => {
+471-            if (!user) throw new Error("Unauthorized: Please sign in.");
+472-            return await Ritual.find({ userId: user.id }).sort({ createdAt: -1 });
+473-        },
+474-
+475-        getRitual: async (_, { id }, { user }) => {
+476-            if (!user) throw new Error("Unauthorized: Please sign in.");
+477-            return await Ritual.findOne({ _id: id, userId: user.id });
+478-        },
+479-
+480-        // ========================================
+481-        // 🎵 MUSIC MULTIVERSE QUERIES
+482-        // ========================================
+483-
+484:        me: async (_, __, { user }) => {
+485-            if (!user) throw new Error("Unauthorized: Please sign in.");
+486-            return await User.findOne({ email: user.email });
+487-        },
+488-
+489-        getUserProgress: async (_, __, { user }) => {
+490-            if (!user) throw new Error("Unauthorized: Please sign in.");
+491-            return await User.findOne({ email: user.email });
+492-        },
+493-
+494-        getLeaderboard: async (_, { limit = 50 }) => {
+495-            const users = await User.find()
+496-                .sort({ level: -1, xp: -1 })
+497-                .limit(limit);
+498-
+499-            return users.map((user, index) => ({
+500-                rank: index + 1,
+501-                user,
+502-            }));
+503-        },
+504-
+505-        checkRealmUnlock: async (_, { realmId }, { user }) => {
+506-            if (!user) throw new Error("Unauthorized: Please sign in.");
+507-            const userData = await User.findOne({ email: user.email });
+508-            return userData ? userData.isRealmUnlocked(realmId) : false;
+509-        },
+510-
+511-        // ========================================
+512-        // 🌌 CREATOR WORLD QUERIES
+513-        // ========================================
+514-
+515-        myCreativeProfiles: async (_, __, { user }) => {
+516-            if (!user) throw new Error("Unauthorized: Please sign in.");
+517-
+518-            return await CreativeProfile.find({ ownerId: user.id }).sort({
+519-                updatedAt: -1,
+520-            });
+521-        },
+522-
+523-        myReleaseWorlds: async (_, __, { user }) => {
+524-            if (!user) throw new Error("Unauthorized: Please sign in.");
+525-
+526-            return await ReleaseWorld.find({ ownerId: user.id }).sort({
+527-                lastOpenedAt: -1,
+528-                updatedAt: -1,
+529-            });
+530-        },
+531-
+532-        myReleaseTracks: async (_, __, { user }) => {
+533-            if (!user) throw new Error("Unauthorized: Please sign in.");
+534-
+535-            return await ReleaseTrack.find({ ownerId: user.id }).sort({
+536-                updatedAt: -1,
+537-                trackNumber: 1,
+538-                createdAt: 1,
+539-            });
+540-        },
+541-
+542-        getMyReleaseWorld: async (_, { id }, { user }) => {
+543-            if (!user) throw new Error("Unauthorized: Please sign in.");
+544-
+545-            const releaseWorld = await ReleaseWorld.findOne({
+546-                _id: id,
+547-                ownerId: user.id,
+548-            });
+549-
+550-            if (releaseWorld) {
+551-                releaseWorld.lastOpenedAt = new Date();
+552-                await releaseWorld.save();
+553-            }
+554-
+555-            return releaseWorld;
+556-        },
+557-
+558-        getMyReleaseWorldBySlug: async (_, { slug }, { user }) => {
+559-            if (!user) throw new Error("Unauthorized: Please sign in.");
+560-
+561-            const releaseWorld = await ReleaseWorld.findOne({
+562-                slug: normalizeSlug(slug),
+563-                ownerId: user.id,
+564-            });
+565-
+566-            if (releaseWorld) {
+567-                releaseWorld.lastOpenedAt = new Date();
+568-                await releaseWorld.save();
+569-            }
+570-
+571-            return releaseWorld;
+572-        },
+573-
+574-        getMyFeaturedReleaseWorld: async (_, __, { user }) => {
+575-            if (!user) throw new Error("Unauthorized: Please sign in.");
+576-
+577-            return await getFeaturedReleaseWorldForUser(user.id);
+578-        },
+579-
+580-        getPublicFeaturedReleaseWorld: async () => {
+581-            return await getPublicFeaturedReleaseWorld();
+582-        },
+583-
+584-        getPublicReleaseWorldBySlug: async (_, { slug }) => {
+--
+1032-
+1033-            const userData = await User.findOne({ email: user.email });
+1034-            if (!userData) throw new Error("User not found.");
+1035-
+1036-            let trackRecord = userData.musicStats.tracksListened.find(
+1037-                (t) => t.realmId === realmId && t.trackTitle === trackTitle
+1038-            );
+1039-
+1040-            let xpGained = 0;
+1041-            let isFirstListen = false;
+1042-
+1043-            if (!trackRecord) {
+1044-                isFirstListen = true;
+1045-                xpGained = 50;
+1046-
+1047-                userData.musicStats.tracksListened.push({
+1048-                    realmId,
+1049-                    trackTitle,
+1050-                    artist: "Cosmic 888",
+1051-                    listenCount: 1,
+1052:                    totalListenTime: duration,
+1053-                    firstListenedAt: new Date(),
+1054-                    lastListenedAt: new Date(),
+1055-                    xpEarned: xpGained,
+1056-                });
+1057-            } else {
+1058-                xpGained = 30;
+1059-                trackRecord.listenCount += 1;
+1060-                trackRecord.totalListenTime += duration;
+1061-                trackRecord.lastListenedAt = new Date();
+1062-                trackRecord.xpEarned += xpGained;
+1063-            }
+1064-
+1065-            userData.musicStats.totalListeningTime += duration;
+1066-
+1067-            const { leveledUp, newLevel } = userData.awardXP(xpGained);
+1068-
+1069-            await userData.save();
+1070-
+1071-            let message = isFirstListen
+1072-                ? `🎵 First listen to "${trackTitle}"! +${xpGained} XP!`
+1073-                : `🎵 +${xpGained} XP for vibing to "${trackTitle}"!`;
+1074-
+1075-            if (leveledUp) message += ` 🔥 LEVEL UP to ${newLevel}!`;
+1076-
+1077-            return {
+1078-                user: userData,
+1079-                xpGained,
+1080-                leveledUp,
+1081-                newLevel,
+1082-                message,
+1083-            };
+1084-        },
+1085-
+1086-        unlockRealm: async (_, { realmId }, { user }) => {
+1087-            if (!user) throw new Error("Unauthorized: Please sign in.");
+1088-
+1089-            const userData = await User.findOne({ email: user.email });
+1090-            if (!userData) throw new Error("User not found.");
+1091-
+1092-            const wasUnlocked = userData.unlockRealm(realmId);
+1093-
+1094-            if (wasUnlocked) {
+1095-                userData.awardXP(200);
+1096-                await userData.save();
+1097-            }
+1098-
+1099-            return userData;
+1100-        },
+1101-
+1102-        setCurrentRealm: async (_, { realmId }, { user }) => {
+1103-            if (!user) throw new Error("Unauthorized: Please sign in.");
+1104-
+1105-            const userData = await User.findOne({ email: user.email });
+1106-            if (!userData) throw new Error("User not found.");
+1107-
+1108-            if (!userData.isRealmUnlocked(realmId)) {
+1109-                throw new Error("Realm not unlocked yet!");
+1110-            }
+1111-
+1112-            userData.currentRealm = realmId;
+1113-
+1114-            await userData.save();
+1115-            return userData;
+1116-        },
+1117-
+1118-        logDailyLogin: async (_, __, { user }) => {
+1119-            if (!user) throw new Error("Unauthorized: Please sign in.");
+1120-
+1121-            const userData = await User.findOne({ email: user.email });
+1122-            if (!userData) throw new Error("User not found.");
+1123-
+1124-            const today = new Date().toDateString();
+1125-            const lastLogin = userData.streaks.lastLoginDate
+1126-                ? new Date(userData.streaks.lastLoginDate).toDateString()
+1127-                : null;
+1128-
+1129-            if (lastLogin === today) {
+1130-                return {
+1131-                    user: userData,
+1132-                    xpGained: 0,
+1133-                    leveledUp: false,
+1134-                    newLevel: userData.level,
+1135-                    message: "Already logged in today!",
+1136-                };
+1137-            }
+1138-
+1139-            const yesterday = new Date();
+1140-            yesterday.setDate(yesterday.getDate() - 1);
+1141-            const yesterdayStr = yesterday.toDateString();
+1142-
+1143-            if (lastLogin === yesterdayStr) {
+1144-                userData.streaks.currentStreak += 1;
+1145-            } else {
+1146-                userData.streaks.currentStreak = 1;
+1147-            }
+1148-
+1149-            if (userData.streaks.currentStreak > userData.streaks.longestStreak) {
+1150-                userData.streaks.longestStreak = userData.streaks.currentStreak;
+1151-            }
+1152-
+--
+1573-                    throw new Error("Track not found for this release world.");
+1574-                }
+1575-            }
+1576-
+1577-            if (normalizedBoardArtifactId) {
+1578-                const artifact = await getOwnedBoardArtifact(
+1579-                    normalizedBoardArtifactId,
+1580-                    user.id,
+1581-                    releaseWorld._id
+1582-                );
+1583-
+1584-                if (!artifact) {
+1585-                    throw new Error("Board artifact not found for this release world.");
+1586-                }
+1587-            }
+1588-
+1589-            const assetShape = {
+1590-                kind: input.kind || "image",
+1591-                usage: input.usage || "other",
+1592-                mimeType: input.mimeType || "",
+1593:                fileName: input.fileName || "",
+1594-                url: input.url || "",
+1595-            };
+1596-
+1597-            validateReleaseAssetShape(assetShape);
+1598-
+1599-            const asset = await ReleaseAsset.create({
+1600-                ownerId: user.id,
+1601-                releaseWorldId: releaseWorld._id,
+1602-                trackId: normalizedTrackId,
+1603-                boardArtifactId: normalizedBoardArtifactId,
+1604-                kind: assetShape.kind,
+1605-                usage: assetShape.usage,
+1606-                title: input.title,
+1607-                description: input.description || "",
+1608-                url: input.url,
+1609:                fileName: input.fileName || "",
+1610-                mimeType: input.mimeType || "",
+1611-                size: input.size === undefined || input.size === null ? null : input.size,
+1612-                isPublic: input.isPublic || false,
+1613-                lastOpenedAt: new Date(),
+1614-            });
+1615-
+1616-            await syncReleaseAssetTargets(asset, user.id);
+1617-
+1618-            releaseWorld.lastOpenedAt = new Date();
+1619-            await releaseWorld.save();
+1620-
+1621-            return asset;
+1622-        },
+1623-
+1624-        updateReleaseAsset: async (_, { id, input }, { user }) => {
+1625-            if (!user) throw new Error("Unauthorized: Please sign in.");
+1626-
+1627-            const existingAsset = await ReleaseAsset.findOne({
+1628-                _id: id,
+1629-                ownerId: user.id,
+1630-            });
+1631-
+1632-            if (!existingAsset) {
+1633-                throw new Error("Release asset not found.");
+1634-            }
+1635-
+1636-            const releaseWorld = await getOwnedReleaseWorld(
+1637-                existingAsset.releaseWorldId,
+1638-                user.id
+1639-            );
+1640-
+1641-            if (!releaseWorld) {
+1642-                throw new Error("Release world not found.");
+1643-            }
+1644-
+1645-            const update = {
+1646-                lastOpenedAt: new Date(),
+1647-            };
+1648-
+1649-            if (input.trackId !== undefined) {
+1650-                const normalizedTrackId = normalizeOptionalId(input.trackId);
+1651-
+1652-                if (normalizedTrackId) {
+1653-                    const track = await getOwnedReleaseTrack(
+1654-                        normalizedTrackId,
+1655-                        user.id,
+1656-                        releaseWorld._id
+1657-                    );
+1658-
+1659-                    if (!track) {
+1660-                        throw new Error("Track not found for this release world.");
+1661-                    }
+1662-                }
+1663-
+1664-                update.trackId = normalizedTrackId;
+1665-            }
+1666-
+1667-            if (input.boardArtifactId !== undefined) {
+1668-                const normalizedBoardArtifactId = normalizeOptionalId(
+1669-                    input.boardArtifactId
+1670-                );
+1671-
+1672-                if (normalizedBoardArtifactId) {
+1673-                    const artifact = await getOwnedBoardArtifact(
+1674-                        normalizedBoardArtifactId,
+1675-                        user.id,
+1676-                        releaseWorld._id
+1677-                    );
+1678-
+1679-                    if (!artifact) {
+1680-                        throw new Error("Board artifact not found for this release world.");
+1681-                    }
+1682-                }
+1683-
+1684-                update.boardArtifactId = normalizedBoardArtifactId;
+1685-            }
+1686-
+1687-            if (input.kind !== undefined) update.kind = input.kind || "image";
+1688-            if (input.usage !== undefined) update.usage = input.usage || "other";
+1689-            if (input.title !== undefined) update.title = input.title;
+1690-            if (input.description !== undefined) update.description = input.description || "";
+1691-            if (input.url !== undefined) update.url = input.url;
+1692-            if (input.fileName !== undefined) update.fileName = input.fileName || "";
+1693-            if (input.mimeType !== undefined) update.mimeType = input.mimeType || "";
+1694-            if (input.size !== undefined) {
+1695-                update.size = input.size === null ? null : input.size;
+1696-            }
+1697-            if (input.isPublic !== undefined) update.isPublic = input.isPublic;
+1698-
+1699-            const nextAssetShape = {
+1700-                kind: update.kind !== undefined ? update.kind : existingAsset.kind,
+1701-                usage: update.usage !== undefined ? update.usage : existingAsset.usage,
+1702-                mimeType:
+1703-                    update.mimeType !== undefined ? update.mimeType : existingAsset.mimeType,
+1704:                fileName:
+1705-                    update.fileName !== undefined ? update.fileName : existingAsset.fileName,
+1706-                url: update.url !== undefined ? update.url : existingAsset.url,
+1707-            };
+1708-
+1709-            validateReleaseAssetShape(nextAssetShape);
+1710-
+1711-            await clearReleaseAssetTargets(existingAsset, user.id);
+1712-
+1713-            const updatedAsset = await ReleaseAsset.findOneAndUpdate(
+1714-                {
+1715-                    _id: id,
+1716-                    ownerId: user.id,
+1717-                },
+1718-                update,
+1719-                { new: true }
+1720-            );
+1721-
+1722-            await syncReleaseAssetTargets(updatedAsset, user.id);
+1723-
+1724-            releaseWorld.lastOpenedAt = new Date();
+1725-            await releaseWorld.save();
+1726-
+1727-            return updatedAsset;
+1728-        },
+1729-
+1730-        deleteReleaseAsset: async (_, { id, deleteBlob = true }, { user }) => {
+1731-            if (!user) throw new Error("Unauthorized: Please sign in.");
+1732-
+1733-            const asset = await ReleaseAsset.findOne({
+1734-                _id: id,
+1735-                ownerId: user.id,
+1736-            });
+1737-
+1738-            if (!asset) {
+1739-                throw new Error("Release asset not found.");
+1740-            }
+1741-
+1742-            const releaseWorld = await getOwnedReleaseWorld(asset.releaseWorldId, user.id);
+1743-
+1744-            if (!releaseWorld) {
+1745-                throw new Error("Release world not found.");
+1746-            }
+1747-
+1748-            await clearReleaseAssetTargets(asset, user.id);
+1749-
+1750-            const deletedAsset = await ReleaseAsset.findOneAndDelete({
+1751-                _id: id,
+1752-                ownerId: user.id,
+1753-            });
+1754-
+1755-            if (deleteBlob) {
+1756-                await tryDeleteBlobForAsset(asset);
+1757-            }
+1758-
+1759-            releaseWorld.lastOpenedAt = new Date();
+1760-            await releaseWorld.save();
+1761-
+1762-            return deletedAsset;
+1763-        },
+1764-
+1765-        saveBoardArtifacts: async (_, { releaseWorldId, artifacts }, { user }) => {
+1766-            if (!user) throw new Error("Unauthorized: Please sign in.");
+1767-
+1768-            const releaseWorld = await ReleaseWorld.findOne({
+1769-                _id: releaseWorldId,
+1770-                ownerId: user.id,
+1771-            });
+1772-
+1773-            if (!releaseWorld) {
+1774-                throw new Error("Release world not found.");
+1775-            }
+1776-
+1777-            await BoardArtifact.deleteMany({
+1778-                ownerId: user.id,
+1779-                releaseWorldId,
+1780-            });
+1781-
+1782-            if (!artifacts.length) {
+1783-                releaseWorld.lastOpenedAt = new Date();
+1784-                await releaseWorld.save();
+1785-                return [];
+1786-            }
+1787-
+1788-            const docs = await BoardArtifact.insertMany(
+1789-                artifacts.map((artifact) => ({
+1790-                    ownerId: user.id,
+1791-                    releaseWorldId,
+1792-                    kind: artifact.kind,
+1793-                    eyebrow: artifact.eyebrow || "",
+1794-                    title: artifact.title,
+1795-                    body: artifact.body || "",
+1796-                    meta: artifact.meta || "",
+1797-                    href: artifact.href || "",
+1798-                    connectedTrackSlug: artifact.connectedTrackSlug || "",
+1799-                    position: {
+1800-                        x: artifact.x,
+1801-                        y: artifact.y,
+1802-                        rotate: artifact.rotate || 0,
+1803-                    },
+1804-                    style: {

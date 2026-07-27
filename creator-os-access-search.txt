@@ -1,0 +1,466 @@
+./frontend/src/app/creator/projects/page.tsx:7:import "@/styles/creatorProjects.css";
+./frontend/src/app/creator/projects/page.tsx:253:export default function CreatorProjectsPage() {
+./frontend/src/app/creator/projects/page.tsx:350:    <main className="creator-projects-page">
+./frontend/src/app/creator/projects/page.tsx:351:      <section className="creator-projects-shell">
+./frontend/src/app/creator/projects/page.tsx:352:        <div className="creator-projects-hero">
+./frontend/src/app/creator/projects/page.tsx:354:            <p className="creator-projects-kicker">Creator Console</p>
+./frontend/src/app/creator/projects/page.tsx:356:            <p className="creator-projects-subtitle">
+./frontend/src/app/creator/projects/page.tsx:361:          <div className="creator-projects-hero-actions">
+./frontend/src/app/creator/projects/page.tsx:362:            <Link href="/creator" className="creator-projects-ghost-button">
+./frontend/src/app/creator/projects/page.tsx:363:              Creator Home
+./frontend/src/app/creator/projects/page.tsx:365:            <Link href="/nexus" className="creator-projects-ghost-button">
+./frontend/src/app/creator/projects/page.tsx:371:        <div className="creator-projects-status-strip">
+./frontend/src/app/creator/projects/page.tsx:373:            <span className="creator-projects-status-label">Release system</span>
+./frontend/src/app/creator/projects/page.tsx:374:            <strong>Creator OS + Nexus</strong>
+./frontend/src/app/creator/projects/page.tsx:377:            <span className="creator-projects-status-label">Library</span>
+./frontend/src/app/creator/projects/page.tsx:383:            <span className="creator-projects-status-label">Profile</span>
+./frontend/src/app/creator/projects/page.tsx:393:          <section className="creator-projects-card creator-projects-message-card">
+./frontend/src/app/creator/projects/page.tsx:394:            <p className="creator-projects-kicker">Loading Session</p>
+./frontend/src/app/creator/projects/page.tsx:395:            <h2>Checking your creator access...</h2>
+./frontend/src/app/creator/projects/page.tsx:400:          <section className="creator-projects-card creator-projects-message-card">
+./frontend/src/app/creator/projects/page.tsx:401:            <p className="creator-projects-kicker">Sign In Required</p>
+./frontend/src/app/creator/projects/page.tsx:408:              className="creator-projects-primary-button"
+./frontend/src/app/creator/projects/page.tsx:417:        {status === "authenticated" && profilesError && (
+./frontend/src/app/creator/projects/page.tsx:418:          <section className="creator-projects-card creator-projects-message-card creator-projects-error-card">
+./frontend/src/app/creator/projects/page.tsx:419:            <p className="creator-projects-kicker">Profile Error</p>
+./frontend/src/app/creator/projects/page.tsx:425:        {status === "authenticated" && (
+./frontend/src/app/creator/projects/page.tsx:426:          <section className="creator-projects-card creator-projects-create-card">
+./frontend/src/app/creator/projects/page.tsx:427:            <div className="creator-projects-create-heading">
+./frontend/src/app/creator/projects/page.tsx:429:                <p className="creator-projects-kicker">New Release World</p>
+./frontend/src/app/creator/projects/page.tsx:436:              <div className="creator-projects-profile-pill">
+./frontend/src/app/creator/projects/page.tsx:442:            <form className="creator-projects-form" onSubmit={handleCreateProject}>
+./frontend/src/app/creator/projects/page.tsx:443:              <div className="creator-projects-form-grid">
+./frontend/src/app/creator/projects/page.tsx:519:              <div className="creator-projects-form-grid">
+./frontend/src/app/creator/projects/page.tsx:549:              <div className="creator-projects-form-footer">
+./frontend/src/app/creator/projects/page.tsx:552:                  className="creator-projects-primary-button"
+./frontend/src/app/creator/projects/page.tsx:563:        {status === "authenticated" && loading && (
+./frontend/src/app/creator/projects/page.tsx:564:          <section className="creator-projects-grid">
+./frontend/src/app/creator/projects/page.tsx:565:            <article className="creator-projects-card creator-projects-loading-card">
+./frontend/src/app/creator/projects/page.tsx:566:              <p className="creator-projects-kicker">Loading</p>
+./frontend/src/app/creator/projects/page.tsx:568:              <p>Reading from the GraphQL creator-world resolver.</p>
+./frontend/src/app/creator/projects/page.tsx:573:        {status === "authenticated" && error && (
+./frontend/src/app/creator/projects/page.tsx:574:          <section className="creator-projects-card creator-projects-message-card creator-projects-error-card">
+./frontend/src/app/creator/projects/page.tsx:575:            <p className="creator-projects-kicker">GraphQL Error</p>
+./frontend/src/app/creator/projects/page.tsx:579:              className="creator-projects-primary-button"
+./frontend/src/app/creator/projects/page.tsx:588:        {status === "authenticated" && !loading && !error && releaseWorlds.length === 0 && (
+./frontend/src/app/creator/projects/page.tsx:589:          <section className="creator-projects-card creator-projects-message-card">
+./frontend/src/app/creator/projects/page.tsx:590:            <p className="creator-projects-kicker">Empty Library</p>
+./frontend/src/app/creator/projects/page.tsx:599:        {status === "authenticated" && !error && releaseWorlds.length > 0 && (
+./frontend/src/app/creator/projects/page.tsx:600:          <section className="creator-projects-grid">
+./frontend/src/app/creator/projects/page.tsx:607:                  className={`creator-projects-card creator-project-card creator-project-card-v2${featuredClassName}`}
+./frontend/src/app/creator/projects/page.tsx:610:                  <div className="creator-project-card-topline">
+./frontend/src/app/creator/projects/page.tsx:615:                  <div className="creator-project-card-mainline">
+./frontend/src/app/creator/projects/page.tsx:617:                      <div className="creator-project-card-cover" aria-label={`${world.title} cover art`}>
+./frontend/src/app/creator/projects/page.tsx:621:                      <div className="creator-project-card-cover creator-project-card-cover-empty" aria-hidden="true">
+./frontend/src/app/creator/projects/page.tsx:628:                      <p className="creator-project-card-slug">/{world.slug}</p>
+./frontend/src/app/creator/projects/page.tsx:630:                      <p className="creator-project-card-summary">
+./frontend/src/app/creator/projects/page.tsx:638:                  <div className="creator-project-readiness-panel">
+./frontend/src/app/creator/projects/page.tsx:639:                    <div className="creator-project-readiness-header">
+./frontend/src/app/creator/projects/page.tsx:644:                      <div className="creator-project-readiness-score">
+./frontend/src/app/creator/projects/page.tsx:649:                    <div className="creator-project-readiness-bar" aria-hidden="true">
+./frontend/src/app/creator/projects/page.tsx:653:                    <div className="creator-project-readiness-list">
+./frontend/src/app/creator/projects/page.tsx:667:                  <div className="creator-project-card-meta creator-project-card-meta-v2">
+./frontend/src/app/creator/projects/page.tsx:686:                  <div className="creator-project-card-actions creator-project-card-actions-v2">
+./frontend/src/app/creator/projects/page.tsx:689:                      className="creator-projects-primary-button"
+./frontend/src/app/creator/projects/page.tsx:695:                      className="creator-projects-secondary-button"
+./frontend/src/app/creator/projects/page.tsx:699:                    <Link href="/nexus" className="creator-projects-secondary-button">
+./frontend/src/app/creator/projects/page.tsx:704:                  <p className="creator-project-card-id">ReleaseWorld ID: {world.id}</p>
+./frontend/src/app/creator/library/page.tsx:7:import "@/styles/creatorLibrary.css";
+./frontend/src/app/creator/library/page.tsx:9:const CREATOR_LIBRARY_QUERY = gql`
+./frontend/src/app/creator/library/page.tsx:10:  query CreatorLibrary {
+./frontend/src/app/creator/library/page.tsx:165:export default function CreatorLibraryPage() {
+./frontend/src/app/creator/library/page.tsx:174:  const { data, loading, error, refetch } = useQuery(CREATOR_LIBRARY_QUERY, {
+./frontend/src/app/creator/library/page.tsx:265:      <main className="creator-library-page">
+./frontend/src/app/creator/library/page.tsx:266:        <section className="creator-library-shell creator-library-message">
+./frontend/src/app/creator/library/page.tsx:267:          <p className="creator-library-kicker">Creator Library</p>
+./frontend/src/app/creator/library/page.tsx:276:      <main className="creator-library-page">
+./frontend/src/app/creator/library/page.tsx:277:        <section className="creator-library-shell creator-library-message">
+./frontend/src/app/creator/library/page.tsx:278:          <p className="creator-library-kicker">Creator Library</p>
+./frontend/src/app/creator/library/page.tsx:288:    <main className="creator-library-page">
+./frontend/src/app/creator/library/page.tsx:289:      <section className="creator-library-shell">
+./frontend/src/app/creator/library/page.tsx:290:        <header className="creator-library-hero">
+./frontend/src/app/creator/library/page.tsx:292:            <p className="creator-library-kicker">Creator OS</p>
+./frontend/src/app/creator/library/page.tsx:293:            <h1>Creator Library</h1>
+./frontend/src/app/creator/library/page.tsx:296:          <div className="creator-library-hero-actions">
+./frontend/src/app/creator/library/page.tsx:297:            <Link href="/creator">Creator Home</Link>
+./frontend/src/app/creator/library/page.tsx:298:            <Link href="/creator/projects">Release Worlds</Link>
+./frontend/src/app/creator/library/page.tsx:304:          <section className="creator-library-error">
+./frontend/src/app/creator/library/page.tsx:311:        <section className="creator-library-summary" aria-label="Catalog summary">
+./frontend/src/app/creator/library/page.tsx:327:        <section className="creator-library-controls">
+./frontend/src/app/creator/library/page.tsx:328:          <div className="creator-library-tabs" role="tablist" aria-label="Library view">
+./frontend/src/app/creator/library/page.tsx:341:          <div className="creator-library-filter-grid">
+./frontend/src/app/creator/library/page.tsx:342:            <label className="creator-library-search">
+./frontend/src/app/creator/library/page.tsx:394:          <section className="creator-library-featured-message">
+./frontend/src/app/creator/library/page.tsx:400:          <section className="creator-library-empty"><h2>Loading your tracks...</h2></section>
+./frontend/src/app/creator/library/page.tsx:402:          <section className="creator-library-empty">
+./frontend/src/app/creator/library/page.tsx:403:            <p className="creator-library-kicker">Empty Library</p>
+./frontend/src/app/creator/library/page.tsx:405:            <p>Create tracks from a release Signal Board. Static registry tracks remain playable in the Nexus, but they will not appear here until migrated into Creator OS.</p>
+./frontend/src/app/creator/library/page.tsx:406:            <Link href="/creator/projects">Open Release Worlds</Link>
+./frontend/src/app/creator/library/page.tsx:409:          <section className="creator-library-track-list">
+./frontend/src/app/creator/library/page.tsx:410:            <div className="creator-library-list-heading">
+./frontend/src/app/creator/library/page.tsx:421:                <article className="creator-library-track-row" key={track.id}>
+./frontend/src/app/creator/library/page.tsx:422:                  <div className="creator-library-track-title">
+./frontend/src/app/creator/library/page.tsx:438:                    <span className={`creator-library-publish-state is-${track.publishingState}`}>
+./frontend/src/app/creator/library/page.tsx:443:                  <div className="creator-library-row-actions">
+./frontend/src/app/creator/library/page.tsx:462:            {filteredTracks.length === 0 && <div className="creator-library-empty"><h2>No tracks match these filters.</h2></div>}
+./frontend/src/app/creator/library/page.tsx:465:          <section className="creator-library-group-grid">
+./frontend/src/app/creator/library/page.tsx:469:                <article key={release.id} className="creator-library-group-card">
+./frontend/src/app/creator/library/page.tsx:470:                  <div className="creator-library-group-heading">
+./frontend/src/app/creator/library/page.tsx:475:                  <div className="creator-library-mini-tracks">
+./frontend/src/app/creator/library/page.tsx:479:                  <div className="creator-library-card-actions">
+./frontend/src/app/creator/library/page.tsx:488:          <section className="creator-library-group-grid">
+./frontend/src/app/creator/library/page.tsx:492:                <article key={realm.id} className="creator-library-group-card" style={{ borderColor: `${realm.color}66` }}>
+./frontend/src/app/creator/library/page.tsx:493:                  <div className="creator-library-group-heading">
+./frontend/src/app/creator/library/page.tsx:497:                  <div className="creator-library-mini-tracks">
+./frontend/src/app/creator/library/page.tsx:501:                  <div className="creator-library-card-actions"><Link href={`/realms/${realm.id}`}>Open Realm</Link></div>
+./frontend/src/app/creator/library/page.tsx:507:          <section className="creator-library-publishing-columns">
+./frontend/src/app/creator/library/page.tsx:515:                      <Link key={track.id} href={track.release ? `/releases/${track.release.slug}/board` : "/creator/projects"}>
+./frontend/src/app/creator/library/page.tsx:528:        <footer className="creator-library-footer">
+./frontend/src/app/creator/library/page.tsx:529:          <p>Static musicRegistry tracks remain live as legacy seed content. Creator Library shows Mongo-backed tracks created through Release Worlds and Signal Boards.</p>
+./frontend/src/app/creator/page.tsx:6:import '@/styles/creator.css';
+./frontend/src/app/creator/page.tsx:8:const CREATOR_HOME_QUERY = gql`
+./frontend/src/app/creator/page.tsx:9:  query CreatorHome {
+./frontend/src/app/creator/page.tsx:204:    <div className="creator-release-cover" aria-hidden={!coverUrl}>
+./frontend/src/app/creator/page.tsx:217:export default function CreatorDashboardPage() {
+./frontend/src/app/creator/page.tsx:220:  const { data, loading, error, refetch } = useQuery(CREATOR_HOME_QUERY, {
+./frontend/src/app/creator/page.tsx:251:          label: 'Creator Library',
+./frontend/src/app/creator/page.tsx:252:          href: '/creator/library',
+./frontend/src/app/creator/page.tsx:257:          href: '/creator/projects',
+./frontend/src/app/creator/page.tsx:268:          label: 'Creator Library',
+./frontend/src/app/creator/page.tsx:269:          href: '/creator/library',
+./frontend/src/app/creator/page.tsx:274:          href: '/creator/projects',
+./frontend/src/app/creator/page.tsx:302:      <main className="creator-console-shell">
+./frontend/src/app/creator/page.tsx:303:        <aside className="creator-console-rail" aria-label="Creator console rail">
+./frontend/src/app/creator/page.tsx:304:          <div className="creator-console-mark">C</div>
+./frontend/src/app/creator/page.tsx:305:          <p>Creator OS</p>
+./frontend/src/app/creator/page.tsx:308:        <section className="creator-console">
+./frontend/src/app/creator/page.tsx:309:          <header className="creator-console-header creator-console-header-centered">
+./frontend/src/app/creator/page.tsx:311:              <p className="creator-console-kicker">Loading Session</p>
+./frontend/src/app/creator/page.tsx:312:              <h1>Creator OS</h1>
+./frontend/src/app/creator/page.tsx:313:              <p>Checking your creator access...</p>
+./frontend/src/app/creator/page.tsx:323:      <main className="creator-console-shell">
+./frontend/src/app/creator/page.tsx:324:        <aside className="creator-console-rail" aria-label="Creator console rail">
+./frontend/src/app/creator/page.tsx:325:          <div className="creator-console-mark">C</div>
+./frontend/src/app/creator/page.tsx:326:          <p>Creator OS</p>
+./frontend/src/app/creator/page.tsx:329:        <section className="creator-console">
+./frontend/src/app/creator/page.tsx:330:          <header className="creator-console-header">
+./frontend/src/app/creator/page.tsx:332:              <p className="creator-console-kicker">Sign In Required</p>
+./frontend/src/app/creator/page.tsx:333:              <h1>Creator OS</h1>
+./frontend/src/app/creator/page.tsx:335:                Sign in to view your creator profile, release worlds, project boards,
+./frontend/src/app/creator/page.tsx:340:            <button type="button" className="creator-console-status" onClick={() => signIn('github')}>
+./frontend/src/app/creator/page.tsx:343:              <em>Required for Mongo-backed creator data</em>
+./frontend/src/app/creator/page.tsx:353:      <main className="creator-console-shell">
+./frontend/src/app/creator/page.tsx:354:        <aside className="creator-console-rail" aria-label="Creator console rail">
+./frontend/src/app/creator/page.tsx:355:          <div className="creator-console-mark">C</div>
+./frontend/src/app/creator/page.tsx:356:          <p>Creator OS</p>
+./frontend/src/app/creator/page.tsx:359:        <section className="creator-console">
+./frontend/src/app/creator/page.tsx:360:          <header className="creator-console-header">
+./frontend/src/app/creator/page.tsx:362:              <p className="creator-console-kicker">GraphQL Error</p>
+./frontend/src/app/creator/page.tsx:363:              <h1>Could not load Creator OS.</h1>
+./frontend/src/app/creator/page.tsx:367:            <button type="button" className="creator-console-status" onClick={() => refetch()}>
+./frontend/src/app/creator/page.tsx:370:              <em>Reload creator data</em>
+./frontend/src/app/creator/page.tsx:379:    <main className="creator-console-shell">
+./frontend/src/app/creator/page.tsx:380:      <aside className="creator-console-rail" aria-label="Creator console rail">
+./frontend/src/app/creator/page.tsx:381:        <div className="creator-console-mark">C</div>
+./frontend/src/app/creator/page.tsx:382:        <div className="creator-console-rail-lines" aria-hidden="true">
+./frontend/src/app/creator/page.tsx:387:        <p>Creator OS</p>
+./frontend/src/app/creator/page.tsx:390:      <section className="creator-console">
+./frontend/src/app/creator/page.tsx:391:        <header className="creator-hero">
+./frontend/src/app/creator/page.tsx:392:          <div className="creator-hero-copy">
+./frontend/src/app/creator/page.tsx:393:            <p className="creator-console-kicker">Creator Command Center</p>
+./frontend/src/app/creator/page.tsx:394:            <h1>{activeProject?.title ?? 'Creator OS'}</h1>
+./frontend/src/app/creator/page.tsx:401:            <div className="creator-hero-actions">
+./frontend/src/app/creator/page.tsx:411:          <aside className="creator-feature-card">
+./frontend/src/app/creator/page.tsx:412:            <div className="creator-feature-topline">
+./frontend/src/app/creator/page.tsx:419:            <div className="creator-feature-copy">
+./frontend/src/app/creator/page.tsx:424:            <div className="creator-feature-metrics">
+./frontend/src/app/creator/page.tsx:435:        <section className="creator-console-topline" aria-label="Creator stats">
+./frontend/src/app/creator/page.tsx:461:        <section className="creator-console-grid creator-console-grid-main">
+./frontend/src/app/creator/page.tsx:462:          <article className="creator-console-panel creator-console-panel-featured">
+./frontend/src/app/creator/page.tsx:463:            <div className="creator-panel-title-row">
+./frontend/src/app/creator/page.tsx:465:                <p className="creator-console-kicker">Featured Release System</p>
+./frontend/src/app/creator/page.tsx:471:            <p className="creator-console-note">
+./frontend/src/app/creator/page.tsx:472:              Creator OS decides the featured release. Nexus should display it as the main
+./frontend/src/app/creator/page.tsx:476:            <div className="creator-feature-flow">
+./frontend/src/app/creator/page.tsx:495:          <article className="creator-console-panel">
+./frontend/src/app/creator/page.tsx:496:            <p className="creator-console-kicker">Project Monitor</p>
+./frontend/src/app/creator/page.tsx:499:            <div className="creator-asset-status-grid">
+./frontend/src/app/creator/page.tsx:508:            <div className="creator-asset-mini-list">
+./frontend/src/app/creator/page.tsx:526:        <section className="creator-console-grid creator-console-grid-balanced">
+./frontend/src/app/creator/page.tsx:527:          <article className="creator-console-panel creator-console-wide">
+./frontend/src/app/creator/page.tsx:528:            <div className="creator-panel-title-row">
+./frontend/src/app/creator/page.tsx:530:                <p className="creator-console-kicker">Project Library Preview</p>
+./frontend/src/app/creator/page.tsx:533:              <Link href="/creator/projects">Open Library</Link>
+./frontend/src/app/creator/page.tsx:536:            <div className="creator-project-library-grid">
+./frontend/src/app/creator/page.tsx:541:                    className={`creator-project-card ${project.id === activeProject?.id ? 'is-featured' : ''}`}
+./frontend/src/app/creator/page.tsx:545:                    <div className="creator-project-card-body">
+./frontend/src/app/creator/page.tsx:546:                      <div className="creator-project-card-meta">
+./frontend/src/app/creator/page.tsx:555:                      <div className="creator-project-card-actions">
+./frontend/src/app/creator/page.tsx:570:                <article className="creator-project-card creator-project-card-empty">
+./frontend/src/app/creator/page.tsx:571:                  <div className="creator-project-card-body">
+./frontend/src/app/creator/page.tsx:575:                    <Link href="/creator/projects">Open Project Library</Link>
+./frontend/src/app/creator/page.tsx:582:          <article className="creator-console-panel">
+./frontend/src/app/creator/page.tsx:583:            <p className="creator-console-kicker">Creator Profile</p>
+./frontend/src/app/creator/page.tsx:586:            <div className="creator-profile-card">
+./frontend/src/app/creator/page.tsx:596:            <div className="creator-console-pill-list">
+./frontend/src/app/creator/page.tsx:598:                'Creator mode',
+./frontend/src/app/creator/page.tsx:610:        <section className="creator-console-grid creator-console-grid-bottom">
+./frontend/src/app/creator/page.tsx:611:          <article className="creator-console-panel creator-console-wide">
+./frontend/src/app/creator/page.tsx:612:            <p className="creator-console-kicker">Next Worlds</p>
+./frontend/src/app/creator/page.tsx:615:            <div className="creator-console-track-strip">
+./frontend/src/app/creator/page.tsx:636:          <article className="creator-console-panel">
+./frontend/src/app/creator/page.tsx:637:            <p className="creator-console-kicker">Minimum viable loop</p>
+./frontend/src/app/creator/page.tsx:640:            <div className="creator-console-phases">
+./frontend/src/app/creator/page.tsx:671:        <footer className="creator-console-footer">
+./frontend/src/app/releases/[slug]/board/page.tsx:252:      ownerId
+./frontend/src/app/releases/[slug]/board/page.tsx:276:      ownerId
+./frontend/src/app/releases/[slug]/board/page.tsx:300:      ownerId
+./frontend/src/app/releases/[slug]/board/page.tsx:427:    ownerId: string;
+./frontend/src/app/releases/[slug]/board/page.tsx:1414:    const [noteTag, setNoteTag] = useState("Creator Note");
+./frontend/src/app/releases/[slug]/board/page.tsx:2211:                    )} is now synced to the Creator OS.`,
+./frontend/src/app/releases/[slug]/board/page.tsx:2382:                eyebrow: noteTag.trim() || "Creator Note",
+./frontend/src/app/releases/[slug]/board/page.tsx:2561:                    <Link href="/creator/projects">Project Library</Link>
+./frontend/src/app/releases/[slug]/board/page.tsx:2888:                                        <p>Listed and Public tracks appear in the Release Page tracklist. Private stays creator-only.</p>
+./frontend/src/app/releases/[slug]/board/page.tsx:3166:                                            Public preview uses this URL only. It will not fall back to the full track.
+./frontend/src/app/releases/[slug]/board/page.tsx:3323:                                        <p>Use Cover Art for the main release image shown in Nexus, Creator Projects, and the Release Page.</p>
+./frontend/src/app/releases/[slug]/page.tsx:95:const GET_RELEASE_PAGE_CREATOR_DATA = gql`
+./frontend/src/app/releases/[slug]/page.tsx:98:  query GetReleasePageCreatorData($releaseWorldId: ID!) {
+./frontend/src/app/releases/[slug]/page.tsx:309:function getTrackAvailability(track: ReleaseTrack, isCreatorView: boolean) {
+./frontend/src/app/releases/[slug]/page.tsx:314:  if (isCreatorView && (hasFullAudio || hasPreviewAudio)) {
+./frontend/src/app/releases/[slug]/page.tsx:391:function ReleaseArtwork({ world, isCreatorView }: { world: ReleaseWorld; isCreatorView: boolean }) {
+./frontend/src/app/releases/[slug]/page.tsx:415:          <strong>{isCreatorView ? formatLabel(world.visibility) : 'Release Portal'}</strong>
+./frontend/src/app/releases/[slug]/page.tsx:435:        <strong>{isCreatorView ? formatLabel(world.visibility) : 'Release Portal'}</strong>
+./frontend/src/app/releases/[slug]/page.tsx:447:  const isCreatorView = status === 'authenticated';
+./frontend/src/app/releases/[slug]/page.tsx:450:    data: creatorWorldData,
+./frontend/src/app/releases/[slug]/page.tsx:451:    loading: creatorWorldLoading,
+./frontend/src/app/releases/[slug]/page.tsx:452:    error: creatorWorldError,
+./frontend/src/app/releases/[slug]/page.tsx:455:    skip: !slug || !isCreatorView,
+./frontend/src/app/releases/[slug]/page.tsx:465:    skip: !slug || isCreatorView,
+./frontend/src/app/releases/[slug]/page.tsx:470:    (isCreatorView
+./frontend/src/app/releases/[slug]/page.tsx:471:      ? creatorWorldData?.getMyReleaseWorldBySlug
+./frontend/src/app/releases/[slug]/page.tsx:474:  const worldLoading = isCreatorView ? creatorWorldLoading : publicWorldLoading;
+./frontend/src/app/releases/[slug]/page.tsx:475:  const worldError = isCreatorView ? creatorWorldError : publicWorldError;
+./frontend/src/app/releases/[slug]/page.tsx:478:    data: creatorPageData,
+./frontend/src/app/releases/[slug]/page.tsx:479:    loading: creatorPageLoading,
+./frontend/src/app/releases/[slug]/page.tsx:480:    error: creatorPageError,
+./frontend/src/app/releases/[slug]/page.tsx:481:  } = useQuery(GET_RELEASE_PAGE_CREATOR_DATA, {
+./frontend/src/app/releases/[slug]/page.tsx:483:    skip: !world?.id || !isCreatorView,
+./frontend/src/app/releases/[slug]/page.tsx:493:    skip: !world?.id || isCreatorView,
+./frontend/src/app/releases/[slug]/page.tsx:497:  const pageData = isCreatorView ? creatorPageData : publicPageData;
+./frontend/src/app/releases/[slug]/page.tsx:498:  const pageLoading = isCreatorView ? creatorPageLoading : publicPageLoading;
+./frontend/src/app/releases/[slug]/page.tsx:499:  const pageError = isCreatorView ? creatorPageError : publicPageError;
+./frontend/src/app/releases/[slug]/page.tsx:503:      (isCreatorView
+./frontend/src/app/releases/[slug]/page.tsx:506:    [isCreatorView, pageData],
+./frontend/src/app/releases/[slug]/page.tsx:561:    const availability = getTrackAvailability(track, isCreatorView);
+./frontend/src/app/releases/[slug]/page.tsx:566:    ? getTrackAvailability(firstPlayableTrack, isCreatorView)
+./frontend/src/app/releases/[slug]/page.tsx:570:    const availability = getTrackAvailability(track, isCreatorView);
+./frontend/src/app/releases/[slug]/page.tsx:586:    const availability = getTrackAvailability(track, isCreatorView);
+./frontend/src/app/releases/[slug]/page.tsx:592:        const releaseTrackAvailability = getTrackAvailability(releaseTrack, isCreatorView);
+./frontend/src/app/releases/[slug]/page.tsx:638:              {isCreatorView && (
+./frontend/src/app/releases/[slug]/page.tsx:641:                  <Link href="/creator/projects">Project Library</Link>
+./frontend/src/app/releases/[slug]/page.tsx:648:            <ReleaseArtwork world={world} isCreatorView={isCreatorView} />
+./frontend/src/app/releases/[slug]/page.tsx:705:              const action = getTrackAvailability(track, isCreatorView);
+./frontend/src/app/releases/[slug]/page.tsx:812:      {isCreatorView && (
+./frontend/src/app/releases/[slug]/page.tsx:815:            <p className="release-world-label">Creator tools</p>
+./frontend/src/app/nexus/page.tsx:377:function getFeaturedTrackAction(track: NexusFeaturedReleaseTrack, isSignedIn: boolean) {
+./frontend/src/app/nexus/page.tsx:381:    if (isSignedIn && (hasFullAudio || hasPreviewAudio)) {
+./frontend/src/app/nexus/page.tsx:436:    isSignedIn: boolean,
+./frontend/src/app/nexus/page.tsx:439:    const trackAction = getFeaturedTrackAction(track, isSignedIn);
+./frontend/src/app/nexus/page.tsx:444:    if (trackAction.canPlay && trackAction.label === 'Review') return 'Staged for creator review';
+./frontend/src/app/nexus/page.tsx:454:function getFeaturedTrackPlaybackUrl(track: NexusFeaturedReleaseTrack, isSignedIn: boolean) {
+./frontend/src/app/nexus/page.tsx:455:    return getFeaturedTrackAction(track, isSignedIn).url;
+./frontend/src/app/nexus/page.tsx:461:    isSignedIn = false
+./frontend/src/app/nexus/page.tsx:471:        trackUrl: getFeaturedTrackPlaybackUrl(releaseTrack, isSignedIn),
+./frontend/src/app/nexus/page.tsx:526:        skip: status === 'authenticated',
+./frontend/src/app/nexus/page.tsx:531:        (status === 'authenticated'
+./frontend/src/app/nexus/page.tsx:547:            skip: status === 'authenticated' || !activeFeaturedReleaseId,
+./frontend/src/app/nexus/page.tsx:585:    const isSignedIn = !!session;
+./frontend/src/app/nexus/page.tsx:598:        if (!isSignedIn) return 'Listener Mode';
+./frontend/src/app/nexus/page.tsx:606:    const creatorFeaturedRelease =
+./frontend/src/app/nexus/page.tsx:607:        (status === 'authenticated'
+./frontend/src/app/nexus/page.tsx:611:    const creatorFeaturedPortalHref = creatorFeaturedRelease?.slug
+./frontend/src/app/nexus/page.tsx:612:        ? `/releases/${creatorFeaturedRelease.slug}`
+./frontend/src/app/nexus/page.tsx:615:    const creatorFeaturedBoardHref = creatorFeaturedRelease?.slug
+./frontend/src/app/nexus/page.tsx:616:        ? `/releases/${creatorFeaturedRelease.slug}/board`
+./frontend/src/app/nexus/page.tsx:619:    const creatorFeaturedArtworkUrl = creatorFeaturedRelease?.coverArtUrl?.trim() || null;
+./frontend/src/app/nexus/page.tsx:620:    const isCreatorPreviewRelease = Boolean(
+./frontend/src/app/nexus/page.tsx:621:        isSignedIn &&
+./frontend/src/app/nexus/page.tsx:622:        creatorFeaturedRelease &&
+./frontend/src/app/nexus/page.tsx:623:        creatorFeaturedRelease.visibility !== 'public'
+./frontend/src/app/nexus/page.tsx:627:        status === 'authenticated'
+./frontend/src/app/nexus/page.tsx:633:        status === 'authenticated'
+./frontend/src/app/nexus/page.tsx:639:        const selectedTrackUrl = getFeaturedTrackPlaybackUrl(track, isSignedIn);
+./frontend/src/app/nexus/page.tsx:643:            .filter((releaseTrack) => Boolean(getFeaturedTrackPlaybackUrl(releaseTrack, isSignedIn)))
+./frontend/src/app/nexus/page.tsx:644:            .map((releaseTrack) => toPlayerTrack(releaseTrack, creatorFeaturedRelease, isSignedIn));
+./frontend/src/app/nexus/page.tsx:646:        void playOrToggleTrack(toPlayerTrack(track, creatorFeaturedRelease, isSignedIn), flowTracks, {
+./frontend/src/app/nexus/page.tsx:648:            label: creatorFeaturedRelease?.title ?? 'Featured release',
+./frontend/src/app/nexus/page.tsx:668:        if (!isSignedIn && track.visibility === 'signup') return true;
+./frontend/src/app/nexus/page.tsx:679:        // intentionally changed to Preview or Playable in Creator OS.
+./frontend/src/app/nexus/page.tsx:696:        if (!isSignedIn && track.visibility === 'signup') return 'Join to unlock';
+./frontend/src/app/nexus/page.tsx:744:        const creatorTracks = mapReleaseTracksToMusicTracks(
+./frontend/src/app/nexus/page.tsx:750:        return mergeMusicCatalogs(MUSIC_REGISTRY, creatorTracks);
+./frontend/src/app/nexus/page.tsx:791:    }, [nexusVisibleTracks, isSignedIn, isTrackLocked]);
+./frontend/src/app/nexus/page.tsx:852:            (track) => track.source === 'creator' && track.role === 'flagship'
+./frontend/src/app/nexus/page.tsx:859:        ? isSignedIn
+./frontend/src/app/nexus/page.tsx:866:        dynamicFlagshipTrack?.releaseWorldId === creatorFeaturedRelease?.id
+./frontend/src/app/nexus/page.tsx:867:            ? creatorFeaturedArtworkUrl
+./frontend/src/app/nexus/page.tsx:969:                    {creatorFeaturedRelease && creatorFeaturedPortalHref && (
+./frontend/src/app/nexus/page.tsx:984:                                {creatorFeaturedArtworkUrl ? (
+./frontend/src/app/nexus/page.tsx:987:                                            src={creatorFeaturedArtworkUrl}
+./frontend/src/app/nexus/page.tsx:988:                                            alt={creatorFeaturedRelease.title}
+./frontend/src/app/nexus/page.tsx:1020:                                        {isCreatorPreviewRelease ? 'Creator Preview' : 'Featured Portal'}
+./frontend/src/app/nexus/page.tsx:1027:                                        {formatReleaseLabel(creatorFeaturedRelease.releaseType)} • {formatReleaseLabel(creatorFeaturedRelease.status)}
+./frontend/src/app/nexus/page.tsx:1038:                                    {creatorFeaturedRelease.title}
+./frontend/src/app/nexus/page.tsx:1042:                                    {[creatorFeaturedRelease.currentFocus, creatorFeaturedRelease.secondFocus]
+./frontend/src/app/nexus/page.tsx:1048:                                    {getFeaturedReleaseSummary(creatorFeaturedRelease)}
+./frontend/src/app/nexus/page.tsx:1053:                                        href={creatorFeaturedPortalHref}
+./frontend/src/app/nexus/page.tsx:1095:                                                        const trackAction = getFeaturedTrackAction(track, isSignedIn);
+./frontend/src/app/nexus/page.tsx:1115:                                                                        {getFeaturedTrackMetaLine(track, isSignedIn, creatorFeaturedRelease)}
+./frontend/src/app/nexus/page.tsx:1141:                                        {isSignedIn && (
+./frontend/src/app/nexus/page.tsx:1142:                                            <div className="nexus-dynamic-release-creator-links">
+./frontend/src/app/nexus/page.tsx:1143:                                                {creatorFeaturedBoardHref && (
+./frontend/src/app/nexus/page.tsx:1144:                                                    <Link href={creatorFeaturedBoardHref} className="btn-secondary">
+./frontend/src/app/nexus/page.tsx:1149:                                                <Link href="/creator" className="btn-secondary">
+./frontend/src/app/nexus/page.tsx:1150:                                                    Creator Dashboard
+./frontend/src/app/nexus/page.tsx:1161:                        {isSignedIn ? (
+./frontend/src/app/nexus/page.tsx:1198:                                            {session.user?.name || 'Unknown'}
+./frontend/src/app/nexus/page.tsx:1391:                                                    href={isSignedIn ? guidanceRealm.route : '/auth'}
+./frontend/src/app/nexus/page.tsx:1395:                                                    {isSignedIn ? 'Enter Realm' : 'Save Progress'}
+./frontend/src/app/nexus/page.tsx:1815:                                    const soundtrackPathLabel = isSignedIn
+./frontend/src/app/nexus/page.tsx:1837:                                                realmRoute={isSignedIn ? `/realms/${realmGroup.id}` : '/auth'}
+./frontend/src/app/nexus/page.tsx:1838:                                                isCurrentRealm={isSignedIn && realmId === user?.currentRealm}
+./frontend/src/app/profile/page.tsx:263:                                {user?.name ?? session.user?.name ?? 'Unknown Traveler'}
+./frontend/src/app/practice/page.tsx:125:                        <Link href="/creator/projects">Projects</Link>
+./frontend/src/app/practice/page.tsx:126:                        <Link href="/creator">Creator OS</Link>
+./frontend/src/app/page.tsx:69:                className="landing-gateway-creator-actions landing-gateway-v3-creator-actions"
+./frontend/src/app/page.tsx:70:                aria-label="Creator shortcuts"
+./frontend/src/app/page.tsx:72:                <Link href="/creator">Creator OS</Link>
+./frontend/src/app/page.tsx:73:                <Link href="/creator/library">Creator Library</Link>
+./frontend/src/app/services/inquire/page.tsx:45:    bestFor: "Artists, creators, and seekers who need deeper creative direction.",
+./frontend/src/app/services/inquire/page.tsx:99:    slug: "creator-system-custom-build",
+./frontend/src/app/services/inquire/page.tsx:100:    label: "Creator System Custom Build",
+./frontend/src/app/services/inquire/page.tsx:104:    bestFor: "Creators, artists, and small brands who need something custom.",
+./frontend/src/app/services/page.tsx:72:    bestFor: "Artists, creators, and seekers who need deeper creative direction.",
+./frontend/src/app/services/page.tsx:208:    slug: "creator-system-custom-build",
+./frontend/src/app/services/page.tsx:210:    title: "Creator System Custom Build",
+./frontend/src/app/services/page.tsx:216:    actionHref: "/services/inquire?offer=creator-system-custom-build&intent=quote",
+./frontend/src/app/services/page.tsx:219:    bestFor: "Creators, artists, and small brands who need something custom.",
+./frontend/src/app/services/page.tsx:248:    category: "Creator Systems",
+./frontend/src/app/services/page.tsx:370:          <Link href="/creator/projects">Projects</Link>
+./frontend/src/app/services/page.tsx:412:          for artists, creators, and seekers who want direct feedback, guided setup,
+./frontend/src/app/services/page.tsx:450:          <p>Best for artists, creators, and builders who need a grounded next step.</p>
+./frontend/src/app/services/page.tsx:487:            For artists and creators who already have music, ideas, pages, sessions, or
+./frontend/src/app/services/page.tsx:506:            The free system gives creators a place to begin. These offers are for artists,
+./frontend/src/app/services/page.tsx:507:            creators, and brands who want guided setup, custom direction, implementation,
+./frontend/src/components/CosmicTopNav.tsx:17:const creatorItems = [
+./frontend/src/components/CosmicTopNav.tsx:19:    { href: "/creator", label: "Creator OS", description: "Creative command center" },
+./frontend/src/components/CosmicTopNav.tsx:20:    { href: "/creator/library", label: "Creator Library", description: "Manage every track" },
+./frontend/src/components/CosmicTopNav.tsx:35:    const isSignedIn = Boolean(session?.user);
+./frontend/src/components/CosmicTopNav.tsx:95:                            {isSignedIn && (
+./frontend/src/components/CosmicTopNav.tsx:105:                                        {creatorItems.map((item) => {
+./frontend/src/components/CosmicTopNav.tsx:144:                    {isSignedIn && (
+./frontend/src/components/AuthButton.tsx:14:          Signed in as {session.user?.email}
+./frontend/src/components/BottomNav.tsx:20:    { href: "/creator", icon: "◇", label: "Creator" },
+./frontend/src/components/realm/RealmSoundstage.tsx:75:    // Coming-soon tracks remain visible but non-playable until Creator OS
+./frontend/src/components/realm/RealmSoundstage.tsx:115:        const creatorTracks = mapReleaseTracksToMusicTracks(
+./frontend/src/components/realm/RealmSoundstage.tsx:120:        const runtimeCatalog = mergeMusicCatalogs(MUSIC_REGISTRY, creatorTracks);
+./frontend/src/graphql/realms.ts:141:      ownerId
+./frontend/src/lib/releases/releaseWorld.types.ts:24:  | 'creator-dashboard'
+./frontend/src/lib/releases/releaseWorld.types.ts:103:  creatorAction: string;
+./frontend/src/lib/releases/sirensInNeverland.ts:77:    tagline: 'World-building melodic artist and creator.',
+./frontend/src/lib/releases/sirensInNeverland.ts:211:    creatorAction: 'Lock visual language, organize assets, define the 3 strongest DoOver clip concepts.',
+./frontend/src/lib/releases/sirensInNeverland.ts:220:    creatorAction: 'DoOver master, single cover, final clip selects, captions, and link assets locked.',
+./frontend/src/lib/releases/sirensInNeverland.ts:229:    creatorAction: 'Lock second single master, visual contrast, and EP teaser assets.',
+./frontend/src/lib/releases/sirensInNeverland.ts:238:    creatorAction: 'Full EP sequence, post-drop plan, trailer, visualizer, and tracklist graphic locked.',
+./frontend/src/lib/releases/sirensInNeverland.ts:362:    usage: ['release-page', 'signal-board', 'creator-dashboard', 'social-content'],
+./frontend/src/lib/releases/sirensInNeverland.ts:373:    usage: ['release-page', 'signal-board', 'creator-dashboard', 'social-content'],
+./frontend/src/lib/releases/sirensInNeverland.ts:405:    usage: ['release-page', 'signal-board', 'creator-dashboard', 'social-content'],
+./frontend/src/lib/releases/sirensInNeverland.ts:416:    usage: ['release-page', 'signal-board', 'creator-dashboard', 'social-content'],
+./frontend/src/lib/publicMusicCatalog.ts:7:    ownerId?: string | null;
+./frontend/src/lib/publicMusicCatalog.ts:38:    source?: 'registry' | 'creator';
+./frontend/src/lib/publicMusicCatalog.ts:131:        source: 'creator',
+./frontend/src/lib/publicMusicCatalog.ts:155:    creatorTracks: RuntimeMusicTrack[]
+./frontend/src/lib/publicMusicCatalog.ts:166:    // Creator tracks intentionally replace a static entry with the same realm/title.
+./frontend/src/lib/publicMusicCatalog.ts:167:    creatorTracks.forEach((track) => {
+./frontend/src/pages/api/auth/[...nextauth].ts:51:      if (session.user) {
+./frontend/src/pages/api/auth/[...nextauth].ts:52:        session.user.id = token.sub;
+./backend/models/BoardArtifact.js:5:    ownerId: { type: String, required: true, index: true },
+./backend/models/BoardArtifact.js:78:BoardArtifactSchema.index({ ownerId: 1, releaseWorldId: 1 });
+./backend/models/BoardArtifact.js:80:  ownerId: 1,
+./backend/models/ReleaseTrack.js:5:    ownerId: { type: String, required: true, index: true },
+./backend/models/ReleaseTrack.js:125:ReleaseTrackSchema.index({ ownerId: 1, releaseWorldId: 1, trackNumber: 1 });
+./backend/models/ReleaseTrack.js:126:ReleaseTrackSchema.index({ ownerId: 1, releaseWorldId: 1, slug: 1 }, { unique: true });
+./backend/models/ReleaseTrack.js:130:ReleaseTrackSchema.index({ ownerId: 1, showInNexus: 1, realmId: 1 });
+./backend/models/ReleaseAsset.js:5:    ownerId: { type: String, required: true, index: true },
+./backend/models/ReleaseAsset.js:65:ReleaseAssetSchema.index({ ownerId: 1, releaseWorldId: 1, usage: 1 });
+./backend/models/ReleaseAsset.js:66:ReleaseAssetSchema.index({ ownerId: 1, releaseWorldId: 1, kind: 1 });
+./backend/models/ReleaseAsset.js:67:ReleaseAssetSchema.index({ ownerId: 1, trackId: 1 });
+./backend/models/ReleaseAsset.js:68:ReleaseAssetSchema.index({ ownerId: 1, boardArtifactId: 1 });
+./backend/models/ReleaseWorld.js:5:    ownerId: { type: String, required: true, index: true },
+./backend/models/ReleaseWorld.js:73:ReleaseWorldSchema.index({ ownerId: 1, slug: 1 }, { unique: true });
+./backend/models/ReleaseWorld.js:76:ReleaseWorldSchema.index({ ownerId: 1, coverAssetId: 1 });
+./backend/models/CreativeProfile.js:5:    ownerId: { type: String, required: true, index: true },
+./backend/models/CreativeProfile.js:43:CreativeProfileSchema.index({ ownerId: 1, slug: 1 }, { unique: true });
+./backend/schemas/index.js:126:  # 🌌 CREATOR WORLD TYPES
+./backend/schemas/index.js:131:    ownerId: String!
+./backend/schemas/index.js:146:    ownerId: String!
+./backend/schemas/index.js:168:    ownerId: String!
+./backend/schemas/index.js:203:    ownerId: String!
+./backend/schemas/index.js:223:    ownerId: String!
+./backend/schemas/index.js:435:    # Creator Worlds
+./backend/schemas/index.js:515:    # Creator Worlds
+./backend/resolvers/index.js:7:// 🌌 Creator World Models
+./backend/resolvers/index.js:112:        ownerId: userId,
+./backend/resolvers/index.js:121:        ownerId: userId,
+./backend/resolvers/index.js:136:        ownerId: userId,
+./backend/resolvers/index.js:147:    const profiles = await CreativeProfile.find({ ownerId: userId }).sort({
+./backend/resolvers/index.js:162:            ownerId: userId,
+./backend/resolvers/index.js:169:        ownerId: userId,
+./backend/resolvers/index.js:179:    return await ReleaseWorld.findOne({ ownerId: userId }).sort({
+./backend/resolvers/index.js:229:                ownerId: userId,
+./backend/resolvers/index.js:242:                ownerId: userId,
+./backend/resolvers/index.js:254:                ownerId: userId,
+./backend/resolvers/index.js:273:                ownerId: userId,
+./backend/resolvers/index.js:288:                ownerId: userId,
+./backend/resolvers/index.js:311:                ownerId: userId,
+./backend/resolvers/index.js:327:                ownerId: userId,
+./backend/resolvers/index.js:512:        // 🌌 CREATOR WORLD QUERIES
+./backend/resolvers/index.js:518:            return await CreativeProfile.find({ ownerId: user.id }).sort({
+./backend/resolvers/index.js:526:            return await ReleaseWorld.find({ ownerId: user.id }).sort({
+./backend/resolvers/index.js:535:            return await ReleaseTrack.find({ ownerId: user.id }).sort({
+./backend/resolvers/index.js:547:                ownerId: user.id,
+./backend/resolvers/index.js:563:                ownerId: user.id,
+./backend/resolvers/index.js:602:                ownerId: user.id,
+./backend/resolvers/index.js:622:                ownerId: releaseWorld.ownerId,
+./backend/resolvers/index.js:683:                ownerId: user.id,
+./backend/resolvers/index.js:704:                ownerId: user.id,
+./backend/resolvers/index.js:717:                ownerId: user.id,
+./backend/resolvers/index.js:738:                ownerId: user.id,
+./backend/resolvers/index.js:758:                ownerId: releaseWorld.ownerId,
+./backend/resolvers/index.js:1176:        // 🌌 CREATOR WORLD MUTATIONS
+./backend/resolvers/index.js:1185:                ownerId: user.id,
+./backend/resolvers/index.js:1194:                ownerId: user.id,
+./backend/resolvers/index.js:1204:                ownerId: user.id,
+./backend/resolvers/index.js:1236:                { _id: id, ownerId: user.id },
+./backend/resolvers/index.js:1246:                { _id: id, ownerId: user.id },
+./backend/resolvers/index.js:1263:                ownerId: user.id,
+./backend/resolvers/index.js:1272:                    ownerId: user.id,
+./backend/resolvers/index.js:1280:                    ownerId: user.id,
+./backend/resolvers/index.js:1307:                ownerId: user.id,
+./backend/resolvers/index.js:1315:                ownerId: user.id,
+./backend/resolvers/index.js:1369:                ownerId: user.id,
+./backend/resolvers/index.js:1412:                    ownerId: user.id,
+./backend/resolvers/index.js:1448:                    ownerId: user.id,
+./backend/resolvers/index.js:1473:                ownerId: user.id,
+./backend/resolvers/index.js:1488:                ownerId: user.id,
+./backend/resolvers/index.js:1515:                ownerId: user.id,
+./backend/resolvers/index.js:1529:                            ownerId: user.id,
+./backend/resolvers/index.js:1545:                ownerId: user.id,
+./backend/resolvers/index.js:1600:                ownerId: user.id,
+./backend/resolvers/index.js:1629:                ownerId: user.id,
+./backend/resolvers/index.js:1716:                    ownerId: user.id,
+./backend/resolvers/index.js:1735:                ownerId: user.id,
+./backend/resolvers/index.js:1752:                ownerId: user.id,
+./backend/resolvers/index.js:1770:                ownerId: user.id,
+./backend/resolvers/index.js:1778:                ownerId: user.id,
+./backend/resolvers/index.js:1790:                    ownerId: user.id,

@@ -11,6 +11,42 @@ const BoardArtifact = require("../models/BoardArtifact");
 const ReleaseTrack = require("../models/ReleaseTrack");
 const ReleaseAsset = require("../models/ReleaseAsset");
 
+function requireUser(user) {
+    if (!user) {
+        throw new Error("Unauthorized: Please sign in.");
+    }
+
+    return user;
+}
+
+function hasCreatorAccess(user) {
+    if (!user) return false;
+
+    if (user.role === "owner" || user.role === "admin") {
+        return true;
+    }
+
+    return user.role === "creator" && user.creatorStatus === "active";
+}
+
+function requireCreator(user) {
+    requireUser(user);
+
+    if (!hasCreatorAccess(user)) {
+        throw new Error("Creator access required.");
+    }
+
+    return user;
+}
+
+function isPlatformAdmin(user) {
+    return user?.role === "admin" || user?.role === "owner";
+}
+
+function isPlatformOwner(user) {
+    return user?.role === "owner";
+}
+
 function normalizeSlug(slug) {
     return String(slug || "")
         .trim()

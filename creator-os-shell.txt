@@ -1,0 +1,1171 @@
+===== Root layout =====
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+import ApolloWrapper from "@/components/ApolloWrapper";
+import CosmicTopNav from "@/components/CosmicTopNav";
+import SessionWrapper from "@/components/SessionWrapper";
+import Link from "next/link";
+import { MusicPlayerProvider } from "@/context/MusicPlayerProvider";
+import MiniPlayer from "@/components/music/MiniPlayer";
+
+const geistSans = Geist({
+    variable: "--font-geist-sans",
+    subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+    variable: "--font-geist-mono",
+    subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+    title: "Cosmic Multiverse",
+    description:
+        "A music-based emotional navigation system. Six realms. Six soundtracks. One cosmic journey.",
+};
+
+export default function RootLayout({
+    children,
+}: Readonly<{
+    children: React.ReactNode;
+}>) {
+    return (
+        <html lang="en">
+            <body
+                className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
+            >
+                <SessionWrapper>
+                    <ApolloWrapper>
+                        <MusicPlayerProvider>
+                            <CosmicTopNav />
+
+                            <main className="flex-grow">
+                                {children}
+                            </main>
+
+                            <footer className="cosmic-bottom-nav">
+                                <nav className="cosmic-bottom-nav-inner cosmic-bottom-nav-five">
+                                    <Link href="/" className="cosmic-bottom-link">
+                                        <span>Home</span>
+                                    </Link>
+
+                                    <Link href="/nexus" className="cosmic-bottom-link">
+                                        <span>Nexus</span>
+                                    </Link>
+
+                                    <Link href="/find-your-realm" className="cosmic-bottom-link">
+                                        <span>Align</span>
+                                    </Link>
+
+                                    <Link href="/leaderboard" className="cosmic-bottom-link">
+                                        <span>Rank</span>
+                                    </Link>
+
+                                    <Link href="/profile" className="cosmic-bottom-link">
+                                        <span>Profile</span>
+                                    </Link>
+                                </nav>
+                            </footer>
+
+                            <MiniPlayer />
+                        </MusicPlayerProvider>
+                    </ApolloWrapper>
+                </SessionWrapper>
+            </body>
+        </html>
+    );
+}
+===== Creator dashboard =====
+'use client';
+
+import Link from 'next/link';
+import { gql, useMutation, useQuery } from '@apollo/client';
+import { signIn, useSession } from 'next-auth/react';
+import '@/styles/creator.css';
+
+const CREATOR_HOME_QUERY = gql`
+  query CreatorHome {
+    myCreativeProfiles {
+      id
+      artistName
+      slug
+      displayName
+      tagline
+      bio
+      isPublic
+      isFeatured
+      featuredReleaseWorldId
+    }
+
+    myReleaseWorlds {
+      id
+      title
+      slug
+      releaseType
+      status
+      visibility
+      isFeatured
+      oneLineSummary
+      story
+      currentFocus
+      secondFocus
+      fullDropDate
+      coverArtUrl
+      coverAssetId
+      updatedAt
+      lastOpenedAt
+    }
+  }
+`;
+
+const SET_FEATURED_RELEASE_WORLD = gql`
+  mutation SetFeaturedReleaseWorld($releaseWorldId: ID!) {
+    setFeaturedReleaseWorld(releaseWorldId: $releaseWorldId) {
+      id
+      title
+      slug
+      releaseType
+      status
+      visibility
+      isFeatured
+      oneLineSummary
+      story
+      currentFocus
+      secondFocus
+      fullDropDate
+      coverArtUrl
+      coverAssetId
+      updatedAt
+      lastOpenedAt
+    }
+  }
+`;
+
+type CreativeProfile = {
+  id: string;
+  artistName: string;
+  slug: string;
+  displayName?: string | null;
+  tagline?: string | null;
+  bio?: string | null;
+  isPublic: boolean;
+  isFeatured: boolean;
+  featuredReleaseWorldId?: string | null;
+};
+
+type ReleaseWorld = {
+  id: string;
+  title: string;
+  slug: string;
+  releaseType: string;
+  status: string;
+  visibility: string;
+  isFeatured: boolean;
+  oneLineSummary?: string | null;
+  story?: string | null;
+  currentFocus?: string | null;
+  secondFocus?: string | null;
+  fullDropDate?: string | null;
+  coverArtUrl?: string | null;
+  coverAssetId?: string | null;
+  updatedAt?: string | null;
+  lastOpenedAt?: string | null;
+};
+
+function formatLabel(value?: string | null) {
+  if (!value) return 'Unknown';
+
+  return value
+    .split('-')
+    .join(' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function formatDate(value?: string | null) {
+  if (!value) return 'TBD';
+
+  const numericValue = Number(value);
+  const date = Number.isFinite(numericValue)
+    ? new Date(numericValue)
+    : new Date(value);
+
+  if (Number.isNaN(date.getTime())) return 'TBD';
+
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(date);
+}
+
+function formatRelativeSignal(value?: string | null) {
+  if (!value) return 'Not opened yet';
+
+  const numericValue = Number(value);
+  const date = Number.isFinite(numericValue)
+    ? new Date(numericValue)
+    : new Date(value);
+
+  if (Number.isNaN(date.getTime())) return 'Recently updated';
+
+  const diffMs = Date.now() - date.getTime();
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffHours < 1) return 'Just now';
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays < 30) return `${diffDays}d ago`;
+
+  return formatDate(value);
+}
+
+function countByStatus(projects: ReleaseWorld[], status: string) {
+  return projects.filter((project) => project.status === status).length;
+}
+
+function countByVisibility(projects: ReleaseWorld[], visibility: string) {
+  return projects.filter((project) => project.visibility === visibility).length;
+}
+
+function getProjectSummary(project?: ReleaseWorld | null) {
+  return (
+    project?.oneLineSummary?.trim() ||
+    project?.story?.trim() ||
+    'Build the release world: page, board, rollout, hooks, notes, visuals, and public portal.'
+  );
+}
+
+function getProjectSignal(project?: ReleaseWorld | null) {
+  if (!project) return 'No featured release selected yet.';
+
+  const currentFocus = project.currentFocus?.trim() || 'Focus TBD';
+  const secondFocus = project.secondFocus?.trim() || 'Second signal TBD';
+
+  return `${currentFocus} → ${secondFocus}`;
+}
+
+function getFeaturedProject(
+  projects: ReleaseWorld[],
+  activeProfile?: CreativeProfile | null,
+) {
+  const profileFeaturedId = activeProfile?.featuredReleaseWorldId;
+
+  return (
+    projects.find((project) => profileFeaturedId && project.id === profileFeaturedId) ??
+    projects.find((project) => project.isFeatured) ??
+    projects[0] ??
+    null
+  );
+}
+
+function getReleaseHealth(project?: ReleaseWorld | null) {
+  if (!project) {
+    return [
+      { label: 'World', value: 'Missing' },
+      { label: 'Board', value: 'Start' },
+      { label: 'Portal', value: 'Draft' },
+    ];
+  }
+
+  return [
+    { label: 'World', value: formatLabel(project.status) },
+    { label: 'Portal', value: formatLabel(project.visibility) },
+    { label: 'Drop', value: formatDate(project.fullDropDate) },
+  ];
+}
+
+function ProjectCover({ project }: { project?: ReleaseWorld | null }) {
+  const coverUrl = project?.coverArtUrl?.trim();
+
+  return (
+    <div className="creator-release-cover" aria-hidden={!coverUrl}>
+      {coverUrl ? (
+        <img src={coverUrl} alt={`${project?.title ?? 'Release'} cover`} />
+      ) : (
+        <div>
+          <span>{project?.releaseType ? formatLabel(project.releaseType) : 'World'}</span>
+          <strong>{project?.title ?? 'Cosmic'}</strong>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function CreatorDashboardPage() {
+  const { status } = useSession();
+
+  const { data, loading, error, refetch } = useQuery(CREATOR_HOME_QUERY, {
+    skip: status !== 'authenticated',
+    fetchPolicy: 'cache-and-network',
+  });
+
+  const [setFeaturedReleaseWorld, { loading: isSettingFeatured }] = useMutation(
+    SET_FEATURED_RELEASE_WORLD,
+  );
+
+  const profiles: CreativeProfile[] = data?.myCreativeProfiles ?? [];
+  const projects: ReleaseWorld[] = data?.myReleaseWorlds ?? [];
+
+  const activeProfile = profiles[0] ?? null;
+  const featuredProject = getFeaturedProject(projects, activeProfile);
+  const activeProject = featuredProject ?? projects[0] ?? null;
+  const recentProjects = projects.slice(0, 4);
+  const nextProjects = projects.filter((project) => project.id !== activeProject?.id).slice(0, 4);
+
+  const commandLinks = activeProject
+    ? [
+        {
+          label: 'Release Portal',
+          href: `/releases/${activeProject.slug}`,
+          meta: 'Public page',
+        },
+        {
+          label: 'Signal Board',
+          href: `/releases/${activeProject.slug}/board`,
+          meta: 'Studio wall',
+        },
+        {
+          label: 'Creator Library',
+          href: '/creator/library',
+          meta: 'All tracks',
+        },
+        {
+          label: 'Project Library',
+          href: '/creator/projects',
+          meta: 'All worlds',
+        },
+        {
+          label: 'Nexus',
+          href: '/nexus',
+          meta: 'Universe hub',
+        },
+      ]
+    : [
+        {
+          label: 'Creator Library',
+          href: '/creator/library',
+          meta: 'All tracks',
+        },
+        {
+          label: 'Project Library',
+          href: '/creator/projects',
+          meta: 'Create world',
+        },
+        {
+          label: 'Nexus',
+          href: '/nexus',
+          meta: 'Universe hub',
+        },
+      ];
+
+  async function handleSetFeatured(project: ReleaseWorld) {
+    if (!project.id) return;
+
+    try {
+      await setFeaturedReleaseWorld({
+        variables: {
+          releaseWorldId: project.id,
+        },
+      });
+
+      await refetch();
+    } catch (featuredError) {
+      console.error('Could not set featured release world:', featuredError);
+    }
+  }
+
+  if (status === 'loading') {
+    return (
+      <main className="creator-console-shell">
+        <aside className="creator-console-rail" aria-label="Creator console rail">
+          <div className="creator-console-mark">C</div>
+          <p>Creator OS</p>
+        </aside>
+
+        <section className="creator-console">
+          <header className="creator-console-header creator-console-header-centered">
+            <div>
+              <p className="creator-console-kicker">Loading Session</p>
+              <h1>Creator OS</h1>
+              <p>Checking your creator access...</p>
+            </div>
+          </header>
+        </section>
+      </main>
+    );
+  }
+
+  if (status === 'unauthenticated') {
+    return (
+      <main className="creator-console-shell">
+        <aside className="creator-console-rail" aria-label="Creator console rail">
+          <div className="creator-console-mark">C</div>
+          <p>Creator OS</p>
+        </aside>
+
+        <section className="creator-console">
+          <header className="creator-console-header">
+
+===== Creator Library opening =====
+"use client";
+
+import Link from "next/link";
+import { gql, useMutation, useQuery } from "@apollo/client";
+import { signIn, useSession } from "next-auth/react";
+import { useMemo, useState } from "react";
+import "@/styles/creatorLibrary.css";
+
+const CREATOR_LIBRARY_QUERY = gql`
+  query CreatorLibrary {
+    myReleaseWorlds {
+      id
+      title
+      slug
+      releaseType
+      status
+      visibility
+      isFeatured
+      coverArtUrl
+      updatedAt
+    }
+
+    myReleaseTracks {
+      id
+      releaseWorldId
+      title
+      slug
+      trackNumber
+      role
+      status
+      bpm
+      keySignature
+      mood
+      audioUrl
+      previewAudioUrl
+      visibility
+      playbackStatus
+      dropDate
+      unlockDate
+      realmId
+      showInNexus
+      nexusRole
+      isRealmAnchor
+      isPublicPick
+      nexusSortOrder
+      updatedAt
+    }
+  }
+`;
+
+
+const SET_FEATURED_SIGNAL = gql`
+  mutation SetFeaturedSignal($trackId: ID!) {
+    setFeaturedSignal(trackId: $trackId) {
+      id
+      showInNexus
+      nexusRole
+      updatedAt
+    }
+  }
+`;
+
+type LibraryView = "tracks" | "releases" | "realms" | "publishing";
+
+type ReleaseWorld = {
+  id: string;
+  title: string;
+  slug: string;
+  releaseType: string;
+  status: string;
+  visibility: string;
+  isFeatured: boolean;
+  coverArtUrl?: string | null;
+  updatedAt?: string | null;
+};
+
+type ReleaseTrack = {
+  id: string;
+  releaseWorldId: string;
+  title: string;
+  slug: string;
+  trackNumber: number;
+  role: string;
+  status: string;
+  bpm?: number | null;
+  keySignature?: string | null;
+  mood?: string | null;
+  audioUrl?: string | null;
+  previewAudioUrl?: string | null;
+  visibility: string;
+  playbackStatus: string;
+  dropDate?: string | null;
+  unlockDate?: string | null;
+  realmId?: number | null;
+  showInNexus: boolean;
+  nexusRole: string;
+  isRealmAnchor: boolean;
+  isPublicPick: boolean;
+  nexusSortOrder: number;
+  updatedAt?: string | null;
+};
+
+const REALMS = [
+  { id: 303, name: "Fractured Frontier", color: "#FF5D7A" },
+  { id: 202, name: "The Veil", color: "#A884FF" },
+  { id: 101, name: "Moonlit Roads", color: "#7ED3FF" },
+  { id: 55, name: "Skybound City", color: "#ECC973" },
+  { id: 44, name: "Astral Bazaar", color: "#F4AB63" },
+  { id: 0, name: "InterSiddhi", color: "#EEF3FA" },
+] as const;
+
+function formatLabel(value?: string | null) {
+  if (!value) return "Unknown";
+  return value
+    .split("-")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+function getRealmMeta(realmId?: number | null) {
+  return REALMS.find((realm) => realm.id === realmId) ?? null;
+}
+
+function hasAudio(track: ReleaseTrack) {
+  return Boolean(track.audioUrl?.trim() || track.previewAudioUrl?.trim());
+}
+
+function getPublishingState(track: ReleaseTrack, release?: ReleaseWorld | null) {
+  if (track.showInNexus) return "published";
+  if (track.status === "archived") return "archived";
+  if (track.realmId === null || track.realmId === undefined) return "needs-realm";
+  if (!hasAudio(track) && track.playbackStatus !== "coming-soon") return "needs-audio";
+  if (track.visibility === "private") return "needs-access";
+  if (release && release.visibility !== "public") return "needs-release";
+  if (["playable", "preview", "coming-soon"].includes(track.playbackStatus)) return "ready";
+  return "draft";
+}
+
+function getPublishingLabel(state: string) {
+  const labels: Record<string, string> = {
+    published: "Published",
+    ready: "Ready to publish",
+    "needs-realm": "Needs realm",
+    "needs-audio": "Needs audio",
+    "needs-access": "Needs public access",
+    "needs-release": "Release not public",
+    archived: "Archived",
+    draft: "Draft",
+  };
+  return labels[state] ?? formatLabel(state);
+}
+
+function formatDate(value?: string | null) {
+  if (!value) return "Not edited yet";
+  const date = new Date(Number.isFinite(Number(value)) ? Number(value) : value);
+  if (Number.isNaN(date.getTime())) return "Recently edited";
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(date);
+}
+
+export default function CreatorLibraryPage() {
+  const { status } = useSession();
+  const [view, setView] = useState<LibraryView>("tracks");
+  const [search, setSearch] = useState("");
+  const [releaseFilter, setReleaseFilter] = useState("all");
+  const [realmFilter, setRealmFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [publishingFilter, setPublishingFilter] = useState("all");
+
+  const { data, loading, error, refetch } = useQuery(CREATOR_LIBRARY_QUERY, {
+    skip: status !== "authenticated",
+    fetchPolicy: "cache-and-network",
+  });
+
+  const [setFeaturedSignal, { loading: isSettingFeaturedSignal }] =
+    useMutation(SET_FEATURED_SIGNAL);
+  const [featuredSignalMessage, setFeaturedSignalMessage] = useState("");
+
+  const releases: ReleaseWorld[] = data?.myReleaseWorlds ?? [];
+  const tracks: ReleaseTrack[] = data?.myReleaseTracks ?? [];
+
+  const releaseMap = useMemo(
+    () => new Map(releases.map((release) => [release.id, release])),
+    [releases],
+  );
+
+  const enrichedTracks = useMemo(
+    () =>
+      tracks.map((track) => {
+        const release = releaseMap.get(track.releaseWorldId) ?? null;
+        return {
+          ...track,
+          release,
+          publishingState: getPublishingState(track, release),
+        };
+      }),
+    [tracks, releaseMap],
+  );
+
+  const filteredTracks = useMemo(() => {
+    const query = search.trim().toLowerCase();
+
+    return enrichedTracks.filter((track) => {
+      const realm = getRealmMeta(track.realmId);
+      const release = track.release;
+      const searchTarget = [
+        track.title,
+        track.slug,
+        track.mood,
+        track.role,
+        release?.title,
+        realm?.name,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return (
+        (!query || searchTarget.includes(query)) &&
+        (releaseFilter === "all" || track.releaseWorldId === releaseFilter) &&
+        (realmFilter === "all" || String(track.realmId) === realmFilter) &&
+        (statusFilter === "all" || track.status === statusFilter) &&
+        (publishingFilter === "all" || track.publishingState === publishingFilter)
+      );
+    });
+  }, [enrichedTracks, search, releaseFilter, realmFilter, statusFilter, publishingFilter]);
+
+  async function handleSetFeaturedSignal(track: ReleaseTrack) {
+    if (!track.showInNexus) {
+      setFeaturedSignalMessage("Publish this track to Nexus + Realm before featuring it.");
+      return;
+    }
+
+    try {
+      setFeaturedSignalMessage(`Setting ${track.title} as the Featured Signal...`);
+      await setFeaturedSignal({ variables: { trackId: track.id } });
+      setFeaturedSignalMessage(`${track.title} is now the Featured Signal.`);
+      await refetch();
+    } catch (featuredError) {
+      setFeaturedSignalMessage(
+        featuredError instanceof Error
+          ? featuredError.message
+          : "Could not update the Featured Signal."
+      );
+    }
+  }
+
+  const summary = useMemo(() => {
+    return {
+      total: tracks.length,
+      published: enrichedTracks.filter((track) => track.showInNexus).length,
+      needsRealm: enrichedTracks.filter((track) => track.publishingState === "needs-realm").length,
+      needsAudio: enrichedTracks.filter((track) => track.publishingState === "needs-audio").length,
+      ready: enrichedTracks.filter((track) => track.publishingState === "ready").length,
+      comingSoon: enrichedTracks.filter((track) => track.playbackStatus === "coming-soon").length,
+    };
+  }, [tracks.length, enrichedTracks]);
+
+  if (status === "loading") {
+    return (
+      <main className="creator-library-page">
+        <section className="creator-library-shell creator-library-message">
+          <p className="creator-library-kicker">Creator Library</p>
+          <h1>Opening the catalog...</h1>
+        </section>
+      </main>
+    );
+  }
+
+  if (status === "unauthenticated") {
+    return (
+      <main className="creator-library-page">
+        <section className="creator-library-shell creator-library-message">
+          <p className="creator-library-kicker">Creator Library</p>
+          <h1>Sign in to manage your universe.</h1>
+          <p>Your track catalog, realm assignments, releases, and publishing states live here.</p>
+          <button type="button" onClick={() => signIn("github")}>Sign in with GitHub</button>
+        </section>
+      </main>
+    );
+  }
+
+  return (
+    <main className="creator-library-page">
+      <section className="creator-library-shell">
+        <header className="creator-library-hero">
+          <div>
+            <p className="creator-library-kicker">Creator OS</p>
+            <h1>Creator Library</h1>
+            <p>See every track by release, realm, creative status, and publishing readiness.</p>
+          </div>
+          <div className="creator-library-hero-actions">
+            <Link href="/creator">Creator Home</Link>
+            <Link href="/creator/projects">Release Worlds</Link>
+            <Link href="/nexus">View Nexus</Link>
+          </div>
+        </header>
+
+        {error && (
+          <section className="creator-library-error">
+            <strong>Could not load the library.</strong>
+            <p>{error.message}</p>
+            <button type="button" onClick={() => refetch()}>Try again</button>
+          </section>
+        )}
+
+        <section className="creator-library-summary" aria-label="Catalog summary">
+          {[
+            ["Total tracks", summary.total],
+            ["Published", summary.published],
+            ["Needs realm", summary.needsRealm],
+            ["Needs audio", summary.needsAudio],
+            ["Ready", summary.ready],
+            ["Coming soon", summary.comingSoon],
+          ].map(([label, value]) => (
+            <article key={String(label)}>
+              <span>{label}</span>
+              <strong>{value}</strong>
+            </article>
+          ))}
+        </section>
+
+        <section className="creator-library-controls">
+          <div className="creator-library-tabs" role="tablist" aria-label="Library view">
+            {(["tracks", "releases", "realms", "publishing"] as LibraryView[]).map((item) => (
+              <button
+
+===== Creator Projects opening =====
+"use client";
+
+import Link from "next/link";
+import { gql, useMutation, useQuery } from "@apollo/client";
+import { signIn, useSession } from "next-auth/react";
+import { FormEvent, useMemo, useState } from "react";
+import "@/styles/creatorProjects.css";
+
+const MY_CREATIVE_PROFILES = gql`
+  query MyCreativeProfiles {
+    myCreativeProfiles {
+      id
+      artistName
+      slug
+      displayName
+      isPublic
+      isFeatured
+    }
+  }
+`;
+
+const MY_RELEASE_WORLDS = gql`
+  query MyReleaseWorlds {
+    myReleaseWorlds {
+      id
+      title
+      slug
+      releaseType
+      status
+      visibility
+      isFeatured
+      oneLineSummary
+      story
+      fullDropDate
+      coverArtUrl
+      coverAssetId
+      currentFocus
+      secondFocus
+      updatedAt
+      lastOpenedAt
+    }
+  }
+`;
+
+const CREATE_RELEASE_WORLD = gql`
+  mutation CreateReleaseWorld($input: ReleaseWorldInput!) {
+    createReleaseWorld(input: $input) {
+      id
+      title
+      slug
+      releaseType
+      status
+      visibility
+      isFeatured
+      oneLineSummary
+      story
+      fullDropDate
+      coverArtUrl
+      coverAssetId
+      currentFocus
+      secondFocus
+      updatedAt
+      lastOpenedAt
+    }
+  }
+`;
+
+type CreativeProfile = {
+  id: string;
+  artistName: string;
+  slug: string;
+  displayName?: string | null;
+  isPublic: boolean;
+  isFeatured: boolean;
+};
+
+type ReleaseWorld = {
+  id: string;
+  title: string;
+  slug: string;
+  releaseType: string;
+  status: string;
+  visibility: string;
+  isFeatured: boolean;
+  oneLineSummary?: string | null;
+  story?: string | null;
+  fullDropDate?: string | null;
+  coverArtUrl?: string | null;
+  coverAssetId?: string | null;
+  currentFocus?: string | null;
+  secondFocus?: string | null;
+  updatedAt?: string | null;
+  lastOpenedAt?: string | null;
+};
+
+type NewProjectForm = {
+  title: string;
+  slug: string;
+  releaseType: string;
+  status: string;
+  visibility: string;
+  oneLineSummary: string;
+  story: string;
+  currentFocus: string;
+  secondFocus: string;
+  fullDropDate: string;
+};
+
+const initialForm: NewProjectForm = {
+  title: "",
+  slug: "",
+  releaseType: "ep",
+  status: "draft",
+  visibility: "private",
+  oneLineSummary: "",
+  story: "",
+  currentFocus: "",
+  secondFocus: "",
+  fullDropDate: "",
+};
+
+function getCalendarDateParts(value?: string | null) {
+  if (!value) return null;
+
+  const cleanValue = String(value).trim();
+  const datePrefixMatch = cleanValue.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+  if (datePrefixMatch) {
+    const [, year, month, day] = datePrefixMatch;
+    return {
+      year: Number(year),
+      month: Number(month),
+      day: Number(day),
+    };
+  }
+
+  const numericValue = Number(cleanValue);
+  const parsedDate = Number.isFinite(numericValue)
+    ? new Date(numericValue)
+    : new Date(cleanValue);
+
+  if (Number.isNaN(parsedDate.getTime())) return null;
+
+  return {
+    year: parsedDate.getUTCFullYear(),
+    month: parsedDate.getUTCMonth() + 1,
+    day: parsedDate.getUTCDate(),
+  };
+}
+
+function formatDate(value?: string | null) {
+  const dateParts = getCalendarDateParts(value);
+
+  if (!dateParts) return "Not opened yet";
+
+  const localCalendarDate = new Date(dateParts.year, dateParts.month - 1, dateParts.day);
+
+  if (Number.isNaN(localCalendarDate.getTime())) return "Unknown";
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(localCalendarDate);
+}
+
+function formatLabel(value?: string | null) {
+  if (!value) return "Unknown";
+
+  return value
+    .split("-")
+    .join(" ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/['"]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+type ReadinessItem = {
+  label: string;
+  isComplete: boolean;
+  hint: string;
+};
+
+function getReadinessItems(world: ReleaseWorld): ReadinessItem[] {
+  return [
+    {
+      label: "Portal public",
+      isComplete: world.visibility === "public",
+      hint: world.visibility === "public" ? "Public release page can be shared." : "Set release visibility to Public in the Signal Board.",
+    },
+    {
+      label: "Cover art",
+      isComplete: Boolean(world.coverArtUrl?.trim()),
+      hint: world.coverArtUrl?.trim() ? "Artwork is attached." : "Add cover art in the Signal Board assets.",
+    },
+    {
+      label: "Story",
+      isComplete: Boolean(world.story?.trim() || world.oneLineSummary?.trim()),
+      hint: world.story?.trim() ? "Story is ready for the portal." : "Add a stronger release story or summary.",
+    },
+    {
+      label: "Drop date",
+      isComplete: Boolean(world.fullDropDate),
+      hint: world.fullDropDate ? `World opens ${formatDate(world.fullDropDate)}.` : "Set the release drop date.",
+    },
+    {
+      label: "Focus signals",
+      isComplete: Boolean(world.currentFocus?.trim() || world.secondFocus?.trim()),
+      hint: world.currentFocus?.trim() || world.secondFocus?.trim() ? "Lead/contrast signals are named." : "Name a lead signal or second signal.",
+    },
+    {
+      label: "Nexus feature",
+      isComplete: Boolean(world.isFeatured),
+      hint: world.isFeatured ? "Eligible as the Nexus front-door feature." : "Feature this when the portal is ready.",
+    },
+  ];
+}
+
+function getReadinessScore(world: ReleaseWorld) {
+  const items = getReadinessItems(world);
+  const completeCount = items.filter((item) => item.isComplete).length;
+  const percent = Math.round((completeCount / items.length) * 100);
+
+  return {
+    items,
+    completeCount,
+    totalCount: items.length,
+    percent,
+    label:
+      percent >= 85
+        ? "Ready for soft share"
+        : percent >= 55
+          ? "Close to shareable"
+          : "Needs setup",
+  };
+}
+
+function getProjectTypeCopy(world: ReleaseWorld) {
+  const releaseType = formatLabel(world.releaseType);
+  const status = formatLabel(world.status);
+  const visibility = formatLabel(world.visibility);
+
+  return `${releaseType} • ${status} • ${visibility}`;
+}
+
+export default function CreatorProjectsPage() {
+  const { status } = useSession();
+  const [form, setForm] = useState<NewProjectForm>(initialForm);
+  const [formMessage, setFormMessage] = useState("");
+
+  const {
+    data: profileData,
+    loading: profilesLoading,
+
+===== Top navigation =====
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
+import { UserCircleIcon } from "@heroicons/react/24/outline";
+
+const publicItems = [
+    { href: "/", label: "Home", description: "The cinematic gateway" },
+    { href: "/nexus", label: "Nexus", description: "Music, realms, and signals" },
+    { href: "/find-your-realm", label: "Align", description: "Find your current realm" },
+    { href: "/scroll", label: "Scroll", description: "Reflection and story" },
+    { href: "/services", label: "Services", description: "Build with Cosmic" },
+];
+
+const creatorItems = [
+    { href: "/practice", label: "Practice", description: "Private daily practice" },
+    { href: "/creator", label: "Creator OS", description: "Creative command center" },
+    { href: "/creator/library", label: "Creator Library", description: "Manage every track" },
+    { href: "/leaderboard", label: "Rank", description: "Traveler rankings" },
+];
+
+function isRouteActive(pathname: string | null, href: string) {
+    if (!pathname) return false;
+
+    if (href === "/") return pathname === "/";
+    return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+export default function CosmicTopNav({ title }: { title?: string }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const pathname = usePathname();
+    const { data: session } = useSession();
+    const isSignedIn = Boolean(session?.user);
+
+    return (
+        <header className="sticky top-0 z-50 border-b border-white/10 bg-[#070A12]/90 backdrop-blur-xl">
+            <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
+                <div className="relative flex items-center gap-3">
+                    <button
+                        type="button"
+                        onClick={() => setIsOpen((prev) => !prev)}
+                        aria-label="Open navigation menu"
+                        aria-expanded={isOpen}
+                        className="grid h-11 w-11 place-items-center rounded-full border border-white/15 bg-white/[0.03] text-white/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition hover:border-[#DCBA5C]/40 hover:text-[#DCBA5C]"
+                    >
+                        <span className="text-lg leading-none">{isOpen ? "×" : "☰"}</span>
+                    </button>
+
+                    <Link
+                        href="/"
+                        className="text-lg font-semibold tracking-[0.28em] text-white"
+                        onClick={() => setIsOpen(false)}
+                    >
+                        COSMIC
+                    </Link>
+
+                    {isOpen && (
+                        <div className="absolute left-0 top-14 max-h-[calc(100vh-5rem)] w-[min(88vw,340px)] overflow-y-auto rounded-2xl border border-white/10 bg-[#090D17]/95 p-2 shadow-2xl backdrop-blur-xl">
+                            <div className="px-3 py-2">
+                                <p className="text-[10px] uppercase tracking-[0.22em] text-[#DCBA5C]/80">
+                                    Explore
+                                </p>
+                            </div>
+
+                            <div className="space-y-1">
+                                {publicItems.map((item) => {
+                                    const isActive = isRouteActive(pathname, item.href);
+
+                                    return (
+                                        <Link
+                                            key={item.href}
+                                            href={item.href}
+                                            onClick={() => setIsOpen(false)}
+                                            className={`block rounded-xl px-3 py-3 transition ${isActive
+                                                    ? "bg-white/[0.08] text-white"
+                                                    : "text-white/70 hover:bg-white/[0.05] hover:text-white"
+                                                }`}
+                                        >
+                                            <div className="flex items-center justify-between gap-3">
+                                                <div>
+                                                    <p className="text-sm font-medium uppercase tracking-[0.12em]">
+                                                        {item.label}
+                                                    </p>
+                                                    <p className="mt-0.5 text-xs text-white/45">{item.description}</p>
+                                                </div>
+                                                <span className="text-white/35">→</span>
+                                            </div>
+                                        </Link>
+                                    );
+                                })}
+                            </div>
+
+                            {isSignedIn && (
+                                <>
+                                    <div className="mx-3 my-2 border-t border-white/10" />
+                                    <div className="px-3 py-2">
+                                        <p className="text-[10px] uppercase tracking-[0.22em] text-[#7ED3FF]/80">
+                                            Your OS
+                                        </p>
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        {creatorItems.map((item) => {
+                                            const isActive = isRouteActive(pathname, item.href);
+
+                                            return (
+                                                <Link
+                                                    key={item.href}
+                                                    href={item.href}
+                                                    onClick={() => setIsOpen(false)}
+                                                    className={`block rounded-xl px-3 py-3 transition ${isActive
+                                                            ? "bg-white/[0.08] text-white"
+                                                            : "text-white/70 hover:bg-white/[0.05] hover:text-white"
+                                                        }`}
+                                                >
+                                                    <div className="flex items-center justify-between gap-3">
+                                                        <div>
+                                                            <p className="text-sm font-medium uppercase tracking-[0.12em]">
+                                                                {item.label}
+                                                            </p>
+                                                            <p className="mt-0.5 text-xs text-white/45">{item.description}</p>
+                                                        </div>
+                                                        <span className="text-white/35">→</span>
+                                                    </div>
+                                                </Link>
+                                            );
+                                        })}
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                {title && (
+                    <h1 className="hidden text-sm font-medium tracking-[0.14em] text-white/70 sm:block">
+                        {title}
+                    </h1>
+                )}
+
+                <div className="flex items-center gap-2">
+                    {isSignedIn && (
+                        <button
+                            type="button"
+                            onClick={() => signOut({ callbackUrl: "/" })}
+                            className="rounded-full border border-white/15 bg-white/[0.03] px-4 py-2 text-[11px] font-medium uppercase tracking-[0.16em] text-white/70 transition hover:border-[#DCBA5C]/35 hover:bg-[#DCBA5C]/10 hover:text-white max-[420px]:px-3"
+                        >
+                            <span className="hidden sm:inline">Sign Out</span>
+                            <span className="sm:hidden">Out</span>
+                        </button>
+                    )}
+
+                    <Link
+                        href="/profile"
+                        aria-label="Open profile"
+                        className="grid h-11 w-11 place-items-center rounded-full border border-white/15 bg-white/[0.03] text-white/75 transition hover:border-white/30 hover:text-white"
+                    >
+                        <UserCircleIcon className="h-7 w-7" />
+                    </Link>
+                </div>
+            </div>
+        </header>
+    );
+}

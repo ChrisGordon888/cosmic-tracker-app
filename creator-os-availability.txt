@@ -1,0 +1,1275 @@
+===== publicMusicCatalog.ts =====
+import type { MusicTrack, TrackRole, TrackStatus, TrackVisibility } from '@/lib/musicRegistry';
+import { REALM_STATE_MAP, type RealmId } from '@/lib/realmStateMap';
+import { getRealmTheme } from '@/lib/realmTheme';
+
+export interface PublicNexusReleaseTrack {
+    id: string;
+    ownerId?: string | null;
+    releaseWorldId: string;
+    title: string;
+    slug?: string | null;
+    trackNumber?: number | null;
+    role?: string | null;
+    status?: string | null;
+    bpm?: number | null;
+    keySignature?: string | null;
+    mood?: string | null;
+    hook?: string | null;
+    notes?: string | null;
+    audioUrl?: string | null;
+    previewAudioUrl?: string | null;
+    platformUrl?: string | null;
+    visibility?: string | null;
+    playbackStatus?: string | null;
+    dropDate?: string | null;
+    unlockDate?: string | null;
+    isFocusTrack?: boolean | null;
+    isSecondFocus?: boolean | null;
+    isPublic?: boolean | null;
+    realmId?: number | null;
+    showInNexus?: boolean | null;
+    nexusRole?: string | null;
+    isRealmAnchor?: boolean | null;
+    isPublicPick?: boolean | null;
+    nexusSortOrder?: number | null;
+}
+
+export interface RuntimeMusicTrack extends MusicTrack {
+    source?: 'registry' | 'creator';
+    releaseWorldId?: string;
+    releaseTrackId?: string;
+    playbackStatus?: string;
+    unlockDate?: string | null;
+    dropDate?: string | null;
+    platformUrl?: string | null;
+}
+
+const VALID_REALMS = new Set<number>([303, 202, 101, 55, 44, 0]);
+
+function isRealmId(value?: number | null): value is RealmId {
+    return typeof value === 'number' && VALID_REALMS.has(value);
+}
+
+function mapRole(value?: string | null): TrackRole {
+    switch (value) {
+        case 'flagship':
+        case 'anchor':
+        case 'public':
+        case 'featured':
+        case 'expansion':
+        case 'vault':
+        case 'premium':
+            return value;
+        default:
+            return 'public';
+    }
+}
+
+function mapVisibility(value?: string | null): TrackVisibility {
+    if (value === 'premium') return 'premium';
+    if (value === 'signup') return 'signup';
+    // Public Nexus queries may include both public and listed tracks.
+    return 'public';
+}
+
+function mapStatus(value?: string | null): TrackStatus {
+    switch (value) {
+        case 'demo':
+            return 'demo';
+        case 'mixing':
+            return 'needs-mix';
+        case 'writing':
+            return 'needs-writing';
+        case 'idea':
+        case 'recording':
+            return 'rough-draft';
+        case 'mastered':
+        case 'released':
+            return 'finished';
+        default:
+            return 'demo';
+    }
+}
+
+function getPlaybackUrl(track: PublicNexusReleaseTrack) {
+    if (track.playbackStatus === 'preview') {
+        return track.previewAudioUrl?.trim() || track.audioUrl?.trim() || '';
+    }
+
+    return track.audioUrl?.trim() || track.previewAudioUrl?.trim() || '';
+}
+
+export function mapReleaseTrackToMusicTrack(
+    track: PublicNexusReleaseTrack
+): RuntimeMusicTrack | null {
+    if (!track.showInNexus || !isRealmId(track.realmId)) return null;
+
+    const realm = REALM_STATE_MAP[track.realmId];
+    const theme = getRealmTheme(track.realmId);
+    const trackUrl = getPlaybackUrl(track);
+
+    return {
+        id: `release-${track.id}`,
+        realmId: track.realmId,
+        realmName: realm.realmName,
+        trackTitle: track.title,
+        artist: 'COSMIC',
+        trackUrl,
+        realmColor: theme.accent,
+        role: mapRole(track.nexusRole),
+        visibility: mapVisibility(track.visibility),
+        status: mapStatus(track.status),
+        key: track.keySignature?.trim() || undefined,
+        bpm: track.bpm ?? undefined,
+        vibe: track.mood?.trim() ? [track.mood.trim()] : undefined,
+        notes: track.notes?.trim() || track.hook?.trim() || undefined,
+        isFeatured: track.nexusRole === 'featured' || track.nexusRole === 'flagship',
+        isFlagship: track.nexusRole === 'flagship',
+        isRealmAnchor: Boolean(track.isRealmAnchor || track.nexusRole === 'anchor'),
+        isPublicPick: Boolean(track.isPublicPick),
+        sortOrder: track.nexusSortOrder ?? 999,
+        source: 'creator',
+        releaseWorldId: track.releaseWorldId,
+        releaseTrackId: track.id,
+        playbackStatus: track.playbackStatus ?? undefined,
+        unlockDate: track.unlockDate ?? null,
+        dropDate: track.dropDate ?? null,
+        platformUrl: track.platformUrl ?? null,
+    };
+}
+
+export function mapReleaseTracksToMusicTracks(
+    tracks?: PublicNexusReleaseTrack[] | null
+): RuntimeMusicTrack[] {
+    return (tracks ?? [])
+        .map(mapReleaseTrackToMusicTrack)
+        .filter((track): track is RuntimeMusicTrack => Boolean(track));
+}
+
+function catalogIdentity(track: MusicTrack) {
+    return `${track.realmId}:${track.trackTitle.trim().toLowerCase()}`;
+}
+
+export function mergeMusicCatalogs(
+    registryTracks: MusicTrack[],
+    creatorTracks: RuntimeMusicTrack[]
+): RuntimeMusicTrack[] {
+    const byIdentity = new Map<string, RuntimeMusicTrack>();
+
+    registryTracks.forEach((track) => {
+        byIdentity.set(catalogIdentity(track), {
+            ...track,
+            source: 'registry',
+        });
+    });
+
+    // Creator tracks intentionally replace a static entry with the same realm/title.
+    creatorTracks.forEach((track) => {
+        byIdentity.set(catalogIdentity(track), track);
+    });
+
+    return Array.from(byIdentity.values()).sort((a, b) => {
+        if (a.realmId !== b.realmId) return a.realmId - b.realmId;
+
+        const aOrder = a.sortOrder ?? 999;
+        const bOrder = b.sortOrder ?? 999;
+        if (aOrder !== bOrder) return aOrder - bOrder;
+
+        return a.trackTitle.localeCompare(b.trackTitle);
+    });
+}
+
+export function getRuntimeTracksForRealm(
+    catalog: RuntimeMusicTrack[],
+    realmId: RealmId
+) {
+    return catalog
+        .filter((track) => track.realmId === realmId)
+        .sort((a, b) => {
+            const aOrder = a.sortOrder ?? 999;
+            const bOrder = b.sortOrder ?? 999;
+            if (aOrder !== bOrder) return aOrder - bOrder;
+            return a.trackTitle.localeCompare(b.trackTitle);
+        });
+}
+
+===== RealmSoundstage.tsx =====
+'use client';
+
+import { useMemo } from 'react';
+import { useQuery } from '@apollo/client';
+import RealmOrbitCard from '@/components/music/RealmOrbitCard';
+import { MUSIC_REGISTRY } from '@/lib/musicRegistry';
+import { GET_PUBLIC_NEXUS_TRACKS } from '@/graphql/realms';
+import {
+    getRuntimeTracksForRealm,
+    mapReleaseTracksToMusicTracks,
+    mergeMusicCatalogs,
+    type PublicNexusReleaseTrack,
+    type RuntimeMusicTrack,
+} from '@/lib/publicMusicCatalog';
+import type { RealmId } from '@/lib/realmStateMap';
+import { useMusicPlayer } from '@/hooks/useMusicPlayer';
+
+interface RealmSoundstageProps {
+    realmId: RealmId;
+    realmName: string;
+    realmIcon: string;
+    realmColor: string;
+    intro?: string;
+    supportText?: string;
+
+    progress?: number;
+    isUnlocked?: boolean;
+    realmRoute?: string;
+    isCurrentRealm?: boolean;
+    isRecommended?: boolean;
+
+    /**
+     * Uses the compact mini-orbit card on mobile while keeping
+     * the full signature orbit card on desktop.
+     */
+    compactOnMobile?: boolean;
+}
+
+const RELEASE_UNLOCKS: Record<string, string> = {
+    'sin-do-over': '2026-06-29T00:00:00',
+    'sin-running-from-the-plug': '2026-07-14T00:00:00',
+    '101-hold-my-hand': '2026-07-29T00:00:00',
+    '303-in-the-deep': '2026-07-29T00:00:00',
+    '202-her-fantasy': '2026-07-29T00:00:00',
+    '202-siren': '2026-07-29T00:00:00',
+};
+
+function formatUnlockDate(dateString?: string | null) {
+    if (!dateString) return null;
+
+    try {
+        return new Intl.DateTimeFormat('en-US', {
+            month: 'short',
+            day: 'numeric',
+        }).format(new Date(dateString));
+    } catch {
+        return null;
+    }
+}
+
+function getTrackOpenDate(track: RuntimeMusicTrack) {
+    return track.unlockDate || track.dropDate || RELEASE_UNLOCKS[track.id] || null;
+}
+
+function isTrackLocked(track: RuntimeMusicTrack) {
+    if (track.visibility === 'premium') return true;
+    if (track.playbackStatus === 'locked') return true;
+
+    const openDate = getTrackOpenDate(track);
+
+    if (openDate && new Date() < new Date(openDate)) {
+        return true;
+    }
+
+    // Coming-soon tracks remain visible but non-playable until Creator OS
+    // intentionally changes playback to Preview or Playable.
+    if (track.playbackStatus === 'coming-soon') return true;
+
+    return false;
+}
+
+function getTrackLockLabel(track: RuntimeMusicTrack) {
+    if (track.visibility === 'premium') return 'Premium';
+    if (track.playbackStatus === 'locked') return 'Locked';
+
+    const unlockLabel = formatUnlockDate(getTrackOpenDate(track));
+
+    if (unlockLabel) return `Opens ${unlockLabel}`;
+    if (track.playbackStatus === 'coming-soon') return 'Coming Soon';
+
+    return null;
+}
+
+export default function RealmSoundstage({
+    realmId,
+    realmName,
+    realmIcon,
+    realmColor,
+    intro,
+    supportText,
+    progress = 0,
+    isUnlocked = true,
+    realmRoute,
+    isCurrentRealm = false,
+    isRecommended = false,
+    compactOnMobile = false,
+}: RealmSoundstageProps) {
+    const { playOrToggleTrack, currentTrack, isPlaying } = useMusicPlayer();
+    const { data: publicNexusTrackData } = useQuery(GET_PUBLIC_NEXUS_TRACKS, {
+        variables: { realmId },
+        fetchPolicy: 'cache-and-network',
+    });
+
+    const realmTracks = useMemo(() => {
+        const creatorTracks = mapReleaseTracksToMusicTracks(
+            publicNexusTrackData?.getPublicNexusTracks as
+                | PublicNexusReleaseTrack[]
+                | undefined
+        );
+        const runtimeCatalog = mergeMusicCatalogs(MUSIC_REGISTRY, creatorTracks);
+
+        return getRuntimeTracksForRealm(runtimeCatalog, realmId).filter(
+            (track) =>
+                track.visibility === 'public' ||
+                track.visibility === 'signup' ||
+                track.visibility === 'premium'
+        );
+    }, [publicNexusTrackData, realmId]);
+
+    if (realmTracks.length === 0) {
+        return (
+            <div className="glass-card p-4 md:p-6 mb-8">
+                <h2 className="text-2xl font-display mb-3">🎵 Realm Soundstage</h2>
+                <p className="text-secondary">No tracks loaded for this realm yet.</p>
+            </div>
+        );
+    }
+
+    const featuredTrack =
+        realmTracks.find((track) => !isTrackLocked(track) && track.isRealmAnchor) ??
+        realmTracks.find((track) => !isTrackLocked(track) && track.isPublicPick) ??
+        realmTracks.find((track) => !isTrackLocked(track)) ??
+        realmTracks[0];
+
+    const featuredTrackLocked = isTrackLocked(featuredTrack);
+    const featuredTrackLockLabel = getTrackLockLabel(featuredTrack);
+    const isFeaturedSelected = currentTrack?.id === featuredTrack.id;
+
+    const handlePlayOrbitTrack = (track: { id: string }) => {
+        const fullTrack = realmTracks.find((musicTrack) => musicTrack.id === track.id);
+
+        if (!fullTrack) {
+            console.warn('Track not found in runtime realm catalog:', track.id);
+            return;
+        }
+
+        if (isTrackLocked(fullTrack)) {
+            return;
+        }
+
+        void playOrToggleTrack(fullTrack);
+    };
+
+    const handlePlayFeaturedTrack = () => {
+        if (featuredTrackLocked) return;
+
+        void playOrToggleTrack(featuredTrack);
+    };
+
+    return (
+        <div className="glass-card p-4 md:p-6 mb-8">
+            <div className="mb-5">
+                <p className="text-xs uppercase tracking-[0.18em] text-white/60 mb-2">
+                    Realm Soundstage
+                </p>
+
+                <h2
+                    className="text-2xl md:text-3xl font-display mb-3"
+                    style={{ color: realmColor }}
+                >
+                    {realmName}
+                </h2>
+
+                {intro && <p className="text-secondary mb-3 max-w-3xl">{intro}</p>}
+                {supportText && <p className="text-sm text-muted max-w-3xl">{supportText}</p>}
+            </div>
+
+            <RealmOrbitCard
+                realmId={realmId}
+                realmName={realmName}
+                realmIcon={realmIcon}
+                realmColor={realmColor}
+                tracks={realmTracks}
+                currentTrackId={currentTrack?.id ?? null}
+                isPlaying={isPlaying}
+                onPlayTrack={handlePlayOrbitTrack}
+                progress={progress}
+                isUnlocked={isUnlocked}
+                realmRoute={realmRoute}
+                isCurrentRealm={isCurrentRealm}
+                isRecommended={isRecommended}
+                compactOnMobile={compactOnMobile}
+                isTrackLocked={isTrackLocked}
+                getTrackLockLabel={getTrackLockLabel}
+            />
+
+            <div
+                className="mt-5 rounded-2xl border p-4 md:p-5"
+                style={{
+                    borderColor: `${realmColor}33`,
+                    background: `linear-gradient(135deg, ${realmColor}10, rgba(255,255,255,0.02))`,
+                    boxShadow: `0 0 18px ${realmColor}10`,
+                }}
+            >
+                <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+                    <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                            <p className="text-xs uppercase tracking-[0.18em] text-white/60">
+                                Featured Entry
+                            </p>
+
+                            {featuredTrackLocked && (
+                                <span className="px-2.5 py-1 rounded-full text-[10px] uppercase tracking-[0.14em] bg-white/5 border border-white/10 text-white/55">
+                                    {featuredTrackLockLabel ?? 'Locked'}
+                                </span>
+                            )}
+                        </div>
+
+                        <div className="flex items-center gap-3 mb-2">
+                            <div
+                                className="w-10 h-10 rounded-full flex items-center justify-center text-lg shrink-0"
+                                style={{
+                                    background: `radial-gradient(circle, ${realmColor}66, ${realmColor}22)`,
+                                    border: `1px solid ${realmColor}55`,
+                                    boxShadow: `0 0 12px ${realmColor}22`,
+                                    opacity: featuredTrackLocked ? 0.52 : 1,
+                                }}
+                            >
+                                {featuredTrackLocked ? '🔒' : '✦'}
+                            </div>
+
+                            <div className="min-w-0">
+                                <p
+                                    className="font-display text-lg truncate"
+                                    style={{
+                                        color: featuredTrackLocked
+                                            ? 'rgba(255,255,255,0.55)'
+                                            : realmColor,
+                                    }}
+                                >
+                                    {featuredTrack.trackTitle}
+                                </p>
+                                <p className="text-sm text-secondary truncate">
+                                    {featuredTrack.artist}
+                                </p>
+                            </div>
+                        </div>
+
+                        <p className="text-sm text-secondary max-w-2xl">
+                            Start here for the clearest first entry into{' '}
+
+===== Nexus availability helpers =====
+    if (!value) return null;
+
+    const numberMatch = value.match(/\((303|202|101|55|44|0)\)/);
+    if (numberMatch) {
+        return Number(numberMatch[1]) as RealmId;
+    }
+
+    const normalizedValue = value.toLowerCase();
+
+    const match = REALM_META.find((realm) =>
+        normalizedValue.includes(realm.name.toLowerCase())
+    );
+
+    return match ? (Number(match.id) as RealmId) : null;
+}
+
+
+function getModeLabel(mode: ExperienceMode) {
+    if (mode === 'stay') return 'Stay';
+    if (mode === 'move-through') return 'Move through';
+    return 'Shift';
+}
+
+function formatUnlockDate(dateString?: string | null) {
+    if (!dateString) return null;
+
+    const formatted = formatReleaseDate(dateString);
+
+    if (formatted === 'TBD') return null;
+
+    return formatted.replace(/, \d{4}$/, '');
+}
+
+function formatReleaseDate(dateString?: string | null) {
+    if (!dateString) return 'TBD';
+
+    const cleanValue = String(dateString).trim();
+
+    const formatLocalCalendarDate = (year: number, month: number, day: number) => {
+        const localDate = new Date(year, month - 1, day);
+
+        if (Number.isNaN(localDate.getTime())) return 'TBD';
+
+        return new Intl.DateTimeFormat('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+        }).format(localDate);
+    };
+
+    /**
+     * Handles both:
+     * 2026-07-29
+     * 2026-07-29T00:00:00.000Z
+     *
+     * We intentionally read the YYYY-MM-DD calendar portion directly so
+     * release/unlock dates do not shift one day earlier by timezone.
+     */
+    const datePrefixMatch = cleanValue.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+    if (datePrefixMatch) {
+        const [, year, month, day] = datePrefixMatch;
+        return formatLocalCalendarDate(Number(year), Number(month), Number(day));
+    }
+
+    const numericValue = Number(cleanValue);
+    const date = Number.isFinite(numericValue)
+        ? new Date(numericValue)
+        : new Date(cleanValue);
+
+    if (Number.isNaN(date.getTime())) return 'TBD';
+
+    /**
+     * GraphQL/Mongo can return Date fields as numeric milliseconds.
+     * If that value represents midnight UTC, normal local formatting can
+     * still display the previous day in US time zones. Preserve the UTC
+     * calendar day here for rollout/unlock display.
+     */
+    return formatLocalCalendarDate(
+        date.getUTCFullYear(),
+        date.getUTCMonth() + 1,
+        date.getUTCDate(),
+    );
+}
+
+function formatReleaseLabel(value?: string | null) {
+    if (!value) return 'TBD';
+
+    return value
+        .split('-')
+        .join(' ')
+        .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function getFeaturedReleaseSummary(releaseWorld?: NexusFeaturedReleaseWorld | null) {
+    return (
+        releaseWorld?.oneLineSummary?.trim() ||
+        releaseWorld?.story?.trim() ||
+        'A featured release world: sound, story, cover art, and the path into the project.'
+    );
+}
+
+function getFeaturedTrackStatusLabel(track?: NexusFeaturedReleaseTrack | null) {
+    if (!track) return 'TBD';
+
+    if (track.isFocusTrack) return 'Focus Track';
+    if (track.isSecondFocus) return 'Second Signal';
+
+    return formatReleaseLabel(track.role || track.status || 'Track');
+}
+
+function getFeaturedTrackReleaseLabel(
+    track: NexusFeaturedReleaseTrack,
+    releaseWorld?: NexusFeaturedReleaseWorld | null
+) {
+    const statusLabel = formatReleaseLabel(track.status);
+    const dropDate = formatReleaseDate(track.dropDate || releaseWorld?.fullDropDate);
+    const unlockDate = formatReleaseDate(track.unlockDate);
+
+    if (track.playbackStatus === 'coming-soon' && unlockDate !== 'TBD') {
+        return `Coming soon • Opens ${unlockDate}`;
+    }
+
+    if (dropDate === 'TBD') return statusLabel;
+    return `${statusLabel} • ${dropDate}`;
+}
+
+function getFeaturedTrackAction(track: NexusFeaturedReleaseTrack, isSignedIn: boolean) {
+    const hasFullAudio = Boolean(track.audioUrl);
+    const hasPreviewAudio = Boolean(track.previewAudioUrl);
+
+    if (isSignedIn && (hasFullAudio || hasPreviewAudio)) {
+        return {
+            label: 'Review',
+            canPlay: true,
+            url: track.audioUrl || track.previewAudioUrl || '',
+            className: 'is-review',
+        };
+    }
+
+    if (track.playbackStatus === 'playable' && hasFullAudio) {
+        return {
+            label: 'Play',
+            canPlay: true,
+            url: track.audioUrl || '',
+            className: 'is-playable',
+        };
+    }
+
+    if (track.playbackStatus === 'preview') {
+        if (hasPreviewAudio) {
+            return {
+                label: 'Preview',
+                canPlay: true,
+                url: track.previewAudioUrl || '',
+                className: 'is-preview',
+            };
+        }
+
+        return {
+            label: 'Preview pending',
+            canPlay: false,
+            url: '',
+            className: 'is-preview-pending',
+        };
+    }
+
+    if (track.playbackStatus === 'coming-soon') {
+        return {
+            label: 'Coming soon',
+            canPlay: false,
+            url: '',
+            className: 'is-coming-soon',
+        };
+    }
+
+    return {
+        label: 'Locked',
+        canPlay: false,
+        url: '',
+        className: 'is-locked',
+    };
+}
+
+function getFeaturedTrackMetaLine(
+    track: NexusFeaturedReleaseTrack,
+    isSignedIn: boolean,
+    releaseWorld?: NexusFeaturedReleaseWorld | null
+) {
+    const trackAction = getFeaturedTrackAction(track, isSignedIn);
+    const unlockDate = formatReleaseDate(track.unlockDate);
+    const dropDate = formatReleaseDate(track.dropDate || releaseWorld?.fullDropDate);
+    const openDate = unlockDate !== 'TBD' ? unlockDate : dropDate;
+
+    if (trackAction.canPlay && trackAction.label === 'Review') return 'Staged for creator review';
+    if (trackAction.canPlay && trackAction.label === 'Play') return 'Available now';
+    if (trackAction.canPlay && trackAction.label === 'Preview') return 'Preview available';
+    if (trackAction.label === 'Preview pending') return 'Preview coming soon';
+    if (openDate !== 'TBD') return `Opens ${openDate}`;
+    if (track.playbackStatus === 'coming-soon') return 'Coming soon';
+
+    return 'Not yet open';
+}
+
+function getFeaturedTrackPlaybackUrl(track: NexusFeaturedReleaseTrack, isSignedIn: boolean) {
+    return getFeaturedTrackAction(track, isSignedIn).url;
+}
+
+function toPlayerTrack(
+    releaseTrack: NexusFeaturedReleaseTrack,
+    releaseWorld?: NexusFeaturedReleaseWorld | null,
+
+===== Nexus runtime lock logic =====
+    ) as NexusFeaturedReleaseTrack[] | undefined;
+
+    const isFeaturedReleaseTracksLoading =
+        status === 'authenticated'
+            ? myFeaturedReleaseTracksLoading
+            : publicFeaturedReleaseTracksLoading;
+
+    const featuredReleaseTrackCount = featuredReleaseTracks?.length ?? 0;
+    const playFeaturedReleaseTrack = (track: NexusFeaturedReleaseTrack) => {
+        const selectedTrackUrl = getFeaturedTrackPlaybackUrl(track, isSignedIn);
+        if (!selectedTrackUrl) return;
+
+        const flowTracks = (featuredReleaseTracks ?? [])
+            .filter((releaseTrack) => Boolean(getFeaturedTrackPlaybackUrl(releaseTrack, isSignedIn)))
+            .map((releaseTrack) => toPlayerTrack(releaseTrack, creatorFeaturedRelease, isSignedIn));
+
+        void playOrToggleTrack(toPlayerTrack(track, creatorFeaturedRelease, isSignedIn), flowTracks, {
+            source: 'nexus',
+            label: creatorFeaturedRelease?.title ?? 'Featured release',
+        });
+    };
+
+    const getTrackOpenDate = (track: any) => {
+        if (!track) return null;
+
+        return (
+            track.unlockDate ||
+            track.dropDate ||
+            RELEASE_UNLOCKS[track.id] ||
+            null
+        );
+    };
+
+    const isTrackLocked = (track: any) => {
+        if (!track) return false;
+
+        if (track.visibility === 'premium') return true;
+
+        if (!isSignedIn && track.visibility === 'signup') return true;
+
+        if (track.playbackStatus === 'locked') return true;
+
+        const openDate = getTrackOpenDate(track);
+
+        if (openDate && new Date() < new Date(openDate)) {
+            return true;
+        }
+
+        // Coming-soon tracks stay non-playable until their playback status is
+        // intentionally changed to Preview or Playable in Creator OS.
+        if (track.playbackStatus === 'coming-soon') return true;
+
+        return false;
+    };
+
+    const getTrackUnlockLabel = (track: any) => {
+        if (!track) return null;
+
+        return formatUnlockDate(getTrackOpenDate(track));
+    };
+
+    const getTrackLockLabel = (track: any) => {
+        if (!track) return null;
+
+        if (track.visibility === 'premium') return 'Premium';
+
+        if (!isSignedIn && track.visibility === 'signup') return 'Join to unlock';
+
+        const unlockLabel = getTrackUnlockLabel(track);
+
+        if (unlockLabel) return `Opens ${unlockLabel}`;
+        if (track.playbackStatus === 'coming-soon') return 'Coming Soon';
+        if (track.playbackStatus === 'locked') return 'Locked';
+
+        return null;
+    };
+
+    const tryPlayTrack = (track: any) => {
+        if (!track) return;
+        if (isTrackLocked(track)) return;
+
+        const flowQueue =
+            nexusPlayableFlowTracks.length > 0 ? nexusPlayableFlowTracks : [track];
+
+        void playOrToggleTrack(track, flowQueue, {
+            source: 'nexus',
+            label: 'Nexus flow',
+        });
+    };
+
+    const getRealmProgress = (realmId: number): number => {
+        const trials =
+            user?.completedTrials?.filter((t: any) => t.realmId === realmId) ?? [];
+        const completed = trials.filter((t: any) => t.isComplete).length;
+        return Math.floor((completed / 3) * 100);
+    };
+
+    const isRealmUnlocked = (realmId: number): boolean => unlockedRealms.includes(realmId);
+
+    const getRealmTrackCountLabel = (count: number) => {
+        return `${count} soundtrack track${count === 1 ? '' : 's'}`;
+    };
+
+    const isTrackCatalogVisible = (track: any) => {
+        if (!track) return false;
+
+        return (
+            track.visibility === 'public' ||
+            track.visibility === 'signup' ||
+            track.visibility === 'premium'
+        );
+    };
+
+    const runtimeMusicCatalog = useMemo(() => {
+        const creatorTracks = mapReleaseTracksToMusicTracks(
+            publicNexusTrackData?.getPublicNexusTracks as
+                | PublicNexusReleaseTrack[]
+                | undefined
+        );
+
+        return mergeMusicCatalogs(MUSIC_REGISTRY, creatorTracks);
+    }, [publicNexusTrackData]);
+
+    const nexusVisibleTracks = useMemo(() => {
+        return runtimeMusicCatalog
+            .filter(isTrackCatalogVisible)
+            .sort((a, b) => {
+                const aOrder = a.sortOrder ?? 999;
+                const bOrder = b.sortOrder ?? 999;
+
+                if (aOrder !== bOrder) return aOrder - bOrder;
+
+                return a.trackTitle.localeCompare(b.trackTitle);
+            });
+    }, [runtimeMusicCatalog]);
+
+    const nexusPlayableFlowTracks = useMemo(() => {
+        return nexusVisibleTracks
+            .filter((track) => Boolean(track.trackUrl) && !isTrackLocked(track))
+            .sort((a, b) => {
+                const aRealmIndex = REALM_META.findIndex(
+                    (realm) => Number(realm.id) === a.realmId
+                );
+                const bRealmIndex = REALM_META.findIndex(
+                    (realm) => Number(realm.id) === b.realmId
+                );
+
+                const safeARealmIndex = aRealmIndex === -1 ? 999 : aRealmIndex;
+                const safeBRealmIndex = bRealmIndex === -1 ? 999 : bRealmIndex;
+
+                if (safeARealmIndex !== safeBRealmIndex) {
+                    return safeARealmIndex - safeBRealmIndex;
+                }
+
+                const aOrder = a.sortOrder ?? 999;
+                const bOrder = b.sortOrder ?? 999;
+
+                if (aOrder !== bOrder) return aOrder - bOrder;
+
+                return a.trackTitle.localeCompare(b.trackTitle);
+            });
+    }, [nexusVisibleTracks, isSignedIn, isTrackLocked]);
+
+    const groupedTracks = REALM_META.map((realm) => {
+        const realmId = parseInt(realm.id);
+
+        return {
+            ...realm,
+            status: isRealmUnlocked(realmId) ? 'unlocked' : 'locked',
+            progress: getRealmProgress(realmId),
+            tracks: nexusVisibleTracks.filter((track) => track.realmId === realmId),
+        };
+    }).filter((realmGroup) => realmGroup.tracks.length > 0);
+
+    const publicCatalogCount = nexusVisibleTracks.filter((track) => track.visibility === 'public').length;
+    const memberCatalogCount = nexusVisibleTracks.filter((track) => track.visibility === 'signup').length;
+    const premiumCatalogCount = nexusVisibleTracks.filter((track) => track.visibility === 'premium').length;
+    const releaseCatalogCount = currentReleaseTracks.length;
+    const guidanceRealmId = storedGuidance?.realmId ?? null;
+    const guidanceRealm = guidanceRealmId !== null ? REALM_STATE_MAP[guidanceRealmId] : null;
+
+
+===== MusicPlayerProvider.tsx =====
+'use client';
+
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { useMutation } from '@apollo/client';
+import { LOG_MUSIC_LISTEN } from '@/graphql/realms';
+
+export interface MusicTrack {
+  id: string;
+  trackUrl: string;
+  trackTitle: string;
+  artist?: string;
+  realmName: string;
+  realmColor?: string;
+  realmId: number;
+  visibility?: string;
+  sortOrder?: number;
+}
+
+export type MusicQueueSource =
+  | 'track'
+  | 'nexus'
+  | 'realm'
+  | 'collection'
+  | 'release'
+  | 'vault'
+  | 'catalog';
+
+export interface MusicQueueOptions {
+  source?: MusicQueueSource;
+  label?: string;
+}
+
+interface MusicPlayerContextValue {
+  currentTrack: MusicTrack | null;
+  isPlaying: boolean;
+  currentTime: number;
+  duration: number;
+  volume: number;
+  isExpanded: boolean;
+
+  queue: MusicTrack[];
+  queueLength: number;
+  queueSource: MusicQueueSource;
+  queueLabel: string;
+  isShuffleEnabled: boolean;
+  isContinuousEnabled: boolean;
+  hasNextTrack: boolean;
+  hasPreviousTrack: boolean;
+
+  playTrack: (
+    track: MusicTrack,
+    queueOverride?: MusicTrack[],
+    queueOptions?: MusicQueueOptions
+  ) => Promise<void>;
+  playOrToggleTrack: (
+    track: MusicTrack,
+    queueOverride?: MusicTrack[],
+    queueOptions?: MusicQueueOptions
+  ) => Promise<void>;
+  playQueue: (
+    tracks: MusicTrack[],
+    startTrackId?: string,
+    queueOptions?: MusicQueueOptions
+  ) => Promise<void>;
+  setQueue: (tracks: MusicTrack[], queueOptions?: MusicQueueOptions) => void;
+  clearQueue: () => void;
+  playNext: () => Promise<void>;
+  playPrevious: () => Promise<void>;
+  toggleShuffle: () => void;
+  toggleContinuous: () => void;
+
+  togglePlayPause: () => Promise<void>;
+  pause: () => void;
+  seekTo: (time: number) => void;
+  setVolume: (volume: number) => void;
+  setExpanded: (expanded: boolean) => void;
+  toggleExpanded: () => void;
+}
+
+const MusicPlayerContext = createContext<MusicPlayerContextValue | null>(null);
+
+function dedupeTracks(tracks: MusicTrack[]) {
+  const seen = new Set<string>();
+
+  return tracks.filter((track) => {
+    if (!track?.id || !track.trackUrl || seen.has(track.id)) return false;
+
+    seen.add(track.id);
+    return true;
+  });
+}
+
+function getDefaultQueueLabel(source: MusicQueueSource, queueLength: number) {
+  if (queueLength <= 1) return 'Track flow';
+
+  if (source === 'realm') return 'Realm flow';
+  if (source === 'collection') return 'Collection flow';
+  if (source === 'release') return 'Release flow';
+  if (source === 'vault') return 'Vault flow';
+  if (source === 'nexus') return 'Nexus flow';
+  if (source === 'catalog') return 'Catalog flow';
+
+  return 'Track flow';
+}
+
+function getSequentialNextTrack(queue: MusicTrack[], currentTrackId?: string | null) {
+  if (queue.length <= 1) return null;
+
+  const currentIndex = queue.findIndex((track) => track.id === currentTrackId);
+
+  if (currentIndex === -1) return queue[0];
+
+  return queue[(currentIndex + 1) % queue.length];
+}
+
+function getSequentialPreviousTrack(queue: MusicTrack[], currentTrackId?: string | null) {
+  if (queue.length <= 1) return null;
+
+  const currentIndex = queue.findIndex((track) => track.id === currentTrackId);
+
+  if (currentIndex === -1) return queue[0];
+
+  return queue[(currentIndex - 1 + queue.length) % queue.length];
+}
+
+function getShuffleTrack(
+  queue: MusicTrack[],
+  currentTrackId?: string | null,
+  recentlyPlayedIds: string[] = []
+) {
+  if (queue.length <= 1) return null;
+
+  const recentSet = new Set(recentlyPlayedIds);
+
+  const freshCandidates = queue.filter(
+    (track) => track.id !== currentTrackId && !recentSet.has(track.id)
+  );
+
+  const candidates =
+    freshCandidates.length > 0
+      ? freshCandidates
+      : queue.filter((track) => track.id !== currentTrackId);
+
+  if (candidates.length === 0) return null;
+
+  const randomIndex = Math.floor(Math.random() * candidates.length);
+  return candidates[randomIndex];
+}
+
+export function MusicPlayerProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const [currentTrack, setCurrentTrack] = useState<MusicTrack | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volumeState, setVolumeState] = useState(0.7);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const [queue, setQueueState] = useState<MusicTrack[]>([]);
+  const [queueSource, setQueueSource] = useState<MusicQueueSource>('track');
+  const [queueLabelState, setQueueLabelState] = useState('Track flow');
+  const [isShuffleEnabled, setIsShuffleEnabled] = useState(false);
+  const [isContinuousEnabled, setIsContinuousEnabled] = useState(true);
+
+  const currentTrackRef = useRef<MusicTrack | null>(null);
+  const queueRef = useRef<MusicTrack[]>([]);
+  const recentlyPlayedIdsRef = useRef<string[]>([]);
+  const playbackHistoryRef = useRef<MusicTrack[]>([]);
+  const queueSourceRef = useRef<MusicQueueSource>('track');
+  const queueLabelRef = useRef('Track flow');
+  const isShuffleEnabledRef = useRef(false);
+  const isContinuousEnabledRef = useRef(true);
+  const handleTrackEndedRef = useRef<(() => void) | null>(null);
+
+  const [logMusicListen] = useMutation(LOG_MUSIC_LISTEN);
+
+  // Prevent duplicate listen logs for the same track during a single page session.
+  const loggedListenIdsRef = useRef<Set<string>>(new Set());
+
+  const activeQueue = useMemo(() => {
+    if (queue.length > 0) return queue;
+    return currentTrack ? [currentTrack] : [];
+  }, [queue, currentTrack]);
+
+  const queueLength = activeQueue.length;
+  const queueLabel =
+    queueLabelState || getDefaultQueueLabel(queueSource, queueLength);
+  const hasNextTrack = queueLength > 1;
+  const hasPreviousTrack = queueLength > 1;
+
+  const syncQueueMeta = useCallback(
+    (source: MusicQueueSource, label?: string, nextQueueLength = 0) => {
+      const nextLabel = label || getDefaultQueueLabel(source, nextQueueLength);
+
+      setQueueSource(source);
+      setQueueLabelState(nextLabel);
+      queueSourceRef.current = source;
+      queueLabelRef.current = nextLabel;
+    },
+    []
+  );
+
+  const replaceQueue = useCallback(
+    (tracks: MusicTrack[], queueOptions?: MusicQueueOptions) => {
+      const nextQueue = dedupeTracks(tracks);
+      const nextSource = queueOptions?.source ?? 'track';
+
+      setQueueState(nextQueue);
+      queueRef.current = nextQueue;
+      syncQueueMeta(nextSource, queueOptions?.label, nextQueue.length);
+
+      return nextQueue;
+    },
+    [syncQueueMeta]
+  );
+
+  useEffect(() => {
+    currentTrackRef.current = currentTrack;
+  }, [currentTrack]);
+
+  useEffect(() => {
+    queueRef.current = queue;
+  }, [queue]);
+
+  useEffect(() => {
+    queueSourceRef.current = queueSource;
+  }, [queueSource]);
+
+  useEffect(() => {
+    queueLabelRef.current = queueLabel;
+  }, [queueLabel]);
+
+  useEffect(() => {
+    isShuffleEnabledRef.current = isShuffleEnabled;
+  }, [isShuffleEnabled]);
+
+  useEffect(() => {
+    isContinuousEnabledRef.current = isContinuousEnabled;
+  }, [isContinuousEnabled]);
+
+  const markRecentlyPlayed = useCallback((trackId: string) => {
+    const nextRecent = [
+      trackId,
+      ...recentlyPlayedIdsRef.current.filter((id) => id !== trackId),
+    ].slice(0, 8);
+
+    recentlyPlayedIdsRef.current = nextRecent;
+  }, []);
+
+  const pushCurrentTrackToHistory = useCallback((nextTrackId?: string | null) => {
+    const current = currentTrackRef.current;
+
+    if (!current || current.id === nextTrackId) return;
+
+    const nextHistory = [
+      current,
+      ...playbackHistoryRef.current.filter((track) => track.id !== current.id),
+    ].slice(0, 24);
+
+    playbackHistoryRef.current = nextHistory;
+  }, []);
+
+  const popPreviousHistoryTrack = useCallback(() => {
+    const [previousTrack, ...remainingHistory] = playbackHistoryRef.current;
+    playbackHistoryRef.current = remainingHistory;
+
+    return previousTrack ?? null;
+  }, []);
+
+  const clearPlaybackHistory = useCallback(() => {
+    playbackHistoryRef.current = [];
+  }, []);
+
+  const getActiveQueue = useCallback(() => {
+    if (queueRef.current.length > 0) return queueRef.current;
+
+    return currentTrackRef.current ? [currentTrackRef.current] : [];
+  }, []);
+
+  const ensureTrackQueue = useCallback(
+    (track: MusicTrack) => {
+      const currentQueue = queueRef.current;
+
+      if (currentQueue.length > 0) {
+        const trackIsInQueue = currentQueue.some(
+          (queueTrack) => queueTrack.id === track.id
+        );
+
+        if (trackIsInQueue) return currentQueue;
+      }
+
+      return replaceQueue([track], {
+        source: 'track',
+        label: 'Track flow',
+      });
+    },
+    [replaceQueue]
+  );
+
+  const startTrack = useCallback(
+    async (track: MusicTrack) => {
+      const audio = audioRef.current;
+      if (!audio || !track?.trackUrl) return;
+
+      const isSameTrack = currentTrackRef.current?.id === track.id;
+
+      try {
+        if (!isSameTrack) {
+          audio.pause();
+          audio.src = track.trackUrl;
+          audio.currentTime = 0;
+          setCurrentTime(0);
+          setDuration(0);
+          setCurrentTrack(track);
+          currentTrackRef.current = track;
+        }
+
+        markRecentlyPlayed(track.id);
+
+        await audio.play();
+        setIsPlaying(true);
+      } catch (error) {
+        console.error('Failed to play track:', error);
+        setIsPlaying(false);
+      }
+    },
+    [markRecentlyPlayed]
+  );
+
+  const setQueue = useCallback(
+    (tracks: MusicTrack[], queueOptions?: MusicQueueOptions) => {
+      replaceQueue(tracks, queueOptions);
+    },
+    [replaceQueue]
+  );
+
+  const clearQueue = useCallback(() => {
+    setQueueState([]);
+    queueRef.current = [];
+    clearPlaybackHistory();
+
+    if (currentTrackRef.current) {
+      syncQueueMeta('track', 'Track flow', 1);
+      return;
+    }
+
+    syncQueueMeta('track', 'No flow', 0);
+  }, [clearPlaybackHistory, syncQueueMeta]);
+
+  const playTrack = useCallback(
+    async (
+      track: MusicTrack,
+      queueOverride?: MusicTrack[],
+      queueOptions?: MusicQueueOptions
+    ) => {
+      if (queueOverride && queueOverride.length > 0) {
+        replaceQueue(queueOverride, queueOptions);
+      } else {
+        ensureTrackQueue(track);
+      }
+
+      pushCurrentTrackToHistory(track.id);
+      await startTrack(track);
+    },
+    [ensureTrackQueue, pushCurrentTrackToHistory, replaceQueue, startTrack]
+  );
+
+  const playQueue = useCallback(
+    async (
+      tracks: MusicTrack[],
+      startTrackId?: string,
+      queueOptions?: MusicQueueOptions
+    ) => {
+      const nextQueue = replaceQueue(tracks, queueOptions);
+      if (nextQueue.length === 0) return;
+
+      const firstTrack =
+        nextQueue.find((track) => track.id === startTrackId) ?? nextQueue[0];
+
+      clearPlaybackHistory();
+      await startTrack(firstTrack);
+    },
+    [clearPlaybackHistory, replaceQueue, startTrack]
+  );
+
+  const playNext = useCallback(async () => {
+    const nextQueue = getActiveQueue();
+    if (nextQueue.length <= 1) return;
+
+    const nextTrack = isShuffleEnabledRef.current
+      ? getShuffleTrack(
+          nextQueue,
+          currentTrackRef.current?.id,
+          recentlyPlayedIdsRef.current
+        )
+      : getSequentialNextTrack(nextQueue, currentTrackRef.current?.id);
+
+    if (!nextTrack) return;
+
+    pushCurrentTrackToHistory(nextTrack.id);
+    await startTrack(nextTrack);
+  }, [getActiveQueue, pushCurrentTrackToHistory, startTrack]);
+
+  const playPrevious = useCallback(async () => {
+    const audio = audioRef.current;
+
+    if (audio && audio.currentTime > 3) {

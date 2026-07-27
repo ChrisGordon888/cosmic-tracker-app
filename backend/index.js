@@ -18,7 +18,6 @@ const jwt = require("jsonwebtoken");
 const typeDefs = require("./schemas");
 const resolvers = require("./resolvers");
 
-// Catch hidden startup/runtime crashes so Render prints the real reason.
 process.on("uncaughtException", (error) => {
     console.error("❌ Uncaught Exception:", error);
     process.exit(1);
@@ -123,6 +122,8 @@ async function startServer() {
                             decoded.email?.split("@")[0] ||
                             "Cosmic Traveler",
                         image: decoded.picture || null,
+                        role: "listener",
+                        creatorStatus: "none",
                         level: 1,
                         xp: 0,
                         xpToNextLevel: 100,
@@ -148,6 +149,10 @@ async function startServer() {
                     user: {
                         id: user._id.toString(),
                         email: user.email,
+                        name: user.name || null,
+                        image: user.image || null,
+                        role: user.role || "listener",
+                        creatorStatus: user.creatorStatus || "none",
                     },
                 };
             } catch (error) {

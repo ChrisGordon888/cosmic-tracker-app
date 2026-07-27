@@ -1,0 +1,808 @@
+===== musicRegistry.ts =====
+/**
+ * COSMIC MULTIVERSE — MUSIC REGISTRY
+ *
+ * PURPOSE:
+ * This file is the single source of truth for realm soundtrack metadata.
+ *
+ * It powers:
+ * - Nexus realm soundtrack cards
+ * - RealmSoundstage components
+ * - Global mini player
+ * - Music listening XP
+ * - Featured release / rollout modules
+ * - Future playlist lanes, vaults, premium unlocks, and seasonal projects
+ *
+ * CORE IDEA:
+ * MUSIC_REGISTRY = every track and its metadata.
+ * MUSIC_COLLECTIONS = curated experiences made from those tracks.
+ * FEATURED_RELEASES = the current release campaign layer.
+ *
+ * This lets the app support:
+ * - 1 app-wide flagship song
+ * - 6 realm anchors
+ * - public realm listening
+ * - signed-in vault tracks
+ * - current release campaigns (ex: SIRENS in Neverland)
+ * - artwork and story-based EP/group concepts
+ */
+
+export type RealmId = 303 | 202 | 101 | 55 | 44 | 0;
+
+export type TrackRole =
+    | 'flagship'
+    | 'anchor'
+    | 'public'
+    | 'featured'
+    | 'expansion'
+    | 'vault'
+    | 'premium';
+
+export type TrackVisibility = 'public' | 'signup' | 'premium';
+
+export type TrackStatus =
+    | 'finished'
+    | 'demo'
+    | 'rough-draft'
+    | 'needs-mix'
+    | 'needs-writing'
+    | 'clip-only';
+
+export type TrackEnergy = 'low' | 'medium' | 'high';
+
+export type ReleaseProjectId = 'sirens-in-neverland';
+
+export type ReleasePhase =
+    | 'teaser'
+    | 'lead-single'
+    | 'second-single'
+    | 'ep-focus'
+    | 'ep-track'
+    | 'released';
+
+export type ReleaseStatus = 'building' | 'upcoming' | 'live' | 'archived';
+
+export type MusicCollectionType =
+    | 'flagship'
+    | 'realm-anchor-set'
+    | 'public-three-piece'
+    | 'vault'
+    | 'premium'
+    | 'season'
+    | 'episode'
+    | 'release-project';
+
+export interface MusicTrack {
+    id: string;
+    realmId: RealmId;
+    realmName: string;
+    trackTitle: string;
+    artist: string;
+    trackUrl: string;
+    realmColor: string;
+
+    /**
+     * Catalog metadata.
+     * These fields are designed so the Nexus can evolve without rewriting
+     * the entire music system every time the catalog changes.
+     */
+    role?: TrackRole;
+    visibility?: TrackVisibility;
+    status?: TrackStatus;
+    releaseBatch?: string;
+    key?: string;
+    bpm?: number;
+    energy?: TrackEnergy;
+    vibe?: string[];
+    bestUse?: string[];
+    isFeatured?: boolean;
+    isFlagship?: boolean;
+    isRealmAnchor?: boolean;
+    isPublicPick?: boolean;
+    sortOrder?: number;
+    notes?: string;
+
+    /**
+     * Release-layer metadata.
+     * Lets a track belong to both the realm system and a release campaign.
+     */
+    releaseProjectId?: ReleaseProjectId;
+    releasePhase?: ReleasePhase;
+    releasePriority?: number;
+    isUpcomingRelease?: boolean;
+    isCurrentReleaseFocus?: boolean;
+}
+
+export interface MusicCollection {
+    id: string;
+    title: string;
+    type: MusicCollectionType;
+    realmId?: RealmId;
+    releaseProjectId?: ReleaseProjectId;
+    description: string;
+    story: string;
+    trackIds: string[];
+    artworkUrl?: string;
+    youtubeEpisodeTitle?: string;
+    isActive: boolean;
+    sortOrder: number;
+}
+
+export interface FeaturedReleaseConfig {
+    id: ReleaseProjectId;
+    title: string;
+    status: ReleaseStatus;
+    type: 'single' | 'ep';
+    description: string;
+    story: string;
+    coverArtUrl?: string;
+    primaryTrackId?: string;
+    collectionId?: string;
+    releaseWindow?: string;
+    ctaLabel: string;
+    ctaHref: string;
+    isCurrent: boolean;
+    timeline: {
+        label: string;
+        dateLabel: string;
+        status: 'done' | 'now' | 'next' | 'later';
+    }[];
+}
+
+export const REALM_COLORS: Record<RealmId, string> = {
+    303: '#FF5D7A',
+    202: '#A884FF',
+    101: '#7ED3FF',
+    55: '#ECC973',
+    44: '#F4AB63',
+    0: '#EEF3FA',
+};
+
+export const REALM_NAMES: Record<RealmId, string> = {
+    303: 'Fractured Frontier',
+    202: 'The Veil',
+    101: 'Moonlit Roads',
+    55: 'Skybound City',
+    44: 'Astral Bazaar',
+    0: 'InterSiddhi',
+};
+
+export const REALM_ORDER: RealmId[] = [303, 202, 101, 55, 44, 0];
+
+const ARTIST = 'COSMIC';
+
+function createTrack(track: Omit<MusicTrack, 'artist' | 'realmName' | 'realmColor'>): MusicTrack {
+    return {
+        visibility: 'public',
+        ...track,
+        artist: ARTIST,
+        realmName: REALM_NAMES[track.realmId],
+        realmColor: REALM_COLORS[track.realmId],
+    };
+}
+
+export const MUSIC_REGISTRY: MusicTrack[] = [
+    // =========================================================
+    // ACTIVE RELEASE LAYER — SIRENS IN NEVERLAND
+    // Tracks remain mapped to realms, but also belong to the
+    // current release project for Nexus / rollout surfacing.
+    // =========================================================
+
+    createTrack({
+        id: 'sin-do-over',
+        realmId: 202,
+        trackTitle: 'Do Over',
+        trackUrl: '/music/realms/202/doOver.mp3',
+        role: 'featured',
+        visibility: 'public',
+        status: 'needs-mix',
+        releaseBatch: 'sin-2026',
+        key: 'C#min',
+        bpm: 140,
+        energy: 'medium',
+        isFeatured: true,
+        isPublicPick: true,
+        sortOrder: 0,
+        vibe: ['hypnotic', 'oceanic', 'romantic', 'looping', 'haunted', 'melodic'],
+        bestUse: ['lead single', 'EP opener', 'release-world entry point'],
+        notes: 'Lead single and opening chapter for SIRENS in Neverland.',
+        releaseProjectId: 'sirens-in-neverland',
+        releasePhase: 'lead-single',
+        releasePriority: 1,
+        isUpcomingRelease: true,
+        isCurrentReleaseFocus: true,
+    }),
+
+    createTrack({
+        id: 'sin-running-from-the-plug',
+        realmId: 202,
+        trackTitle: 'Running From The Plug',
+        trackUrl: '/music/realms/202/runningFromThePlug.mp3',
+        role: 'featured',
+        visibility: 'public',
+        status: 'needs-mix',
+        releaseBatch: 'sin-2026',
+        key: 'Bmin',
+        bpm: 150,
+        energy: 'high',
+        isFeatured: true,
+        isPublicPick: true,
+        sortOrder: 1,
+        vibe: ['urgent', 'electric', 'dark', 'fast', 'melodic', 'dangerous'],
+        bestUse: ['second single', 'motion clip', 'contrast record'],
+        notes: 'Second single and energy-expansion chapter for SIRENS in Neverland.',
+        releaseProjectId: 'sirens-in-neverland',
+        releasePhase: 'second-single',
+        releasePriority: 2,
+        isUpcomingRelease: true,
+    }),
+
+    // =========================================================
+    // REALM 303 — FRACTURED FRONTIER
+    // Chaos, pressure, rupture, survival, self-overcoming.
+    // =========================================================
+
+    createTrack({
+        id: 'realm-303-not-enough',
+        realmId: 303,
+        trackTitle: 'Not Enough',
+        trackUrl: '/music/realms/303/notEnough.mp3',
+        role: 'vault',
+        visibility: 'signup',
+        status: 'finished',
+        releaseBatch: 'original-v1',
+        sortOrder: 40,
+        vibe: ['pressure', 'conflict', 'survival'],
+        bestUse: ['original Nexus track', 'vault archive'],
+    }),
+
+    createTrack({
+        id: 'realm-303-war-ready',
+        realmId: 303,
+        trackTitle: 'War Ready',
+        trackUrl: '/music/realms/303/warReady.mp3',
+        role: 'public',
+        visibility: 'public',
+        status: 'finished',
+        releaseBatch: 'original-v1',
+        sortOrder: 30,
+        isPublicPick: true,
+        vibe: ['battle', 'activation', 'pressure'],
+        bestUse: ['activation track', 'realm opener'],
+    }),
+
+    createTrack({
+        id: 'realm-303-space-king',
+        realmId: 303,
+        trackTitle: 'Space King',
+        trackUrl: '/music/realms/303/spaceKing.mp3',
+        role: 'vault',
+        visibility: 'signup',
+        status: 'finished',
+
+===== Nexus imports and types =====
+'use client';
+
+import { useSession, signIn } from 'next-auth/react';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import Link from 'next/link';
+import { gql, useQuery, useMutation } from '@apollo/client';
+import { getTodayMoonPhase, getRealmMoonAlignment } from '@/lib/moonPhases';
+import RealmBackground from '@/components/realm/RealmBackground';
+import { GET_ME, GET_PUBLIC_NEXUS_TRACKS, LOG_DAILY_LOGIN } from '@/graphql/realms';
+import { useMusicPlayer } from '@/hooks/useMusicPlayer';
+import {
+    CURRENT_FEATURED_RELEASE,
+    FLAGSHIP_TRACKS,
+    MUSIC_REGISTRY,
+    PUBLIC_THREE_PIECE_COLLECTIONS,
+    REALM_NAMES,
+    getCurrentReleaseTracks,
+    getTrackById,
+    getTracksByCollection,
+} from '@/lib/musicRegistry';
+import { REALM_STATE_MAP, type ExperienceMode, type RealmId } from '@/lib/realmStateMap';
+import { REALM_RESULT_CONTENT } from '@/lib/realmResultContent';
+import { getRealmTheme } from '@/lib/realmTheme';
+import {
+    mapReleaseTracksToMusicTracks,
+    mergeMusicCatalogs,
+    type PublicNexusReleaseTrack,
+} from '@/lib/publicMusicCatalog';
+import RealmOrbitCard from '@/components/music/RealmOrbitCard';
+import '@/styles/realmShared.css';
+import '@/styles/nexus.css';
+
+interface StoredRealmGuidance {
+    realmId: RealmId;
+    mode: ExperienceMode;
+    recommendedTrack: string;
+    reflectionPrompt: string;
+    savedAt?: string;
+}
+
+const FEATURED_RELEASE_WORLD_FIELDS = gql`
+    fragment FeaturedReleaseWorldFields on ReleaseWorld {
+        id
+        title
+        slug
+        releaseType
+        status
+        visibility
+        isFeatured
+        oneLineSummary
+        story
+        currentFocus
+        secondFocus
+        fullDropDate
+        coverArtUrl
+        coverAssetId
+        updatedAt
+        lastOpenedAt
+    }
+`;
+
+const GET_MY_FEATURED_RELEASE_WORLD = gql`
+    ${FEATURED_RELEASE_WORLD_FIELDS}
+    query GetMyFeaturedReleaseWorld {
+        getMyFeaturedReleaseWorld {
+            ...FeaturedReleaseWorldFields
+        }
+    }
+`;
+
+const GET_PUBLIC_FEATURED_RELEASE_WORLD = gql`
+    ${FEATURED_RELEASE_WORLD_FIELDS}
+    query GetPublicFeaturedReleaseWorld {
+        getPublicFeaturedReleaseWorld {
+            ...FeaturedReleaseWorldFields
+        }
+    }
+`;
+
+const FEATURED_RELEASE_TRACK_FIELDS = gql`
+    fragment FeaturedReleaseTrackFields on ReleaseTrack {
+        id
+        releaseWorldId
+        title
+        slug
+        trackNumber
+        role
+        status
+        bpm
+        keySignature
+        mood
+        hook
+        notes
+        audioUrl
+        previewAudioUrl
+        platformUrl
+        visibility
+        playbackStatus
+        dropDate
+        unlockDate
+        isFocusTrack
+        isSecondFocus
+        isPublic
+        createdAt
+        updatedAt
+        lastOpenedAt
+    }
+`;
+
+const GET_FEATURED_RELEASE_TRACKS = gql`
+    ${FEATURED_RELEASE_TRACK_FIELDS}
+    query GetFeaturedReleaseTracks($releaseWorldId: ID!) {
+        getReleaseTracks(releaseWorldId: $releaseWorldId) {
+            ...FeaturedReleaseTrackFields
+        }
+    }
+`;
+
+const GET_PUBLIC_FEATURED_RELEASE_TRACKS = gql`
+    ${FEATURED_RELEASE_TRACK_FIELDS}
+    query GetPublicFeaturedReleaseTracks($releaseWorldId: ID!) {
+        getPublicReleaseTracks(releaseWorldId: $releaseWorldId) {
+            ...FeaturedReleaseTrackFields
+        }
+    }
+`;
+
+interface NexusFeaturedReleaseWorld {
+    id: string;
+    title: string;
+    slug: string;
+    releaseType: string;
+    status: string;
+    visibility: string;
+    isFeatured: boolean;
+    oneLineSummary?: string | null;
+    story?: string | null;
+    currentFocus?: string | null;
+    secondFocus?: string | null;
+    fullDropDate?: string | null;
+    coverArtUrl?: string | null;
+    coverAssetId?: string | null;
+    updatedAt?: string | null;
+    lastOpenedAt?: string | null;
+}
+
+interface NexusFeaturedReleaseTrack {
+    id: string;
+    releaseWorldId: string;
+    title: string;
+    slug?: string | null;
+    trackNumber: number;
+    role: string;
+    status: string;
+    bpm?: number | null;
+    keySignature?: string | null;
+    mood?: string | null;
+    hook?: string | null;
+    notes?: string | null;
+    audioUrl?: string | null;
+    previewAudioUrl?: string | null;
+    platformUrl?: string | null;
+    visibility: string;
+    playbackStatus: string;
+    dropDate?: string | null;
+    unlockDate?: string | null;
+    isFocusTrack: boolean;
+    isSecondFocus: boolean;
+    isPublic: boolean;
+    createdAt?: string | null;
+    updatedAt?: string | null;
+    lastOpenedAt?: string | null;
+}
+
+const REALM_META = [
+    {
+        id: '303',
+        name: 'FRACTURED FRONTIER',
+        number: '303',
+        icon: '∴',
+        description: 'Where pressure becomes motion.',
+        unlockRequirement: undefined,
+    },
+    {
+        id: '202',
+        name: 'THE VEIL',
+        number: '202',
+        icon: '◐',
+        description: 'A nocturnal world of desire, temptation, and inner signal.',
+        unlockRequirement: 'Complete Trials in Fractured Frontier',
+    },
+    {
+        id: '101',
+        name: 'MOONLIT ROADS',
+        number: '101',
+        icon: '☾',
+        description: 'For memory, softness, and finding your way back.',
+        unlockRequirement: 'Complete Trials in The Veil',
+    },
+    {
+        id: '55',
+        name: 'SKYBOUND CITY',
+        number: '55',
+        icon: '△',
+        description: 'Ambition, command, and the discipline to rise.',
+        unlockRequirement: 'Complete Trials in Moonlit Roads',
+    },
+    {
+        id: '44',
+        name: 'ASTRAL BAZAAR',
+        number: '44',
+        icon: '◇',
+        description: 'Focus, worth, and the cost of what you choose.',
+        unlockRequirement: 'Complete Trials in Skybound City',
+    },
+    {
+        id: '0',
+        name: 'INTERSIDDHI',
+        number: '0',
+        icon: '∞',
+
+===== Nexus toPlayerTrack =====
+        if (track.playbackStatus === 'coming-soon') return true;
+
+        return false;
+    };
+
+    const getTrackUnlockLabel = (track: any) => {
+        if (!track) return null;
+
+        return formatUnlockDate(getTrackOpenDate(track));
+    };
+
+    const getTrackLockLabel = (track: any) => {
+        if (!track) return null;
+
+        if (track.visibility === 'premium') return 'Premium';
+
+        if (!isSignedIn && track.visibility === 'signup') return 'Join to unlock';
+
+        const unlockLabel = getTrackUnlockLabel(track);
+
+        if (unlockLabel) return `Opens ${unlockLabel}`;
+        if (track.playbackStatus === 'coming-soon') return 'Coming Soon';
+        if (track.playbackStatus === 'locked') return 'Locked';
+
+        return null;
+    };
+
+    const tryPlayTrack = (track: any) => {
+        if (!track) return;
+        if (isTrackLocked(track)) return;
+
+        const flowQueue =
+            nexusPlayableFlowTracks.length > 0 ? nexusPlayableFlowTracks : [track];
+
+        void playOrToggleTrack(track, flowQueue, {
+            source: 'nexus',
+            label: 'Nexus flow',
+        });
+    };
+
+    const getRealmProgress = (realmId: number): number => {
+        const trials =
+            user?.completedTrials?.filter((t: any) => t.realmId === realmId) ?? [];
+        const completed = trials.filter((t: any) => t.isComplete).length;
+        return Math.floor((completed / 3) * 100);
+    };
+
+    const isRealmUnlocked = (realmId: number): boolean => unlockedRealms.includes(realmId);
+
+    const getRealmTrackCountLabel = (count: number) => {
+        return `${count} soundtrack track${count === 1 ? '' : 's'}`;
+    };
+
+    const isTrackCatalogVisible = (track: any) => {
+        if (!track) return false;
+
+
+===== Public release availability =====
+  }).format(localCalendarDate);
+}
+
+function getTitleParts(title?: string | null) {
+  const cleanTitle = title?.trim() || 'Untitled Release';
+
+  if (cleanTitle.toLowerCase().includes(' in ')) {
+    const [first, ...rest] = cleanTitle.split(/\s+in\s+/i);
+    return {
+      primary: first,
+      secondary: `in ${rest.join(' in ')}`,
+    };
+  }
+
+  const words = cleanTitle.split(' ');
+
+  if (words.length >= 3) {
+    return {
+      primary: words.slice(0, -1).join(' '),
+      secondary: words.slice(-1).join(' '),
+    };
+  }
+
+  return {
+    primary: cleanTitle,
+    secondary: 'Release World',
+  };
+}
+
+function getTrackAvailability(track: ReleaseTrack, isCreatorView: boolean) {
+  const playbackStatus = track.playbackStatus || 'locked';
+  const hasFullAudio = Boolean(track.audioUrl?.trim());
+  const hasPreviewAudio = Boolean(track.previewAudioUrl?.trim());
+
+  if (isCreatorView && (hasFullAudio || hasPreviewAudio)) {
+    return {
+      label: 'Review',
+      href: track.audioUrl?.trim() || track.previewAudioUrl?.trim() || '',
+      isPlayable: true,
+      className: 'release-world-track-action-review',
+    };
+  }
+
+  if (playbackStatus === 'playable' && hasFullAudio) {
+    return {
+      label: 'Listen',
+      href: track.audioUrl?.trim() || '',
+      isPlayable: true,
+      className: 'release-world-track-action-play',
+    };
+  }
+
+  if (playbackStatus === 'preview' && hasPreviewAudio) {
+    return {
+      label: 'Preview',
+      href: track.previewAudioUrl?.trim() || '',
+      isPlayable: true,
+      className: 'release-world-track-action-preview',
+    };
+  }
+
+  if (playbackStatus === 'preview') {
+    return {
+      label: 'Preview soon',
+      href: '',
+      isPlayable: false,
+      className: 'release-world-track-action-pending',
+    };
+  }
+
+  if (playbackStatus === 'coming-soon') {
+    return {
+      label: 'Coming soon',
+      href: '',
+      isPlayable: false,
+      className: 'release-world-track-action-pending',
+    };
+  }
+
+  return {
+    label: 'Locked',
+    href: '',
+    isPlayable: false,
+    className: 'release-world-track-action-locked',
+  };
+}
+
+function getTrackFanLine(track: ReleaseTrack, world: ReleaseWorld) {
+  const availability = track.playbackStatus || 'locked';
+  const unlockDate = track.unlockDate ? formatDate(track.unlockDate) : null;
+  const dropDate = formatDate(track.dropDate || world.fullDropDate);
+
+  if (availability === 'playable') return 'Available now';
+  if (availability === 'preview') return 'Preview available';
+  if (availability === 'coming-soon' && unlockDate && unlockDate !== 'TBD') {
+    return `Opens ${unlockDate}`;
+  }
+
+  if (dropDate !== 'TBD') return `Opens ${dropDate}`;
+  return 'Release timing forming';
+}
+
+function getSectionArtifacts(
+  artifacts: PublicBoardArtifact[],
+  sectionKey: ArtifactSectionKey,
+) {
+  return artifacts
+    .filter((artifact) => (artifact.pageSection ?? 'story') === sectionKey)
+    .sort((a, b) => (a.pageOrder ?? 1) - (b.pageOrder ?? 1));
+}
+
+
+===== ReleaseTrack model =====
+const mongoose = require("mongoose");
+
+const ReleaseTrackSchema = new mongoose.Schema(
+  {
+    ownerId: { type: String, required: true, index: true },
+
+    releaseWorldId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ReleaseWorld",
+      required: true,
+      index: true,
+    },
+
+    title: { type: String, required: true, trim: true },
+    slug: { type: String, required: true, lowercase: true, trim: true },
+
+    trackNumber: {
+      type: Number,
+      default: 1,
+      min: 1,
+      index: true,
+    },
+
+    role: {
+      type: String,
+      enum: [
+        "intro",
+        "lead-single",
+        "second-single",
+        "focus-track",
+        "deep-cut",
+        "interlude",
+        "outro",
+        "bonus",
+        "unknown",
+      ],
+      default: "unknown",
+    },
+
+    status: {
+      type: String,
+      enum: [
+        "idea",
+        "writing",
+        "demo",
+        "recording",
+        "mixing",
+        "mastered",
+        "released",
+        "archived",
+      ],
+      default: "idea",
+      index: true,
+    },
+
+    visibility: {
+      type: String,
+      enum: ["private", "listed", "public"],
+      default: "private",
+      index: true,
+    },
+
+    playbackStatus: {
+      type: String,
+      enum: ["locked", "preview", "playable", "coming-soon"],
+      default: "locked",
+      index: true,
+    },
+
+    dropDate: { type: Date, default: null },
+    unlockDate: { type: Date, default: null },
+
+    bpm: { type: Number, default: null },
+    keySignature: { type: String, default: "" },
+    mood: { type: String, default: "" },
+
+    hook: { type: String, default: "" },
+    notes: { type: String, default: "" },
+    audioUrl: { type: String, default: "" },
+    previewAudioUrl: { type: String, default: "" },
+    platformUrl: { type: String, default: "" },
+
+    isFocusTrack: { type: Boolean, default: false, index: true },
+    isSecondFocus: { type: Boolean, default: false, index: true },
+    isPublic: { type: Boolean, default: false, index: true },
+
+    // Nexus / Realm publishing layer
+    realmId: {
+      type: Number,
+      enum: [303, 202, 101, 55, 44, 0, null],
+      default: null,
+      index: true,
+    },
+
+    showInNexus: { type: Boolean, default: false, index: true },
+
+    nexusRole: {
+      type: String,
+      enum: [
+        "flagship",
+        "anchor",
+        "public",
+        "featured",
+        "expansion",
+        "vault",
+        "premium",
+      ],
+      default: "public",
+    },
+
+    isRealmAnchor: { type: Boolean, default: false, index: true },
+    isPublicPick: { type: Boolean, default: false, index: true },
+
+    nexusSortOrder: {
+      type: Number,
+      default: 999,
+      index: true,
+    },
+
+    lastOpenedAt: { type: Date, default: Date.now },
+  },
+  { timestamps: true }
+);
+
+ReleaseTrackSchema.index({ ownerId: 1, releaseWorldId: 1, trackNumber: 1 });
+ReleaseTrackSchema.index({ ownerId: 1, releaseWorldId: 1, slug: 1 }, { unique: true });
+ReleaseTrackSchema.index({ releaseWorldId: 1, status: 1 });
+ReleaseTrackSchema.index({ releaseWorldId: 1, visibility: 1, playbackStatus: 1 });
+ReleaseTrackSchema.index({ showInNexus: 1, realmId: 1, visibility: 1, playbackStatus: 1, nexusSortOrder: 1 });
+ReleaseTrackSchema.index({ ownerId: 1, showInNexus: 1, realmId: 1 });
+
+module.exports = mongoose.model("ReleaseTrack", ReleaseTrackSchema);

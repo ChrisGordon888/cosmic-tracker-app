@@ -48,6 +48,8 @@ const typeDefs = gql`
     email: String!
     name: String
     image: String
+    role: String!
+    creatorStatus: String!
 
     level: Int!
     xp: Int!

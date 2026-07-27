@@ -8,6 +8,8 @@ export const GET_ME = gql`
       email
       name
       image
+      role
+      creatorStatus
       level
       xp
       xpToNextLevel
