@@ -248,6 +248,11 @@ export default function CreatorDashboardPage() {
           meta: 'Studio wall',
         },
         {
+          label: 'Creator Library',
+          href: '/creator/library',
+          meta: 'All tracks',
+        },
+        {
           label: 'Project Library',
           href: '/creator/projects',
           meta: 'All worlds',
@@ -259,6 +264,11 @@ export default function CreatorDashboardPage() {
         },
       ]
     : [
+        {
+          label: 'Creator Library',
+          href: '/creator/library',
+          meta: 'All tracks',
+        },
         {
           label: 'Project Library',
           href: '/creator/projects',

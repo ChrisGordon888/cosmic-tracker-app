@@ -529,6 +529,16 @@ module.exports = {
             });
         },
 
+        myReleaseTracks: async (_, __, { user }) => {
+            if (!user) throw new Error("Unauthorized: Please sign in.");
+
+            return await ReleaseTrack.find({ ownerId: user.id }).sort({
+                updatedAt: -1,
+                trackNumber: 1,
+                createdAt: 1,
+            });
+        },
+
         getMyReleaseWorld: async (_, { id }, { user }) => {
             if (!user) throw new Error("Unauthorized: Please sign in.");
 

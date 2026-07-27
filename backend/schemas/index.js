@@ -435,6 +435,7 @@ const typeDefs = gql`
     # Creator Worlds
     myCreativeProfiles: [CreativeProfile!]!
     myReleaseWorlds: [ReleaseWorld!]!
+    myReleaseTracks: [ReleaseTrack!]!
     getMyReleaseWorld(id: ID!): ReleaseWorld
     getMyReleaseWorldBySlug(slug: String!): ReleaseWorld
     getMyFeaturedReleaseWorld: ReleaseWorld
