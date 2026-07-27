@@ -7,6 +7,9 @@ import SessionWrapper from "@/components/SessionWrapper";
 import Link from "next/link";
 import { MusicPlayerProvider } from "@/context/MusicPlayerProvider";
 import MiniPlayer from "@/components/music/MiniPlayer";
+import { PlatformAccessProvider } from "@/context/PlatformAccessProvider";
+import { CreatorViewProvider } from "@/context/CreatorViewProvider";
+import PublicPreviewBanner from "@/components/creator/PublicPreviewBanner";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -36,39 +39,44 @@ export default function RootLayout({
             >
                 <SessionWrapper>
                     <ApolloWrapper>
-                        <MusicPlayerProvider>
-                            <CosmicTopNav />
+                        <PlatformAccessProvider>
+                            <CreatorViewProvider>
+                                <MusicPlayerProvider>
+                                    <CosmicTopNav />
+                                    <PublicPreviewBanner />
 
-                            <main className="flex-grow">
-                                {children}
-                            </main>
+                                    <main className="flex-grow">
+                                        {children}
+                                    </main>
 
-                            <footer className="cosmic-bottom-nav">
-                                <nav className="cosmic-bottom-nav-inner cosmic-bottom-nav-five">
-                                    <Link href="/" className="cosmic-bottom-link">
-                                        <span>Home</span>
-                                    </Link>
+                                    <footer className="cosmic-bottom-nav">
+                                        <nav className="cosmic-bottom-nav-inner cosmic-bottom-nav-five">
+                                            <Link href="/" className="cosmic-bottom-link">
+                                                <span>Home</span>
+                                            </Link>
 
-                                    <Link href="/nexus" className="cosmic-bottom-link">
-                                        <span>Nexus</span>
-                                    </Link>
+                                            <Link href="/nexus" className="cosmic-bottom-link">
+                                                <span>Nexus</span>
+                                            </Link>
 
-                                    <Link href="/find-your-realm" className="cosmic-bottom-link">
-                                        <span>Align</span>
-                                    </Link>
+                                            <Link href="/find-your-realm" className="cosmic-bottom-link">
+                                                <span>Align</span>
+                                            </Link>
 
-                                    <Link href="/leaderboard" className="cosmic-bottom-link">
-                                        <span>Rank</span>
-                                    </Link>
+                                            <Link href="/leaderboard" className="cosmic-bottom-link">
+                                                <span>Rank</span>
+                                            </Link>
 
-                                    <Link href="/profile" className="cosmic-bottom-link">
-                                        <span>Profile</span>
-                                    </Link>
-                                </nav>
-                            </footer>
+                                            <Link href="/profile" className="cosmic-bottom-link">
+                                                <span>Profile</span>
+                                            </Link>
+                                        </nav>
+                                    </footer>
 
-                            <MiniPlayer />
-                        </MusicPlayerProvider>
+                                    <MiniPlayer />
+                                </MusicPlayerProvider>
+                            </CreatorViewProvider>
+                        </PlatformAccessProvider>
                     </ApolloWrapper>
                 </SessionWrapper>
             </body>

@@ -1,42 +1,47 @@
 "use client";
 
 import {
-  ApolloClient,
-  InMemoryCache,
-  ApolloProvider,
-  createHttpLink,
+    ApolloClient,
+    InMemoryCache,
+    ApolloProvider,
+    createHttpLink,
 } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 import { useSession } from "next-auth/react";
+import { useMemo } from "react";
 
 const ApolloWrapper = ({ children }: { children: React.ReactNode }) => {
-  const { data: session, status } = useSession();
+    const { data: session, status } = useSession();
 
-  if (status === "loading") {
-    return null;
-  }
+    const client = useMemo(() => {
+        const httpLink = createHttpLink({
+            uri:
+                process.env.NEXT_PUBLIC_GRAPHQL_URL ||
+                "http://localhost:4000/graphql",
+        });
 
-  const httpLink = createHttpLink({
-    uri: process.env.NEXT_PUBLIC_GRAPHQL_URL || "http://localhost:4000/graphql",
-  });
+        const authLink = setContext((_, { headers }) => {
+            const token = session?.accessToken;
 
-  const authLink = setContext((_, { headers }) => {
-    const token = session?.accessToken;
+            return {
+                headers: {
+                    ...headers,
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+            };
+        });
 
-    return {
-      headers: {
-        ...headers,
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-    };
-  });
+        return new ApolloClient({
+            link: authLink.concat(httpLink),
+            cache: new InMemoryCache(),
+        });
+    }, [session?.accessToken]);
 
-  const client = new ApolloClient({
-    link: authLink.concat(httpLink),
-    cache: new InMemoryCache(),
-  });
+    if (status === "loading") {
+        return null;
+    }
 
-  return <ApolloProvider client={client}>{children}</ApolloProvider>;
+    return <ApolloProvider client={client}>{children}</ApolloProvider>;
 };
 
 export default ApolloWrapper;

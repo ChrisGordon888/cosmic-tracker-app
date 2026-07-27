@@ -549,7 +549,7 @@ module.exports = {
         // ========================================
 
         myCreativeProfiles: async (_, __, { user }) => {
-            if (!user) throw new Error("Unauthorized: Please sign in.");
+            requireCreator(user);
 
             return await CreativeProfile.find({ ownerId: user.id }).sort({
                 updatedAt: -1,
@@ -557,7 +557,7 @@ module.exports = {
         },
 
         myReleaseWorlds: async (_, __, { user }) => {
-            if (!user) throw new Error("Unauthorized: Please sign in.");
+            requireCreator(user);
 
             return await ReleaseWorld.find({ ownerId: user.id }).sort({
                 lastOpenedAt: -1,
@@ -566,7 +566,7 @@ module.exports = {
         },
 
         myReleaseTracks: async (_, __, { user }) => {
-            if (!user) throw new Error("Unauthorized: Please sign in.");
+            requireCreator(user);
 
             return await ReleaseTrack.find({ ownerId: user.id }).sort({
                 updatedAt: -1,
@@ -576,7 +576,7 @@ module.exports = {
         },
 
         getMyReleaseWorld: async (_, { id }, { user }) => {
-            if (!user) throw new Error("Unauthorized: Please sign in.");
+            requireCreator(user);
 
             const releaseWorld = await ReleaseWorld.findOne({
                 _id: id,
@@ -592,7 +592,7 @@ module.exports = {
         },
 
         getMyReleaseWorldBySlug: async (_, { slug }, { user }) => {
-            if (!user) throw new Error("Unauthorized: Please sign in.");
+            requireCreator(user);
 
             const releaseWorld = await ReleaseWorld.findOne({
                 slug: normalizeSlug(slug),
@@ -608,7 +608,7 @@ module.exports = {
         },
 
         getMyFeaturedReleaseWorld: async (_, __, { user }) => {
-            if (!user) throw new Error("Unauthorized: Please sign in.");
+            requireCreator(user);
 
             return await getFeaturedReleaseWorldForUser(user.id);
         },
@@ -626,7 +626,7 @@ module.exports = {
         },
 
         getReleaseTracks: async (_, { releaseWorldId }, { user }) => {
-            if (!user) throw new Error("Unauthorized: Please sign in.");
+            requireCreator(user);
 
             const releaseWorld = await getOwnedReleaseWorld(releaseWorldId, user.id);
 
@@ -712,7 +712,7 @@ module.exports = {
         },
 
         getReleaseTrack: async (_, { id }, { user }) => {
-            if (!user) throw new Error("Unauthorized: Please sign in.");
+            requireCreator(user);
 
             const track = await ReleaseTrack.findOne({
                 _id: id,
@@ -728,7 +728,7 @@ module.exports = {
         },
 
         getReleaseAssets: async (_, { releaseWorldId }, { user }) => {
-            if (!user) throw new Error("Unauthorized: Please sign in.");
+            requireCreator(user);
 
             const releaseWorld = await getOwnedReleaseWorld(releaseWorldId, user.id);
 
@@ -746,7 +746,7 @@ module.exports = {
         },
 
         getReleaseAsset: async (_, { id }, { user }) => {
-            if (!user) throw new Error("Unauthorized: Please sign in.");
+            requireCreator(user);
 
             const asset = await ReleaseAsset.findOne({
                 _id: id,
@@ -762,7 +762,7 @@ module.exports = {
         },
 
         getBoardArtifacts: async (_, { releaseWorldId }, { user }) => {
-            if (!user) throw new Error("Unauthorized: Please sign in.");
+            requireCreator(user);
 
             const releaseWorld = await getOwnedReleaseWorld(releaseWorldId, user.id);
 
@@ -1213,7 +1213,7 @@ module.exports = {
         // ========================================
 
         createCreativeProfile: async (_, { input }, { user }) => {
-            if (!user) throw new Error("Unauthorized: Please sign in.");
+            requireCreator(user);
 
             return await CreativeProfile.create({
                 ...input,
@@ -1223,7 +1223,7 @@ module.exports = {
         },
 
         createReleaseWorld: async (_, { input }, { user }) => {
-            if (!user) throw new Error("Unauthorized: Please sign in.");
+            requireCreator(user);
 
             const profile = await CreativeProfile.findOne({
                 _id: input.creativeProfileId,
@@ -1247,7 +1247,7 @@ module.exports = {
         },
 
         updateReleaseWorld: async (_, { id, input }, { user }) => {
-            if (!user) throw new Error("Unauthorized: Please sign in.");
+            requireCreator(user);
 
             const update = {
                 ...input,
@@ -1276,7 +1276,7 @@ module.exports = {
         },
 
         archiveReleaseWorld: async (_, { id }, { user }) => {
-            if (!user) throw new Error("Unauthorized: Please sign in.");
+            requireCreator(user);
 
             return await ReleaseWorld.findOneAndUpdate(
                 { _id: id, ownerId: user.id },
@@ -1286,7 +1286,7 @@ module.exports = {
         },
 
         setFeaturedReleaseWorld: async (_, { releaseWorldId }, { user }) => {
-            if (!user) throw new Error("Unauthorized: Please sign in.");
+            requireCreator(user);
 
             const releaseWorld = await getOwnedReleaseWorld(releaseWorldId, user.id);
 
@@ -1331,7 +1331,7 @@ module.exports = {
         },
 
         createReleaseTrack: async (_, { input }, { user }) => {
-            if (!user) throw new Error("Unauthorized: Please sign in.");
+            requireCreator(user);
 
             const releaseWorld = await getOwnedReleaseWorld(input.releaseWorldId, user.id);
 
@@ -1398,7 +1398,7 @@ module.exports = {
         },
 
         updateReleaseTrack: async (_, { id, input }, { user }) => {
-            if (!user) throw new Error("Unauthorized: Please sign in.");
+            requireCreator(user);
 
             const existingTrack = await ReleaseTrack.findOne({
                 _id: id,
@@ -1460,7 +1460,7 @@ module.exports = {
         },
 
         setFeaturedSignal: async (_, { trackId }, { user }) => {
-            if (!user) throw new Error("Unauthorized: Please sign in.");
+            requireCreator(user);
 
             const track = await getOwnedReleaseTrack(trackId, user.id);
             if (!track) throw new Error("Track not found.");
@@ -1502,7 +1502,7 @@ module.exports = {
         },
 
         deleteReleaseTrack: async (_, { id }, { user }) => {
-            if (!user) throw new Error("Unauthorized: Please sign in.");
+            requireCreator(user);
 
             const track = await ReleaseTrack.findOne({
                 _id: id,
@@ -1539,7 +1539,7 @@ module.exports = {
         },
 
         reorderReleaseTracks: async (_, { releaseWorldId, orderedTrackIds }, { user }) => {
-            if (!user) throw new Error("Unauthorized: Please sign in.");
+            requireCreator(user);
 
             const releaseWorld = await getOwnedReleaseWorld(releaseWorldId, user.id);
 
@@ -1587,7 +1587,7 @@ module.exports = {
         },
 
         createReleaseAsset: async (_, { input }, { user }) => {
-            if (!user) throw new Error("Unauthorized: Please sign in.");
+            requireCreator(user);
 
             const releaseWorld = await getOwnedReleaseWorld(input.releaseWorldId, user.id);
 
@@ -1658,7 +1658,7 @@ module.exports = {
         },
 
         updateReleaseAsset: async (_, { id, input }, { user }) => {
-            if (!user) throw new Error("Unauthorized: Please sign in.");
+            requireCreator(user);
 
             const existingAsset = await ReleaseAsset.findOne({
                 _id: id,
@@ -1764,7 +1764,7 @@ module.exports = {
         },
 
         deleteReleaseAsset: async (_, { id, deleteBlob = true }, { user }) => {
-            if (!user) throw new Error("Unauthorized: Please sign in.");
+            requireCreator(user);
 
             const asset = await ReleaseAsset.findOne({
                 _id: id,
@@ -1799,7 +1799,7 @@ module.exports = {
         },
 
         saveBoardArtifacts: async (_, { releaseWorldId, artifacts }, { user }) => {
-            if (!user) throw new Error("Unauthorized: Please sign in.");
+            requireCreator(user);
 
             const releaseWorld = await ReleaseWorld.findOne({
                 _id: releaseWorldId,
