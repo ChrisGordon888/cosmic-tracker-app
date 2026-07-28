@@ -486,14 +486,6 @@ const typeDefs = gql`
     getLeaderboard(limit: Int): [LeaderboardEntry!]!
     checkRealmUnlock(realmId: Int!): Boolean!
 
-    # Creator Onboarding
-    saveCreatorOnboardingProfile(
-      input: CreatorOnboardingProfileInput!
-    ): CreativeProfile!
-    saveCreatorOnboardingRelease(
-      input: CreatorOnboardingReleaseInput!
-    ): ReleaseWorld!
-
     # Platform Administration
     platformUsers(
       role: String
@@ -586,6 +578,14 @@ const typeDefs = gql`
     unlockRealm(realmId: Int!): User!
     setCurrentRealm(realmId: Int!): User!
     logDailyLogin: XPGainResponse!
+
+    # Creator Onboarding
+    saveCreatorOnboardingProfile(
+      input: CreatorOnboardingProfileInput!
+    ): CreativeProfile!
+    saveCreatorOnboardingRelease(
+      input: CreatorOnboardingReleaseInput!
+    ): ReleaseWorld!
 
     # Platform Administration
     inviteCreator(userId: ID!): PlatformUser!
