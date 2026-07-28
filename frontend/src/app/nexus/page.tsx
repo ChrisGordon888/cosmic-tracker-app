@@ -472,8 +472,11 @@ function getFeaturedTrackMetaLine(
     return 'Not yet open';
 }
 
-function getFeaturedTrackPlaybackUrl(track: NexusFeaturedReleaseTrack, isSignedIn: boolean) {
-    return getFeaturedTrackAction(track, isCreatorView).url;
+function getFeaturedTrackPlaybackUrl(
+    track: NexusFeaturedReleaseTrack,
+    canReviewAsCreator: boolean
+) {
+    return getFeaturedTrackAction(track, canReviewAsCreator).url;
 }
 
 function toPlayerTrack(
