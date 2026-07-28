@@ -138,6 +138,48 @@ export const SAVE_CREATOR_ONBOARDING_TRACK = gql`
     }
 `;
 
+export const GET_CREATOR_ONBOARDING_ARTWORK = gql`
+    query GetCreatorOnboardingArtwork {
+        getCreatorOnboardingArtwork {
+            id
+            releaseWorldId
+            kind
+            usage
+            title
+            description
+            url
+            fileName
+            mimeType
+            size
+            isPublic
+            createdAt
+            updatedAt
+        }
+    }
+`;
+
+export const SAVE_CREATOR_ONBOARDING_ARTWORK = gql`
+    mutation SaveCreatorOnboardingArtwork(
+        $input: CreatorOnboardingArtworkInput!
+    ) {
+        saveCreatorOnboardingArtwork(input: $input) {
+            id
+            releaseWorldId
+            kind
+            usage
+            title
+            description
+            url
+            fileName
+            mimeType
+            size
+            isPublic
+            createdAt
+            updatedAt
+        }
+    }
+`;
+
 export const GET_CREATOR_ONBOARDING_PROGRESS = gql`
     query GetCreatorOnboardingProgress {
         getCreatorOnboardingProgress {
@@ -301,4 +343,42 @@ export type SaveCreatorOnboardingTrackData = {
 
 export type SaveCreatorOnboardingTrackVariables = {
     input: CreatorOnboardingTrackInput;
+};
+
+
+export type CreatorOnboardingArtwork = {
+    id: string;
+    releaseWorldId: string;
+    kind: string;
+    usage: string;
+    title: string;
+    description?: string | null;
+    url: string;
+    fileName?: string | null;
+    mimeType?: string | null;
+    size?: number | null;
+    isPublic: boolean;
+    createdAt?: string | null;
+    updatedAt?: string | null;
+};
+
+export type CreatorOnboardingArtworkData = {
+    getCreatorOnboardingArtwork?: CreatorOnboardingArtwork | null;
+};
+
+export type CreatorOnboardingArtworkInput = {
+    title?: string | null;
+    description?: string | null;
+    url: string;
+    fileName?: string | null;
+    mimeType?: string | null;
+    size?: number | null;
+};
+
+export type SaveCreatorOnboardingArtworkData = {
+    saveCreatorOnboardingArtwork: CreatorOnboardingArtwork;
+};
+
+export type SaveCreatorOnboardingArtworkVariables = {
+    input: CreatorOnboardingArtworkInput;
 };

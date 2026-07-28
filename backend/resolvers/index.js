@@ -775,6 +775,54 @@ module.exports = {
             });
         },
 
+        getCreatorOnboardingArtwork: async (_, __, { user }) => {
+            requireCreatorOnboarding(user);
+
+            const profile = await getPrimaryCreativeProfile(user.id);
+
+            if (!profile) {
+                return null;
+            }
+
+            const releaseWorld = await ReleaseWorld.findOne({
+                ownerId: user.id,
+                creativeProfileId: profile._id,
+                status: { $ne: "archived" },
+            }).sort({
+                lastOpenedAt: -1,
+                updatedAt: -1,
+                createdAt: -1,
+            });
+
+            if (!releaseWorld) {
+                return null;
+            }
+
+            if (releaseWorld.coverAssetId) {
+                const coverAsset = await ReleaseAsset.findOne({
+                    _id: releaseWorld.coverAssetId,
+                    ownerId: user.id,
+                    releaseWorldId: releaseWorld._id,
+                });
+
+                if (coverAsset) {
+                    return coverAsset;
+                }
+            }
+
+            return await ReleaseAsset.findOne({
+                ownerId: user.id,
+                releaseWorldId: releaseWorld._id,
+                $or: [
+                    { usage: "cover" },
+                    { kind: "cover" },
+                ],
+            }).sort({
+                updatedAt: -1,
+                createdAt: -1,
+            });
+        },
+
         getCreatorOnboardingProgress: async (_, __, { user }) => {
             requireCreatorOnboarding(user);
 
@@ -1842,6 +1890,120 @@ module.exports = {
             await syncReleaseWorldFocusFromTrack(track, user.id);
 
             return track;
+        },
+
+        saveCreatorOnboardingArtwork: async (
+            _,
+            { input },
+            { user }
+        ) => {
+            requireCreatorOnboarding(user);
+
+            const profile = await getPrimaryCreativeProfile(user.id);
+
+            if (!profile) {
+                throw new Error(
+                    "Create your artist identity before adding artwork."
+                );
+            }
+
+            const releaseWorld = await ReleaseWorld.findOne({
+                ownerId: user.id,
+                creativeProfileId: profile._id,
+                status: { $ne: "archived" },
+            }).sort({
+                lastOpenedAt: -1,
+                updatedAt: -1,
+                createdAt: -1,
+            });
+
+            if (!releaseWorld) {
+                throw new Error(
+                    "Create your first release world before adding artwork."
+                );
+            }
+
+            const url = String(input.url || "").trim();
+            const title = String(
+                input.title || `${releaseWorld.title} Cover`
+            ).trim();
+            const description = String(
+                input.description || ""
+            ).trim();
+            const fileName = String(input.fileName || "").trim();
+            const mimeType = String(input.mimeType || "").trim();
+
+            if (!url) {
+                throw new Error("Artwork URL is required.");
+            }
+
+            validateReleaseAssetShape({
+                kind: "cover",
+                usage: "cover",
+                mimeType,
+                fileName,
+                url,
+            });
+
+            let artwork = null;
+
+            if (releaseWorld.coverAssetId) {
+                artwork = await ReleaseAsset.findOne({
+                    _id: releaseWorld.coverAssetId,
+                    ownerId: user.id,
+                    releaseWorldId: releaseWorld._id,
+                });
+            }
+
+            if (!artwork) {
+                artwork = await ReleaseAsset.findOne({
+                    ownerId: user.id,
+                    releaseWorldId: releaseWorld._id,
+                    $or: [
+                        { usage: "cover" },
+                        { kind: "cover" },
+                    ],
+                }).sort({
+                    updatedAt: -1,
+                    createdAt: -1,
+                });
+            }
+
+            const update = {
+                kind: "cover",
+                usage: "cover",
+                title: title || `${releaseWorld.title} Cover`,
+                description,
+                url,
+                fileName,
+                mimeType,
+                size:
+                    input.size === undefined ||
+                    input.size === null
+                        ? artwork?.size || null
+                        : Number(input.size),
+                isPublic: artwork
+                    ? Boolean(artwork.isPublic)
+                    : false,
+                lastOpenedAt: new Date(),
+            };
+
+            if (artwork) {
+                Object.assign(artwork, update);
+                await artwork.save();
+            } else {
+                artwork = await ReleaseAsset.create({
+                    ...update,
+                    ownerId: user.id,
+                    releaseWorldId: releaseWorld._id,
+                    trackId: null,
+                    boardArtifactId: null,
+                });
+            }
+
+            await syncReleaseAssetTargets(artwork, user.id);
+
+            return artwork;
         },
 
         // ========================================

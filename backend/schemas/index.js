@@ -288,6 +288,15 @@ const typeDefs = gql`
     layer: Int!
   }
 
+  input CreatorOnboardingArtworkInput {
+    title: String
+    description: String
+    url: String!
+    fileName: String
+    mimeType: String
+    size: Int
+  }
+
   input CreatorOnboardingTrackInput {
     title: String!
     slug: String
@@ -509,6 +518,7 @@ const typeDefs = gql`
     getCreatorOnboardingProfile: CreativeProfile
     getCreatorOnboardingRelease: ReleaseWorld
     getCreatorOnboardingTrack: ReleaseTrack
+    getCreatorOnboardingArtwork: ReleaseAsset
     getCreatorOnboardingProgress: CreatorOnboardingProgress!
 
     # Creator Worlds
@@ -601,6 +611,9 @@ const typeDefs = gql`
     saveCreatorOnboardingTrack(
       input: CreatorOnboardingTrackInput!
     ): ReleaseTrack!
+    saveCreatorOnboardingArtwork(
+      input: CreatorOnboardingArtworkInput!
+    ): ReleaseAsset!
 
     # Platform Administration
     inviteCreator(userId: ID!): PlatformUser!
