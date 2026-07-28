@@ -288,6 +288,24 @@ const typeDefs = gql`
     layer: Int!
   }
 
+  input CreatorOnboardingReleaseInput {
+    title: String!
+    slug: String!
+    releaseType: String
+    oneLineSummary: String
+    story: String
+    fullDropDate: String
+  }
+
+  input CreatorOnboardingProfileInput {
+    artistName: String!
+    slug: String!
+    displayName: String
+    tagline: String
+    bio: String
+    isPublic: Boolean
+  }
+
   input CreativeProfileInput {
     artistName: String!
     slug: String!
@@ -468,6 +486,14 @@ const typeDefs = gql`
     getLeaderboard(limit: Int): [LeaderboardEntry!]!
     checkRealmUnlock(realmId: Int!): Boolean!
 
+    # Creator Onboarding
+    saveCreatorOnboardingProfile(
+      input: CreatorOnboardingProfileInput!
+    ): CreativeProfile!
+    saveCreatorOnboardingRelease(
+      input: CreatorOnboardingReleaseInput!
+    ): ReleaseWorld!
+
     # Platform Administration
     platformUsers(
       role: String
@@ -477,6 +503,8 @@ const typeDefs = gql`
     platformUser(id: ID!): PlatformUser
 
     # Creator Onboarding
+    getCreatorOnboardingProfile: CreativeProfile
+    getCreatorOnboardingRelease: ReleaseWorld
     getCreatorOnboardingProgress: CreatorOnboardingProgress!
 
     # Creator Worlds

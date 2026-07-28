@@ -127,6 +127,27 @@ function normalizeSlug(slug) {
         .toLowerCase();
 }
 
+
+function normalizeCreatorSlug(slug) {
+    const normalized = normalizeSlug(slug)
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+
+    if (!normalized) {
+        throw new Error("Choose a valid creator URL slug.");
+    }
+
+    if (normalized.length < 2) {
+        throw new Error("Creator URL slug must be at least 2 characters.");
+    }
+
+    if (normalized.length > 60) {
+        throw new Error("Creator URL slug must be 60 characters or fewer.");
+    }
+
+    return normalized;
+}
+
 function slugifyTitle(title) {
     return String(title || "")
         .trim()
@@ -694,6 +715,32 @@ module.exports = {
         // ========================================
         // 🌱 CREATOR ONBOARDING
         // ========================================
+
+        getCreatorOnboardingProfile: async (_, __, { user }) => {
+            requireCreatorOnboarding(user);
+
+            return await getPrimaryCreativeProfile(user.id);
+        },
+
+        getCreatorOnboardingRelease: async (_, __, { user }) => {
+            requireCreatorOnboarding(user);
+
+            const profile = await getPrimaryCreativeProfile(user.id);
+
+            if (!profile) {
+                return null;
+            }
+
+            return await ReleaseWorld.findOne({
+                ownerId: user.id,
+                creativeProfileId: profile._id,
+                status: { $ne: "archived" },
+            }).sort({
+                lastOpenedAt: -1,
+                updatedAt: -1,
+                createdAt: -1,
+            });
+        },
 
         getCreatorOnboardingProgress: async (_, __, { user }) => {
             requireCreatorOnboarding(user);
@@ -1457,6 +1504,159 @@ module.exports = {
                 newLevel,
                 message,
             };
+        },
+
+        // ========================================
+        // 🌱 CREATOR ONBOARDING MUTATIONS
+        // ========================================
+
+        saveCreatorOnboardingProfile: async (
+            _,
+            { input },
+            { user }
+        ) => {
+            requireCreatorOnboarding(user);
+
+            const artistName = String(input.artistName || "").trim();
+            const displayName = String(
+                input.displayName || artistName
+            ).trim();
+            const slug = normalizeCreatorSlug(input.slug);
+
+            if (!artistName) {
+                throw new Error("Artist name is required.");
+            }
+
+            if (artistName.length > 80) {
+                throw new Error("Artist name must be 80 characters or fewer.");
+            }
+
+            const existingSlugOwner = await CreativeProfile.findOne({
+                slug,
+                ownerId: { $ne: user.id },
+            }).select("_id");
+
+            if (existingSlugOwner) {
+                throw new Error(
+                    "That creator URL is already in use. Choose another slug."
+                );
+            }
+
+            const existingProfile = await getPrimaryCreativeProfile(user.id);
+
+            const update = {
+                artistName,
+                displayName: displayName || artistName,
+                slug,
+                tagline: String(input.tagline || "").trim(),
+                bio: String(input.bio || "").trim(),
+                isPublic: Boolean(input.isPublic),
+                isFeatured: existingProfile
+                    ? Boolean(existingProfile.isFeatured)
+                    : true,
+            };
+
+            if (existingProfile) {
+                Object.assign(existingProfile, update);
+                await existingProfile.save();
+                return existingProfile;
+            }
+
+            return await CreativeProfile.create({
+                ...update,
+                ownerId: user.id,
+                featuredReleaseWorldId: null,
+            });
+        },
+
+        saveCreatorOnboardingRelease: async (
+            _,
+            { input },
+            { user }
+        ) => {
+            requireCreatorOnboarding(user);
+
+            const profile = await getPrimaryCreativeProfile(user.id);
+
+            if (!profile) {
+                throw new Error(
+                    "Create your artist identity before creating a release world."
+                );
+            }
+
+            const title = String(input.title || "").trim();
+            const slug = normalizeCreatorSlug(input.slug);
+            const releaseType = String(
+                input.releaseType || "single"
+            ).trim().toLowerCase();
+
+            if (!title) {
+                throw new Error("Release title is required.");
+            }
+
+            if (title.length > 120) {
+                throw new Error(
+                    "Release title must be 120 characters or fewer."
+                );
+            }
+
+            const existingRelease = await ReleaseWorld.findOne({
+                ownerId: user.id,
+                creativeProfileId: profile._id,
+                status: { $ne: "archived" },
+            }).sort({
+                lastOpenedAt: -1,
+                updatedAt: -1,
+                createdAt: -1,
+            });
+
+            const slugOwner = await ReleaseWorld.findOne({
+                slug,
+                ...(existingRelease
+                    ? { _id: { $ne: existingRelease._id } }
+                    : {}),
+            }).select("_id");
+
+            if (slugOwner) {
+                throw new Error(
+                    "That release URL is already in use. Choose another slug."
+                );
+            }
+
+            const update = {
+                title,
+                slug,
+                releaseType,
+                oneLineSummary: String(
+                    input.oneLineSummary || ""
+                ).trim(),
+                story: String(input.story || "").trim(),
+                fullDropDate: input.fullDropDate
+                    ? new Date(input.fullDropDate)
+                    : null,
+                status: "draft",
+                visibility: "private",
+                isFeatured: existingRelease
+                    ? Boolean(existingRelease.isFeatured)
+                    : true,
+                lastOpenedAt: new Date(),
+            };
+
+            if (existingRelease) {
+                Object.assign(existingRelease, update);
+                await existingRelease.save();
+                return existingRelease;
+            }
+
+            return await ReleaseWorld.create({
+                ...update,
+                ownerId: user.id,
+                creativeProfileId: profile._id,
+                currentFocus: "",
+                secondFocus: "",
+                coverArtUrl: "",
+                coverAssetId: null,
+            });
         },
 
         // ========================================

@@ -25,7 +25,7 @@ export default function CreatorAccessGate({
 
     const isOnboardingRoute =
         pathname === "/creator/onboarding" ||
-        Boolean(pathname?.startsWith("/creator/onboarding/"));
+        pathname.startsWith("/creator/onboarding/");
 
     if (loading) {
         return (
