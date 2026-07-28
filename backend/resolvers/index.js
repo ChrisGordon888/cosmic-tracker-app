@@ -237,6 +237,311 @@ function validateNexusPublication(candidate, releaseWorld) {
     }
 }
 
+
+function createReadinessIssue(code, message, severity, field = null, href = null) {
+    return { code, message, severity, field, href };
+}
+
+function hasText(value) {
+    return Boolean(String(value || "").trim());
+}
+
+function hasValidDate(value) {
+    if (!value) return false;
+    const date = new Date(value);
+    return !Number.isNaN(date.getTime());
+}
+
+async function evaluateReleasePublishingReadiness(releaseWorld, userId) {
+    const blockingIssues = [];
+    const warnings = [];
+    const completedChecks = [];
+
+    const profile = await CreativeProfile.findOne({
+        _id: releaseWorld.creativeProfileId,
+        ownerId: userId,
+    });
+
+    const tracks = await ReleaseTrack.find({
+        ownerId: userId,
+        releaseWorldId: releaseWorld._id,
+        status: { $ne: "archived" },
+    }).sort({ trackNumber: 1, createdAt: 1 });
+
+    let artwork = null;
+
+    if (releaseWorld.coverAssetId) {
+        artwork = await ReleaseAsset.findOne({
+            _id: releaseWorld.coverAssetId,
+            ownerId: userId,
+            releaseWorldId: releaseWorld._id,
+        });
+    }
+
+    if (!artwork) {
+        artwork = await ReleaseAsset.findOne({
+            ownerId: userId,
+            releaseWorldId: releaseWorld._id,
+            $or: [{ usage: "cover" }, { kind: "cover" }],
+        }).sort({ updatedAt: -1, createdAt: -1 });
+    }
+
+    if (profile) {
+        completedChecks.push("PROFILE_EXISTS");
+    } else {
+        blockingIssues.push(
+            createReadinessIssue(
+                "PROFILE_REQUIRED",
+                "A creator profile must be connected to this release.",
+                "blocking",
+                "creativeProfileId",
+                "/creator/onboarding/profile"
+            )
+        );
+    }
+
+    if (profile?.isPublic) {
+        completedChecks.push("PROFILE_PUBLIC");
+    } else if (profile) {
+        warnings.push(
+            createReadinessIssue(
+                "PROFILE_PRIVATE",
+                "The creator profile is private. Public discovery may be limited.",
+                "warning",
+                "isPublic",
+                "/creator/onboarding/profile"
+            )
+        );
+    }
+
+    if (hasText(releaseWorld.title)) {
+        completedChecks.push("RELEASE_TITLE");
+    } else {
+        blockingIssues.push(
+            createReadinessIssue(
+                "RELEASE_TITLE_REQUIRED",
+                "The release needs a title.",
+                "blocking",
+                "title",
+                "/creator/onboarding/release"
+            )
+        );
+    }
+
+    if (hasText(releaseWorld.slug)) {
+        completedChecks.push("RELEASE_SLUG");
+    } else {
+        blockingIssues.push(
+            createReadinessIssue(
+                "RELEASE_SLUG_REQUIRED",
+                "The release needs a URL slug.",
+                "blocking",
+                "slug",
+                "/creator/onboarding/release"
+            )
+        );
+    }
+
+    if (artwork || hasText(releaseWorld.coverArtUrl)) {
+        completedChecks.push("RELEASE_ARTWORK");
+    } else {
+        blockingIssues.push(
+            createReadinessIssue(
+                "RELEASE_ARTWORK_REQUIRED",
+                "Add cover artwork before publishing.",
+                "blocking",
+                "coverAssetId",
+                "/creator/onboarding/artwork"
+            )
+        );
+    }
+
+    if (artwork?.isPublic) {
+        completedChecks.push("ARTWORK_PUBLIC");
+    } else if (artwork) {
+        warnings.push(
+            createReadinessIssue(
+                "ARTWORK_PRIVATE",
+                "The connected cover asset is private.",
+                "warning",
+                "isPublic",
+                "/creator/onboarding/artwork"
+            )
+        );
+    }
+
+    if (tracks.length) {
+        completedChecks.push("RELEASE_HAS_TRACK");
+    } else {
+        blockingIssues.push(
+            createReadinessIssue(
+                "TRACK_REQUIRED",
+                "Add at least one track before publishing.",
+                "blocking",
+                "tracks",
+                "/creator/onboarding/track"
+            )
+        );
+    }
+
+    for (const track of tracks) {
+        const label = track.title || `Track ${track.trackNumber || ""}`.trim();
+        const playback = track.playbackStatus || "locked";
+        const visibility =
+            track.visibility || (track.isPublic ? "public" : "private");
+        const hasAudio = hasText(track.audioUrl);
+        const hasPreview = hasText(track.previewAudioUrl);
+        const hasOpenDate =
+            hasValidDate(track.unlockDate) || hasValidDate(track.dropDate);
+
+        if (hasText(track.title)) {
+            completedChecks.push(`TRACK_TITLE:${track._id}`);
+        } else {
+            blockingIssues.push(
+                createReadinessIssue(
+                    "TRACK_TITLE_REQUIRED",
+                    "Every track needs a title.",
+                    "blocking",
+                    "title",
+                    "/creator/onboarding/track"
+                )
+            );
+        }
+
+        if (hasText(track.slug)) {
+            completedChecks.push(`TRACK_SLUG:${track._id}`);
+        } else {
+            blockingIssues.push(
+                createReadinessIssue(
+                    "TRACK_SLUG_REQUIRED",
+                    `${label} needs a URL slug.`,
+                    "blocking",
+                    "slug",
+                    "/creator/onboarding/track"
+                )
+            );
+        }
+
+        if (playback === "playable" && !hasAudio) {
+            blockingIssues.push(
+                createReadinessIssue(
+                    "TRACK_AUDIO_REQUIRED",
+                    `${label} is playable but has no full audio file.`,
+                    "blocking",
+                    "audioUrl",
+                    `/creator/releases/${releaseWorld.slug}`
+                )
+            );
+        } else if (playback === "playable") {
+            completedChecks.push(`TRACK_AUDIO:${track._id}`);
+        }
+
+        if (playback === "preview" && !hasPreview && !hasAudio) {
+            blockingIssues.push(
+                createReadinessIssue(
+                    "TRACK_PREVIEW_REQUIRED",
+                    `${label} is set to preview but has no preview or full audio.`,
+                    "blocking",
+                    "previewAudioUrl",
+                    `/creator/releases/${releaseWorld.slug}`
+                )
+            );
+        } else if (playback === "preview") {
+            completedChecks.push(`TRACK_PREVIEW:${track._id}`);
+        }
+
+        if (playback === "coming-soon" && !hasOpenDate) {
+            blockingIssues.push(
+                createReadinessIssue(
+                    "TRACK_DATE_REQUIRED",
+                    `${label} is coming soon but has no drop or unlock date.`,
+                    "blocking",
+                    "unlockDate",
+                    `/creator/releases/${releaseWorld.slug}`
+                )
+            );
+        } else if (playback === "coming-soon") {
+            completedChecks.push(`TRACK_OPEN_DATE:${track._id}`);
+        }
+
+        if (playback === "locked") {
+            warnings.push(
+                createReadinessIssue(
+                    "TRACK_LOCKED",
+                    `${label} is still locked.`,
+                    "warning",
+                    "playbackStatus",
+                    `/creator/releases/${releaseWorld.slug}`
+                )
+            );
+        }
+
+        if (["public", "listed"].includes(visibility) || track.isPublic) {
+            completedChecks.push(`TRACK_VISIBLE:${track._id}`);
+        } else {
+            warnings.push(
+                createReadinessIssue(
+                    "TRACK_PRIVATE",
+                    `${label} is private and will not appear publicly.`,
+                    "warning",
+                    "visibility",
+                    `/creator/releases/${releaseWorld.slug}`
+                )
+            );
+        }
+
+        if (track.showInNexus) {
+            try {
+                validateNexusPublication(track, releaseWorld);
+                completedChecks.push(`TRACK_NEXUS_READY:${track._id}`);
+            } catch (error) {
+                blockingIssues.push(
+                    createReadinessIssue(
+                        "NEXUS_CONFIGURATION_INVALID",
+                        error instanceof Error
+                            ? error.message
+                            : `${label} is not ready for Nexus publication.`,
+                        "blocking",
+                        "showInNexus",
+                        `/creator/releases/${releaseWorld.slug}`
+                    )
+                );
+            }
+        }
+    }
+
+    if (hasValidDate(releaseWorld.fullDropDate)) {
+        completedChecks.push("RELEASE_DATE");
+    } else {
+        warnings.push(
+            createReadinessIssue(
+                "RELEASE_DATE_MISSING",
+                "No target release date is set.",
+                "warning",
+                "fullDropDate",
+                "/creator/onboarding/release"
+            )
+        );
+    }
+
+    const total =
+        completedChecks.length + blockingIssues.length + warnings.length;
+    const score =
+        total === 0 ? 0 : Math.round((completedChecks.length / total) * 100);
+
+    return {
+        ready: blockingIssues.length === 0,
+        score,
+        completedChecks,
+        blockingIssues,
+        warnings,
+        profileId: profile?._id || null,
+        releaseWorldId: releaseWorld._id,
+        trackCount: tracks.length,
+        artworkId: artwork?._id || null,
+    };
+}
+
 async function getOwnedReleaseWorld(releaseWorldId, userId) {
     return await ReleaseWorld.findOne({
         _id: releaseWorldId,
@@ -954,6 +1259,28 @@ module.exports = {
                 trackNumber: 1,
                 createdAt: 1,
             });
+        },
+
+        getReleasePublishingReadiness: async (
+            _,
+            { releaseWorldId },
+            { user }
+        ) => {
+            requireCreator(user);
+
+            const releaseWorld = await getOwnedReleaseWorld(
+                releaseWorldId,
+                user.id
+            );
+
+            if (!releaseWorld) {
+                throw new Error("Release world not found.");
+            }
+
+            return await evaluateReleasePublishingReadiness(
+                releaseWorld,
+                user.id
+            );
         },
 
         getMyReleaseWorld: async (_, { id }, { user }) => {

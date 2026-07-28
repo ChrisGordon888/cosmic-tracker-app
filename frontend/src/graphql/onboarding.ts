@@ -458,3 +458,62 @@ export type CreatorOnboardingReviewData = {
     getCreatorOnboardingTrack?: CreatorOnboardingTrack | null;
     getCreatorOnboardingArtwork?: CreatorOnboardingArtwork | null;
 };
+
+
+export const GET_RELEASE_PUBLISHING_READINESS = gql`
+    query GetReleasePublishingReadiness($releaseWorldId: ID!) {
+        getReleasePublishingReadiness(
+            releaseWorldId: $releaseWorldId
+        ) {
+            ready
+            score
+            completedChecks
+            profileId
+            releaseWorldId
+            trackCount
+            artworkId
+            blockingIssues {
+                code
+                message
+                severity
+                field
+                href
+            }
+            warnings {
+                code
+                message
+                severity
+                field
+                href
+            }
+        }
+    }
+`;
+
+export type ReleasePublishingIssue = {
+    code: string;
+    message: string;
+    severity: string;
+    field?: string | null;
+    href?: string | null;
+};
+
+export type ReleasePublishingReadiness = {
+    ready: boolean;
+    score: number;
+    completedChecks: string[];
+    blockingIssues: ReleasePublishingIssue[];
+    warnings: ReleasePublishingIssue[];
+    profileId?: string | null;
+    releaseWorldId: string;
+    trackCount: number;
+    artworkId?: string | null;
+};
+
+export type ReleasePublishingReadinessData = {
+    getReleasePublishingReadiness: ReleasePublishingReadiness;
+};
+
+export type ReleasePublishingReadinessVariables = {
+    releaseWorldId: string;
+};

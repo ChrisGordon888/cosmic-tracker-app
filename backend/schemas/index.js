@@ -177,6 +177,26 @@ const typeDefs = gql`
     updatedAt: String
   }
 
+  type ReleasePublishingIssue {
+    code: String!
+    message: String!
+    severity: String!
+    field: String
+    href: String
+  }
+
+  type ReleasePublishingReadiness {
+    ready: Boolean!
+    score: Int!
+    completedChecks: [String!]!
+    blockingIssues: [ReleasePublishingIssue!]!
+    warnings: [ReleasePublishingIssue!]!
+    profileId: ID
+    releaseWorldId: ID!
+    trackCount: Int!
+    artworkId: ID
+  }
+
   type ReleaseWorld {
     id: ID!
     ownerId: String!
@@ -525,6 +545,9 @@ const typeDefs = gql`
     myCreativeProfiles: [CreativeProfile!]!
     myReleaseWorlds: [ReleaseWorld!]!
     myReleaseTracks: [ReleaseTrack!]!
+    getReleasePublishingReadiness(
+      releaseWorldId: ID!
+    ): ReleasePublishingReadiness!
     getMyReleaseWorld(id: ID!): ReleaseWorld
     getMyReleaseWorldBySlug(slug: String!): ReleaseWorld
     getMyFeaturedReleaseWorld: ReleaseWorld
