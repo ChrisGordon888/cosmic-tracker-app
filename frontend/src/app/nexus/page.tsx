@@ -437,20 +437,37 @@ function getFeaturedTrackAction(track: NexusFeaturedReleaseTrack, isSignedIn: bo
 
 function getFeaturedTrackMetaLine(
     track: NexusFeaturedReleaseTrack,
-    isSignedIn: boolean,
+    canReviewAsCreator: boolean,
     releaseWorld?: NexusFeaturedReleaseWorld | null
 ) {
-    const trackAction = getFeaturedTrackAction(track, isCreatorView);
+    const trackAction = getFeaturedTrackAction(track, canReviewAsCreator);
     const unlockDate = formatReleaseDate(track.unlockDate);
     const dropDate = formatReleaseDate(track.dropDate || releaseWorld?.fullDropDate);
     const openDate = unlockDate !== 'TBD' ? unlockDate : dropDate;
 
-    if (trackAction.canPlay && trackAction.label === 'Review') return 'Staged for creator review';
-    if (trackAction.canPlay && trackAction.label === 'Play') return 'Available now';
-    if (trackAction.canPlay && trackAction.label === 'Preview') return 'Preview available';
-    if (trackAction.label === 'Preview pending') return 'Preview coming soon';
-    if (openDate !== 'TBD') return `Opens ${openDate}`;
-    if (track.playbackStatus === 'coming-soon') return 'Coming soon';
+    if (trackAction.canPlay && trackAction.label === 'Review') {
+        return 'Staged for creator review';
+    }
+
+    if (trackAction.canPlay && trackAction.label === 'Play') {
+        return 'Available now';
+    }
+
+    if (trackAction.canPlay && trackAction.label === 'Preview') {
+        return 'Preview available';
+    }
+
+    if (trackAction.label === 'Preview pending') {
+        return 'Preview coming soon';
+    }
+
+    if (openDate !== 'TBD') {
+        return `Opens ${openDate}`;
+    }
+
+    if (track.playbackStatus === 'coming-soon') {
+        return 'Coming soon';
+    }
 
     return 'Not yet open';
 }
@@ -720,8 +737,8 @@ export default function CosmicNexusHub() {
             (isCreatorView
                 ? creatorNexusTrackData?.myReleaseTracks
                 : publicNexusTrackData?.getPublicNexusTracks) as
-                | PublicNexusReleaseTrack[]
-                | undefined
+            | PublicNexusReleaseTrack[]
+            | undefined
         );
 
         return mergeMusicCatalogs(MUSIC_REGISTRY, creatorTracks);
