@@ -67,6 +67,21 @@ const typeDefs = gql`
     updatedAt: String
   }
 
+  # ========================================
+  # 🛡️ PLATFORM ADMINISTRATION
+  # ========================================
+
+  type PlatformUser {
+    id: ID!
+    email: String!
+    name: String
+    image: String
+    role: String!
+    creatorStatus: String!
+    createdAt: String
+    updatedAt: String
+  }
+
   type CompletedTrial {
     realmId: Int!
     trialId: String!
@@ -434,6 +449,14 @@ const typeDefs = gql`
     getLeaderboard(limit: Int): [LeaderboardEntry!]!
     checkRealmUnlock(realmId: Int!): Boolean!
 
+    # Platform Administration
+    platformUsers(
+      role: String
+      creatorStatus: String
+      search: String
+    ): [PlatformUser!]!
+    platformUser(id: ID!): PlatformUser
+
     # Creator Worlds
     myCreativeProfiles: [CreativeProfile!]!
     myReleaseWorlds: [ReleaseWorld!]!
@@ -513,6 +536,10 @@ const typeDefs = gql`
     unlockRealm(realmId: Int!): User!
     setCurrentRealm(realmId: Int!): User!
     logDailyLogin: XPGainResponse!
+
+    # Platform Administration
+    setCreatorStatus(userId: ID!, creatorStatus: String!): PlatformUser!
+    setPlatformRole(userId: ID!, role: String!): PlatformUser!
 
     # Creator Worlds
     createCreativeProfile(input: CreativeProfileInput!): CreativeProfile!

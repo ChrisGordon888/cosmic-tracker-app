@@ -47,6 +47,56 @@ function isPlatformOwner(user) {
     return user?.role === "owner";
 }
 
+function requireAdmin(user) {
+    requireUser(user);
+
+    if (!isPlatformAdmin(user)) {
+        throw new Error("Administrator access required.");
+    }
+
+    return user;
+}
+
+function requireOwner(user) {
+    requireUser(user);
+
+    if (!isPlatformOwner(user)) {
+        throw new Error("Owner access required.");
+    }
+
+    return user;
+}
+
+const PLATFORM_ROLES = new Set([
+    "listener",
+    "creator",
+    "admin",
+    "owner",
+]);
+
+const CREATOR_STATUSES = new Set([
+    "none",
+    "invited",
+    "active",
+    "suspended",
+]);
+
+function normalizePlatformRole(role) {
+    return String(role || "")
+        .trim()
+        .toLowerCase();
+}
+
+function normalizeCreatorStatus(status) {
+    return String(status || "")
+        .trim()
+        .toLowerCase();
+}
+
+function escapeRegex(value) {
+    return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function normalizeSlug(slug) {
     return String(slug || "")
         .trim()
@@ -542,6 +592,79 @@ module.exports = {
             if (!user) throw new Error("Unauthorized: Please sign in.");
             const userData = await User.findOne({ email: user.email });
             return userData ? userData.isRealmUnlocked(realmId) : false;
+        },
+
+        // ========================================
+        // 🛡️ PLATFORM ADMINISTRATION QUERIES
+        // ========================================
+
+        platformUsers: async (
+            _,
+            { role, creatorStatus, search },
+            { user }
+        ) => {
+            requireAdmin(user);
+
+            const query = {};
+
+            if (role) {
+                const normalizedRole = normalizePlatformRole(role);
+
+                if (!PLATFORM_ROLES.has(normalizedRole)) {
+                    throw new Error(
+                        "Invalid platform role. Choose listener, creator, admin, or owner."
+                    );
+                }
+
+                query.role = normalizedRole;
+            }
+
+            if (creatorStatus) {
+                const normalizedStatus = normalizeCreatorStatus(creatorStatus);
+
+                if (!CREATOR_STATUSES.has(normalizedStatus)) {
+                    throw new Error(
+                        "Invalid creator status. Choose none, invited, active, or suspended."
+                    );
+                }
+
+                query.creatorStatus = normalizedStatus;
+            }
+
+            if (search) {
+                const normalizedSearch = escapeRegex(String(search).trim());
+
+                if (normalizedSearch) {
+                    query.$or = [
+                        {
+                            name: {
+                                $regex: normalizedSearch,
+                                $options: "i",
+                            },
+                        },
+                        {
+                            email: {
+                                $regex: normalizedSearch,
+                                $options: "i",
+                            },
+                        },
+                    ];
+                }
+            }
+
+            return await User.find(query)
+                .select(
+                    "_id email name image role creatorStatus createdAt updatedAt"
+                )
+                .sort({ createdAt: -1 });
+        },
+
+        platformUser: async (_, { id }, { user }) => {
+            requireAdmin(user);
+
+            return await User.findById(id).select(
+                "_id email name image role creatorStatus createdAt updatedAt"
+            );
         },
 
         // ========================================
@@ -1206,6 +1329,101 @@ module.exports = {
                 newLevel,
                 message,
             };
+        },
+
+        // ========================================
+        // 🛡️ PLATFORM ADMINISTRATION MUTATIONS
+        // ========================================
+
+        setCreatorStatus: async (
+            _,
+            { userId, creatorStatus },
+            { user }
+        ) => {
+            requireAdmin(user);
+
+            const nextCreatorStatus = normalizeCreatorStatus(creatorStatus);
+
+            if (!CREATOR_STATUSES.has(nextCreatorStatus)) {
+                throw new Error(
+                    "Invalid creator status. Choose none, invited, active, or suspended."
+                );
+            }
+
+            const targetUser = await User.findById(userId);
+
+            if (!targetUser) {
+                throw new Error("User not found.");
+            }
+
+            const actingOnSelf = String(targetUser._id) === String(user.id);
+
+            if (actingOnSelf) {
+                throw new Error("You cannot change your own creator status.");
+            }
+
+            if (targetUser.role === "owner" && !isPlatformOwner(user)) {
+                throw new Error(
+                    "Administrators cannot change an owner's creator status."
+                );
+            }
+
+            if (targetUser.role === "admin" && !isPlatformOwner(user)) {
+                throw new Error(
+                    "Administrators cannot change another administrator's creator status."
+                );
+            }
+
+            targetUser.creatorStatus = nextCreatorStatus;
+            await targetUser.save();
+
+            return targetUser;
+        },
+
+        setPlatformRole: async (_, { userId, role }, { user }) => {
+            requireOwner(user);
+
+            const nextRole = normalizePlatformRole(role);
+
+            if (!PLATFORM_ROLES.has(nextRole)) {
+                throw new Error(
+                    "Invalid platform role. Choose listener, creator, admin, or owner."
+                );
+            }
+
+            const targetUser = await User.findById(userId);
+
+            if (!targetUser) {
+                throw new Error("User not found.");
+            }
+
+            const actingOnSelf = String(targetUser._id) === String(user.id);
+
+            if (actingOnSelf) {
+                throw new Error("You cannot change your own platform role.");
+            }
+
+            if (targetUser.role === "owner" && nextRole !== "owner") {
+                const ownerCount = await User.countDocuments({ role: "owner" });
+
+                if (ownerCount <= 1) {
+                    throw new Error("The final platform owner cannot be demoted.");
+                }
+            }
+
+            targetUser.role = nextRole;
+
+            if (nextRole === "creator" && targetUser.creatorStatus === "none") {
+                targetUser.creatorStatus = "invited";
+            }
+
+            if (nextRole === "listener") {
+                targetUser.creatorStatus = "none";
+            }
+
+            await targetUser.save();
+
+            return targetUser;
         },
 
         // ========================================
