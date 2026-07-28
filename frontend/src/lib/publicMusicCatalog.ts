@@ -42,6 +42,9 @@ export interface RuntimeMusicTrack extends MusicTrack {
     unlockDate?: string | null;
     dropDate?: string | null;
     platformUrl?: string | null;
+    fullAudioUrl?: string | null;
+    previewAudioUrl?: string | null;
+    isPublic?: boolean | null;
 }
 
 const VALID_REALMS = new Set<number>([303, 202, 101, 55, 44, 0]);
@@ -92,10 +95,6 @@ function mapStatus(value?: string | null): TrackStatus {
 }
 
 function getPlaybackUrl(track: PublicNexusReleaseTrack) {
-    if (track.playbackStatus === 'preview') {
-        return track.previewAudioUrl?.trim() || track.audioUrl?.trim() || '';
-    }
-
     return track.audioUrl?.trim() || track.previewAudioUrl?.trim() || '';
 }
 
@@ -135,6 +134,9 @@ export function mapReleaseTrackToMusicTrack(
         unlockDate: track.unlockDate ?? null,
         dropDate: track.dropDate ?? null,
         platformUrl: track.platformUrl ?? null,
+        fullAudioUrl: track.audioUrl?.trim() || null,
+        previewAudioUrl: track.previewAudioUrl?.trim() || null,
+        isPublic: track.isPublic ?? null,
     };
 }
 
@@ -192,3 +194,4 @@ export function getRuntimeTracksForRealm(
             return a.trackTitle.localeCompare(b.trackTitle);
         });
 }
+

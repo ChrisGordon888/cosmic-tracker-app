@@ -7,7 +7,11 @@ import { gql, useQuery, useMutation } from '@apollo/client';
 import { getTodayMoonPhase, getRealmMoonAlignment } from '@/lib/moonPhases';
 import RealmBackground from '@/components/realm/RealmBackground';
 import { GET_ME, GET_PUBLIC_NEXUS_TRACKS, LOG_DAILY_LOGIN } from '@/graphql/realms';
+import { GET_MY_NEXUS_TRACKS } from '@/graphql/musicAccess';
 import { useMusicPlayer } from '@/hooks/useMusicPlayer';
+import { useCreatorView } from '@/context/CreatorViewProvider';
+import { usePlatformAccess } from '@/context/PlatformAccessProvider';
+import { getMusicAvailability } from '@/lib/musicAvailability';
 import {
     CURRENT_FEATURED_RELEASE,
     FLAGSHIP_TRACKS,
@@ -508,34 +512,43 @@ export default function CosmicNexusHub() {
     const curatedCarouselRef = useRef<HTMLDivElement | null>(null);
 
     const { playOrToggleTrack, currentTrack, isPlaying } = useMusicPlayer();
+    const { isCreatorView: selectedCreatorView } = useCreatorView();
+    const { isAuthenticated, canAccessCreatorOS } = usePlatformAccess();
+    const isCreatorView = canAccessCreatorOS && selectedCreatorView;
 
     const { data: userData, loading: userLoading } = useQuery(GET_ME, {
         skip: !session,
     });
 
     const { data: publicNexusTrackData } = useQuery(GET_PUBLIC_NEXUS_TRACKS, {
+        skip: isCreatorView,
+        fetchPolicy: 'cache-and-network',
+    });
+
+    const { data: creatorNexusTrackData } = useQuery(GET_MY_NEXUS_TRACKS, {
+        skip: !isCreatorView,
         fetchPolicy: 'cache-and-network',
     });
 
     const { data: myFeaturedReleaseData } = useQuery(GET_MY_FEATURED_RELEASE_WORLD, {
-        skip: status !== 'authenticated',
+        skip: !isCreatorView,
         fetchPolicy: 'cache-and-network',
     });
 
     const { data: publicFeaturedReleaseData } = useQuery(GET_PUBLIC_FEATURED_RELEASE_WORLD, {
-        skip: status === 'authenticated',
+        skip: isCreatorView,
         fetchPolicy: 'cache-and-network',
     });
 
     const activeFeaturedReleaseId =
-        (status === 'authenticated'
+        (isCreatorView
             ? myFeaturedReleaseData?.getMyFeaturedReleaseWorld?.id
             : publicFeaturedReleaseData?.getPublicFeaturedReleaseWorld?.id) ?? null;
 
     const { data: myFeaturedReleaseTracksData, loading: myFeaturedReleaseTracksLoading } = useQuery(
         GET_FEATURED_RELEASE_TRACKS,
         {
-            skip: status !== 'authenticated' || !activeFeaturedReleaseId,
+            skip: !isCreatorView || !activeFeaturedReleaseId,
             variables: { releaseWorldId: activeFeaturedReleaseId },
             fetchPolicy: 'cache-and-network',
         }
@@ -544,7 +557,7 @@ export default function CosmicNexusHub() {
     const { data: publicFeaturedReleaseTracksData, loading: publicFeaturedReleaseTracksLoading } = useQuery(
         GET_PUBLIC_FEATURED_RELEASE_TRACKS,
         {
-            skip: status === 'authenticated' || !activeFeaturedReleaseId,
+            skip: isCreatorView || !activeFeaturedReleaseId,
             variables: { releaseWorldId: activeFeaturedReleaseId },
             fetchPolicy: 'cache-and-network',
         }
@@ -604,7 +617,7 @@ export default function CosmicNexusHub() {
     const currentRelease = CURRENT_FEATURED_RELEASE;
     const currentReleaseTracks = useMemo(() => getCurrentReleaseTracks(), []);
     const creatorFeaturedRelease =
-        (status === 'authenticated'
+        (isCreatorView
             ? myFeaturedReleaseData?.getMyFeaturedReleaseWorld
             : publicFeaturedReleaseData?.getPublicFeaturedReleaseWorld) as NexusFeaturedReleaseWorld | null | undefined;
 
@@ -618,90 +631,56 @@ export default function CosmicNexusHub() {
 
     const creatorFeaturedArtworkUrl = creatorFeaturedRelease?.coverArtUrl?.trim() || null;
     const isCreatorPreviewRelease = Boolean(
-        isSignedIn &&
+        isCreatorView &&
         creatorFeaturedRelease &&
         creatorFeaturedRelease.visibility !== 'public'
     );
 
     const featuredReleaseTracks = (
-        status === 'authenticated'
+        isCreatorView
             ? myFeaturedReleaseTracksData?.getReleaseTracks
             : publicFeaturedReleaseTracksData?.getPublicReleaseTracks
     ) as NexusFeaturedReleaseTrack[] | undefined;
 
     const isFeaturedReleaseTracksLoading =
-        status === 'authenticated'
+        isCreatorView
             ? myFeaturedReleaseTracksLoading
             : publicFeaturedReleaseTracksLoading;
 
     const featuredReleaseTrackCount = featuredReleaseTracks?.length ?? 0;
     const playFeaturedReleaseTrack = (track: NexusFeaturedReleaseTrack) => {
-        const selectedTrackUrl = getFeaturedTrackPlaybackUrl(track, isSignedIn);
+        const selectedTrackUrl = getFeaturedTrackPlaybackUrl(track, isCreatorView);
         if (!selectedTrackUrl) return;
 
         const flowTracks = (featuredReleaseTracks ?? [])
-            .filter((releaseTrack) => Boolean(getFeaturedTrackPlaybackUrl(releaseTrack, isSignedIn)))
-            .map((releaseTrack) => toPlayerTrack(releaseTrack, creatorFeaturedRelease, isSignedIn));
+            .filter((releaseTrack) => Boolean(getFeaturedTrackPlaybackUrl(releaseTrack, isCreatorView)))
+            .map((releaseTrack) => toPlayerTrack(releaseTrack, creatorFeaturedRelease, isCreatorView));
 
-        void playOrToggleTrack(toPlayerTrack(track, creatorFeaturedRelease, isSignedIn), flowTracks, {
+        void playOrToggleTrack(toPlayerTrack(track, creatorFeaturedRelease, isCreatorView), flowTracks, {
             source: 'nexus',
             label: creatorFeaturedRelease?.title ?? 'Featured release',
         });
     };
 
-    const getTrackOpenDate = (track: any) => {
-        if (!track) return null;
+    const getTrackAvailability = (track: any) =>
+        getMusicAvailability(track, {
+            isCreatorView,
+            isSignedIn: isAuthenticated,
+            fallbackUnlockDate: track ? RELEASE_UNLOCKS[track.id] ?? null : null,
+        });
 
-        return (
-            track.unlockDate ||
-            track.dropDate ||
-            RELEASE_UNLOCKS[track.id] ||
-            null
-        );
-    };
-
-    const isTrackLocked = (track: any) => {
-        if (!track) return false;
-
-        if (track.visibility === 'premium') return true;
-
-        if (!isSignedIn && track.visibility === 'signup') return true;
-
-        if (track.playbackStatus === 'locked') return true;
-
-        const openDate = getTrackOpenDate(track);
-
-        if (openDate && new Date() < new Date(openDate)) {
-            return true;
-        }
-
-        // Coming-soon tracks stay non-playable until their playback status is
-        // intentionally changed to Preview or Playable in Creator OS.
-        if (track.playbackStatus === 'coming-soon') return true;
-
-        return false;
-    };
+    const isTrackLocked = (track: any) =>
+        track ? !getTrackAvailability(track).isPlayable : false;
 
     const getTrackUnlockLabel = (track: any) => {
-        if (!track) return null;
-
-        return formatUnlockDate(getTrackOpenDate(track));
+        const unlockDate = getTrackAvailability(track).unlockDate;
+        return unlockDate ? formatUnlockDate(unlockDate.toISOString()) : null;
     };
 
     const getTrackLockLabel = (track: any) => {
         if (!track) return null;
-
-        if (track.visibility === 'premium') return 'Premium';
-
-        if (!isSignedIn && track.visibility === 'signup') return 'Join to unlock';
-
-        const unlockLabel = getTrackUnlockLabel(track);
-
-        if (unlockLabel) return `Opens ${unlockLabel}`;
-        if (track.playbackStatus === 'coming-soon') return 'Coming Soon';
-        if (track.playbackStatus === 'locked') return 'Locked';
-
-        return null;
+        const availability = getTrackAvailability(track);
+        return availability.isPlayable ? null : availability.label;
     };
 
     const tryPlayTrack = (track: any) => {
@@ -732,27 +711,32 @@ export default function CosmicNexusHub() {
 
     const isTrackCatalogVisible = (track: any) => {
         if (!track) return false;
-
-        return (
-            track.visibility === 'public' ||
-            track.visibility === 'signup' ||
-            track.visibility === 'premium'
-        );
+        return getTrackAvailability(track).isVisible;
     };
 
     const runtimeMusicCatalog = useMemo(() => {
         const creatorTracks = mapReleaseTracksToMusicTracks(
-            publicNexusTrackData?.getPublicNexusTracks as
+            (isCreatorView
+                ? creatorNexusTrackData?.myReleaseTracks
+                : publicNexusTrackData?.getPublicNexusTracks) as
                 | PublicNexusReleaseTrack[]
                 | undefined
         );
 
         return mergeMusicCatalogs(MUSIC_REGISTRY, creatorTracks);
-    }, [publicNexusTrackData]);
+    }, [creatorNexusTrackData, isCreatorView, publicNexusTrackData]);
 
     const nexusVisibleTracks = useMemo(() => {
         return runtimeMusicCatalog
             .filter(isTrackCatalogVisible)
+            .map((track) => {
+                const availability = getTrackAvailability(track);
+                return {
+                    ...track,
+                    trackUrl: availability.resolvedAudioUrl ?? track.trackUrl,
+                    availability,
+                };
+            })
             .sort((a, b) => {
                 const aOrder = a.sortOrder ?? 999;
                 const bOrder = b.sortOrder ?? 999;
@@ -761,7 +745,7 @@ export default function CosmicNexusHub() {
 
                 return a.trackTitle.localeCompare(b.trackTitle);
             });
-    }, [runtimeMusicCatalog]);
+    }, [runtimeMusicCatalog, isAuthenticated, isCreatorView]);
 
     const nexusPlayableFlowTracks = useMemo(() => {
         return nexusVisibleTracks
@@ -788,7 +772,7 @@ export default function CosmicNexusHub() {
 
                 return a.trackTitle.localeCompare(b.trackTitle);
             });
-    }, [nexusVisibleTracks, isSignedIn, isTrackLocked]);
+    }, [nexusVisibleTracks, isAuthenticated, isCreatorView]);
 
     const groupedTracks = REALM_META.map((realm) => {
         const realmId = parseInt(realm.id);

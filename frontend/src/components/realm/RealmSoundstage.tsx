@@ -5,6 +5,7 @@ import { useQuery } from '@apollo/client';
 import RealmOrbitCard from '@/components/music/RealmOrbitCard';
 import { MUSIC_REGISTRY } from '@/lib/musicRegistry';
 import { GET_PUBLIC_NEXUS_TRACKS } from '@/graphql/realms';
+import { GET_MY_NEXUS_TRACKS } from '@/graphql/musicAccess';
 import {
     getRuntimeTracksForRealm,
     mapReleaseTracksToMusicTracks,
@@ -14,6 +15,9 @@ import {
 } from '@/lib/publicMusicCatalog';
 import type { RealmId } from '@/lib/realmStateMap';
 import { useMusicPlayer } from '@/hooks/useMusicPlayer';
+import { useCreatorView } from '@/context/CreatorViewProvider';
+import { usePlatformAccess } from '@/context/PlatformAccessProvider';
+import { getMusicAvailability } from '@/lib/musicAvailability';
 
 interface RealmSoundstageProps {
     realmId: RealmId;
@@ -45,52 +49,6 @@ const RELEASE_UNLOCKS: Record<string, string> = {
     '202-siren': '2026-07-29T00:00:00',
 };
 
-function formatUnlockDate(dateString?: string | null) {
-    if (!dateString) return null;
-
-    try {
-        return new Intl.DateTimeFormat('en-US', {
-            month: 'short',
-            day: 'numeric',
-        }).format(new Date(dateString));
-    } catch {
-        return null;
-    }
-}
-
-function getTrackOpenDate(track: RuntimeMusicTrack) {
-    return track.unlockDate || track.dropDate || RELEASE_UNLOCKS[track.id] || null;
-}
-
-function isTrackLocked(track: RuntimeMusicTrack) {
-    if (track.visibility === 'premium') return true;
-    if (track.playbackStatus === 'locked') return true;
-
-    const openDate = getTrackOpenDate(track);
-
-    if (openDate && new Date() < new Date(openDate)) {
-        return true;
-    }
-
-    // Coming-soon tracks remain visible but non-playable until Creator OS
-    // intentionally changes playback to Preview or Playable.
-    if (track.playbackStatus === 'coming-soon') return true;
-
-    return false;
-}
-
-function getTrackLockLabel(track: RuntimeMusicTrack) {
-    if (track.visibility === 'premium') return 'Premium';
-    if (track.playbackStatus === 'locked') return 'Locked';
-
-    const unlockLabel = formatUnlockDate(getTrackOpenDate(track));
-
-    if (unlockLabel) return `Opens ${unlockLabel}`;
-    if (track.playbackStatus === 'coming-soon') return 'Coming Soon';
-
-    return null;
-}
-
 export default function RealmSoundstage({
     realmId,
     realmName,
@@ -106,26 +64,45 @@ export default function RealmSoundstage({
     compactOnMobile = false,
 }: RealmSoundstageProps) {
     const { playOrToggleTrack, currentTrack, isPlaying } = useMusicPlayer();
+    const { isCreatorView: selectedCreatorView } = useCreatorView();
+    const { isAuthenticated, canAccessCreatorOS } = usePlatformAccess();
+    const isCreatorView = canAccessCreatorOS && selectedCreatorView;
     const { data: publicNexusTrackData } = useQuery(GET_PUBLIC_NEXUS_TRACKS, {
         variables: { realmId },
+        skip: isCreatorView,
+        fetchPolicy: 'cache-and-network',
+    });
+    const { data: creatorNexusTrackData } = useQuery(GET_MY_NEXUS_TRACKS, {
+        skip: !isCreatorView,
         fetchPolicy: 'cache-and-network',
     });
 
     const realmTracks = useMemo(() => {
         const creatorTracks = mapReleaseTracksToMusicTracks(
-            publicNexusTrackData?.getPublicNexusTracks as
+            (isCreatorView
+                ? creatorNexusTrackData?.myReleaseTracks
+                : publicNexusTrackData?.getPublicNexusTracks) as
                 | PublicNexusReleaseTrack[]
                 | undefined
         );
         const runtimeCatalog = mergeMusicCatalogs(MUSIC_REGISTRY, creatorTracks);
 
-        return getRuntimeTracksForRealm(runtimeCatalog, realmId).filter(
-            (track) =>
-                track.visibility === 'public' ||
-                track.visibility === 'signup' ||
-                track.visibility === 'premium'
-        );
-    }, [publicNexusTrackData, realmId]);
+        return getRuntimeTracksForRealm(runtimeCatalog, realmId)
+            .map((track) => {
+                const availability = getMusicAvailability(track, {
+                    isCreatorView,
+                    isSignedIn: isAuthenticated,
+                    fallbackUnlockDate: RELEASE_UNLOCKS[track.id] ?? null,
+                });
+
+                return {
+                    ...track,
+                    trackUrl: availability.resolvedAudioUrl ?? track.trackUrl,
+                    availability,
+                };
+            })
+            .filter((track) => track.availability.isVisible);
+    }, [creatorNexusTrackData, publicNexusTrackData, realmId, isAuthenticated, isCreatorView]);
 
     if (realmTracks.length === 0) {
         return (
@@ -135,6 +112,12 @@ export default function RealmSoundstage({
             </div>
         );
     }
+
+    const isTrackLocked = (track: (typeof realmTracks)[number]) =>
+        !track.availability.isPlayable;
+
+    const getTrackLockLabel = (track: (typeof realmTracks)[number]) =>
+        track.availability.isPlayable ? null : track.availability.label;
 
     const featuredTrack =
         realmTracks.find((track) => !isTrackLocked(track) && track.isRealmAnchor) ??

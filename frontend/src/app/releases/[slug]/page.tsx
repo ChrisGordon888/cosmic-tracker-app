@@ -6,6 +6,9 @@ import { useParams } from 'next/navigation';
 import { gql, useQuery } from '@apollo/client';
 import { useSession } from 'next-auth/react';
 import { useMusicPlayer } from '@/hooks/useMusicPlayer';
+import { useCreatorView } from '@/context/CreatorViewProvider';
+import { usePlatformAccess } from '@/context/PlatformAccessProvider';
+import { getMusicAvailability } from '@/lib/musicAvailability';
 import '@/styles/releaseWorld.css';
 
 const RELEASE_WORLD_FIELDS = gql`
@@ -306,61 +309,36 @@ function getTitleParts(title?: string | null) {
   };
 }
 
-function getTrackAvailability(track: ReleaseTrack, isCreatorView: boolean) {
-  const playbackStatus = track.playbackStatus || 'locked';
-  const hasFullAudio = Boolean(track.audioUrl?.trim());
-  const hasPreviewAudio = Boolean(track.previewAudioUrl?.trim());
+function getTrackAvailability(
+  track: ReleaseTrack,
+  isCreatorView: boolean,
+  isSignedIn = false,
+) {
+  const availability = getMusicAvailability(track, {
+    isCreatorView,
+    isSignedIn,
+  });
 
-  if (isCreatorView && (hasFullAudio || hasPreviewAudio)) {
-    return {
-      label: 'Review',
-      href: track.audioUrl?.trim() || track.previewAudioUrl?.trim() || '',
-      isPlayable: true,
-      className: 'release-world-track-action-review',
-    };
-  }
-
-  if (playbackStatus === 'playable' && hasFullAudio) {
-    return {
-      label: 'Listen',
-      href: track.audioUrl?.trim() || '',
-      isPlayable: true,
-      className: 'release-world-track-action-play',
-    };
-  }
-
-  if (playbackStatus === 'preview' && hasPreviewAudio) {
-    return {
-      label: 'Preview',
-      href: track.previewAudioUrl?.trim() || '',
-      isPlayable: true,
-      className: 'release-world-track-action-preview',
-    };
-  }
-
-  if (playbackStatus === 'preview') {
-    return {
-      label: 'Preview soon',
-      href: '',
-      isPlayable: false,
-      className: 'release-world-track-action-pending',
-    };
-  }
-
-  if (playbackStatus === 'coming-soon') {
-    return {
-      label: 'Coming soon',
-      href: '',
-      isPlayable: false,
-      className: 'release-world-track-action-pending',
-    };
-  }
+  const className =
+    availability.state === 'creator-review'
+      ? 'release-world-track-action-review'
+      : availability.state === 'full'
+        ? 'release-world-track-action-play'
+        : availability.state === 'preview'
+          ? 'release-world-track-action-preview'
+          : availability.state === 'coming-soon' || availability.state === 'unavailable'
+            ? 'release-world-track-action-pending'
+            : 'release-world-track-action-locked';
 
   return {
-    label: 'Locked',
-    href: '',
-    isPlayable: false,
-    className: 'release-world-track-action-locked',
+    label:
+      availability.state === 'full'
+        ? 'Listen'
+        : availability.label,
+    href: availability.resolvedAudioUrl ?? '',
+    isPlayable: availability.isPlayable,
+    isVisible: availability.isVisible,
+    className,
   };
 }
 
@@ -442,9 +420,11 @@ export default function DynamicReleasePage() {
   const params = useParams<{ slug?: string | string[] }>();
   const { status } = useSession();
   const { playOrToggleTrack, currentTrack, isPlaying } = useMusicPlayer();
+  const { isCreatorView: selectedCreatorView } = useCreatorView();
+  const { isAuthenticated, canAccessCreatorOS } = usePlatformAccess();
+  const isCreatorView = canAccessCreatorOS && selectedCreatorView;
   const rawSlug = params?.slug;
   const slug = Array.isArray(rawSlug) ? rawSlug[0] ?? '' : rawSlug ?? '';
-  const isCreatorView = status === 'authenticated';
 
   const {
     data: creatorWorldData,
@@ -498,13 +478,15 @@ export default function DynamicReleasePage() {
   const pageLoading = isCreatorView ? creatorPageLoading : publicPageLoading;
   const pageError = isCreatorView ? creatorPageError : publicPageError;
 
-  const releaseTracks = useMemo(
-    () =>
-      (isCreatorView
-        ? pageData?.getReleaseTracks ?? []
-        : pageData?.getPublicReleaseTracks ?? []) as ReleaseTrack[],
-    [isCreatorView, pageData],
-  );
+  const releaseTracks = useMemo(() => {
+    const tracks = (isCreatorView
+      ? pageData?.getReleaseTracks ?? []
+      : pageData?.getPublicReleaseTracks ?? []) as ReleaseTrack[];
+
+    return tracks.filter((track) =>
+      getTrackAvailability(track, isCreatorView, isAuthenticated).isVisible,
+    );
+  }, [isAuthenticated, isCreatorView, pageData]);
 
   const publicArtifacts = useMemo(
     () => (pageData?.getPublicBoardArtifacts ?? []) as PublicBoardArtifact[],
@@ -558,16 +540,16 @@ export default function DynamicReleasePage() {
     'Step inside the sound, story, and atmosphere of this release.';
 
   const firstPlayableTrack = releaseTracks.find((track) => {
-    const availability = getTrackAvailability(track, isCreatorView);
+    const availability = getTrackAvailability(track, isCreatorView, isAuthenticated);
     return availability.isPlayable && availability.href;
   });
 
   const firstPlayableAction = firstPlayableTrack
-    ? getTrackAvailability(firstPlayableTrack, isCreatorView)
+    ? getTrackAvailability(firstPlayableTrack, isCreatorView, isAuthenticated)
     : null;
 
   const toPlayerTrack = (track: ReleaseTrack) => {
-    const availability = getTrackAvailability(track, isCreatorView);
+    const availability = getTrackAvailability(track, isCreatorView, isAuthenticated);
 
     return {
       id: `release-${track.id}`,
@@ -578,18 +560,25 @@ export default function DynamicReleasePage() {
       realmColor: '#DCBA5C',
       visibility: track.visibility === 'public' || track.isPublic ? 'public' : 'premium',
       trackUrl: availability.href,
+      audioUrl: track.audioUrl ?? null,
+      fullAudioUrl: track.audioUrl ?? null,
+      previewAudioUrl: track.previewAudioUrl ?? null,
+      playbackStatus: track.playbackStatus ?? null,
+      unlockDate: track.unlockDate ?? null,
+      dropDate: track.dropDate ?? null,
+      isPublic: track.isPublic,
       artworkUrl: world.coverArtUrl ?? undefined,
     };
   };
 
   const playReleaseTrack = (track: ReleaseTrack) => {
-    const availability = getTrackAvailability(track, isCreatorView);
+    const availability = getTrackAvailability(track, isCreatorView, isAuthenticated);
 
     if (!availability.isPlayable || !availability.href) return;
 
     const flowTracks = releaseTracks
       .filter((releaseTrack) => {
-        const releaseTrackAvailability = getTrackAvailability(releaseTrack, isCreatorView);
+        const releaseTrackAvailability = getTrackAvailability(releaseTrack, isCreatorView, isAuthenticated);
         return releaseTrackAvailability.isPlayable && Boolean(releaseTrackAvailability.href);
       })
       .map(toPlayerTrack);
@@ -702,7 +691,7 @@ export default function DynamicReleasePage() {
         {releaseTracks.length > 0 ? (
           <div className="release-world-track-grid">
             {releaseTracks.map((track) => {
-              const action = getTrackAvailability(track, isCreatorView);
+              const action = getTrackAvailability(track, isCreatorView, isAuthenticated);
 
               return (
                 <article key={track.id} className="release-world-track-card">

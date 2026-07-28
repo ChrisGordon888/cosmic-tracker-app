@@ -11,6 +11,9 @@ import React, {
 } from 'react';
 import { useMutation } from '@apollo/client';
 import { LOG_MUSIC_LISTEN } from '@/graphql/realms';
+import { useCreatorView } from '@/context/CreatorViewProvider';
+import { usePlatformAccess } from '@/context/PlatformAccessProvider';
+import { getMusicAvailability } from '@/lib/musicAvailability';
 
 export interface MusicTrack {
   id: string;
@@ -22,6 +25,14 @@ export interface MusicTrack {
   realmId: number;
   visibility?: string;
   sortOrder?: number;
+  audioUrl?: string | null;
+  fullAudioUrl?: string | null;
+  previewAudioUrl?: string | null;
+  playbackStatus?: string | null;
+  unlockDate?: string | null;
+  dropDate?: string | null;
+  isPublic?: boolean | null;
+  source?: string | null;
 }
 
 export type MusicQueueSource =
@@ -161,6 +172,9 @@ export function MusicPlayerProvider({
   children: React.ReactNode;
 }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const { isCreatorView: selectedCreatorView } = useCreatorView();
+  const { isAuthenticated, canAccessCreatorOS } = usePlatformAccess();
+  const isCreatorView = canAccessCreatorOS && selectedCreatorView;
 
   const [currentTrack, setCurrentTrack] = useState<MusicTrack | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -213,9 +227,32 @@ export function MusicPlayerProvider({
     []
   );
 
+  const resolvePlayableTrack = useCallback(
+    (track: MusicTrack): MusicTrack | null => {
+      const availability = getMusicAvailability(track, {
+        isCreatorView,
+        isSignedIn: isAuthenticated,
+      });
+
+      if (!availability.isVisible || !availability.isPlayable || !availability.resolvedAudioUrl) {
+        return null;
+      }
+
+      return {
+        ...track,
+        trackUrl: availability.resolvedAudioUrl,
+      };
+    },
+    [isAuthenticated, isCreatorView]
+  );
+
   const replaceQueue = useCallback(
     (tracks: MusicTrack[], queueOptions?: MusicQueueOptions) => {
-      const nextQueue = dedupeTracks(tracks);
+      const nextQueue = dedupeTracks(
+        tracks
+          .map(resolvePlayableTrack)
+          .filter((track): track is MusicTrack => Boolean(track))
+      );
       const nextSource = queueOptions?.source ?? 'track';
 
       setQueueState(nextQueue);
@@ -224,7 +261,7 @@ export function MusicPlayerProvider({
 
       return nextQueue;
     },
-    [syncQueueMeta]
+    [resolvePlayableTrack, syncQueueMeta]
   );
 
   useEffect(() => {
@@ -313,7 +350,11 @@ export function MusicPlayerProvider({
   const startTrack = useCallback(
     async (track: MusicTrack) => {
       const audio = audioRef.current;
-      if (!audio || !track?.trackUrl) return;
+      if (!audio) return;
+
+      const playableTrack = resolvePlayableTrack(track);
+      if (!playableTrack?.trackUrl) return;
+      track = playableTrack;
 
       const isSameTrack = currentTrackRef.current?.id === track.id;
 
@@ -337,7 +378,7 @@ export function MusicPlayerProvider({
         setIsPlaying(false);
       }
     },
-    [markRecentlyPlayed]
+    [markRecentlyPlayed, resolvePlayableTrack]
   );
 
   const setQueue = useCallback(
@@ -632,6 +673,40 @@ export function MusicPlayerProvider({
         console.error('Failed to log music listen:', error);
       });
   }, [currentTrack, isPlaying, currentTime, duration, logMusicListen]);
+
+  useEffect(() => {
+    const current = currentTrackRef.current;
+    const resolvedCurrent = current ? resolvePlayableTrack(current) : null;
+
+    if (current && !resolvedCurrent) {
+      audioRef.current?.pause();
+      setCurrentTrack(null);
+      currentTrackRef.current = null;
+      setIsPlaying(false);
+      setCurrentTime(0);
+      setDuration(0);
+    } else if (current && resolvedCurrent && resolvedCurrent.trackUrl !== current.trackUrl) {
+      audioRef.current?.pause();
+      setCurrentTrack(resolvedCurrent);
+      currentTrackRef.current = resolvedCurrent;
+      if (audioRef.current) {
+        audioRef.current.src = resolvedCurrent.trackUrl;
+        audioRef.current.currentTime = 0;
+      }
+      setIsPlaying(false);
+      setCurrentTime(0);
+      setDuration(0);
+    }
+
+    const nextQueue = dedupeTracks(
+      queueRef.current
+        .map(resolvePlayableTrack)
+        .filter((track): track is MusicTrack => Boolean(track))
+    );
+
+    setQueueState(nextQueue);
+    queueRef.current = nextQueue;
+  }, [resolvePlayableTrack]);
 
   const value = useMemo(
     () => ({
