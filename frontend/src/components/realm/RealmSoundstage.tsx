@@ -113,11 +113,26 @@ export default function RealmSoundstage({
         );
     }
 
-    const isTrackLocked = (track: (typeof realmTracks)[number]) =>
-        !track.availability.isPlayable;
+    const getTrackAvailability = (track: { id: string }) => {
+        return (
+            realmTracks.find((realmTrack) => realmTrack.id === track.id)
+                ?.availability ?? null
+        );
+    };
 
-    const getTrackLockLabel = (track: (typeof realmTracks)[number]) =>
-        track.availability.isPlayable ? null : track.availability.label;
+    const isTrackLocked = (track: { id: string }) => {
+        const availability = getTrackAvailability(track);
+
+        return !availability?.isPlayable;
+    };
+
+    const getTrackLockLabel = (track: { id: string }) => {
+        const availability = getTrackAvailability(track);
+
+        if (!availability || availability.isPlayable) return null;
+
+        return availability.label;
+    };
 
     const featuredTrack =
         realmTracks.find((track) => !isTrackLocked(track) && track.isRealmAnchor) ??
