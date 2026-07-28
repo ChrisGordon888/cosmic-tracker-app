@@ -288,6 +288,17 @@ const typeDefs = gql`
     layer: Int!
   }
 
+  input CreatorOnboardingTrackInput {
+    title: String!
+    slug: String
+    role: String
+    bpm: Int
+    keySignature: String
+    mood: String
+    hook: String
+    notes: String
+  }
+
   input CreatorOnboardingReleaseInput {
     title: String!
     slug: String!
@@ -497,6 +508,7 @@ const typeDefs = gql`
     # Creator Onboarding
     getCreatorOnboardingProfile: CreativeProfile
     getCreatorOnboardingRelease: ReleaseWorld
+    getCreatorOnboardingTrack: ReleaseTrack
     getCreatorOnboardingProgress: CreatorOnboardingProgress!
 
     # Creator Worlds
@@ -586,6 +598,9 @@ const typeDefs = gql`
     saveCreatorOnboardingRelease(
       input: CreatorOnboardingReleaseInput!
     ): ReleaseWorld!
+    saveCreatorOnboardingTrack(
+      input: CreatorOnboardingTrackInput!
+    ): ReleaseTrack!
 
     # Platform Administration
     inviteCreator(userId: ID!): PlatformUser!

@@ -84,6 +84,60 @@ export const SAVE_CREATOR_ONBOARDING_RELEASE = gql`
     }
 `;
 
+export const GET_CREATOR_ONBOARDING_TRACK = gql`
+    query GetCreatorOnboardingTrack {
+        getCreatorOnboardingTrack {
+            id
+            releaseWorldId
+            title
+            slug
+            trackNumber
+            role
+            status
+            bpm
+            keySignature
+            mood
+            hook
+            notes
+            visibility
+            playbackStatus
+            isFocusTrack
+            isPublic
+            showInNexus
+            createdAt
+            updatedAt
+        }
+    }
+`;
+
+export const SAVE_CREATOR_ONBOARDING_TRACK = gql`
+    mutation SaveCreatorOnboardingTrack(
+        $input: CreatorOnboardingTrackInput!
+    ) {
+        saveCreatorOnboardingTrack(input: $input) {
+            id
+            releaseWorldId
+            title
+            slug
+            trackNumber
+            role
+            status
+            bpm
+            keySignature
+            mood
+            hook
+            notes
+            visibility
+            playbackStatus
+            isFocusTrack
+            isPublic
+            showInNexus
+            createdAt
+            updatedAt
+        }
+    }
+`;
+
 export const GET_CREATOR_ONBOARDING_PROGRESS = gql`
     query GetCreatorOnboardingProgress {
         getCreatorOnboardingProgress {
@@ -201,4 +255,50 @@ export type SaveCreatorOnboardingReleaseData = {
 
 export type SaveCreatorOnboardingReleaseVariables = {
     input: CreatorOnboardingReleaseInput;
+};
+
+
+export type CreatorOnboardingTrack = {
+    id: string;
+    releaseWorldId: string;
+    title: string;
+    slug: string;
+    trackNumber: number;
+    role: string;
+    status: string;
+    bpm?: number | null;
+    keySignature?: string | null;
+    mood?: string | null;
+    hook?: string | null;
+    notes?: string | null;
+    visibility: string;
+    playbackStatus: string;
+    isFocusTrack: boolean;
+    isPublic: boolean;
+    showInNexus: boolean;
+    createdAt?: string | null;
+    updatedAt?: string | null;
+};
+
+export type CreatorOnboardingTrackData = {
+    getCreatorOnboardingTrack?: CreatorOnboardingTrack | null;
+};
+
+export type CreatorOnboardingTrackInput = {
+    title: string;
+    slug?: string | null;
+    role?: string | null;
+    bpm?: number | null;
+    keySignature?: string | null;
+    mood?: string | null;
+    hook?: string | null;
+    notes?: string | null;
+};
+
+export type SaveCreatorOnboardingTrackData = {
+    saveCreatorOnboardingTrack: CreatorOnboardingTrack;
+};
+
+export type SaveCreatorOnboardingTrackVariables = {
+    input: CreatorOnboardingTrackInput;
 };

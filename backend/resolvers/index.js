@@ -742,6 +742,39 @@ module.exports = {
             });
         },
 
+        getCreatorOnboardingTrack: async (_, __, { user }) => {
+            requireCreatorOnboarding(user);
+
+            const profile = await getPrimaryCreativeProfile(user.id);
+
+            if (!profile) {
+                return null;
+            }
+
+            const releaseWorld = await ReleaseWorld.findOne({
+                ownerId: user.id,
+                creativeProfileId: profile._id,
+                status: { $ne: "archived" },
+            }).sort({
+                lastOpenedAt: -1,
+                updatedAt: -1,
+                createdAt: -1,
+            });
+
+            if (!releaseWorld) {
+                return null;
+            }
+
+            return await ReleaseTrack.findOne({
+                ownerId: user.id,
+                releaseWorldId: releaseWorld._id,
+                status: { $ne: "archived" },
+            }).sort({
+                trackNumber: 1,
+                createdAt: 1,
+            });
+        },
+
         getCreatorOnboardingProgress: async (_, __, { user }) => {
             requireCreatorOnboarding(user);
 
@@ -1634,8 +1667,12 @@ module.exports = {
                 fullDropDate: input.fullDropDate
                     ? new Date(input.fullDropDate)
                     : null,
-                status: "draft",
-                visibility: "private",
+                status: existingRelease
+                    ? existingRelease.status
+                    : "draft",
+                visibility: existingRelease
+                    ? existingRelease.visibility
+                    : "private",
                 isFeatured: existingRelease
                     ? Boolean(existingRelease.isFeatured)
                     : true,
@@ -1657,6 +1694,154 @@ module.exports = {
                 coverArtUrl: "",
                 coverAssetId: null,
             });
+        },
+
+        saveCreatorOnboardingTrack: async (
+            _,
+            { input },
+            { user }
+        ) => {
+            requireCreatorOnboarding(user);
+
+            const profile = await getPrimaryCreativeProfile(user.id);
+
+            if (!profile) {
+                throw new Error(
+                    "Create your artist identity before adding a track."
+                );
+            }
+
+            const releaseWorld = await ReleaseWorld.findOne({
+                ownerId: user.id,
+                creativeProfileId: profile._id,
+                status: { $ne: "archived" },
+            }).sort({
+                lastOpenedAt: -1,
+                updatedAt: -1,
+                createdAt: -1,
+            });
+
+            if (!releaseWorld) {
+                throw new Error(
+                    "Create your first release world before adding a track."
+                );
+            }
+
+            const title = String(input.title || "").trim();
+            const slug = normalizeTrackSlug(input.slug, title);
+
+            if (!title) {
+                throw new Error("Track title is required.");
+            }
+
+            if (!slug) {
+                throw new Error("Choose a valid track slug.");
+            }
+
+            const existingTrack = await ReleaseTrack.findOne({
+                ownerId: user.id,
+                releaseWorldId: releaseWorld._id,
+                status: { $ne: "archived" },
+            }).sort({
+                trackNumber: 1,
+                createdAt: 1,
+            });
+
+            const slugOwner = await ReleaseTrack.findOne({
+                releaseWorldId: releaseWorld._id,
+                slug,
+                ...(existingTrack
+                    ? { _id: { $ne: existingTrack._id } }
+                    : {}),
+            }).select("_id");
+
+            if (slugOwner) {
+                throw new Error(
+                    "That track URL is already in use inside this release."
+                );
+            }
+
+            const parsedBpm =
+                input.bpm === undefined ||
+                input.bpm === null ||
+                input.bpm === ""
+                    ? null
+                    : Number(input.bpm);
+
+            if (
+                parsedBpm !== null &&
+                (!Number.isFinite(parsedBpm) ||
+                    parsedBpm < 1 ||
+                    parsedBpm > 300)
+            ) {
+                throw new Error("BPM must be between 1 and 300.");
+            }
+
+            const update = {
+                title,
+                slug,
+                trackNumber: existingTrack
+                    ? existingTrack.trackNumber
+                    : 1,
+                role: String(input.role || "single").trim(),
+                bpm: parsedBpm,
+                keySignature: String(
+                    input.keySignature || ""
+                ).trim(),
+                mood: String(input.mood || "").trim(),
+                hook: String(input.hook || "").trim(),
+                notes: String(input.notes || "").trim(),
+                status: existingTrack
+                    ? existingTrack.status
+                    : "draft",
+                visibility: existingTrack
+                    ? existingTrack.visibility
+                    : "private",
+                playbackStatus: existingTrack
+                    ? existingTrack.playbackStatus
+                    : "locked",
+                isPublic: existingTrack
+                    ? Boolean(existingTrack.isPublic)
+                    : false,
+                showInNexus: existingTrack
+                    ? Boolean(existingTrack.showInNexus)
+                    : false,
+                isFocusTrack: existingTrack
+                    ? Boolean(existingTrack.isFocusTrack)
+                    : true,
+                lastOpenedAt: new Date(),
+            };
+
+            if (existingTrack) {
+                Object.assign(existingTrack, update);
+                await existingTrack.save();
+                await syncReleaseWorldFocusFromTrack(
+                    existingTrack,
+                    user.id
+                );
+                return existingTrack;
+            }
+
+            const track = await ReleaseTrack.create({
+                ...update,
+                ownerId: user.id,
+                releaseWorldId: releaseWorld._id,
+                previewAudioUrl: "",
+                audioUrl: "",
+                platformUrl: "",
+                dropDate: null,
+                unlockDate: null,
+                isSecondFocus: false,
+                realmId: null,
+                nexusRole: "signal",
+                isRealmAnchor: false,
+                isPublicPick: false,
+                nexusSortOrder: 0,
+            });
+
+            await syncReleaseWorldFocusFromTrack(track, user.id);
+
+            return track;
         },
 
         // ========================================
