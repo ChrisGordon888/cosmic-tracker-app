@@ -231,7 +231,7 @@ export function MusicPlayerProvider({
     (track: MusicTrack): MusicTrack | null => {
       const availability = getMusicAvailability(track, {
         isCreatorView,
-        isSignedIn: isAuthenticated,
+        isSignedIn: isSignedInForMusic,
       });
 
       if (!availability.isVisible || !availability.isPlayable || !availability.resolvedAudioUrl) {
@@ -243,7 +243,7 @@ export function MusicPlayerProvider({
         trackUrl: availability.resolvedAudioUrl,
       };
     },
-    [isAuthenticated, isCreatorView]
+    [isCreatorView, isSignedInForMusic]
   );
 
   const replaceQueue = useCallback(

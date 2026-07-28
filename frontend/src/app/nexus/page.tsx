@@ -440,7 +440,7 @@ function getFeaturedTrackMetaLine(
     isSignedIn: boolean,
     releaseWorld?: NexusFeaturedReleaseWorld | null
 ) {
-    const trackAction = getFeaturedTrackAction(track, isSignedIn);
+    const trackAction = getFeaturedTrackAction(track, isCreatorView);
     const unlockDate = formatReleaseDate(track.unlockDate);
     const dropDate = formatReleaseDate(track.dropDate || releaseWorld?.fullDropDate);
     const openDate = unlockDate !== 'TBD' ? unlockDate : dropDate;
@@ -456,7 +456,7 @@ function getFeaturedTrackMetaLine(
 }
 
 function getFeaturedTrackPlaybackUrl(track: NexusFeaturedReleaseTrack, isSignedIn: boolean) {
-    return getFeaturedTrackAction(track, isSignedIn).url;
+    return getFeaturedTrackAction(track, isCreatorView).url;
 }
 
 function toPlayerTrack(
@@ -515,6 +515,7 @@ export default function CosmicNexusHub() {
     const { isCreatorView: selectedCreatorView } = useCreatorView();
     const { isAuthenticated, canAccessCreatorOS } = usePlatformAccess();
     const isCreatorView = canAccessCreatorOS && selectedCreatorView;
+    const isSignedInForMusic = isCreatorView && isAuthenticated;
 
     const { data: userData, loading: userLoading } = useQuery(GET_ME, {
         skip: !session,
@@ -665,7 +666,7 @@ export default function CosmicNexusHub() {
     const getTrackAvailability = (track: any) =>
         getMusicAvailability(track, {
             isCreatorView,
-            isSignedIn: isAuthenticated,
+            isSignedIn: isSignedInForMusic,
             fallbackUnlockDate: track ? RELEASE_UNLOCKS[track.id] ?? null : null,
         });
 
@@ -745,7 +746,7 @@ export default function CosmicNexusHub() {
 
                 return a.trackTitle.localeCompare(b.trackTitle);
             });
-    }, [runtimeMusicCatalog, isAuthenticated, isCreatorView]);
+    }, [runtimeMusicCatalog, isCreatorView, isSignedInForMusic]);
 
     const nexusPlayableFlowTracks = useMemo(() => {
         return nexusVisibleTracks
@@ -772,7 +773,7 @@ export default function CosmicNexusHub() {
 
                 return a.trackTitle.localeCompare(b.trackTitle);
             });
-    }, [nexusVisibleTracks, isAuthenticated, isCreatorView]);
+    }, [nexusVisibleTracks, isCreatorView, isSignedInForMusic]);
 
     const groupedTracks = REALM_META.map((realm) => {
         const realmId = parseInt(realm.id);
@@ -1076,7 +1077,7 @@ export default function CosmicNexusHub() {
                                             ) : featuredReleaseTracks && featuredReleaseTracks.length > 0 ? (
                                                 <div className="nexus-featured-release-track-list">
                                                     {featuredReleaseTracks.map((track) => {
-                                                        const trackAction = getFeaturedTrackAction(track, isSignedIn);
+                                                        const trackAction = getFeaturedTrackAction(track, isCreatorView);
                                                         const playerTrackId = `release-${track.id}`;
                                                         const isCurrentDynamicTrack =
                                                             currentTrack?.id === playerTrackId && isPlaying;
@@ -1096,7 +1097,7 @@ export default function CosmicNexusHub() {
                                                                     </div>
 
                                                                     <p>
-                                                                        {getFeaturedTrackMetaLine(track, isSignedIn, creatorFeaturedRelease)}
+                                                                        {getFeaturedTrackMetaLine(track, isCreatorView, creatorFeaturedRelease)}
                                                                     </p>
                                                                 </div>
 
@@ -1122,7 +1123,7 @@ export default function CosmicNexusHub() {
                                             )}
                                         </div>
 
-                                        {isSignedIn && (
+                                        {isCreatorView && (
                                             <div className="nexus-dynamic-release-creator-links">
                                                 {creatorFeaturedBoardHref && (
                                                     <Link href={creatorFeaturedBoardHref} className="btn-secondary">

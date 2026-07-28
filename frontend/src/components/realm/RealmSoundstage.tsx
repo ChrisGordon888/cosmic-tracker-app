@@ -67,6 +67,7 @@ export default function RealmSoundstage({
     const { isCreatorView: selectedCreatorView } = useCreatorView();
     const { isAuthenticated, canAccessCreatorOS } = usePlatformAccess();
     const isCreatorView = canAccessCreatorOS && selectedCreatorView;
+    const isSignedInForMusic = isCreatorView && isAuthenticated;
     const { data: publicNexusTrackData } = useQuery(GET_PUBLIC_NEXUS_TRACKS, {
         variables: { realmId },
         skip: isCreatorView,
@@ -91,7 +92,7 @@ export default function RealmSoundstage({
             .map((track) => {
                 const availability = getMusicAvailability(track, {
                     isCreatorView,
-                    isSignedIn: isAuthenticated,
+                    isSignedIn: isSignedInForMusic,
                     fallbackUnlockDate: RELEASE_UNLOCKS[track.id] ?? null,
                 });
 
@@ -102,7 +103,7 @@ export default function RealmSoundstage({
                 };
             })
             .filter((track) => track.availability.isVisible);
-    }, [creatorNexusTrackData, publicNexusTrackData, realmId, isAuthenticated, isCreatorView]);
+    }, [creatorNexusTrackData, publicNexusTrackData, realmId, isCreatorView, isSignedInForMusic]);
 
     if (realmTracks.length === 0) {
         return (

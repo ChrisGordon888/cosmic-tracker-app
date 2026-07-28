@@ -484,9 +484,9 @@ export default function DynamicReleasePage() {
       : pageData?.getPublicReleaseTracks ?? []) as ReleaseTrack[];
 
     return tracks.filter((track) =>
-      getTrackAvailability(track, isCreatorView, isAuthenticated).isVisible,
+      getTrackAvailability(track, isCreatorView, isSignedInForMusic).isVisible,
     );
-  }, [isAuthenticated, isCreatorView, pageData]);
+  }, [isCreatorView, isSignedInForMusic, pageData]);
 
   const publicArtifacts = useMemo(
     () => (pageData?.getPublicBoardArtifacts ?? []) as PublicBoardArtifact[],
@@ -540,16 +540,16 @@ export default function DynamicReleasePage() {
     'Step inside the sound, story, and atmosphere of this release.';
 
   const firstPlayableTrack = releaseTracks.find((track) => {
-    const availability = getTrackAvailability(track, isCreatorView, isAuthenticated);
+    const availability = getTrackAvailability(track, isCreatorView, isSignedInForMusic);
     return availability.isPlayable && availability.href;
   });
 
   const firstPlayableAction = firstPlayableTrack
-    ? getTrackAvailability(firstPlayableTrack, isCreatorView, isAuthenticated)
+    ? getTrackAvailability(firstPlayableTrack, isCreatorView, isSignedInForMusic)
     : null;
 
   const toPlayerTrack = (track: ReleaseTrack) => {
-    const availability = getTrackAvailability(track, isCreatorView, isAuthenticated);
+    const availability = getTrackAvailability(track, isCreatorView, isSignedInForMusic);
 
     return {
       id: `release-${track.id}`,
@@ -572,13 +572,13 @@ export default function DynamicReleasePage() {
   };
 
   const playReleaseTrack = (track: ReleaseTrack) => {
-    const availability = getTrackAvailability(track, isCreatorView, isAuthenticated);
+    const availability = getTrackAvailability(track, isCreatorView, isSignedInForMusic);
 
     if (!availability.isPlayable || !availability.href) return;
 
     const flowTracks = releaseTracks
       .filter((releaseTrack) => {
-        const releaseTrackAvailability = getTrackAvailability(releaseTrack, isCreatorView, isAuthenticated);
+        const releaseTrackAvailability = getTrackAvailability(releaseTrack, isCreatorView, isSignedInForMusic);
         return releaseTrackAvailability.isPlayable && Boolean(releaseTrackAvailability.href);
       })
       .map(toPlayerTrack);
@@ -691,7 +691,7 @@ export default function DynamicReleasePage() {
         {releaseTracks.length > 0 ? (
           <div className="release-world-track-grid">
             {releaseTracks.map((track) => {
-              const action = getTrackAvailability(track, isCreatorView, isAuthenticated);
+              const action = getTrackAvailability(track, isCreatorView, isSignedInForMusic);
 
               return (
                 <article key={track.id} className="release-world-track-card">
