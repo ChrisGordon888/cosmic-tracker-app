@@ -29,6 +29,10 @@ const creatorItems: NavItem[] = [
     { href: "/creator/library", label: "Creator Library", description: "Manage every track" },
 ];
 
+const adminItems: NavItem[] = [
+    { href: "/admin", label: "Admin Console", description: "Manage creators and platform access" },
+];
+
 function isRouteActive(pathname: string | null, href: string) {
     if (!pathname) return false;
     if (href === "/") return pathname === "/";
@@ -38,7 +42,12 @@ function isRouteActive(pathname: string | null, href: string) {
 export default function CosmicTopNav({ title }: { title?: string }) {
     const [isOpen, setIsOpen] = useState(false);
     const pathname = usePathname();
-    const { isAuthenticated, canAccessCreatorOS, loading: accessLoading } = usePlatformAccess();
+    const {
+        isAuthenticated,
+        canAccessCreatorOS,
+        canAccessAdmin,
+        loading: accessLoading,
+    } = usePlatformAccess();
     const supportsViewMode = supportsCreatorViewMode(pathname);
 
     const renderItems = (sectionLabel: string, items: NavItem[], accentClass: string) => (
@@ -78,6 +87,7 @@ export default function CosmicTopNav({ title }: { title?: string }) {
                             {renderItems("Explore", publicItems, "text-[#DCBA5C]/80")}
                             {isAuthenticated && (<><div className="mx-3 my-2 border-t border-white/10" />{renderItems("Your Space", memberItems, "text-[#A884FF]/80")}</>)}
                             {!accessLoading && canAccessCreatorOS && (<><div className="mx-3 my-2 border-t border-white/10" />{renderItems("Creator OS", creatorItems, "text-[#7ED3FF]/80")}</>)}
+                            {!accessLoading && canAccessAdmin && (<><div className="mx-3 my-2 border-t border-white/10" />{renderItems("Platform", adminItems, "text-[#F4D982]/80")}</>)}
                         </div>
                     )}
                 </div>

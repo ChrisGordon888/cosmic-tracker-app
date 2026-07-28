@@ -538,6 +538,10 @@ const typeDefs = gql`
     logDailyLogin: XPGainResponse!
 
     # Platform Administration
+    inviteCreator(userId: ID!): PlatformUser!
+    activateCreator(userId: ID!): PlatformUser!
+    suspendCreator(userId: ID!): PlatformUser!
+    restoreCreator(userId: ID!): PlatformUser!
     setCreatorStatus(userId: ID!, creatorStatus: String!): PlatformUser!
     setPlatformRole(userId: ID!, role: String!): PlatformUser!
 

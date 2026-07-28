@@ -1335,6 +1335,107 @@ module.exports = {
         // 🛡️ PLATFORM ADMINISTRATION MUTATIONS
         // ========================================
 
+        inviteCreator: async (_, { userId }, { user }) => {
+            requireAdmin(user);
+
+            const targetUser = await User.findById(userId);
+
+            if (!targetUser) {
+                throw new Error("User not found.");
+            }
+
+            if (String(targetUser._id) === String(user.id)) {
+                throw new Error("You cannot invite your own account as a creator.");
+            }
+
+            if (targetUser.role === "owner") {
+                throw new Error("Owner accounts cannot enter the creator invitation lifecycle.");
+            }
+
+            if (targetUser.role === "admin" && !isPlatformOwner(user)) {
+                throw new Error("Administrators cannot modify another administrator.");
+            }
+
+            if (targetUser.role === "admin") {
+                throw new Error("Change the administrator's role before inviting them as a creator.");
+            }
+
+            targetUser.role = "creator";
+            targetUser.creatorStatus = "invited";
+            await targetUser.save();
+
+            return targetUser;
+        },
+
+        activateCreator: async (_, { userId }, { user }) => {
+            requireAdmin(user);
+
+            const targetUser = await User.findById(userId);
+
+            if (!targetUser) {
+                throw new Error("User not found.");
+            }
+
+            if (String(targetUser._id) === String(user.id)) {
+                throw new Error("You cannot activate your own creator access.");
+            }
+
+            if (targetUser.role !== "creator") {
+                throw new Error("Only creator accounts can be activated.");
+            }
+
+            targetUser.creatorStatus = "active";
+            await targetUser.save();
+
+            return targetUser;
+        },
+
+        suspendCreator: async (_, { userId }, { user }) => {
+            requireAdmin(user);
+
+            const targetUser = await User.findById(userId);
+
+            if (!targetUser) {
+                throw new Error("User not found.");
+            }
+
+            if (String(targetUser._id) === String(user.id)) {
+                throw new Error("You cannot suspend your own creator access.");
+            }
+
+            if (targetUser.role !== "creator") {
+                throw new Error("Only creator accounts can be suspended.");
+            }
+
+            targetUser.creatorStatus = "suspended";
+            await targetUser.save();
+
+            return targetUser;
+        },
+
+        restoreCreator: async (_, { userId }, { user }) => {
+            requireAdmin(user);
+
+            const targetUser = await User.findById(userId);
+
+            if (!targetUser) {
+                throw new Error("User not found.");
+            }
+
+            if (String(targetUser._id) === String(user.id)) {
+                throw new Error("You cannot restore your own creator access.");
+            }
+
+            if (targetUser.role !== "creator") {
+                throw new Error("Only creator accounts can be restored.");
+            }
+
+            targetUser.creatorStatus = "active";
+            await targetUser.save();
+
+            return targetUser;
+        },
+
         setCreatorStatus: async (
             _,
             { userId, creatorStatus },

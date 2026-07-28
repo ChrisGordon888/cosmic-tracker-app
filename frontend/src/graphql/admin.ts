@@ -40,6 +40,66 @@ export const PLATFORM_USER_QUERY = gql`
     }
 `;
 
+export const INVITE_CREATOR_MUTATION = gql`
+    mutation InviteCreator($userId: ID!) {
+        inviteCreator(userId: $userId) {
+            id
+            email
+            name
+            image
+            role
+            creatorStatus
+            createdAt
+            updatedAt
+        }
+    }
+`;
+
+export const ACTIVATE_CREATOR_MUTATION = gql`
+    mutation ActivateCreator($userId: ID!) {
+        activateCreator(userId: $userId) {
+            id
+            email
+            name
+            image
+            role
+            creatorStatus
+            createdAt
+            updatedAt
+        }
+    }
+`;
+
+export const SUSPEND_CREATOR_MUTATION = gql`
+    mutation SuspendCreator($userId: ID!) {
+        suspendCreator(userId: $userId) {
+            id
+            email
+            name
+            image
+            role
+            creatorStatus
+            createdAt
+            updatedAt
+        }
+    }
+`;
+
+export const RESTORE_CREATOR_MUTATION = gql`
+    mutation RestoreCreator($userId: ID!) {
+        restoreCreator(userId: $userId) {
+            id
+            email
+            name
+            image
+            role
+            creatorStatus
+            createdAt
+            updatedAt
+        }
+    }
+`;
+
 export const SET_CREATOR_STATUS_MUTATION = gql`
     mutation SetCreatorStatus(
         $userId: ID!
@@ -131,4 +191,24 @@ export type SetPlatformRoleData = {
 export type SetPlatformRoleVariables = {
     userId: string;
     role: PlatformRole;
+};
+
+export type CreatorLifecycleVariables = {
+    userId: string;
+};
+
+export type InviteCreatorData = {
+    inviteCreator: PlatformUser;
+};
+
+export type ActivateCreatorData = {
+    activateCreator: PlatformUser;
+};
+
+export type SuspendCreatorData = {
+    suspendCreator: PlatformUser;
+};
+
+export type RestoreCreatorData = {
+    restoreCreator: PlatformUser;
 };

@@ -31,6 +31,14 @@ const creatorItems: BottomNavItem[] = [
     { href: "/profile", icon: "👤", label: "Profile" },
 ];
 
+const adminItems: BottomNavItem[] = [
+    { href: "/nexus", icon: "🎵", label: "Nexus" },
+    { href: "/creator", icon: "◇", label: "Creator" },
+    { href: "/admin", icon: "⚙", label: "Admin" },
+    { href: "/creator/library", icon: "☷", label: "Library" },
+    { href: "/profile", icon: "👤", label: "Profile" },
+];
+
 function isRouteActive(pathname: string | null, href: string) {
     if (!pathname) return false;
     if (href === "/") return pathname === "/";
@@ -39,10 +47,17 @@ function isRouteActive(pathname: string | null, href: string) {
 
 export default function BottomNav() {
     const pathname = usePathname();
-    const { isAuthenticated, canAccessCreatorOS, loading } = usePlatformAccess();
+    const {
+        isAuthenticated,
+        canAccessCreatorOS,
+        canAccessAdmin,
+        loading,
+    } = usePlatformAccess();
 
-    const navItems = !loading && canAccessCreatorOS
-        ? creatorItems
+    const navItems = !loading && canAccessAdmin
+        ? adminItems
+        : !loading && canAccessCreatorOS
+            ? creatorItems
         : isAuthenticated
             ? memberItems
             : publicItems;

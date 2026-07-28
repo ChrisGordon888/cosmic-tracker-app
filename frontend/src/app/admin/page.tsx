@@ -5,15 +5,21 @@ import {
     PLATFORM_ROLE_OPTIONS,
 } from "./support/options";
 import {
+    ACTIVATE_CREATOR_MUTATION,
+    ActivateCreatorData,
+    CreatorLifecycleVariables,
     CreatorStatus,
+    INVITE_CREATOR_MUTATION,
+    InviteCreatorData,
     PlatformRole,
     PlatformUser,
     PlatformUsersData,
     PlatformUsersVariables,
-    SET_CREATOR_STATUS_MUTATION,
+    RESTORE_CREATOR_MUTATION,
+    RestoreCreatorData,
     SET_PLATFORM_ROLE_MUTATION,
-    SetCreatorStatusData,
-    SetCreatorStatusVariables,
+    SUSPEND_CREATOR_MUTATION,
+    SuspendCreatorData,
     SetPlatformRoleData,
     SetPlatformRoleVariables,
     PLATFORM_USERS_QUERY,
@@ -127,10 +133,25 @@ export default function AdminPage() {
         }
     );
 
-    const [setCreatorStatus] = useMutation<
-        SetCreatorStatusData,
-        SetCreatorStatusVariables
-    >(SET_CREATOR_STATUS_MUTATION);
+    const [inviteCreator] = useMutation<
+        InviteCreatorData,
+        CreatorLifecycleVariables
+    >(INVITE_CREATOR_MUTATION);
+
+    const [activateCreator] = useMutation<
+        ActivateCreatorData,
+        CreatorLifecycleVariables
+    >(ACTIVATE_CREATOR_MUTATION);
+
+    const [suspendCreator] = useMutation<
+        SuspendCreatorData,
+        CreatorLifecycleVariables
+    >(SUSPEND_CREATOR_MUTATION);
+
+    const [restoreCreator] = useMutation<
+        RestoreCreatorData,
+        CreatorLifecycleVariables
+    >(RESTORE_CREATOR_MUTATION);
 
     const [setPlatformRole] = useMutation<
         SetPlatformRoleData,
@@ -139,28 +160,36 @@ export default function AdminPage() {
 
     const users = data?.platformUsers ?? [];
 
-    async function handleCreatorStatus(
+    async function handleCreatorLifecycle(
         user: PlatformUser,
-        creatorStatus: CreatorStatus
+        action: "invite" | "activate" | "suspend" | "restore"
     ) {
         setFeedback(null);
         setWorkingUserId(user.id);
 
         try {
-            await setCreatorStatus({
-                variables: {
-                    userId: user.id,
-                    creatorStatus,
-                },
-            });
+            if (action === "invite") {
+                await inviteCreator({ variables: { userId: user.id } });
+            } else if (action === "activate") {
+                await activateCreator({ variables: { userId: user.id } });
+            } else if (action === "suspend") {
+                await suspendCreator({ variables: { userId: user.id } });
+            } else {
+                await restoreCreator({ variables: { userId: user.id } });
+            }
 
             await refetch();
 
+            const actionMessage = {
+                invite: "invited as a creator",
+                activate: "activated",
+                suspend: "suspended",
+                restore: "restored",
+            }[action];
+
             setFeedback({
                 type: "success",
-                message: `${user.name || user.email} is now ${statusLabel(
-                    creatorStatus
-                ).toLowerCase()}.`,
+                message: `${user.name || user.email} was ${actionMessage}.`,
             });
         } catch (mutationError) {
             setFeedback({
@@ -168,7 +197,7 @@ export default function AdminPage() {
                 message:
                     mutationError instanceof Error
                         ? mutationError.message
-                        : "Creator status update failed.",
+                        : "Creator lifecycle update failed.",
             });
         } finally {
             setWorkingUserId(null);
@@ -403,7 +432,7 @@ export default function AdminPage() {
                                 user={user}
                                 isOwner={isOwner}
                                 isWorking={workingUserId === user.id}
-                                onCreatorStatus={handleCreatorStatus}
+                                onCreatorLifecycle={handleCreatorLifecycle}
                                 onRole={handleRole}
                             />
                         ))}
@@ -439,15 +468,15 @@ function UserCard({
     user,
     isOwner,
     isWorking,
-    onCreatorStatus,
+    onCreatorLifecycle,
     onRole,
 }: {
     user: PlatformUser;
     isOwner: boolean;
     isWorking: boolean;
-    onCreatorStatus: (
+    onCreatorLifecycle: (
         user: PlatformUser,
-        status: CreatorStatus
+        action: "invite" | "activate" | "suspend" | "restore"
     ) => Promise<void>;
     onRole: (
         user: PlatformUser,
@@ -515,7 +544,7 @@ function UserCard({
                                     !canManageCreatorStatus
                                 }
                                 onClick={() =>
-                                    onCreatorStatus(user, "active")
+                                    onCreatorLifecycle(user, "activate")
                                 }
                             />
                         ) : null}
@@ -530,7 +559,7 @@ function UserCard({
                                     !canManageCreatorStatus
                                 }
                                 onClick={() =>
-                                    onCreatorStatus(user, "suspended")
+                                    onCreatorLifecycle(user, "suspend")
                                 }
                             />
                         ) : null}
@@ -544,18 +573,17 @@ function UserCard({
                                     !canManageCreatorStatus
                                 }
                                 onClick={() =>
-                                    onCreatorStatus(user, "active")
+                                    onCreatorLifecycle(user, "restore")
                                 }
                             />
                         ) : null}
 
-                        {user.role === "listener" &&
-                        user.creatorStatus === "none" ? (
+                        {user.role === "listener" ? (
                             <ActionButton
-                                label="Mark invited"
+                                label="Invite as creator"
                                 disabled={isWorking}
                                 onClick={() =>
-                                    onCreatorStatus(user, "invited")
+                                    onCreatorLifecycle(user, "invite")
                                 }
                             />
                         ) : null}
