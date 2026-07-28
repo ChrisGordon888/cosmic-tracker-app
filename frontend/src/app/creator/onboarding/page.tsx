@@ -225,6 +225,32 @@ export default function CreatorOnboardingPage() {
                     })}
                 </section>
 
+                {progress?.isReadyForActivation ? (
+                    <section className="mt-6 rounded-3xl border border-emerald-300/20 bg-emerald-300/[0.055] p-6">
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <p className="text-xs uppercase tracking-[0.18em] text-emerald-100/70">
+                                    All steps complete
+                                </p>
+                                <h2 className="mt-2 text-xl font-medium text-white">
+                                    Review your creator world.
+                                </h2>
+                                <p className="mt-2 text-sm text-white/50">
+                                    Confirm the profile, release, first track,
+                                    and artwork before activation.
+                                </p>
+                            </div>
+
+                            <Link
+                                href="/creator/onboarding/review"
+                                className="inline-flex shrink-0 justify-center rounded-full border border-emerald-300/25 bg-emerald-300/10 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-emerald-100 transition hover:bg-emerald-300/15"
+                            >
+                                Open final review
+                            </Link>
+                        </div>
+                    </section>
+                ) : null}
+
                 <section className="mt-6 rounded-3xl border border-white/10 bg-white/[0.025] p-6">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div>

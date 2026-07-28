@@ -180,6 +180,73 @@ export const SAVE_CREATOR_ONBOARDING_ARTWORK = gql`
     }
 `;
 
+export const GET_CREATOR_ONBOARDING_REVIEW = gql`
+    query GetCreatorOnboardingReview {
+        getCreatorOnboardingProgress {
+            status
+            completedSteps
+            completedCount
+            totalSteps
+            isReadyForActivation
+            nextStepId
+            nextStepLabel
+            nextStepHref
+            profileId
+            releaseWorldId
+            releaseWorldSlug
+            trackId
+        }
+        getCreatorOnboardingProfile {
+            id
+            artistName
+            slug
+            displayName
+            tagline
+            bio
+            isPublic
+        }
+        getCreatorOnboardingRelease {
+            id
+            title
+            slug
+            releaseType
+            status
+            visibility
+            oneLineSummary
+            story
+            fullDropDate
+            coverArtUrl
+            coverAssetId
+        }
+        getCreatorOnboardingTrack {
+            id
+            title
+            slug
+            trackNumber
+            role
+            status
+            bpm
+            keySignature
+            mood
+            hook
+            notes
+            visibility
+            playbackStatus
+            isPublic
+            showInNexus
+        }
+        getCreatorOnboardingArtwork {
+            id
+            title
+            description
+            url
+            fileName
+            mimeType
+            isPublic
+        }
+    }
+`;
+
 export const GET_CREATOR_ONBOARDING_PROGRESS = gql`
     query GetCreatorOnboardingProgress {
         getCreatorOnboardingProgress {
@@ -381,4 +448,13 @@ export type SaveCreatorOnboardingArtworkData = {
 
 export type SaveCreatorOnboardingArtworkVariables = {
     input: CreatorOnboardingArtworkInput;
+};
+
+
+export type CreatorOnboardingReviewData = {
+    getCreatorOnboardingProgress: CreatorOnboardingProgress;
+    getCreatorOnboardingProfile?: CreatorOnboardingProfile | null;
+    getCreatorOnboardingRelease?: CreatorOnboardingRelease | null;
+    getCreatorOnboardingTrack?: CreatorOnboardingTrack | null;
+    getCreatorOnboardingArtwork?: CreatorOnboardingArtwork | null;
 };

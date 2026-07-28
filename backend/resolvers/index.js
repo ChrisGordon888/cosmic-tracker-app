@@ -901,8 +901,10 @@ module.exports = {
 
             if (isReadyForActivation) {
                 status =
-                    user.role === "creator" &&
-                    user.creatorStatus === "active"
+                    user.role === "owner" ||
+                    user.role === "admin" ||
+                    (user.role === "creator" &&
+                        user.creatorStatus === "active")
                         ? "complete"
                         : "ready";
             }
