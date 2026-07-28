@@ -7,8 +7,11 @@ import { signOut } from "next-auth/react";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
 import { usePlatformAccess } from "@/context/PlatformAccessProvider";
 import CreatorModeSwitch from "@/components/creator/CreatorModeSwitch";
+import { supportsCreatorViewMode } from "@/lib/creatorViewRoutes";
 
-const publicItems = [
+type NavItem = { href: string; label: string; description: string };
+
+const publicItems: NavItem[] = [
     { href: "/", label: "Home", description: "The cinematic gateway" },
     { href: "/nexus", label: "Nexus", description: "Music, realms, and signals" },
     { href: "/find-your-realm", label: "Align", description: "Find your current realm" },
@@ -16,19 +19,18 @@ const publicItems = [
     { href: "/services", label: "Services", description: "Build with Cosmic" },
 ];
 
-const memberItems = [
+const memberItems: NavItem[] = [
     { href: "/practice", label: "Practice", description: "Private daily practice" },
     { href: "/leaderboard", label: "Rank", description: "Traveler rankings" },
 ];
 
-const creatorItems = [
+const creatorItems: NavItem[] = [
     { href: "/creator", label: "Creator OS", description: "Creative command center" },
     { href: "/creator/library", label: "Creator Library", description: "Manage every track" },
 ];
 
 function isRouteActive(pathname: string | null, href: string) {
     if (!pathname) return false;
-
     if (href === "/") return pathname === "/";
     return pathname === href || pathname.startsWith(`${href}/`);
 }
@@ -36,50 +38,23 @@ function isRouteActive(pathname: string | null, href: string) {
 export default function CosmicTopNav({ title }: { title?: string }) {
     const [isOpen, setIsOpen] = useState(false);
     const pathname = usePathname();
-    const {
-        isAuthenticated,
-        canAccessCreatorOS,
-        loading: accessLoading,
-    } = usePlatformAccess();
+    const { isAuthenticated, canAccessCreatorOS, loading: accessLoading } = usePlatformAccess();
+    const supportsViewMode = supportsCreatorViewMode(pathname);
 
-    const renderItems = (
-        items: typeof publicItems,
-        accentClass: string,
-    ) => (
+    const renderItems = (sectionLabel: string, items: NavItem[], accentClass: string) => (
         <>
             <div className="px-3 py-2">
-                <p className={`text-[10px] uppercase tracking-[0.22em] ${accentClass}`}>
-                    {items === publicItems
-                        ? "Explore"
-                        : items === creatorItems
-                            ? "Creator OS"
-                            : "Your Space"}
-                </p>
+                <p className={`text-[10px] uppercase tracking-[0.22em] ${accentClass}`}>{sectionLabel}</p>
             </div>
-
             <div className="space-y-1">
                 {items.map((item) => {
                     const isActive = isRouteActive(pathname, item.href);
-
                     return (
-                        <Link
-                            key={item.href}
-                            href={item.href}
-                            onClick={() => setIsOpen(false)}
-                            className={`block rounded-xl px-3 py-3 transition ${
-                                isActive
-                                    ? "bg-white/[0.08] text-white"
-                                    : "text-white/70 hover:bg-white/[0.05] hover:text-white"
-                            }`}
-                        >
+                        <Link key={item.href} href={item.href} onClick={() => setIsOpen(false)} className={`block rounded-xl px-3 py-3 transition ${isActive ? "bg-white/[0.08] text-white" : "text-white/70 hover:bg-white/[0.05] hover:text-white"}`}>
                             <div className="flex items-center justify-between gap-3">
                                 <div>
-                                    <p className="text-sm font-medium uppercase tracking-[0.12em]">
-                                        {item.label}
-                                    </p>
-                                    <p className="mt-0.5 text-xs text-white/45">
-                                        {item.description}
-                                    </p>
+                                    <p className="text-sm font-medium uppercase tracking-[0.12em]">{item.label}</p>
+                                    <p className="mt-0.5 text-xs text-white/45">{item.description}</p>
                                 </div>
                                 <span className="text-white/35">→</span>
                             </div>
@@ -94,74 +69,29 @@ export default function CosmicTopNav({ title }: { title?: string }) {
         <header className="sticky top-0 z-50 border-b border-white/10 bg-[#070A12]/90 backdrop-blur-xl">
             <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
                 <div className="relative flex items-center gap-3">
-                    <button
-                        type="button"
-                        onClick={() => setIsOpen((prev) => !prev)}
-                        aria-label="Open navigation menu"
-                        aria-expanded={isOpen}
-                        className="grid h-11 w-11 place-items-center rounded-full border border-white/15 bg-white/[0.03] text-white/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition hover:border-[#DCBA5C]/40 hover:text-[#DCBA5C]"
-                    >
-                        <span className="text-lg leading-none">
-                            {isOpen ? "×" : "☰"}
-                        </span>
+                    <button type="button" onClick={() => setIsOpen((previous) => !previous)} aria-label="Open navigation menu" aria-expanded={isOpen} className="grid h-11 w-11 place-items-center rounded-full border border-white/15 bg-white/[0.03] text-white/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition hover:border-[#DCBA5C]/40 hover:text-[#DCBA5C]">
+                        <span className="text-lg leading-none">{isOpen ? "×" : "☰"}</span>
                     </button>
-
-                    <Link
-                        href="/"
-                        className="text-lg font-semibold tracking-[0.28em] text-white"
-                        onClick={() => setIsOpen(false)}
-                    >
-                        COSMIC
-                    </Link>
-
+                    <Link href="/" className="text-lg font-semibold tracking-[0.28em] text-white" onClick={() => setIsOpen(false)}>COSMIC</Link>
                     {isOpen && (
                         <div className="absolute left-0 top-14 max-h-[calc(100vh-5rem)] w-[min(88vw,340px)] overflow-y-auto rounded-2xl border border-white/10 bg-[#090D17]/95 p-2 shadow-2xl backdrop-blur-xl">
-                            {renderItems(publicItems, "text-[#DCBA5C]/80")}
-
-                            {isAuthenticated && (
-                                <>
-                                    <div className="mx-3 my-2 border-t border-white/10" />
-                                    {renderItems(memberItems, "text-[#A884FF]/80")}
-                                </>
-                            )}
-
-                            {!accessLoading && canAccessCreatorOS && (
-                                <>
-                                    <div className="mx-3 my-2 border-t border-white/10" />
-                                    {renderItems(creatorItems, "text-[#7ED3FF]/80")}
-                                </>
-                            )}
+                            {renderItems("Explore", publicItems, "text-[#DCBA5C]/80")}
+                            {isAuthenticated && (<><div className="mx-3 my-2 border-t border-white/10" />{renderItems("Your Space", memberItems, "text-[#A884FF]/80")}</>)}
+                            {!accessLoading && canAccessCreatorOS && (<><div className="mx-3 my-2 border-t border-white/10" />{renderItems("Creator OS", creatorItems, "text-[#7ED3FF]/80")}</>)}
                         </div>
                     )}
                 </div>
 
-                {title && (
-                    <h1 className="hidden text-sm font-medium tracking-[0.14em] text-white/70 sm:block">
-                        {title}
-                    </h1>
-                )}
+                {title && <h1 className="hidden text-sm font-medium tracking-[0.14em] text-white/70 sm:block">{title}</h1>}
 
                 <div className="flex items-center gap-2">
-                    <div className="hidden md:block">
-                        <CreatorModeSwitch compact />
-                    </div>
-
+                    {supportsViewMode && <div className="hidden md:block"><CreatorModeSwitch compact /></div>}
                     {isAuthenticated && (
-                        <button
-                            type="button"
-                            onClick={() => signOut({ callbackUrl: "/" })}
-                            className="rounded-full border border-white/15 bg-white/[0.03] px-4 py-2 text-[11px] font-medium uppercase tracking-[0.16em] text-white/70 transition hover:border-[#DCBA5C]/35 hover:bg-[#DCBA5C]/10 hover:text-white max-[420px]:px-3"
-                        >
-                            <span className="hidden sm:inline">Sign Out</span>
-                            <span className="sm:hidden">Out</span>
+                        <button type="button" onClick={() => signOut({ callbackUrl: "/" })} className="rounded-full border border-white/15 bg-white/[0.03] px-4 py-2 text-[11px] font-medium uppercase tracking-[0.16em] text-white/70 transition hover:border-[#DCBA5C]/35 hover:bg-[#DCBA5C]/10 hover:text-white max-[420px]:px-3">
+                            <span className="hidden sm:inline">Sign Out</span><span className="sm:hidden">Out</span>
                         </button>
                     )}
-
-                    <Link
-                        href="/profile"
-                        aria-label="Open profile"
-                        className="grid h-11 w-11 place-items-center rounded-full border border-white/15 bg-white/[0.03] text-white/75 transition hover:border-white/30 hover:text-white"
-                    >
+                    <Link href="/profile" aria-label="Open profile" className="grid h-11 w-11 place-items-center rounded-full border border-white/15 bg-white/[0.03] text-white/75 transition hover:border-white/30 hover:text-white">
                         <UserCircleIcon className="h-7 w-7" />
                     </Link>
                 </div>

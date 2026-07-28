@@ -33,13 +33,17 @@ interface PlatformAccessContextValue {
     isOwner: boolean;
     canAccessCreatorOS: boolean;
     canReviewUnreleased: boolean;
+    canAccessAdmin: boolean;
+    canAccessOwnerTools: boolean;
+    canManageCreatorStatuses: boolean;
+    canManagePlatformRoles: boolean;
+    canManageOwnContent: boolean;
     loading: boolean;
     errorMessage: string | null;
     refetch: () => Promise<unknown>;
 }
 
-const PlatformAccessContext =
-    createContext<PlatformAccessContextValue | null>(null);
+const PlatformAccessContext = createContext<PlatformAccessContextValue | null>(null);
 
 export function PlatformAccessProvider({ children }: { children: ReactNode }) {
     const { status } = useSession();
@@ -58,51 +62,33 @@ export function PlatformAccessProvider({ children }: { children: ReactNode }) {
     const value = useMemo<PlatformAccessContextValue>(() => {
         const isOwner = role === "owner";
         const isAdmin = role === "admin" || isOwner;
-        const isCreator =
-            role === "creator" && creatorStatus === "active";
+        const isCreator = role === "creator" && creatorStatus === "active";
         const canAccessCreatorOS = isOwner || isAdmin || isCreator;
 
         return {
-            user,
-            role,
-            creatorStatus,
-            isAuthenticated,
+            user, role, creatorStatus, isAuthenticated,
             isListener: role === "listener",
-            isCreator,
-            isAdmin,
-            isOwner,
+            isCreator, isAdmin, isOwner,
             canAccessCreatorOS,
             canReviewUnreleased: canAccessCreatorOS,
+            canAccessAdmin: isAdmin,
+            canAccessOwnerTools: isOwner,
+            canManageCreatorStatuses: isAdmin,
+            canManagePlatformRoles: isOwner,
+            canManageOwnContent: canAccessCreatorOS,
             loading: status === "loading" || (isAuthenticated && queryLoading),
             errorMessage: error?.message ?? null,
             refetch,
         };
-    }, [
-        creatorStatus,
-        error?.message,
-        isAuthenticated,
-        queryLoading,
-        refetch,
-        role,
-        status,
-        user,
-    ]);
+    }, [creatorStatus, error?.message, isAuthenticated, queryLoading, refetch, role, status, user]);
 
-    return (
-        <PlatformAccessContext.Provider value={value}>
-            {children}
-        </PlatformAccessContext.Provider>
-    );
+    return <PlatformAccessContext.Provider value={value}>{children}</PlatformAccessContext.Provider>;
 }
 
 export function usePlatformAccess() {
     const context = useContext(PlatformAccessContext);
-
     if (!context) {
-        throw new Error(
-            "usePlatformAccess must be used inside PlatformAccessProvider",
-        );
+        throw new Error("usePlatformAccess must be used inside PlatformAccessProvider");
     }
-
     return context;
 }
