@@ -3,6 +3,7 @@ export function supportsCreatorViewMode(pathname: string | null) {
 
     return (
         pathname === "/nexus" ||
-        pathname.startsWith("/releases/")
+        pathname.startsWith("/releases/") ||
+        pathname.startsWith("/realms/")
     );
 }
