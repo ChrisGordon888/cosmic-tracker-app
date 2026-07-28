@@ -140,6 +140,25 @@ const typeDefs = gql`
   }
 
   # ========================================
+  # 🌱 CREATOR ONBOARDING
+  # ========================================
+
+  type CreatorOnboardingProgress {
+    status: String!
+    completedSteps: [String!]!
+    completedCount: Int!
+    totalSteps: Int!
+    isReadyForActivation: Boolean!
+    nextStepId: String
+    nextStepLabel: String
+    nextStepHref: String
+    profileId: ID
+    releaseWorldId: ID
+    releaseWorldSlug: String
+    trackId: ID
+  }
+
+  # ========================================
   # 🌌 CREATOR WORLD TYPES
   # ========================================
 
@@ -456,6 +475,9 @@ const typeDefs = gql`
       search: String
     ): [PlatformUser!]!
     platformUser(id: ID!): PlatformUser
+
+    # Creator Onboarding
+    getCreatorOnboardingProgress: CreatorOnboardingProgress!
 
     # Creator Worlds
     myCreativeProfiles: [CreativeProfile!]!

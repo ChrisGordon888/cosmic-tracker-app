@@ -32,6 +32,7 @@ interface PlatformAccessContextValue {
     isAdmin: boolean;
     isOwner: boolean;
     canAccessCreatorOS: boolean;
+    canAccessCreatorOnboarding: boolean;
     canReviewUnreleased: boolean;
     canAccessAdmin: boolean;
     canAccessOwnerTools: boolean;
@@ -64,12 +65,18 @@ export function PlatformAccessProvider({ children }: { children: ReactNode }) {
         const isAdmin = role === "admin" || isOwner;
         const isCreator = role === "creator" && creatorStatus === "active";
         const canAccessCreatorOS = isOwner || isAdmin || isCreator;
+        const canAccessCreatorOnboarding =
+            isOwner ||
+            isAdmin ||
+            (role === "creator" &&
+                ["invited", "active"].includes(creatorStatus));
 
         return {
             user, role, creatorStatus, isAuthenticated,
             isListener: role === "listener",
             isCreator, isAdmin, isOwner,
             canAccessCreatorOS,
+            canAccessCreatorOnboarding,
             canReviewUnreleased: canAccessCreatorOS,
             canAccessAdmin: isAdmin,
             canAccessOwnerTools: isOwner,

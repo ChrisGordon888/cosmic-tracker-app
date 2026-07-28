@@ -67,6 +67,30 @@ function requireOwner(user) {
     return user;
 }
 
+
+function hasCreatorOnboardingAccess(user) {
+    if (!user) return false;
+
+    if (user.role === "owner" || user.role === "admin") {
+        return true;
+    }
+
+    return (
+        user.role === "creator" &&
+        ["invited", "active"].includes(user.creatorStatus)
+    );
+}
+
+function requireCreatorOnboarding(user) {
+    requireUser(user);
+
+    if (!hasCreatorOnboardingAccess(user)) {
+        throw new Error("Creator onboarding access required.");
+    }
+
+    return user;
+}
+
 const PLATFORM_ROLES = new Set([
     "listener",
     "creator",
@@ -665,6 +689,110 @@ module.exports = {
             return await User.findById(id).select(
                 "_id email name image role creatorStatus createdAt updatedAt"
             );
+        },
+
+        // ========================================
+        // 🌱 CREATOR ONBOARDING
+        // ========================================
+
+        getCreatorOnboardingProgress: async (_, __, { user }) => {
+            requireCreatorOnboarding(user);
+
+            const profile = await getPrimaryCreativeProfile(user.id);
+
+            const releaseWorld = profile
+                ? await ReleaseWorld.findOne({
+                    ownerId: user.id,
+                    creativeProfileId: profile._id,
+                    status: { $ne: "archived" },
+                }).sort({
+                    lastOpenedAt: -1,
+                    updatedAt: -1,
+                    createdAt: -1,
+                })
+                : null;
+
+            const track = releaseWorld
+                ? await ReleaseTrack.findOne({
+                    ownerId: user.id,
+                    releaseWorldId: releaseWorld._id,
+                    status: { $ne: "archived" },
+                }).sort({
+                    trackNumber: 1,
+                    createdAt: 1,
+                })
+                : null;
+
+            const hasArtwork = Boolean(
+                releaseWorld?.coverAssetId ||
+                String(releaseWorld?.coverArtUrl || "").trim()
+            );
+
+            const steps = [
+                {
+                    id: "artist-profile",
+                    label: "Create artist identity",
+                    complete: Boolean(profile),
+                    href: "/creator/onboarding/profile",
+                },
+                {
+                    id: "first-release",
+                    label: "Create first release world",
+                    complete: Boolean(releaseWorld),
+                    href: "/creator/onboarding/release",
+                },
+                {
+                    id: "first-track",
+                    label: "Add first track",
+                    complete: Boolean(track),
+                    href: "/creator/onboarding/track",
+                },
+                {
+                    id: "release-artwork",
+                    label: "Add release artwork",
+                    complete: hasArtwork,
+                    href: "/creator/onboarding/artwork",
+                },
+            ];
+
+            const completedSteps = steps
+                .filter((step) => step.complete)
+                .map((step) => step.id);
+
+            const nextStep =
+                steps.find((step) => !step.complete) || null;
+
+            const isReadyForActivation =
+                steps.every((step) => step.complete);
+
+            let status = "not-started";
+
+            if (completedSteps.length > 0) {
+                status = "in-progress";
+            }
+
+            if (isReadyForActivation) {
+                status =
+                    user.role === "creator" &&
+                    user.creatorStatus === "active"
+                        ? "complete"
+                        : "ready";
+            }
+
+            return {
+                status,
+                completedSteps,
+                completedCount: completedSteps.length,
+                totalSteps: steps.length,
+                isReadyForActivation,
+                nextStepId: nextStep?.id || null,
+                nextStepLabel: nextStep?.label || null,
+                nextStepHref: nextStep?.href || null,
+                profileId: profile?._id || null,
+                releaseWorldId: releaseWorld?._id || null,
+                releaseWorldSlug: releaseWorld?.slug || null,
+                trackId: track?._id || null,
+            };
         },
 
         // ========================================
