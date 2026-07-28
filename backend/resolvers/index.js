@@ -492,15 +492,32 @@ async function evaluateReleasePublishingReadiness(releaseWorld, userId) {
 
         if (track.showInNexus) {
             try {
-                validateNexusPublication(track, releaseWorld);
-                completedChecks.push(`TRACK_NEXUS_READY:${track._id}`);
+                const publishedReleaseCandidate = {
+                    ...(releaseWorld.toObject
+                        ? releaseWorld.toObject()
+                        : releaseWorld),
+                    visibility: "public",
+                    status: "active",
+                };
+
+                validateNexusPublication(
+                    track,
+                    publishedReleaseCandidate
+                );
+
+                completedChecks.push(
+                    `TRACK_NEXUS_READY:${track._id}`
+                );
             } catch (error) {
+                const reason =
+                    error instanceof Error
+                        ? error.message
+                        : "Nexus configuration is incomplete.";
+
                 blockingIssues.push(
                     createReadinessIssue(
                         "NEXUS_CONFIGURATION_INVALID",
-                        error instanceof Error
-                            ? error.message
-                            : `${label} is not ready for Nexus publication.`,
+                        `${label}: ${reason}`,
                         "blocking",
                         "showInNexus",
                         `/creator/releases/${releaseWorld.slug}`
