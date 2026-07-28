@@ -1,25 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useSession } from "next-auth/react";
 import type { ReactNode } from "react";
-
-type SessionAccessUser = {
-    role?: string | null;
-    creatorStatus?: string | null;
-};
+import { usePlatformAccess } from "@/context/PlatformAccessProvider";
 
 export default function AdminAccessGate({
     children,
 }: {
     children: ReactNode;
 }) {
-    const { data: session, status } = useSession();
-    const accessUser = session?.user as SessionAccessUser | undefined;
-    const role = accessUser?.role ?? "listener";
-    const canAccessAdmin = role === "admin" || role === "owner";
+    const {
+        isAuthenticated,
+        canAccessAdmin,
+        loading,
+        errorMessage,
+    } = usePlatformAccess();
 
-    if (status === "loading") {
+    if (loading) {
         return (
             <main className="min-h-[70vh] px-4 py-16">
                 <div className="mx-auto max-w-5xl rounded-3xl border border-white/10 bg-white/[0.035] p-8 text-center">
@@ -34,7 +31,7 @@ export default function AdminAccessGate({
         );
     }
 
-    if (!session) {
+    if (!isAuthenticated) {
         return (
             <main className="min-h-[70vh] px-4 py-16">
                 <div className="mx-auto max-w-xl rounded-3xl border border-white/10 bg-white/[0.035] p-8 text-center">
@@ -58,6 +55,24 @@ export default function AdminAccessGate({
         );
     }
 
+    if (errorMessage) {
+        return (
+            <main className="min-h-[70vh] px-4 py-16">
+                <div className="mx-auto max-w-xl rounded-3xl border border-rose-300/15 bg-rose-300/[0.035] p-8 text-center">
+                    <p className="text-xs uppercase tracking-[0.25em] text-rose-200/75">
+                        Access Check Failed
+                    </p>
+                    <h1 className="mt-3 text-2xl font-semibold text-white">
+                        We could not verify platform authority
+                    </h1>
+                    <p className="mt-3 text-sm leading-6 text-white/55">
+                        {errorMessage}
+                    </p>
+                </div>
+            </main>
+        );
+    }
+
     if (!canAccessAdmin) {
         return (
             <main className="min-h-[70vh] px-4 py-16">
@@ -69,7 +84,7 @@ export default function AdminAccessGate({
                         Administrator access required
                     </h1>
                     <p className="mt-3 text-sm leading-6 text-white/55">
-                        Your account does not currently have permission to manage platform users.
+                        Your database account does not currently have administrator or owner authority.
                     </p>
                     <Link
                         href="/"

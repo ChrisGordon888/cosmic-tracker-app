@@ -25,13 +25,10 @@ import {
     PLATFORM_USERS_QUERY,
 } from "@/graphql/admin";
 import { useMutation, useQuery } from "@apollo/client";
+import { usePlatformAccess } from "@/context/PlatformAccessProvider";
 import Image from "next/image";
-import { useSession } from "next-auth/react";
 import { useMemo, useState } from "react";
 
-type SessionAccessUser = {
-    role?: PlatformRole | null;
-};
 
 function formatDate(value?: string | null) {
     if (!value) return "Unknown";
@@ -94,9 +91,12 @@ function statusBadgeClass(status: CreatorStatus) {
 }
 
 export default function AdminPage() {
-    const { data: session } = useSession();
-    const sessionUser = session?.user as SessionAccessUser | undefined;
-    const isOwner = sessionUser?.role === "owner";
+    const {
+        canAccessOwnerTools,
+        canManageCreatorStatuses,
+    } = usePlatformAccess();
+
+    const isOwner = canAccessOwnerTools;
 
     const [searchInput, setSearchInput] = useState("");
     const [search, setSearch] = useState("");
