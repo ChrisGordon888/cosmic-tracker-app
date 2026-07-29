@@ -2352,6 +2352,125 @@ module.exports = {
             return artwork;
         },
 
+        publishReleaseWorld: async (
+            _,
+            { releaseWorldId },
+            { user }
+        ) => {
+            requireCreator(user);
+
+            const releaseWorld = await getOwnedReleaseWorld(
+                releaseWorldId,
+                user.id
+            );
+
+            if (!releaseWorld) {
+                throw new Error("Release world not found.");
+            }
+
+            const readiness =
+                await evaluateReleasePublishingReadiness(
+                    releaseWorld,
+                    user.id
+                );
+
+            if (!readiness.ready) {
+                const blockerSummary = readiness.blockingIssues
+                    .map((issue) => issue.message)
+                    .join("; ");
+
+                throw new Error(
+                    blockerSummary
+                        ? `Release is not ready to publish: ${blockerSummary}`
+                        : "Release is not ready to publish."
+                );
+            }
+
+            const profile = await CreativeProfile.findOne({
+                _id: releaseWorld.creativeProfileId,
+                ownerId: user.id,
+            });
+
+            if (!profile) {
+                throw new Error(
+                    "The connected creator profile could not be found."
+                );
+            }
+
+            profile.isPublic = true;
+            await profile.save();
+
+            if (releaseWorld.coverAssetId) {
+                await ReleaseAsset.findOneAndUpdate(
+                    {
+                        _id: releaseWorld.coverAssetId,
+                        ownerId: user.id,
+                        releaseWorldId: releaseWorld._id,
+                    },
+                    {
+                        isPublic: true,
+                        lastOpenedAt: new Date(),
+                    }
+                );
+            } else {
+                await ReleaseAsset.findOneAndUpdate(
+                    {
+                        ownerId: user.id,
+                        releaseWorldId: releaseWorld._id,
+                        $or: [
+                            { usage: "cover" },
+                            { kind: "cover" },
+                        ],
+                    },
+                    {
+                        isPublic: true,
+                        lastOpenedAt: new Date(),
+                    },
+                    {
+                        sort: {
+                            updatedAt: -1,
+                            createdAt: -1,
+                        },
+                    }
+                );
+            }
+
+            releaseWorld.status = "active";
+            releaseWorld.visibility = "public";
+            releaseWorld.lastOpenedAt = new Date();
+            await releaseWorld.save();
+
+            return releaseWorld;
+        },
+
+        unpublishReleaseWorld: async (
+            _,
+            { releaseWorldId },
+            { user }
+        ) => {
+            requireCreator(user);
+
+            const releaseWorld = await getOwnedReleaseWorld(
+                releaseWorldId,
+                user.id
+            );
+
+            if (!releaseWorld) {
+                throw new Error("Release world not found.");
+            }
+
+            releaseWorld.visibility = "private";
+            releaseWorld.status =
+                releaseWorld.status === "archived"
+                    ? "archived"
+                    : "draft";
+            releaseWorld.lastOpenedAt = new Date();
+
+            await releaseWorld.save();
+
+            return releaseWorld;
+        },
+
         // ========================================
         // 🛡️ PLATFORM ADMINISTRATION MUTATIONS
         // ========================================

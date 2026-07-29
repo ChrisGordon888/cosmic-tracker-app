@@ -2,11 +2,16 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { gql, useQuery } from "@apollo/client";
+import { gql, useMutation, useQuery } from "@apollo/client";
 import {
     GET_RELEASE_PUBLISHING_READINESS,
+    PUBLISH_RELEASE_WORLD,
+    UNPUBLISH_RELEASE_WORLD,
+    PublishReleaseWorldData,
+    PublishReleaseWorldVariables,
     ReleasePublishingReadinessData,
     ReleasePublishingReadinessVariables,
+    UnpublishReleaseWorldData,
 } from "@/graphql/onboarding";
 
 const GET_RELEASE = gql`
@@ -56,6 +61,73 @@ export default function PublishingReadinessPage() {
         readinessQuery.data?.getReleasePublishingReadiness;
     const activeError =
         releaseQuery.error || readinessQuery.error;
+
+    const [publishRelease, publishState] = useMutation<
+        PublishReleaseWorldData,
+        PublishReleaseWorldVariables
+    >(PUBLISH_RELEASE_WORLD);
+
+    const [unpublishRelease, unpublishState] = useMutation<
+        UnpublishReleaseWorldData,
+        PublishReleaseWorldVariables
+    >(UNPUBLISH_RELEASE_WORLD);
+
+    const mutating =
+        publishState.loading || unpublishState.loading;
+
+    async function handlePublish() {
+        if (!release?.id || !readiness?.ready || mutating) {
+            return;
+        }
+
+        const confirmed = window.confirm(
+            `Publish ${release.title}? This will make the release, creator profile, and connected cover publicly available.`
+        );
+
+        if (!confirmed) return;
+
+        try {
+            await publishRelease({
+                variables: {
+                    releaseWorldId: release.id,
+                },
+            });
+
+            await Promise.all([
+                releaseQuery.refetch(),
+                readinessQuery.refetch(),
+            ]);
+        } catch {
+            // Apollo exposes the mutation error below.
+        }
+    }
+
+    async function handleUnpublish() {
+        if (!release?.id || mutating) {
+            return;
+        }
+
+        const confirmed = window.confirm(
+            `Unpublish ${release.title}? The release will return to a private draft, but no tracks, audio, artwork, or Creator OS work will be deleted.`
+        );
+
+        if (!confirmed) return;
+
+        try {
+            await unpublishRelease({
+                variables: {
+                    releaseWorldId: release.id,
+                },
+            });
+
+            await Promise.all([
+                releaseQuery.refetch(),
+                readinessQuery.refetch(),
+            ]);
+        } catch {
+            // Apollo exposes the mutation error below.
+        }
+    }
 
     return (
         <main className="px-4 py-8 sm:py-12">
@@ -135,6 +207,84 @@ export default function PublishingReadinessPage() {
                                 action comes after this engine is proven
                                 against real releases.
                             </p>
+                        </section>
+
+                        <section className="mt-6 rounded-[2rem] border border-white/10 bg-white/[0.03] p-6 sm:p-8">
+                            <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                                <div className="max-w-2xl">
+                                    <p className="text-xs uppercase tracking-[0.18em] text-white/35">
+                                        Publication Controls
+                                    </p>
+                                    <h2 className="mt-3 text-xl font-semibold text-white">
+                                        {release?.visibility === "public"
+                                            ? "This release is currently public."
+                                            : readiness.ready
+                                              ? "This release can be published."
+                                              : "Resolve blockers before publishing."}
+                                    </h2>
+                                    <p className="mt-2 text-sm leading-6 text-white/50">
+                                        Publishing is guarded by the same
+                                        readiness engine shown above. Warnings
+                                        remain visible, but only blockers stop
+                                        publication.
+                                    </p>
+                                </div>
+
+                                <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
+                                    {release?.visibility === "public" ? (
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                void handleUnpublish()
+                                            }
+                                            disabled={mutating}
+                                            className="rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-white/70 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                                        >
+                                            {unpublishState.loading
+                                                ? "Unpublishing…"
+                                                : "Unpublish release"}
+                                        </button>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                void handlePublish()
+                                            }
+                                            disabled={
+                                                !readiness.ready ||
+                                                mutating
+                                            }
+                                            className="rounded-full border border-[#DCBA5C]/30 bg-[#DCBA5C]/10 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#F4D982] transition hover:bg-[#DCBA5C]/20 disabled:cursor-not-allowed disabled:opacity-35"
+                                        >
+                                            {publishState.loading
+                                                ? "Publishing…"
+                                                : "Publish release"}
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            {publishState.error ||
+                            unpublishState.error ? (
+                                <div className="mt-5 rounded-2xl border border-rose-300/20 bg-rose-300/[0.055] p-4 text-sm text-rose-100">
+                                    {(
+                                        publishState.error ||
+                                        unpublishState.error
+                                    )?.message}
+                                </div>
+                            ) : null}
+
+                            {publishState.data ? (
+                                <div className="mt-5 rounded-2xl border border-emerald-300/20 bg-emerald-300/[0.055] p-4 text-sm text-emerald-100">
+                                    Release published successfully.
+                                </div>
+                            ) : null}
+
+                            {unpublishState.data ? (
+                                <div className="mt-5 rounded-2xl border border-sky-300/20 bg-sky-300/[0.055] p-4 text-sm text-sky-100">
+                                    Release unpublished. Creator work was preserved.
+                                </div>
+                            ) : null}
                         </section>
 
                         <Issues

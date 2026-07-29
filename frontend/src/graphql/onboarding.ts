@@ -517,3 +517,60 @@ export type ReleasePublishingReadinessData = {
 export type ReleasePublishingReadinessVariables = {
     releaseWorldId: string;
 };
+
+
+export const PUBLISH_RELEASE_WORLD = gql`
+    mutation PublishReleaseWorld($releaseWorldId: ID!) {
+        publishReleaseWorld(
+            releaseWorldId: $releaseWorldId
+        ) {
+            id
+            title
+            slug
+            status
+            visibility
+            updatedAt
+        }
+    }
+`;
+
+export const UNPUBLISH_RELEASE_WORLD = gql`
+    mutation UnpublishReleaseWorld($releaseWorldId: ID!) {
+        unpublishReleaseWorld(
+            releaseWorldId: $releaseWorldId
+        ) {
+            id
+            title
+            slug
+            status
+            visibility
+            updatedAt
+        }
+    }
+`;
+
+export type PublishReleaseWorldData = {
+    publishReleaseWorld: {
+        id: string;
+        title: string;
+        slug: string;
+        status: string;
+        visibility: string;
+        updatedAt?: string | null;
+    };
+};
+
+export type UnpublishReleaseWorldData = {
+    unpublishReleaseWorld: {
+        id: string;
+        title: string;
+        slug: string;
+        status: string;
+        visibility: string;
+        updatedAt?: string | null;
+    };
+};
+
+export type PublishReleaseWorldVariables = {
+    releaseWorldId: string;
+};

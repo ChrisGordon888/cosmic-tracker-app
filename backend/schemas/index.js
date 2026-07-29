@@ -526,6 +526,14 @@ const typeDefs = gql`
     getLeaderboard(limit: Int): [LeaderboardEntry!]!
     checkRealmUnlock(realmId: Int!): Boolean!
 
+    # Publishing
+    publishReleaseWorld(
+      releaseWorldId: ID!
+    ): ReleaseWorld!
+    unpublishReleaseWorld(
+      releaseWorldId: ID!
+    ): ReleaseWorld!
+
     # Platform Administration
     platformUsers(
       role: String
