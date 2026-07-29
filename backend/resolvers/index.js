@@ -2471,6 +2471,29 @@ module.exports = {
             return releaseWorld;
         },
 
+        archiveReleaseWorld: async (_, { releaseWorldId }, { user }) => {
+            requireCreator(user);
+            const releaseWorld = await getOwnedReleaseWorld(releaseWorldId, user.id);
+            if (!releaseWorld) throw new Error("Release world not found.");
+            releaseWorld.status = "archived";
+            releaseWorld.visibility = "private";
+            releaseWorld.lastOpenedAt = new Date();
+            await releaseWorld.save();
+            return releaseWorld;
+        },
+
+        restoreReleaseWorld: async (_, { releaseWorldId }, { user }) => {
+            requireCreator(user);
+            const releaseWorld = await getOwnedReleaseWorld(releaseWorldId, user.id);
+            if (!releaseWorld) throw new Error("Release world not found.");
+            if (releaseWorld.status !== "archived") return releaseWorld;
+            releaseWorld.status = "draft";
+            releaseWorld.visibility = "private";
+            releaseWorld.lastOpenedAt = new Date();
+            await releaseWorld.save();
+            return releaseWorld;
+        },
+
         // ========================================
         // 🛡️ PLATFORM ADMINISTRATION MUTATIONS
         // ========================================

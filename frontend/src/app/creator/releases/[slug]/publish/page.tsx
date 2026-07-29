@@ -4,13 +4,17 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { gql, useMutation, useQuery } from "@apollo/client";
 import {
+    ARCHIVE_RELEASE_WORLD,
     GET_RELEASE_PUBLISHING_READINESS,
     PUBLISH_RELEASE_WORLD,
+    RESTORE_RELEASE_WORLD,
     UNPUBLISH_RELEASE_WORLD,
+    ArchiveReleaseWorldData,
     PublishReleaseWorldData,
     PublishReleaseWorldVariables,
     ReleasePublishingReadinessData,
     ReleasePublishingReadinessVariables,
+    RestoreReleaseWorldData,
     UnpublishReleaseWorldData,
 } from "@/graphql/onboarding";
 
@@ -72,8 +76,17 @@ export default function PublishingReadinessPage() {
         PublishReleaseWorldVariables
     >(UNPUBLISH_RELEASE_WORLD);
 
-    const mutating =
-        publishState.loading || unpublishState.loading;
+    const [archiveRelease, archiveState] = useMutation<
+        ArchiveReleaseWorldData,
+        PublishReleaseWorldVariables
+    >(ARCHIVE_RELEASE_WORLD);
+
+    const [restoreRelease, restoreState] = useMutation<
+        RestoreReleaseWorldData,
+        PublishReleaseWorldVariables
+    >(RESTORE_RELEASE_WORLD);
+
+    const mutating = publishState.loading || unpublishState.loading || archiveState.loading || restoreState.loading;
 
     async function handlePublish() {
         if (!release?.id || !readiness?.ready || mutating) {
@@ -127,6 +140,24 @@ export default function PublishingReadinessPage() {
         } catch {
             // Apollo exposes the mutation error below.
         }
+    }
+
+    async function handleArchive() {
+        if (!release?.id || mutating) return;
+        const confirmed = window.confirm(`Archive ${release.title}? All tracks, audio, artwork, and history will remain saved.`);
+        if (!confirmed) return;
+        try {
+            await archiveRelease({ variables: { releaseWorldId: release.id } });
+            await Promise.all([releaseQuery.refetch(), readinessQuery.refetch()]);
+        } catch {}
+    }
+
+    async function handleRestore() {
+        if (!release?.id || mutating) return;
+        try {
+            await restoreRelease({ variables: { releaseWorldId: release.id } });
+            await Promise.all([releaseQuery.refetch(), readinessQuery.refetch()]);
+        } catch {}
     }
 
     return (
@@ -230,7 +261,12 @@ export default function PublishingReadinessPage() {
                                     </p>
                                 </div>
 
-                                <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
+                                <div className="flex shrink-0 flex-col gap-3 sm:flex-row sm:flex-wrap">
+                                    {release?.status === "archived" ? (
+                                        <button type="button" onClick={() => void handleRestore()} disabled={mutating} className="rounded-full border border-sky-300/25 bg-sky-300/[0.07] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-sky-100 disabled:opacity-40">
+                                            {restoreState.loading ? "Restoring…" : "Restore release"}
+                                        </button>
+                                    ) : null}
                                     {release?.visibility === "public" ? (
                                         <button
                                             type="button"
@@ -261,6 +297,11 @@ export default function PublishingReadinessPage() {
                                                 : "Publish release"}
                                         </button>
                                     )}
+                                    {release?.status !== "archived" ? (
+                                        <button type="button" onClick={() => void handleArchive()} disabled={mutating} className="rounded-full border border-rose-300/20 bg-rose-300/[0.045] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-rose-100/80 disabled:opacity-40">
+                                            {archiveState.loading ? "Archiving…" : "Archive release"}
+                                        </button>
+                                    ) : null}
                                 </div>
                             </div>
 

@@ -574,3 +574,23 @@ export type UnpublishReleaseWorldData = {
 export type PublishReleaseWorldVariables = {
     releaseWorldId: string;
 };
+
+
+export const ARCHIVE_RELEASE_WORLD = gql`
+    mutation ArchiveReleaseWorld($releaseWorldId: ID!) {
+        archiveReleaseWorld(releaseWorldId: $releaseWorldId) {
+            id title slug status visibility updatedAt
+        }
+    }
+`;
+
+export const RESTORE_RELEASE_WORLD = gql`
+    mutation RestoreReleaseWorld($releaseWorldId: ID!) {
+        restoreReleaseWorld(releaseWorldId: $releaseWorldId) {
+            id title slug status visibility updatedAt
+        }
+    }
+`;
+
+export type ArchiveReleaseWorldData = { archiveReleaseWorld: { id: string; title: string; slug: string; status: string; visibility: string; updatedAt?: string | null; }; };
+export type RestoreReleaseWorldData = { restoreReleaseWorld: { id: string; title: string; slug: string; status: string; visibility: string; updatedAt?: string | null; }; };

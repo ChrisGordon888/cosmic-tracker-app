@@ -533,6 +533,12 @@ const typeDefs = gql`
     unpublishReleaseWorld(
       releaseWorldId: ID!
     ): ReleaseWorld!
+    archiveReleaseWorld(
+      releaseWorldId: ID!
+    ): ReleaseWorld!
+    restoreReleaseWorld(
+      releaseWorldId: ID!
+    ): ReleaseWorld!
 
     # Platform Administration
     platformUsers(
