@@ -533,6 +533,13 @@ const typeDefs = gql`
     unpublishReleaseWorld(
       releaseWorldId: ID!
     ): ReleaseWorld!
+    scheduleReleaseWorld(
+      releaseWorldId: ID!
+      publishAt: String!
+    ): ReleaseWorld!
+    cancelScheduledReleaseWorld(
+      releaseWorldId: ID!
+    ): ReleaseWorld!
     archiveReleaseWorld(
       releaseWorldId: ID!
     ): ReleaseWorld!

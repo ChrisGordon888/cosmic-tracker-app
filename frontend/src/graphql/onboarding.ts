@@ -594,3 +594,71 @@ export const RESTORE_RELEASE_WORLD = gql`
 
 export type ArchiveReleaseWorldData = { archiveReleaseWorld: { id: string; title: string; slug: string; status: string; visibility: string; updatedAt?: string | null; }; };
 export type RestoreReleaseWorldData = { restoreReleaseWorld: { id: string; title: string; slug: string; status: string; visibility: string; updatedAt?: string | null; }; };
+
+
+export const SCHEDULE_RELEASE_WORLD = gql`
+    mutation ScheduleReleaseWorld(
+        $releaseWorldId: ID!
+        $publishAt: String!
+    ) {
+        scheduleReleaseWorld(
+            releaseWorldId: $releaseWorldId
+            publishAt: $publishAt
+        ) {
+            id
+            title
+            slug
+            status
+            visibility
+            fullDropDate
+            updatedAt
+        }
+    }
+`;
+
+export const CANCEL_SCHEDULED_RELEASE_WORLD = gql`
+    mutation CancelScheduledReleaseWorld(
+        $releaseWorldId: ID!
+    ) {
+        cancelScheduledReleaseWorld(
+            releaseWorldId: $releaseWorldId
+        ) {
+            id
+            title
+            slug
+            status
+            visibility
+            fullDropDate
+            updatedAt
+        }
+    }
+`;
+
+export type ScheduledReleaseWorldData = {
+    scheduleReleaseWorld: {
+        id: string;
+        title: string;
+        slug: string;
+        status: string;
+        visibility: string;
+        fullDropDate?: string | null;
+        updatedAt?: string | null;
+    };
+};
+
+export type CancelScheduledReleaseWorldData = {
+    cancelScheduledReleaseWorld: {
+        id: string;
+        title: string;
+        slug: string;
+        status: string;
+        visibility: string;
+        fullDropDate?: string | null;
+        updatedAt?: string | null;
+    };
+};
+
+export type ScheduleReleaseWorldVariables = {
+    releaseWorldId: string;
+    publishAt: string;
+};

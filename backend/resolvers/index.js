@@ -559,6 +559,94 @@ async function evaluateReleasePublishingReadiness(releaseWorld, userId) {
     };
 }
 
+
+async function applyPublishedReleaseState(releaseWorld, userId) {
+    const profile = await CreativeProfile.findOne({
+        _id: releaseWorld.creativeProfileId,
+        ownerId: userId,
+    });
+
+    if (!profile) {
+        throw new Error(
+            "The connected creator profile could not be found."
+        );
+    }
+
+    profile.isPublic = true;
+    await profile.save();
+
+    const coverQuery = releaseWorld.coverAssetId
+        ? {
+              _id: releaseWorld.coverAssetId,
+              ownerId: userId,
+              releaseWorldId: releaseWorld._id,
+          }
+        : {
+              ownerId: userId,
+              releaseWorldId: releaseWorld._id,
+              $or: [{ usage: "cover" }, { kind: "cover" }],
+          };
+
+    await ReleaseAsset.findOneAndUpdate(
+        coverQuery,
+        {
+            isPublic: true,
+            lastOpenedAt: new Date(),
+        },
+        releaseWorld.coverAssetId
+            ? undefined
+            : {
+                  sort: {
+                      updatedAt: -1,
+                      createdAt: -1,
+                  },
+              }
+    );
+
+    releaseWorld.status = "active";
+    releaseWorld.visibility = "public";
+    releaseWorld.lastOpenedAt = new Date();
+
+    await releaseWorld.save();
+    return releaseWorld;
+}
+
+async function processDueScheduledReleaseWorlds() {
+    const dueReleases = await ReleaseWorld.find({
+        status: "scheduled",
+        visibility: "private",
+        fullDropDate: {
+            $ne: null,
+            $lte: new Date(),
+        },
+    }).sort({ fullDropDate: 1 });
+
+    for (const releaseWorld of dueReleases) {
+        try {
+            const readiness =
+                await evaluateReleasePublishingReadiness(
+                    releaseWorld,
+                    releaseWorld.ownerId
+                );
+
+            if (!readiness.ready) continue;
+
+            await applyPublishedReleaseState(
+                releaseWorld,
+                releaseWorld.ownerId
+            );
+        } catch (error) {
+            console.warn("[scheduledPublishing] Publication failed", {
+                releaseWorldId: String(releaseWorld._id),
+                message:
+                    error instanceof Error
+                        ? error.message
+                        : String(error),
+            });
+        }
+    }
+}
+
 async function getOwnedReleaseWorld(releaseWorldId, userId) {
     return await ReleaseWorld.findOne({
         _id: releaseWorldId,
@@ -1339,10 +1427,13 @@ module.exports = {
         },
 
         getPublicFeaturedReleaseWorld: async () => {
+            await processDueScheduledReleaseWorlds();
             return await getPublicFeaturedReleaseWorld();
         },
 
         getPublicReleaseWorldBySlug: async (_, { slug }) => {
+            await processDueScheduledReleaseWorlds();
+
             return await ReleaseWorld.findOne({
                 slug: normalizeSlug(slug),
                 visibility: "public",
@@ -1394,6 +1485,8 @@ module.exports = {
         },
 
         getPublicNexusTracks: async (_, { realmId }) => {
+            await processDueScheduledReleaseWorlds();
+
             const publicReleaseWorldIds = await ReleaseWorld.find({
                 visibility: "public",
                 status: { $ne: "archived" },
@@ -2386,61 +2479,10 @@ module.exports = {
                 );
             }
 
-            const profile = await CreativeProfile.findOne({
-                _id: releaseWorld.creativeProfileId,
-                ownerId: user.id,
-            });
-
-            if (!profile) {
-                throw new Error(
-                    "The connected creator profile could not be found."
-                );
-            }
-
-            profile.isPublic = true;
-            await profile.save();
-
-            if (releaseWorld.coverAssetId) {
-                await ReleaseAsset.findOneAndUpdate(
-                    {
-                        _id: releaseWorld.coverAssetId,
-                        ownerId: user.id,
-                        releaseWorldId: releaseWorld._id,
-                    },
-                    {
-                        isPublic: true,
-                        lastOpenedAt: new Date(),
-                    }
-                );
-            } else {
-                await ReleaseAsset.findOneAndUpdate(
-                    {
-                        ownerId: user.id,
-                        releaseWorldId: releaseWorld._id,
-                        $or: [
-                            { usage: "cover" },
-                            { kind: "cover" },
-                        ],
-                    },
-                    {
-                        isPublic: true,
-                        lastOpenedAt: new Date(),
-                    },
-                    {
-                        sort: {
-                            updatedAt: -1,
-                            createdAt: -1,
-                        },
-                    }
-                );
-            }
-
-            releaseWorld.status = "active";
-            releaseWorld.visibility = "public";
-            releaseWorld.lastOpenedAt = new Date();
-            await releaseWorld.save();
-
-            return releaseWorld;
+            return await applyPublishedReleaseState(
+                releaseWorld,
+                user.id
+            );
         },
 
         unpublishReleaseWorld: async (
@@ -2467,6 +2509,96 @@ module.exports = {
             releaseWorld.lastOpenedAt = new Date();
 
             await releaseWorld.save();
+
+            return releaseWorld;
+        },
+
+        scheduleReleaseWorld: async (
+            _,
+            { releaseWorldId, publishAt },
+            { user }
+        ) => {
+            requireCreator(user);
+
+            const releaseWorld = await getOwnedReleaseWorld(
+                releaseWorldId,
+                user.id
+            );
+
+            if (!releaseWorld) {
+                throw new Error("Release world not found.");
+            }
+
+            if (releaseWorld.status === "archived") {
+                throw new Error(
+                    "Restore the release before scheduling it."
+                );
+            }
+
+            const scheduledAt = new Date(publishAt);
+
+            if (Number.isNaN(scheduledAt.getTime())) {
+                throw new Error(
+                    "Choose a valid publication date and time."
+                );
+            }
+
+            if (scheduledAt.getTime() <= Date.now()) {
+                throw new Error(
+                    "Scheduled publication must be in the future."
+                );
+            }
+
+            releaseWorld.fullDropDate = scheduledAt;
+
+            const readiness =
+                await evaluateReleasePublishingReadiness(
+                    releaseWorld,
+                    user.id
+                );
+
+            if (!readiness.ready) {
+                const summary = readiness.blockingIssues
+                    .map((issue) => issue.message)
+                    .join("; ");
+
+                throw new Error(
+                    summary
+                        ? `Release is not ready to schedule: ${summary}`
+                        : "Release is not ready to schedule."
+                );
+            }
+
+            releaseWorld.status = "scheduled";
+            releaseWorld.visibility = "private";
+            releaseWorld.lastOpenedAt = new Date();
+
+            await releaseWorld.save();
+            return releaseWorld;
+        },
+
+        cancelScheduledReleaseWorld: async (
+            _,
+            { releaseWorldId },
+            { user }
+        ) => {
+            requireCreator(user);
+
+            const releaseWorld = await getOwnedReleaseWorld(
+                releaseWorldId,
+                user.id
+            );
+
+            if (!releaseWorld) {
+                throw new Error("Release world not found.");
+            }
+
+            if (releaseWorld.status === "scheduled") {
+                releaseWorld.status = "draft";
+                releaseWorld.visibility = "private";
+                releaseWorld.lastOpenedAt = new Date();
+                await releaseWorld.save();
+            }
 
             return releaseWorld;
         },

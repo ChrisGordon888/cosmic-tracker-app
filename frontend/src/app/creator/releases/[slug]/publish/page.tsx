@@ -1,20 +1,26 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { gql, useMutation, useQuery } from "@apollo/client";
 import {
     ARCHIVE_RELEASE_WORLD,
+    CANCEL_SCHEDULED_RELEASE_WORLD,
     GET_RELEASE_PUBLISHING_READINESS,
     PUBLISH_RELEASE_WORLD,
     RESTORE_RELEASE_WORLD,
+    SCHEDULE_RELEASE_WORLD,
     UNPUBLISH_RELEASE_WORLD,
     ArchiveReleaseWorldData,
+    CancelScheduledReleaseWorldData,
     PublishReleaseWorldData,
     PublishReleaseWorldVariables,
     ReleasePublishingReadinessData,
     ReleasePublishingReadinessVariables,
     RestoreReleaseWorldData,
+    ScheduleReleaseWorldVariables,
+    ScheduledReleaseWorldData,
     UnpublishReleaseWorldData,
 } from "@/graphql/onboarding";
 
@@ -26,6 +32,7 @@ const GET_RELEASE = gql`
             slug
             status
             visibility
+            fullDropDate
         }
     }
 `;
@@ -37,6 +44,7 @@ type ReleaseData = {
         slug: string;
         status: string;
         visibility: string;
+        fullDropDate?: string | null;
     } | null;
 };
 
@@ -86,7 +94,38 @@ export default function PublishingReadinessPage() {
         PublishReleaseWorldVariables
     >(RESTORE_RELEASE_WORLD);
 
-    const mutating = publishState.loading || unpublishState.loading || archiveState.loading || restoreState.loading;
+    const [scheduleRelease, scheduleState] = useMutation<
+        ScheduledReleaseWorldData,
+        ScheduleReleaseWorldVariables
+    >(SCHEDULE_RELEASE_WORLD);
+
+    const [cancelSchedule, cancelScheduleState] = useMutation<
+        CancelScheduledReleaseWorldData,
+        PublishReleaseWorldVariables
+    >(CANCEL_SCHEDULED_RELEASE_WORLD);
+
+    const [publishAt, setPublishAt] = useState("");
+
+    useEffect(() => {
+        if (!release?.fullDropDate) return;
+
+        const date = new Date(release.fullDropDate);
+        if (Number.isNaN(date.getTime())) return;
+
+        const localDate = new Date(
+            date.getTime() - date.getTimezoneOffset() * 60_000
+        );
+
+        setPublishAt(localDate.toISOString().slice(0, 16));
+    }, [release?.fullDropDate]);
+
+    const mutating =
+        publishState.loading ||
+        unpublishState.loading ||
+        archiveState.loading ||
+        restoreState.loading ||
+        scheduleState.loading ||
+        cancelScheduleState.loading;
 
     async function handlePublish() {
         if (!release?.id || !readiness?.ready || mutating) {
@@ -157,6 +196,52 @@ export default function PublishingReadinessPage() {
         try {
             await restoreRelease({ variables: { releaseWorldId: release.id } });
             await Promise.all([releaseQuery.refetch(), readinessQuery.refetch()]);
+        } catch {}
+    }
+
+
+    async function handleSchedule() {
+        if (
+            !release?.id ||
+            !readiness?.ready ||
+            !publishAt ||
+            mutating
+        ) {
+            return;
+        }
+
+        const scheduledAt = new Date(publishAt);
+        if (Number.isNaN(scheduledAt.getTime())) return;
+
+        try {
+            await scheduleRelease({
+                variables: {
+                    releaseWorldId: release.id,
+                    publishAt: scheduledAt.toISOString(),
+                },
+            });
+
+            await Promise.all([
+                releaseQuery.refetch(),
+                readinessQuery.refetch(),
+            ]);
+        } catch {}
+    }
+
+    async function handleCancelSchedule() {
+        if (!release?.id || mutating) return;
+
+        try {
+            await cancelSchedule({
+                variables: {
+                    releaseWorldId: release.id,
+                },
+            });
+
+            await Promise.all([
+                releaseQuery.refetch(),
+                readinessQuery.refetch(),
+            ]);
         } catch {}
     }
 
@@ -327,6 +412,83 @@ export default function PublishingReadinessPage() {
                                 </div>
                             ) : null}
                         </section>
+
+                        {release?.visibility !== "public" &&
+                        release?.status !== "archived" ? (
+                            <section className="mt-6 rounded-[2rem] border border-white/10 bg-white/[0.03] p-6 sm:p-8">
+                                <p className="text-xs uppercase tracking-[0.18em] text-white/35">
+                                    Scheduled Publishing
+                                </p>
+
+                                <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+                                    <label className="block">
+                                        <span className="mb-2 block text-sm font-medium text-white">
+                                            Publication date and time
+                                        </span>
+                                        <input
+                                            type="datetime-local"
+                                            value={publishAt}
+                                            onChange={(event) =>
+                                                setPublishAt(
+                                                    event.target.value
+                                                )
+                                            }
+                                            className="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-sm text-white outline-none focus:border-[#DCBA5C]/45"
+                                        />
+                                    </label>
+
+                                    {release?.status === "scheduled" ? (
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                void handleCancelSchedule()
+                                            }
+                                            disabled={mutating}
+                                            className="rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-white/70 transition hover:bg-white/10 disabled:opacity-40"
+                                        >
+                                            {cancelScheduleState.loading
+                                                ? "Cancelling…"
+                                                : "Cancel schedule"}
+                                        </button>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                void handleSchedule()
+                                            }
+                                            disabled={
+                                                !readiness.ready ||
+                                                !publishAt ||
+                                                mutating
+                                            }
+                                            className="rounded-full border border-[#DCBA5C]/30 bg-[#DCBA5C]/10 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#F4D982] transition hover:bg-[#DCBA5C]/20 disabled:cursor-not-allowed disabled:opacity-35"
+                                        >
+                                            {scheduleState.loading
+                                                ? "Scheduling…"
+                                                : "Schedule release"}
+                                        </button>
+                                    )}
+                                </div>
+
+                                <p className="mt-4 text-xs leading-5 text-white/35">
+                                    Readiness is checked when the schedule is
+                                    saved and again when publication becomes
+                                    due. Until a dedicated cron worker is
+                                    connected, due schedules are processed on
+                                    public release and Nexus requests.
+                                </p>
+
+                                {release?.status === "scheduled" &&
+                                release.fullDropDate ? (
+                                    <div className="mt-4 rounded-2xl border border-sky-300/20 bg-sky-300/[0.055] p-4 text-sm text-sky-100">
+                                        Scheduled for{" "}
+                                        {new Date(
+                                            release.fullDropDate
+                                        ).toLocaleString()}.
+                                    </div>
+                                ) : null}
+                            </section>
+                        ) : null}
 
                         <Issues
                             title="Blocking issues"
