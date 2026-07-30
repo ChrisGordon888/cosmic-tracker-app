@@ -65,6 +65,35 @@ const CREATE_RELEASE_WORLD = gql`
   }
 `;
 
+const DROP_RELEASE_WORLD = gql`
+  mutation DropReleaseWorld($releaseWorldId: ID!) {
+    dropReleaseWorld(releaseWorldId: $releaseWorldId) {
+      releaseWorld {
+        id
+        title
+        slug
+        releaseType
+        status
+        visibility
+        isFeatured
+        oneLineSummary
+        story
+        fullDropDate
+        coverArtUrl
+        coverAssetId
+        currentFocus
+        secondFocus
+        updatedAt
+        lastOpenedAt
+      }
+      tracksUpdated
+      tracksSkipped
+      skippedTrackTitles
+      message
+    }
+  }
+`;
+
 type CreativeProfile = {
   id: string;
   artistName: string;
@@ -254,6 +283,8 @@ export default function CreatorProjectsPage() {
   const { status } = useSession();
   const [form, setForm] = useState<NewProjectForm>(initialForm);
   const [formMessage, setFormMessage] = useState("");
+  const [droppingWorldId, setDroppingWorldId] = useState<string | null>(null);
+  const [dropMessages, setDropMessages] = useState<Record<string, string>>({});
 
   const {
     data: profileData,
@@ -275,6 +306,7 @@ export default function CreatorProjectsPage() {
   });
 
   const [createReleaseWorld, { loading: isCreating }] = useMutation(CREATE_RELEASE_WORLD);
+  const [dropReleaseWorld] = useMutation(DROP_RELEASE_WORLD);
 
   const releaseWorlds: ReleaseWorld[] = data?.myReleaseWorlds ?? [];
   const creativeProfiles: CreativeProfile[] = profileData?.myCreativeProfiles ?? [];
@@ -343,6 +375,53 @@ export default function CreatorProjectsPage() {
       const message =
         createError instanceof Error ? createError.message : "Unknown create project error.";
       setFormMessage(`Could not create project: ${message}`);
+    }
+  }
+
+  async function handleDropEP(world: ReleaseWorld) {
+    const confirmed = window.confirm(
+      `Drop ${world.title} now? Every non-archived track with a full audio URL will become public and playable.`,
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setDroppingWorldId(world.id);
+      setDropMessages((current) => ({
+        ...current,
+        [world.id]: "Dropping EP...",
+      }));
+
+      const result = await dropReleaseWorld({
+        variables: {
+          releaseWorldId: world.id,
+        },
+      });
+
+      const dropResult = result.data?.dropReleaseWorld;
+      const skipped = dropResult?.skippedTrackTitles ?? [];
+      const skippedDetail =
+        skipped.length > 0 ? ` Skipped: ${skipped.join("; ")}` : "";
+
+      setDropMessages((current) => ({
+        ...current,
+        [world.id]:
+          `${dropResult?.message ?? `${world.title} is live.`}${skippedDetail}`,
+      }));
+
+      await refetch();
+    } catch (dropError) {
+      const message =
+        dropError instanceof Error
+          ? dropError.message
+          : "Unknown EP drop error.";
+
+      setDropMessages((current) => ({
+        ...current,
+        [world.id]: `Could not drop EP: ${message}`,
+      }));
+    } finally {
+      setDroppingWorldId(null);
     }
   }
 
@@ -699,7 +778,25 @@ export default function CreatorProjectsPage() {
                     <Link href="/nexus" className="creator-projects-secondary-button">
                       View Nexus
                     </Link>
+                    <button
+                      type="button"
+                      className="creator-projects-drop-button"
+                      disabled={droppingWorldId === world.id}
+                      onClick={() => handleDropEP(world)}
+                    >
+                      {droppingWorldId === world.id
+                        ? "Dropping..."
+                        : world.status === "active" && world.visibility === "public"
+                          ? "Re-sync EP"
+                          : "Drop EP"}
+                    </button>
                   </div>
+
+                  {dropMessages[world.id] && (
+                    <p className="creator-projects-drop-message" role="status">
+                      {dropMessages[world.id]}
+                    </p>
+                  )}
 
                   <p className="creator-project-card-id">ReleaseWorld ID: {world.id}</p>
                 </article>

@@ -219,6 +219,14 @@ const typeDefs = gql`
     lastOpenedAt: String
   }
 
+  type DropReleaseWorldResult {
+    releaseWorld: ReleaseWorld!
+    tracksUpdated: Int!
+    tracksSkipped: Int!
+    skippedTrackTitles: [String!]!
+    message: String!
+  }
+
   type ReleaseTrack {
     id: ID!
     ownerId: String!
@@ -628,6 +636,9 @@ const typeDefs = gql`
     publishReleaseWorld(
       releaseWorldId: ID!
     ): ReleaseWorld!
+    dropReleaseWorld(
+      releaseWorldId: ID!
+    ): DropReleaseWorldResult!
     unpublishReleaseWorld(
       releaseWorldId: ID!
     ): ReleaseWorld!

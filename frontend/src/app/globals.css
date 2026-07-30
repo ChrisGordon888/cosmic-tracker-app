@@ -454,3 +454,67 @@ body {
         right: 0.75rem;
     }
 }
+
+/* ===================================
+   CREATOR PROJECTS — ONE-CLICK EP DROP
+   =================================== */
+
+.creator-projects-drop-button {
+    min-height: 2.7rem;
+    border: 1px solid rgba(215, 190, 120, 0.48);
+    border-radius: 0.9rem;
+    padding: 0.72rem 0.9rem;
+    color: rgba(255, 248, 226, 0.98);
+    background:
+        linear-gradient(
+            135deg,
+            rgba(215, 190, 120, 0.24),
+            rgba(139, 92, 246, 0.16)
+        ),
+        rgba(8, 11, 20, 0.82);
+    font: inherit;
+    font-weight: 800;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.10),
+        0 10px 24px rgba(0, 0, 0, 0.22);
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.creator-projects-drop-button:hover:not(:disabled) {
+    transform: translateY(-1px);
+    border-color: rgba(235, 210, 136, 0.78);
+    background:
+        linear-gradient(
+            135deg,
+            rgba(215, 190, 120, 0.32),
+            rgba(139, 92, 246, 0.20)
+        ),
+        rgba(8, 11, 20, 0.88);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        0 14px 30px rgba(0, 0, 0, 0.28),
+        0 0 22px rgba(215, 190, 120, 0.10);
+}
+
+.creator-projects-drop-button:disabled {
+    cursor: wait;
+    opacity: 0.62;
+}
+
+.creator-projects-drop-message {
+    margin: 0.75rem 0 0;
+    border: 1px solid rgba(188, 224, 255, 0.16);
+    border-radius: 0.85rem;
+    padding: 0.75rem 0.85rem;
+    color: rgba(224, 236, 248, 0.88);
+    background: rgba(188, 224, 255, 0.055);
+    font-size: 0.78rem;
+    line-height: 1.55;
+}

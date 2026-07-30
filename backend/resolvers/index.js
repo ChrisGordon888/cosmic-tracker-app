@@ -611,6 +611,97 @@ async function applyPublishedReleaseState(releaseWorld, userId) {
     return releaseWorld;
 }
 
+async function applyDroppedReleaseState(releaseWorld, userId) {
+    const publishedReleaseWorld = await applyPublishedReleaseState(
+        releaseWorld,
+        userId
+    );
+
+    const profile = await CreativeProfile.findOne({
+        _id: publishedReleaseWorld.creativeProfileId,
+        ownerId: userId,
+    });
+
+    if (!profile) {
+        throw new Error(
+            "The connected creator profile could not be found."
+        );
+    }
+
+    await ReleaseWorld.updateMany(
+        {
+            ownerId: userId,
+            _id: { $ne: publishedReleaseWorld._id },
+        },
+        { isFeatured: false }
+    );
+
+    await CreativeProfile.updateMany(
+        {
+            ownerId: userId,
+            _id: { $ne: profile._id },
+        },
+        { isFeatured: false }
+    );
+
+    publishedReleaseWorld.isFeatured = true;
+    publishedReleaseWorld.lastOpenedAt = new Date();
+    await publishedReleaseWorld.save();
+
+    profile.isPublic = true;
+    profile.isFeatured = true;
+    profile.featuredReleaseWorldId = publishedReleaseWorld._id;
+    await profile.save();
+
+    const releaseTracks = await ReleaseTrack.find({
+        ownerId: userId,
+        releaseWorldId: publishedReleaseWorld._id,
+        status: { $ne: "archived" },
+    }).sort({
+        trackNumber: 1,
+        createdAt: 1,
+    });
+
+    const skippedTrackTitles = [];
+    let tracksUpdated = 0;
+
+    for (const track of releaseTracks) {
+        const hasFullAudio = Boolean(
+            String(track.audioUrl || "").trim()
+        );
+
+        if (!hasFullAudio) {
+            skippedTrackTitles.push(
+                `${track.title} — missing full audio`
+            );
+            continue;
+        }
+
+        track.status = "released";
+        track.visibility = "public";
+        track.isPublic = true;
+        track.playbackStatus = "playable";
+        track.lastOpenedAt = new Date();
+
+        await track.save();
+        tracksUpdated += 1;
+    }
+
+    const tracksSkipped = skippedTrackTitles.length;
+    const message =
+        tracksSkipped > 0
+            ? `${publishedReleaseWorld.title} is live. ${tracksUpdated} track${tracksUpdated === 1 ? "" : "s"} made playable; ${tracksSkipped} skipped.`
+            : `${publishedReleaseWorld.title} is live. ${tracksUpdated} track${tracksUpdated === 1 ? "" : "s"} made playable.`;
+
+    return {
+        releaseWorld: publishedReleaseWorld,
+        tracksUpdated,
+        tracksSkipped,
+        skippedTrackTitles,
+        message,
+    };
+}
+
 async function processDueScheduledReleaseWorlds() {
     const dueReleases = await ReleaseWorld.find({
         status: "scheduled",
@@ -631,7 +722,7 @@ async function processDueScheduledReleaseWorlds() {
 
             if (!readiness.ready) continue;
 
-            await applyPublishedReleaseState(
+            await applyDroppedReleaseState(
                 releaseWorld,
                 releaseWorld.ownerId
             );
@@ -2480,6 +2571,52 @@ module.exports = {
             }
 
             return await applyPublishedReleaseState(
+                releaseWorld,
+                user.id
+            );
+        },
+
+        dropReleaseWorld: async (
+            _,
+            { releaseWorldId },
+            { user }
+        ) => {
+            requireCreator(user);
+
+            const releaseWorld = await getOwnedReleaseWorld(
+                releaseWorldId,
+                user.id
+            );
+
+            if (!releaseWorld) {
+                throw new Error("Release world not found.");
+            }
+
+            if (releaseWorld.status === "archived") {
+                throw new Error(
+                    "Restore the release before dropping it."
+                );
+            }
+
+            const readiness =
+                await evaluateReleasePublishingReadiness(
+                    releaseWorld,
+                    user.id
+                );
+
+            if (!readiness.ready) {
+                const blockerSummary = readiness.blockingIssues
+                    .map((issue) => issue.message)
+                    .join("; ");
+
+                throw new Error(
+                    blockerSummary
+                        ? `EP is not ready to drop: ${blockerSummary}`
+                        : "EP is not ready to drop."
+                );
+            }
+
+            return await applyDroppedReleaseState(
                 releaseWorld,
                 user.id
             );
