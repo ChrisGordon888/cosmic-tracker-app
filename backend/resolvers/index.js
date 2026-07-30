@@ -2603,17 +2603,6 @@ module.exports = {
             return releaseWorld;
         },
 
-        archiveReleaseWorld: async (_, { releaseWorldId }, { user }) => {
-            requireCreator(user);
-            const releaseWorld = await getOwnedReleaseWorld(releaseWorldId, user.id);
-            if (!releaseWorld) throw new Error("Release world not found.");
-            releaseWorld.status = "archived";
-            releaseWorld.visibility = "private";
-            releaseWorld.lastOpenedAt = new Date();
-            await releaseWorld.save();
-            return releaseWorld;
-        },
-
         restoreReleaseWorld: async (_, { releaseWorldId }, { user }) => {
             requireCreator(user);
             const releaseWorld = await getOwnedReleaseWorld(releaseWorldId, user.id);
@@ -2892,11 +2881,21 @@ module.exports = {
         archiveReleaseWorld: async (_, { id }, { user }) => {
             requireCreator(user);
 
-            return await ReleaseWorld.findOneAndUpdate(
-                { _id: id, ownerId: user.id },
-                { status: "archived" },
-                { new: true }
+            const releaseWorld = await getOwnedReleaseWorld(
+                id,
+                user.id
             );
+
+            if (!releaseWorld) {
+                throw new Error("Release world not found.");
+            }
+
+            releaseWorld.status = "archived";
+            releaseWorld.visibility = "private";
+            releaseWorld.lastOpenedAt = new Date();
+
+            await releaseWorld.save();
+            return releaseWorld;
         },
 
         setFeaturedReleaseWorld: async (_, { releaseWorldId }, { user }) => {

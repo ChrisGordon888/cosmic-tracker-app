@@ -526,27 +526,6 @@ const typeDefs = gql`
     getLeaderboard(limit: Int): [LeaderboardEntry!]!
     checkRealmUnlock(realmId: Int!): Boolean!
 
-    # Publishing
-    publishReleaseWorld(
-      releaseWorldId: ID!
-    ): ReleaseWorld!
-    unpublishReleaseWorld(
-      releaseWorldId: ID!
-    ): ReleaseWorld!
-    scheduleReleaseWorld(
-      releaseWorldId: ID!
-      publishAt: String!
-    ): ReleaseWorld!
-    cancelScheduledReleaseWorld(
-      releaseWorldId: ID!
-    ): ReleaseWorld!
-    archiveReleaseWorld(
-      releaseWorldId: ID!
-    ): ReleaseWorld!
-    restoreReleaseWorld(
-      releaseWorldId: ID!
-    ): ReleaseWorld!
-
     # Platform Administration
     platformUsers(
       role: String
@@ -644,6 +623,24 @@ const typeDefs = gql`
     unlockRealm(realmId: Int!): User!
     setCurrentRealm(realmId: Int!): User!
     logDailyLogin: XPGainResponse!
+
+    # Publishing
+    publishReleaseWorld(
+      releaseWorldId: ID!
+    ): ReleaseWorld!
+    unpublishReleaseWorld(
+      releaseWorldId: ID!
+    ): ReleaseWorld!
+    scheduleReleaseWorld(
+      releaseWorldId: ID!
+      publishAt: String!
+    ): ReleaseWorld!
+    cancelScheduledReleaseWorld(
+      releaseWorldId: ID!
+    ): ReleaseWorld!
+    restoreReleaseWorld(
+      releaseWorldId: ID!
+    ): ReleaseWorld!
 
     # Creator Onboarding
     saveCreatorOnboardingProfile(
