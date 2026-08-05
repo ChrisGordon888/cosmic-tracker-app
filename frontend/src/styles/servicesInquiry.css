@@ -1,0 +1,401 @@
+/* ===================================
+   SERVICES INQUIRY â€” ISOLATED STYLES
+   src/styles/servicesInquiry.css
+   =================================== */
+
+.services-inquire-page {
+    position: relative;
+    min-height: 100vh;
+    display: grid;
+    place-items: start center;
+    overflow-x: hidden;
+    isolation: isolate;
+    padding: clamp(5rem, 9vw, 7rem) clamp(1rem, 4vw, 2rem) 4rem;
+    color: rgba(238, 243, 250, 0.94);
+    background: #03050a;
+    font-family: 'Orbitron', Arial, sans-serif;
+}
+
+.services-inquire-page::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 12% 8%, rgba(126, 211, 255, 0.12), transparent 30rem),
+        radial-gradient(circle at 88% 16%, rgba(168, 132, 255, 0.09), transparent 34rem),
+        radial-gradient(circle at 50% 100%, rgba(220, 186, 92, 0.08), transparent 38rem),
+        linear-gradient(135deg, rgba(3, 5, 10, 0.98), rgba(8, 12, 23, 0.94));
+}
+
+.services-inquire-page * {
+    box-sizing: border-box;
+}
+
+.services-inquire-page :where(a, button, input, select, textarea) {
+    font: inherit;
+}
+
+.services-inquire-card {
+    width: min(1160px, 100%);
+    margin: 0 auto;
+    overflow: hidden;
+    border: 1px solid rgba(224, 232, 244, 0.12);
+    border-radius: 2rem;
+    padding: clamp(1.2rem, 4vw, 2.4rem);
+    background:
+        radial-gradient(circle at 0% 0%, rgba(168, 132, 255, 0.08), transparent 34%),
+        linear-gradient(145deg, rgba(255, 255, 255, 0.06), rgba(8, 12, 22, 0.78));
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 24px 80px rgba(0, 0, 0, 0.30);
+    backdrop-filter: blur(18px) saturate(125%);
+}
+
+.services-inquire-heading {
+    text-align: center;
+}
+
+.services-inquire-heading h1 {
+    max-width: 860px;
+    margin: 0 auto;
+    color: rgba(248, 250, 255, 0.96);
+    font-size: clamp(2rem, 5vw, 4.6rem);
+    line-height: 0.96;
+    letter-spacing: -0.06em;
+}
+
+.services-inquire-heading>p:not(.services-kicker) {
+    max-width: 780px;
+    margin: 1rem auto 0;
+    color: rgba(224, 231, 240, 0.72);
+    line-height: 1.75;
+}
+
+.services-kicker {
+    margin: 0 0 0.85rem;
+    color: rgba(126, 211, 255, 0.82);
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+
+.services-nav {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    margin-bottom: 1rem;
+}
+
+.services-nav a,
+.services-inquire-actions a {
+    min-height: 2.65rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(238, 243, 250, 0.16);
+    border-radius: 999px;
+    padding: 0.65rem 0.95rem;
+    color: rgba(238, 243, 250, 0.86);
+    background: rgba(255, 255, 255, 0.055);
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.services-nav a:hover,
+.services-inquire-actions a:hover {
+    transform: translateY(-2px);
+    border-color: rgba(126, 211, 255, 0.42);
+}
+
+.services-inquire-actions a:first-child {
+    color: #081018;
+    border-color: rgba(247, 239, 228, 0.48);
+    background: linear-gradient(135deg, rgba(247, 239, 228, 0.96), rgba(126, 211, 255, 0.86));
+}
+
+.services-inquire-layout {
+    display: grid;
+    grid-template-columns: minmax(16rem, 0.78fr) minmax(0, 1.22fr);
+    gap: 1rem;
+    align-items: start;
+    margin-top: 1.4rem;
+}
+
+.services-inquire-summary,
+.services-inquire-form-v2 {
+    min-width: 0;
+}
+
+.services-inquire-selected-card,
+.services-inquire-path article,
+.services-inquire-note,
+.services-inquire-form-v2 {
+    border: 1px solid rgba(238, 243, 250, 0.11);
+    border-radius: 1.35rem;
+    padding: 1rem;
+    background:
+        radial-gradient(circle at 0% 0%, rgba(126, 211, 255, 0.08), transparent 40%),
+        rgba(255, 255, 255, 0.04);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.services-inquire-selected-card h2 {
+    margin: 0;
+    color: rgba(248, 250, 255, 0.96);
+    font-size: clamp(1.75rem, 4vw, 2.7rem);
+    line-height: 0.95;
+    letter-spacing: -0.055em;
+}
+
+.services-inquire-selected-card>p:not(.services-price) {
+    margin: 0.95rem 0 0;
+    color: rgba(224, 231, 240, 0.72);
+    line-height: 1.65;
+}
+
+.services-offer-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.services-status,
+.services-action-type {
+    border: 1px solid rgba(220, 186, 92, 0.28);
+    border-radius: 999px;
+    padding: 0.32rem 0.52rem;
+    color: rgba(220, 186, 92, 0.92);
+    background: rgba(220, 186, 92, 0.08);
+    font-size: 0.62rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.services-action-type {
+    color: rgba(126, 211, 255, 0.86);
+    border-color: rgba(126, 211, 255, 0.22);
+    background: rgba(126, 211, 255, 0.07);
+}
+
+.services-price {
+    margin: 0.8rem 0 0;
+    color: rgba(126, 211, 255, 0.90);
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.services-offer-detail {
+    margin-top: 0.75rem;
+    border: 1px solid rgba(238, 243, 250, 0.09);
+    border-radius: 1rem;
+    padding: 0.72rem;
+    background: rgba(255, 255, 255, 0.035);
+}
+
+.services-offer-detail span {
+    display: block;
+    margin-bottom: 0.35rem;
+    color: rgba(126, 211, 255, 0.86);
+    font-size: 0.62rem;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.services-offer-detail p {
+    margin: 0;
+    color: rgba(224, 231, 240, 0.70);
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+.services-outcome {
+    border-color: rgba(220, 186, 92, 0.18);
+    background:
+        radial-gradient(circle at 0% 0%, rgba(220, 186, 92, 0.08), transparent 50%),
+        rgba(255, 255, 255, 0.035);
+}
+
+.services-outcome span {
+    color: rgba(220, 186, 92, 0.88);
+}
+
+.services-inquire-path {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+.services-inquire-path article span {
+    display: inline-flex;
+    margin-bottom: 0.45rem;
+    color: rgba(220, 186, 92, 0.88);
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.16em;
+}
+
+.services-inquire-path article strong {
+    display: block;
+    color: rgba(248, 250, 255, 0.92);
+    line-height: 1.25;
+}
+
+.services-inquire-path article p {
+    margin: 0.4rem 0 0;
+    color: rgba(224, 231, 240, 0.66);
+    font-size: 0.84rem;
+    line-height: 1.55;
+}
+
+.services-inquire-form {
+    display: grid;
+    gap: 1rem;
+    margin-top: 0;
+}
+
+.services-inquire-form label {
+    display: grid;
+    gap: 0.5rem;
+    color: rgba(220, 186, 92, 0.86);
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.services-inquire-form input,
+.services-inquire-form select,
+.services-inquire-form textarea {
+    width: 100%;
+    border: 1px solid rgba(238, 243, 250, 0.14);
+    border-radius: 1rem;
+    padding: 0.9rem 1rem;
+    color: rgba(248, 250, 255, 0.94);
+    background: rgba(255, 255, 255, 0.055);
+    font: inherit;
+    font-size: 0.92rem;
+    letter-spacing: normal;
+    text-transform: none;
+    outline: none;
+}
+
+.services-inquire-form select option {
+    color: #10131a;
+    background: #f5f7fb;
+}
+
+.services-inquire-form textarea {
+    min-height: 7rem;
+    resize: vertical;
+}
+
+.services-inquire-form input:focus,
+.services-inquire-form select:focus,
+.services-inquire-form textarea:focus {
+    border-color: rgba(126, 211, 255, 0.45);
+    box-shadow: 0 0 0 3px rgba(126, 211, 255, 0.10);
+}
+
+.services-inquire-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.services-inquire-note {
+    color: rgba(224, 231, 240, 0.72);
+    line-height: 1.6;
+}
+
+.services-inquire-note strong {
+    display: block;
+    margin-bottom: 0.3rem;
+    color: rgba(220, 186, 92, 0.88);
+    font-size: 0.74rem;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.services-inquire-note p {
+    margin: 0;
+}
+
+.services-inquire-actions {
+    display: flex;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+@media (max-width: 880px) {
+    .services-inquire-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .services-inquire-summary {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .services-inquire-path {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .services-inquire-page {
+        padding-inline: 0.85rem;
+    }
+
+    .services-inquire-card {
+        border-radius: 1.45rem;
+        padding-inline: 1rem;
+    }
+
+    .services-nav {
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        width: calc(100% + 0.6rem);
+        margin-left: -0.3rem;
+        margin-right: -0.3rem;
+        padding: 0 0.3rem 0.35rem;
+        overflow-x: auto;
+    }
+
+    .services-inquire-grid,
+    .services-inquire-path {
+        grid-template-columns: 1fr;
+    }
+
+    .services-inquire-selected-card,
+    .services-inquire-path article,
+    .services-inquire-note,
+    .services-inquire-form-v2 {
+        border-radius: 1.1rem;
+        padding: 0.9rem;
+    }
+
+    .services-inquire-form textarea {
+        min-height: 8rem;
+    }
+
+    .services-inquire-actions,
+    .services-inquire-actions a {
+        width: 100%;
+    }
+}
