@@ -440,16 +440,16 @@ export default function ServicesPage() {
           <LayerHeader number="03" title="Explore + details" summary="Free pathways, capabilities, future tools, and payment information." isOpen={openLayer === "details"} controls="details-layer-content" onClick={() => toggleLayer("details")} />
           {openLayer === "details" && (
             <div id="details-layer-content" className="services-layer-content">
-              <div className="services-details-block">
+              <div className="services-details-block services-details-free">
                 <div className="services-rail-heading"><div><p className="services-kicker">Free universe</p><h2>Explore the ecosystem before booking.</h2></div><span>Swipe or scroll →</span></div>
-                <div className="services-detail-rail">{FREE_UNIVERSE.map((signal) => <Link key={signal.href} href={signal.href} className="services-free-card"><span>{signal.eyebrow}</span><h3>{signal.title}</h3><p>{signal.body}</p><strong>{signal.cta}</strong></Link>)}</div>
+                <div className="services-detail-grid services-free-grid">{FREE_UNIVERSE.map((signal) => <Link key={signal.href} href={signal.href} className="services-free-card"><span>{signal.eyebrow}</span><h3>{signal.title}</h3><p>{signal.body}</p><strong>{signal.cta}</strong></Link>)}</div>
               </div>
-              <div className="services-skills-compact"><div><p className="services-kicker">Capabilities</p><h2>Music, systems, story, workflow, and practice.</h2></div><div className="services-skill-cloud">{SKILL_AREAS.map((skill) => <span key={skill}>{skill}</span>)}</div></div>
-              <div id="toolkit-coming-soon" className="services-details-block">
+              <div className="services-skills-compact services-details-capabilities"><div><p className="services-kicker">Capabilities</p><h2>Music, systems, story, workflow, and practice.</h2></div><div className="services-skill-cloud">{SKILL_AREAS.map((skill) => <span key={skill}>{skill}</span>)}</div></div>
+              <div id="toolkit-coming-soon" className="services-details-block services-details-toolkit">
                 <div className="services-rail-heading"><div><p className="services-kicker">Toolkit</p><h2>Resources in development.</h2></div><span>Swipe or scroll →</span></div>
-                <div className="services-detail-rail">{TOOLKIT_ITEMS.map((item) => <article key={item.title} className="services-toolkit-card"><div className="services-offer-meta"><span className="services-status">{item.status}</span><span className="services-action-type">{item.category}</span></div><h3>{item.title}</h3><p>{item.description}</p></article>)}</div>
+                <div className="services-detail-grid services-toolkit-grid">{TOOLKIT_ITEMS.map((item) => <article key={item.title} className="services-toolkit-card"><div className="services-offer-meta"><span className="services-status">{item.status}</span><span className="services-action-type">{item.category}</span></div><h3>{item.title}</h3><p>{item.description}</p></article>)}</div>
               </div>
-              <div className="services-payment-compact"><div><p className="services-kicker">Payment + accounts</p><h2>Simple offers, clear next steps.</h2><p>Calls, lessons, and audits can use direct booking or payment links. Custom builds begin with scope, quote, and deposit.</p></div><div className="services-payment-list"><span>Calls + lessons → booking link</span><span>Audits → intake + payment</span><span>Custom builds → quote + deposit</span><span>Future clients → project account</span></div></div>
+              <div className="services-payment-compact services-details-payment"><div><p className="services-kicker">Payment + accounts</p><h2>Simple offers, clear next steps.</h2><p>Calls, lessons, and audits can use direct booking or payment links. Custom builds begin with scope, quote, and deposit.</p></div><div className="services-payment-list"><span>Calls + lessons → booking link</span><span>Audits → intake + payment</span><span>Custom builds → quote + deposit</span><span>Future clients → project account</span></div></div>
             </div>
           )}
         </article>
