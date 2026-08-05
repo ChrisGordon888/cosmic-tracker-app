@@ -2,6 +2,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import "@/styles/servicesPage.css";
 import CosmicBackground from "@/components/CosmicBackground";
 
@@ -302,6 +303,8 @@ const SKILL_AREAS = [
 ];
 
 function OfferCard({ offer }: { offer: Offer }) {
+  const [detailsOpen, setDetailsOpen] = useState(false);
+
   return (
     <article className={`services-offer-card ${offer.featured ? "is-featured" : ""}`}>
       <div className={`services-offer-visual services-visual-${offer.visual || "signal-orb"}`} aria-hidden="true">
@@ -321,28 +324,8 @@ function OfferCard({ offer }: { offer: Offer }) {
 
       <h3>{offer.title}</h3>
       <p className="services-price">{offer.price}</p>
-      <p className="services-format">Format: {offer.format}</p>
+      <p className="services-format">{offer.format}</p>
       <p className="services-offer-body">{offer.body}</p>
-
-      <div className="services-offer-detail services-detail-core">
-        <span>Best For</span>
-        <p>{offer.bestFor}</p>
-      </div>
-
-      <div className="services-offer-detail services-detail-extra">
-        <span>You Send</span>
-        <p>{offer.youSend}</p>
-      </div>
-
-      <div className="services-offer-detail services-detail-extra">
-        <span>You Receive</span>
-        <p>{offer.youReceive}</p>
-      </div>
-
-      <div className="services-offer-detail services-detail-core services-outcome">
-        <span>Outcome</span>
-        <p>{offer.outcome}</p>
-      </div>
 
       <ul className="services-offer-includes">
         {offer.includes.map((item) => (
@@ -350,14 +333,53 @@ function OfferCard({ offer }: { offer: Offer }) {
         ))}
       </ul>
 
-      <Link className="services-offer-action" href={offer.actionHref}>
-        {offer.actionLabel}
-      </Link>
+      <button
+        type="button"
+        className="services-detail-toggle"
+        aria-expanded={detailsOpen}
+        onClick={() => setDetailsOpen((current) => !current)}
+      >
+        <span>{detailsOpen ? "Hide details" : "View details"}</span>
+        <strong aria-hidden="true">{detailsOpen ? "−" : "+"}</strong>
+      </button>
+
+      {detailsOpen && (
+        <div className="services-offer-expanded">
+          <div className="services-offer-detail"><span>Best for</span><p>{offer.bestFor}</p></div>
+          <div className="services-offer-detail"><span>You send</span><p>{offer.youSend}</p></div>
+          <div className="services-offer-detail"><span>You receive</span><p>{offer.youReceive}</p></div>
+          <div className="services-offer-detail services-outcome"><span>Outcome</span><p>{offer.outcome}</p></div>
+        </div>
+      )}
+
+      <Link className="services-offer-action" href={offer.actionHref}>{offer.actionLabel}</Link>
     </article>
   );
 }
 
+type LayerId = "services" | "process" | "details";
+
+function LayerHeader({ number, title, summary, isOpen, controls, onClick }: {
+  number: string;
+  title: string;
+  summary: string;
+  isOpen: boolean;
+  controls: string;
+  onClick: () => void;
+}) {
+  return (
+    <button type="button" className="services-layer-trigger" aria-expanded={isOpen} aria-controls={controls} onClick={onClick}>
+      <span className="services-layer-number">{number}</span>
+      <span className="services-layer-copy"><strong>{title}</strong><small>{summary}</small></span>
+      <span className="services-layer-icon" aria-hidden="true">{isOpen ? "−" : "+"}</span>
+    </button>
+  );
+}
+
 export default function ServicesPage() {
+  const [openLayer, setOpenLayer] = useState<LayerId | null>("services");
+  const toggleLayer = (layer: LayerId) => setOpenLayer((current) => current === layer ? null : layer);
+
   return (
     <main className="services-page">
       <CosmicBackground />
@@ -369,288 +391,71 @@ export default function ServicesPage() {
           <Link href="/scroll">Scroll</Link>
           <Link href="/creator/projects">Projects</Link>
         </nav>
-
-        <div className="services-market-badge">
-          <span />
-          <strong>Services</strong>
-        </div>
-
-        <p className="services-kicker">Calls / Audits / Lessons / Custom Builds</p>
-
-        <h1>
-          Work with
-          <span>Cosmic.</span>
-        </h1>
-
-        <p className="services-intro">
-          Build your artist world with focused direction, music workflow help, release
-          strategy, creative systems, and practice-based support connected to the Cosmic Nexus.
-        </p>
-
+        <p className="services-kicker">Services</p>
+        <h1>Build the next<span>version of your work.</span></h1>
+        <p className="services-intro">Creative direction, music development, release worlds, workflow systems, and custom digital builds for artists and creators.</p>
         <div className="services-hero-actions">
-          <a href="#creative-direction">Book Creative Direction</a>
-          <a href="#start-here">View Offers</a>
+          <a href="#services-layer">Explore services</a>
+          <Link href="/services/inquire?intent=question">Ask what fits</Link>
         </div>
       </section>
 
-      <section className="services-support-card" aria-label="Help choosing a service">
-        <div>
-          <p className="services-kicker">Need help choosing?</p>
-          <h2>Send the context. I’ll point you toward the cleanest next step.</h2>
-          <p>
-            Not sure whether you need a call, audit, lesson, or build? Start with a question and I’ll help you choose without forcing the fit.
-          </p>
-        </div>
-        <Link href="/services/inquire?intent=question">Ask What Fits</Link>
-      </section>
-
-      <section className="services-note">
-        <p className="services-kicker">How this works</p>
-        <h2>The music multiverse is open. Services are for direct support.</h2>
-        <p>
-          Anyone can explore the public Nexus, scroll, open signals, and creative pathways. Services are
-          for artists, creators, and seekers who want direct feedback, guided setup,
-          customization, coaching, accountability, or a deeper build with Cosmic.
-        </p>
-      </section>
-
-
-      <section id="creative-direction" className="services-live-offer services-live-offer-featured" aria-labelledby="live-offer-heading">
-        <div className="services-live-copy">
-          <p className="services-kicker">Best place to start</p>
-          <h2 id="live-offer-heading">Creative Direction Session</h2>
-          <p>
-            A focused 60-minute session for shaping a song, release, artist world, workflow,
-            story, or next creative move. Bring what you have — links, questions, ideas,
-            demos, notes, or confusion — and leave with clearer direction.
-          </p>
-
-          <div className="services-session-flow" aria-label="Creative Direction session flow">
-            <article>
-              <span>01</span>
-              <strong>Send context</strong>
-              <p>Music, links, questions, notes, goals, or the part that feels unclear.</p>
-            </article>
-            <article>
-              <span>02</span>
-              <strong>Meet for 60 minutes</strong>
-              <p>We clarify the project, story, workflow, direction, and next move.</p>
-            </article>
-            <article>
-              <span>03</span>
-              <strong>Leave with a path</strong>
-              <p>You get grounded direction, action notes, and a clean next-step map.</p>
-            </article>
-          </div>
-        </div>
-
-        <div className="services-live-card services-live-card-sellable">
-          <span>Available Now</span>
-          <strong>60 min — $111</strong>
-          <p>Best for artists, creators, and builders who need a grounded next step.</p>
-          <ul>
-            <li>Project direction</li>
-            <li>Creative feedback</li>
-            <li>Action roadmap</li>
-          </ul>
-          <Link href="/services/inquire?offer=creative-direction-session&intent=book">
-            Book Session
-          </Link>
-        </div>
-      </section>
-
-      <section id="start-here" className="services-offers-section" aria-labelledby="start-here-heading">
-        <div className="services-section-heading">
-          <p className="services-kicker">Start Here</p>
-          <h2 id="start-here-heading">Book a focused call, session, or lesson.</h2>
-          <p>
-            The easiest way to work together. These offers are for clarity, direction,
-            music workflow, beginner theory, creative confidence, and next-step support.
-          </p>
-        </div>
-
-        <p className="services-mobile-hint">Swipe offers →</p>
-
-        <div className="services-offer-grid" aria-label="Start here offers">
-          {START_HERE_OFFERS.map((offer) => (
-            <OfferCard key={offer.slug} offer={offer} />
-          ))}
-        </div>
-
-      </section>
-
-      <section className="services-offers-section" aria-labelledby="audits-heading">
-        <div className="services-section-heading">
-          <p className="services-kicker">Audits + Reviews</p>
-          <h2 id="audits-heading">Get your project, world, or workflow reviewed.</h2>
-          <p>
-            For artists and creators who already have music, ideas, pages, sessions, or
-            systems in motion — and want a clearer roadmap for what to improve next.
-          </p>
-        </div>
-
-        <p className="services-mobile-hint">Swipe audits →</p>
-
-        <div className="services-offer-grid" aria-label="Audit and review offers">
-          {AUDIT_OFFERS.map((offer) => (
-            <OfferCard key={offer.slug} offer={offer} />
-          ))}
-        </div>
-      </section>
-
-      <section className="services-offers-section" aria-labelledby="build-heading">
-        <div className="services-section-heading">
-          <p className="services-kicker">Build with Cosmic</p>
-          <h2 id="build-heading">Go deeper than the free tools.</h2>
-          <p>
-            The free system gives creators a place to begin. These offers are for artists,
-            creators, and brands who want guided setup, custom direction, implementation,
-            or a longer transformation arc.
-          </p>
-        </div>
-
-        <p className="services-mobile-hint">Swipe build paths →</p>
-
-        <div className="services-offer-grid" aria-label="Build with Cosmic offers">
-          {BUILD_WITH_COSMIC.map((offer) => (
-            <OfferCard key={offer.slug} offer={offer} />
-          ))}
-        </div>
-      </section>
-
-      <section className="services-toolkit" aria-labelledby="toolkit-heading">
-        <div className="services-section-heading">
-          <p className="services-kicker">Cosmic Toolkit</p>
-          <h2 id="toolkit-heading">Tools, templates, gear, and resources.</h2>
-          <p>
-            This section is affiliate-ready for future recommendations, templates, and
-            resources. Some links may become affiliate links. I only share tools I use,
-            trust, or genuinely recommend.
-          </p>
-        </div>
-
-        <p className="services-mobile-hint">Swipe toolkit →</p>
-
-        <div className="services-toolkit-grid" aria-label="Cosmic toolkit resources">
-          {TOOLKIT_ITEMS.map((item) => (
-            <article key={item.title} className="services-toolkit-card">
-              <div className="services-offer-meta">
-                <span className="services-status">{item.status}</span>
-                <span className="services-action-type">{item.category}</span>
+      <section className="services-layer-stack" aria-label="Services information">
+        <article id="services-layer" className={`services-layer ${openLayer === "services" ? "is-open" : ""}`}>
+          <LayerHeader number="01" title="Services" summary="Calls, audits, development, and custom builds." isOpen={openLayer === "services"} controls="services-layer-content" onClick={() => toggleLayer("services")} />
+          {openLayer === "services" && (
+            <div id="services-layer-content" className="services-layer-content">
+              <div className="services-rail-group">
+                <div className="services-rail-heading"><div><p className="services-kicker">Start here</p><h2>Focused support without a long commitment.</h2></div><span>Swipe or scroll →</span></div>
+                <div className="services-horizontal-rail" aria-label="Start here offers">{START_HERE_OFFERS.map((offer) => <OfferCard key={offer.slug} offer={offer} />)}</div>
               </div>
-              <h3>{item.title}</h3>
-              <p>{item.description}</p>
-              <a href={item.href}>{item.cta}</a>
-            </article>
-          ))}
-        </div>
+              <div className="services-rail-group">
+                <div className="services-rail-heading"><div><p className="services-kicker">Audits + development</p><h2>Strengthen the project already in motion.</h2></div><span>Swipe or scroll →</span></div>
+                <div className="services-horizontal-rail" aria-label="Audit and development offers">{AUDIT_OFFERS.map((offer) => <OfferCard key={offer.slug} offer={offer} />)}</div>
+              </div>
+              <div className="services-rail-group">
+                <div className="services-rail-heading"><div><p className="services-kicker">Build with Cosmic</p><h2>Create the world, system, or release pathway.</h2></div><span>Swipe or scroll →</span></div>
+                <div className="services-horizontal-rail" aria-label="Build with Cosmic offers">{BUILD_WITH_COSMIC.map((offer) => <OfferCard key={offer.slug} offer={offer} />)}</div>
+              </div>
+            </div>
+          )}
+        </article>
+
+        <article className={`services-layer ${openLayer === "process" ? "is-open" : ""}`}>
+          <LayerHeader number="02" title="How it works" summary="Choose, share context, build, and leave with a clear result." isOpen={openLayer === "process"} controls="process-layer-content" onClick={() => toggleLayer("process")} />
+          {openLayer === "process" && (
+            <div id="process-layer-content" className="services-layer-content">
+              <div className="services-process-rail" aria-label="Service process">
+                <article><span>01</span><h3>Choose</h3><p>Pick the offer closest to the kind of support you need.</p></article>
+                <article><span>02</span><h3>Share</h3><p>Send music, links, notes, questions, references, or the current obstacle.</p></article>
+                <article><span>03</span><h3>Build</h3><p>We work through the project, system, story, or creative decision together.</p></article>
+                <article><span>04</span><h3>Move</h3><p>Leave with direction, deliverables, or a concrete next-step roadmap.</p></article>
+              </div>
+              <div className="services-support-card"><div><p className="services-kicker">Not sure what fits?</p><h2>Send the context. I’ll point you toward the cleanest next step.</h2><p>You do not need to diagnose the service yourself. Tell me what you are building, where it feels stuck, and what result you want.</p></div><Link href="/services/inquire?intent=question">Ask what fits</Link></div>
+            </div>
+          )}
+        </article>
+
+        <article className={`services-layer ${openLayer === "details" ? "is-open" : ""}`}>
+          <LayerHeader number="03" title="Explore + details" summary="Free pathways, capabilities, future tools, and payment information." isOpen={openLayer === "details"} controls="details-layer-content" onClick={() => toggleLayer("details")} />
+          {openLayer === "details" && (
+            <div id="details-layer-content" className="services-layer-content">
+              <div className="services-details-block">
+                <div className="services-rail-heading"><div><p className="services-kicker">Free universe</p><h2>Explore the ecosystem before booking.</h2></div><span>Swipe or scroll →</span></div>
+                <div className="services-detail-rail">{FREE_UNIVERSE.map((signal) => <Link key={signal.href} href={signal.href} className="services-free-card"><span>{signal.eyebrow}</span><h3>{signal.title}</h3><p>{signal.body}</p><strong>{signal.cta}</strong></Link>)}</div>
+              </div>
+              <div className="services-skills-compact"><div><p className="services-kicker">Capabilities</p><h2>Music, systems, story, workflow, and practice.</h2></div><div className="services-skill-cloud">{SKILL_AREAS.map((skill) => <span key={skill}>{skill}</span>)}</div></div>
+              <div id="toolkit-coming-soon" className="services-details-block">
+                <div className="services-rail-heading"><div><p className="services-kicker">Toolkit</p><h2>Resources in development.</h2></div><span>Swipe or scroll →</span></div>
+                <div className="services-detail-rail">{TOOLKIT_ITEMS.map((item) => <article key={item.title} className="services-toolkit-card"><div className="services-offer-meta"><span className="services-status">{item.status}</span><span className="services-action-type">{item.category}</span></div><h3>{item.title}</h3><p>{item.description}</p></article>)}</div>
+              </div>
+              <div className="services-payment-compact"><div><p className="services-kicker">Payment + accounts</p><h2>Simple offers, clear next steps.</h2><p>Calls, lessons, and audits can use direct booking or payment links. Custom builds begin with scope, quote, and deposit.</p></div><div className="services-payment-list"><span>Calls + lessons → booking link</span><span>Audits → intake + payment</span><span>Custom builds → quote + deposit</span><span>Future clients → project account</span></div></div>
+            </div>
+          )}
+        </article>
       </section>
 
-      <section className="services-skills">
-        <div>
-          <p className="services-kicker">What I can help with</p>
-          <h2>Music, systems, story, workflow, and practice.</h2>
-          <p>
-            These services sit at the intersection of artist development, emotional clarity,
-            creative technology, music workflow, and personal rhythm.
-          </p>
-        </div>
-
-        <div className="services-skill-cloud" aria-label="Service skill areas">
-          {SKILL_AREAS.map((skill) => (
-            <span key={skill}>{skill}</span>
-          ))}
-        </div>
-      </section>
-
-      <section className="services-free-section" aria-labelledby="free-universe-heading">
-        <div className="services-section-heading">
-          <p className="services-kicker">Free Universe</p>
-          <h2 id="free-universe-heading">Explore before you book anything.</h2>
-          <p>
-            Start with the free Cosmic ecosystem. Listen, explore, reflect, find your
-            realm, and feel the world before choosing a paid service.
-          </p>
-        </div>
-
-        <p className="services-mobile-hint">Swipe free paths →</p>
-
-        <div className="services-free-grid" aria-label="Free Cosmic universe paths">
-          {FREE_UNIVERSE.map((signal) => (
-            <Link key={signal.href} href={signal.href} className="services-free-card">
-              <span>{signal.eyebrow}</span>
-              <h3>{signal.title}</h3>
-              <p>{signal.body}</p>
-              <strong>{signal.cta}</strong>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      <section className="services-process">
-        <div>
-          <p className="services-kicker">The build flow</p>
-          <h2>Clarity → Direction → Action</h2>
-          <p>
-            Every offer is designed to move you from scattered ideas into a clearer next
-            step: a stronger song, a better workflow, a sharper release, a cleaner page,
-            or a more grounded creative rhythm.
-          </p>
-        </div>
-
-        <div className="services-process-steps">
-          <article>
-            <span>01</span>
-            <h3>Choose the offer</h3>
-            <p>Pick a call, lesson, audit, project pack, or custom build.</p>
-          </article>
-
-          <article>
-            <span>02</span>
-            <h3>Share your context</h3>
-            <p>Send your music, page, workflow, questions, goals, or current challenge.</p>
-          </article>
-
-          <article>
-            <span>03</span>
-            <h3>Build the next step</h3>
-            <p>Leave with direction, notes, a roadmap, a cleaner system, or a custom build path.</p>
-          </article>
-        </div>
-      </section>
-
-      <section className="services-payment">
-        <div>
-          <p className="services-kicker">Payment + accounts</p>
-          <h2>Payment links can be added as each offer goes live.</h2>
-          <p>
-            Calls, lessons, and audits can later point to PayPal, Cash App, Stripe Payment
-            Links, Calendly, or invoices. After purchase, clients can be invited to create
-            an account for future project notes, resources, and status tracking.
-          </p>
-        </div>
-
-        <div className="services-payment-list">
-          <span>Simple offers → book/pay link</span>
-          <span>Audits → payment or intake first</span>
-          <span>Custom builds → quote + deposit</span>
-          <span>Future clients → account portal</span>
-        </div>
-      </section>
-
-      <section className="services-cta">
-        <p className="services-kicker">Ready to work?</p>
-        <h2>Choose the offer that matches your stage.</h2>
-        <p>
-          Not sure what fits? Send a short message with what you are building, where you
-          are stuck, and what kind of support you are looking for.
-        </p>
-
-        <div className="services-cta-actions">
-          <Link href="/services/inquire?intent=question">Ask What Fits</Link>
-          <Link href="/nexus">Return to Nexus</Link>
-        </div>
-      </section>
+      <section className="services-cta services-cta-compact"><p className="services-kicker">Ready to work?</p><h2>Choose the path that matches your stage.</h2><div className="services-cta-actions"><Link href="/services/inquire?intent=question">Ask what fits</Link><Link href="/nexus">Return to Nexus</Link></div></section>
     </main>
   );
 }

@@ -1,1455 +1,729 @@
 /* ===================================
-   SERVICES â€” MOBILE COMPACT V1
-   src/styles/servicesPage.css
+   SERVICES — THREE LAYER SYSTEM
    =================================== */
-
 .services-page {
-  position: relative;
-  min-height: 100vh;
-  overflow: hidden;
-  isolation: isolate;
-  padding: clamp(5rem, 9vw, 7rem) clamp(1rem, 4vw, 2rem) 4rem;
-  color: rgba(238, 243, 250, 0.94);
-  background: #03050a;
-  font-family: 'Orbitron', Arial, sans-serif;
+    position: relative;
+    min-height: 100vh;
+    overflow-x: hidden;
+    isolation: isolate;
+    padding: clamp(5rem, 9vw, 7rem) clamp(1rem, 4vw, 2rem) 4rem;
+    color: rgba(238, 243, 250, .94);
+    background: #03050a;
+    font-family: 'Orbitron', Arial, sans-serif
 }
 
 .services-page::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(circle at 12% 8%, rgba(126, 211, 255, 0.18), transparent 30rem),
-    radial-gradient(circle at 88% 16%, rgba(168, 132, 255, 0.15), transparent 34rem),
-    radial-gradient(circle at 50% 100%, rgba(220, 186, 92, 0.12), transparent 38rem),
-    linear-gradient(135deg, rgba(3, 5, 10, 0.96), rgba(8, 12, 23, 0.92));
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(circle at 12% 8%, rgba(126, 211, 255, .11), transparent 30rem), radial-gradient(circle at 88% 16%, rgba(168, 132, 255, .08), transparent 34rem), radial-gradient(circle at 50% 100%, rgba(220, 186, 92, .08), transparent 38rem), linear-gradient(135deg, rgba(3, 5, 10, .98), rgba(8, 12, 23, .94))
 }
 
-.services-page::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  opacity: 0.22;
-  pointer-events: none;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
-  background-size: 72px 72px;
-  mask-image: radial-gradient(circle at center, black, transparent 76%);
+.services-page * {
+    box-sizing: border-box
+}
+
+.services-page :where(a, button) {
+    font: inherit
 }
 
 .services-hero,
-.services-note,
-.services-live-offer,
-.services-support-card,
-.services-offers-section,
-.services-free-section,
-.services-skills,
-.services-toolkit,
-.services-process,
-.services-payment,
-.services-cta,
-.services-inquire-card {
-  width: min(1160px, 100%);
-  margin: 0 auto;
+.services-layer-stack,
+.services-cta {
+    width: min(1160px, 100%);
+    margin-inline: auto
+}
+
+.services-hero {
+    border: 1px solid rgba(224, 232, 244, .13);
+    border-radius: clamp(1.6rem, 4vw, 2.4rem);
+    padding: clamp(1.35rem, 4vw, 3.2rem);
+    background: radial-gradient(circle at 18% 0%, rgba(126, 211, 255, .09), transparent 36%), radial-gradient(circle at 88% 12%, rgba(220, 186, 92, .08), transparent 34%), linear-gradient(145deg, rgba(255, 255, 255, .068), rgba(8, 12, 22, .82));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .09), 0 28px 80px rgba(0, 0, 0, .34);
+    text-align: center;
+    backdrop-filter: blur(22px) saturate(130%)
 }
 
 .services-nav {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 0.65rem;
-  margin-bottom: 1.4rem;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: .55rem;
+    margin-bottom: 1.2rem
 }
 
 .services-nav a,
 .services-hero-actions a,
-.services-offer-card a,
-.services-toolkit-card a,
-.services-section-support a,
-.services-cta-actions a,
-.services-inquire-actions a {
-  min-height: 2.65rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid rgba(238, 243, 250, 0.16);
-  border-radius: 999px;
-  padding: 0.65rem 0.95rem;
-  color: rgba(238, 243, 250, 0.86);
-  background: rgba(255, 255, 255, 0.055);
-  font-size: 0.68rem;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-  text-decoration: none;
-  text-transform: uppercase;
-  transition:
-    transform 180ms ease,
-    border-color 180ms ease,
-    background 180ms ease;
+.services-offer-action,
+.services-support-card a,
+.services-cta-actions a {
+    min-height: 2.55rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(238, 243, 250, .14);
+    border-radius: 999px;
+    padding: .62rem .9rem;
+    color: rgba(238, 243, 250, .87);
+    background: rgba(255, 255, 255, .045);
+    font-size: .66rem;
+    font-weight: 900;
+    letter-spacing: .12em;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: transform 180ms ease, border-color 180ms ease
 }
 
 .services-nav a:hover,
 .services-hero-actions a:hover,
-.services-free-card:hover,
-.services-offer-card:hover,
-.services-offer-card a:hover,
-.services-toolkit-card:hover,
-.services-toolkit-card a:hover,
-.services-section-support a:hover,
-.services-cta-actions a:hover,
-.services-inquire-actions a:hover {
-  transform: translateY(-2px);
-  border-color: rgba(126, 211, 255, 0.42);
-}
-
-.services-hero {
-  position: relative;
-  border: 1px solid rgba(224, 232, 244, 0.14);
-  border-radius: clamp(1.8rem, 4vw, 2.8rem);
-  padding: clamp(1.5rem, 5vw, 4.2rem);
-  background:
-    radial-gradient(circle at 18% 0%, rgba(126, 211, 255, 0.14), transparent 36%),
-    radial-gradient(circle at 88% 12%, rgba(220, 186, 92, 0.12), transparent 34%),
-    linear-gradient(145deg, rgba(255, 255, 255, 0.092), rgba(8, 12, 22, 0.80));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.11),
-    0 34px 110px rgba(0, 0, 0, 0.42);
-  text-align: center;
-  backdrop-filter: blur(24px) saturate(135%);
-}
-
-.services-hero::before {
-  content: "";
-  position: absolute;
-  inset: 1rem;
-  border: 1px solid rgba(220, 186, 92, 0.08);
-  border-radius: inherit;
-  pointer-events: none;
-}
-
-.services-market-badge {
-  width: fit-content;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  margin-bottom: 1rem;
-  border: 1px solid rgba(220, 186, 92, 0.20);
-  border-radius: 999px;
-  padding: 0.5rem 0.85rem;
-  background: rgba(255, 255, 255, 0.055);
-  color: rgba(238, 243, 250, 0.88);
-  font-size: 0.68rem;
-  font-weight: 900;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.services-market-badge span {
-  width: 0.58rem;
-  height: 0.58rem;
-  border-radius: 999px;
-  background: rgba(220, 186, 92, 0.92);
-  box-shadow: 0 0 20px rgba(220, 186, 92, 0.58);
+.services-offer-action:hover,
+.services-support-card a:hover,
+.services-cta-actions a:hover {
+    transform: translateY(-1px);
+    border-color: rgba(188, 224, 255, .36)
 }
 
 .services-kicker {
-  margin: 0 0 0.85rem;
-  color: rgba(126, 211, 255, 0.86);
-  font-size: 0.68rem;
-  font-weight: 900;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
+    margin: 0 0 .7rem;
+    color: rgba(188, 224, 255, .76);
+    font-size: .65rem;
+    font-weight: 900;
+    letter-spacing: .2em;
+    text-transform: uppercase
 }
 
 .services-hero h1 {
-  margin: 0;
-  color: rgba(248, 250, 255, 0.98);
-  font-size: clamp(3rem, 10vw, 8.4rem);
-  line-height: 0.84;
-  letter-spacing: -0.08em;
-  text-transform: uppercase;
-  text-shadow:
-    0 0 24px rgba(126, 211, 255, 0.12),
-    0 24px 70px rgba(0, 0, 0, 0.42);
+    max-width: 980px;
+    margin: 0 auto;
+    color: rgba(248, 250, 255, .98);
+    font-size: clamp(2.8rem, 9vw, 7.6rem);
+    line-height: .88;
+    letter-spacing: -.075em;
+    text-transform: uppercase
 }
 
 .services-hero h1 span {
-  display: block;
-  color: rgba(238, 243, 250, 0.72);
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 0.36em;
-  font-style: italic;
-  font-weight: 400;
-  letter-spacing: -0.04em;
-  text-transform: none;
+    display: block;
+    margin-top: .2em;
+    color: rgba(238, 243, 250, .70);
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: .34em;
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: -.03em;
+    text-transform: none
 }
 
 .services-intro {
-  max-width: 820px;
-  margin: 1.4rem auto 0;
-  color: rgba(224, 231, 240, 0.76);
-  font-size: clamp(1rem, 2vw, 1.15rem);
-  line-height: 1.85;
+    max-width: 760px;
+    margin: 1.2rem auto 0;
+    color: rgba(224, 231, 240, .72);
+    font-size: clamp(.96rem, 2vw, 1.08rem);
+    line-height: 1.75
 }
 
 .services-hero-actions,
-.services-cta-actions,
-.services-inquire-actions {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 1.6rem;
+.services-cta-actions {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: .65rem;
+    margin-top: 1.3rem
 }
 
 .services-hero-actions a:first-child,
-.services-offer-card a,
-.services-toolkit-card a,
-.services-section-support a,
-.services-cta-actions a:first-child,
-.services-inquire-actions a:first-child {
-  color: #081018;
-  border-color: rgba(247, 239, 228, 0.48);
-  background: linear-gradient(135deg, rgba(247, 239, 228, 0.96), rgba(126, 211, 255, 0.86));
+.services-offer-action,
+.services-support-card a,
+.services-cta-actions a:first-child {
+    color: #081018;
+    border-color: rgba(247, 239, 228, .42);
+    background: linear-gradient(135deg, rgba(247, 239, 228, .94), rgba(188, 224, 255, .84))
 }
 
-.services-note,
-.services-live-offer,
-.services-support-card,
-.services-offers-section,
-.services-free-section,
-.services-skills,
-.services-toolkit,
-.services-process,
-.services-payment,
-.services-cta,
-.services-inquire-card {
-  margin-top: 1rem;
-  border: 1px solid rgba(224, 232, 244, 0.12);
-  border-radius: 2rem;
-  padding: clamp(1.2rem, 4vw, 2.4rem);
-  background:
-    radial-gradient(circle at 0% 0%, rgba(168, 132, 255, 0.10), transparent 34%),
-    linear-gradient(145deg, rgba(255, 255, 255, 0.064), rgba(8, 12, 22, 0.76));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 24px 80px rgba(0, 0, 0, 0.30);
-  backdrop-filter: blur(18px) saturate(125%);
+.services-layer-stack {
+    display: grid;
+    gap: .7rem;
+    margin-top: 1rem
 }
 
-
-.services-live-offer {
-  display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
-  gap: 1rem;
-  align-items: stretch;
+.services-layer {
+    overflow: hidden;
+    border: 1px solid rgba(224, 232, 244, .12);
+    border-radius: 1.4rem;
+    background: linear-gradient(145deg, rgba(255, 255, 255, .052), rgba(8, 12, 22, .76));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 18px 54px rgba(0, 0, 0, .22);
+    backdrop-filter: blur(16px) saturate(120%)
 }
 
-.services-live-copy {
-  display: grid;
-  align-content: center;
+.services-layer.is-open {
+    border-color: rgba(188, 224, 255, .18)
 }
 
-.services-live-copy h2 {
-  max-width: 780px;
-  margin: 0;
-  color: rgba(248, 250, 255, 0.96);
-  font-size: clamp(2.2rem, 5vw, 5rem);
-  line-height: 0.92;
-  letter-spacing: -0.07em;
+.services-layer-trigger {
+    width: 100%;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1rem;
+    border: 0;
+    padding: 1rem 1.1rem;
+    color: inherit;
+    background: transparent;
+    text-align: left;
+    cursor: pointer
 }
 
-.services-live-copy p:not(.services-kicker) {
-  max-width: 760px;
-  margin: 1rem 0 0;
-  color: rgba(224, 231, 240, 0.74);
-  line-height: 1.75;
+.services-layer-number {
+    color: rgba(220, 186, 92, .76);
+    font-size: .66rem;
+    font-weight: 900;
+    letter-spacing: .16em
 }
 
-.services-live-card {
-  display: grid;
-  align-content: center;
-  gap: 0.8rem;
-  border: 1px solid rgba(220, 186, 92, 0.22);
-  border-radius: 1.5rem;
-  padding: 1rem;
-  background:
-    radial-gradient(circle at 0% 0%, rgba(220, 186, 92, 0.12), transparent 42%),
-    radial-gradient(circle at 100% 12%, rgba(126, 211, 255, 0.10), transparent 36%),
-    rgba(255, 255, 255, 0.045);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+.services-layer-copy {
+    min-width: 0;
+    display: grid;
+    gap: .2rem
 }
 
-.services-live-card span {
-  width: fit-content;
-  border: 1px solid rgba(220, 186, 92, 0.28);
-  border-radius: 999px;
-  padding: 0.32rem 0.55rem;
-  color: rgba(220, 186, 92, 0.92);
-  background: rgba(220, 186, 92, 0.08);
-  font-size: 0.62rem;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+.services-layer-copy strong {
+    color: rgba(248, 250, 255, .95);
+    font-size: clamp(1.15rem, 3vw, 1.75rem);
+    line-height: 1;
+    text-transform: uppercase
 }
 
-.services-live-card strong {
-  color: rgba(248, 250, 255, 0.95);
-  font-size: clamp(1.6rem, 3vw, 2.35rem);
-  line-height: 0.95;
-  letter-spacing: -0.04em;
+.services-layer-copy small {
+    color: rgba(224, 231, 240, .62);
+    font-size: .78rem;
+    line-height: 1.45
 }
 
-.services-live-card p {
-  margin: 0;
-  color: rgba(224, 231, 240, 0.72);
-  font-size: 0.92rem;
-  line-height: 1.6;
+.services-layer-icon {
+    width: 2.15rem;
+    height: 2.15rem;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(238, 243, 250, .13);
+    border-radius: 999px;
+    color: rgba(188, 224, 255, .9);
+    background: rgba(255, 255, 255, .035);
+    font-size: 1.15rem
 }
 
-.services-live-card a {
-  min-height: 2.65rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid rgba(247, 239, 228, 0.48);
-  border-radius: 999px;
-  padding: 0.65rem 0.95rem;
-  color: #081018;
-  background: linear-gradient(135deg, rgba(247, 239, 228, 0.96), rgba(126, 211, 255, 0.86));
-  font-size: 0.68rem;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-  text-decoration: none;
-  text-transform: uppercase;
-  transition:
-    transform 180ms ease,
-    border-color 180ms ease,
-    background 180ms ease;
+.services-layer-content {
+    display: grid;
+    gap: 1rem;
+    border-top: 1px solid rgba(238, 243, 250, .08);
+    padding: 1rem
 }
 
-.services-live-card a:hover {
-  transform: translateY(-2px);
-  border-color: rgba(126, 211, 255, 0.42);
-}
-
+.services-rail-group,
+.services-details-block,
+.services-skills-compact,
+.services-payment-compact,
 .services-support-card {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 1rem;
-  align-items: center;
-  margin-top: 1rem;
-  border: 1px solid rgba(126, 211, 255, 0.16);
-  border-radius: 1.7rem;
-  padding: clamp(1rem, 3vw, 1.4rem);
-  background:
-    radial-gradient(circle at 0% 0%, rgba(126, 211, 255, 0.10), transparent 42%),
-    rgba(255, 255, 255, 0.045);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(16px) saturate(125%);
+    border: 1px solid rgba(238, 243, 250, .09);
+    border-radius: 1.25rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, .025)
 }
 
-.services-support-card h2 {
-  max-width: 680px;
-  margin: 0;
-  color: rgba(248, 250, 255, 0.96);
-  font-size: clamp(1.45rem, 3vw, 2.3rem);
-  line-height: 0.98;
-  letter-spacing: -0.05em;
+.services-rail-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1rem;
+    margin-bottom: .8rem
 }
 
-.services-support-card p:not(.services-kicker) {
-  max-width: 720px;
-  margin: 0.7rem 0 0;
-  color: rgba(224, 231, 240, 0.72);
-  line-height: 1.65;
+.services-rail-heading h2,
+.services-skills-compact h2,
+.services-payment-compact h2,
+.services-support-card h2,
+.services-cta h2 {
+    margin: 0;
+    color: rgba(248, 250, 255, .95);
+    font-size: clamp(1.45rem, 4vw, 2.8rem);
+    line-height: .98;
+    letter-spacing: -.05em
 }
 
-.services-support-card a {
-  min-height: 2.65rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid rgba(247, 239, 228, 0.48);
-  border-radius: 999px;
-  padding: 0.65rem 0.95rem;
-  color: #081018;
-  background: linear-gradient(135deg, rgba(247, 239, 228, 0.96), rgba(126, 211, 255, 0.86));
-  font-size: 0.68rem;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-  text-decoration: none;
-  text-transform: uppercase;
-  white-space: nowrap;
+.services-rail-heading>span {
+    flex: 0 0 auto;
+    color: rgba(188, 224, 255, .58);
+    font-size: .62rem;
+    font-weight: 900;
+    letter-spacing: .1em;
+    text-transform: uppercase
+}
+
+.services-horizontal-rail,
+.services-detail-rail,
+.services-process-rail {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(285px, .34fr);
+    gap: .8rem;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scroll-snap-type: inline mandatory;
+    scrollbar-width: thin;
+    padding: .1rem .05rem .65rem
+}
+
+.services-horizontal-rail>*,
+.services-detail-rail>*,
+.services-process-rail>* {
+    scroll-snap-align: start
+}
+
+.services-offer-card {
+    position: relative;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(238, 243, 250, .11);
+    border-radius: 1.25rem;
+    padding: .95rem;
+    background: radial-gradient(circle at 14% 0%, rgba(126, 211, 255, .075), transparent 38%), linear-gradient(145deg, rgba(255, 255, 255, .052), rgba(3, 6, 14, .54))
+}
+
+.services-offer-card.is-featured {
+    border-color: rgba(220, 186, 92, .25)
 }
 
 .services-offer-visual {
-  position: relative;
-  min-height: 5rem;
-  margin-bottom: 1rem;
-  overflow: hidden;
-  border: 1px solid rgba(238, 243, 250, 0.10);
-  border-radius: 1.15rem;
-  background:
-    radial-gradient(circle at 20% 20%, rgba(126, 211, 255, 0.16), transparent 42%),
-    linear-gradient(135deg, rgba(255,255,255,0.06), rgba(3,6,14,0.54));
+    position: relative;
+    min-height: 4.2rem;
+    margin-bottom: .8rem;
+    overflow: hidden;
+    border: 1px solid rgba(238, 243, 250, .09);
+    border-radius: .95rem;
+    background: radial-gradient(circle at 20% 20%, rgba(126, 211, 255, .10), transparent 42%), linear-gradient(135deg, rgba(255, 255, 255, .045), rgba(3, 6, 14, .54))
 }
 
 .services-offer-visual span,
 .services-offer-visual i {
-  position: absolute;
-  display: block;
-  border-radius: 999px;
-  pointer-events: none;
+    position: absolute;
+    display: block;
+    pointer-events: none
 }
 
 .services-offer-visual span {
-  width: 4.2rem;
-  height: 4.2rem;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  border: 1px solid rgba(126, 211, 255, 0.26);
-  box-shadow: 0 0 30px rgba(126, 211, 255, 0.12), inset 0 0 24px rgba(126, 211, 255, 0.08);
+    width: 3.4rem;
+    height: 3.4rem;
+    right: .8rem;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 1px solid rgba(126, 211, 255, .22);
+    border-radius: 999px;
+    box-shadow: 0 0 24px rgba(126, 211, 255, .08)
 }
 
 .services-offer-visual i {
-  width: 70%;
-  height: 1px;
-  left: 1rem;
-  top: 50%;
-  background: linear-gradient(90deg, rgba(220,186,92,0.0), rgba(220,186,92,0.72), rgba(126,211,255,0.0));
-  transform: rotate(-8deg);
+    width: 68%;
+    height: 1px;
+    left: .8rem;
+    top: 50%;
+    background: linear-gradient(90deg, transparent, rgba(220, 186, 92, .56), transparent);
+    transform: rotate(-8deg)
 }
 
-.services-visual-prism span { border-radius: 1.1rem; transform: translateY(-50%) rotate(12deg); border-color: rgba(220,186,92,0.32); }
-.services-visual-waveform i { height: 2px; box-shadow: 0 -10px 0 rgba(126,211,255,0.16), 0 10px 0 rgba(220,186,92,0.12); }
-.services-visual-mirror span { border-radius: 50% 50% 44% 44%; border-color: rgba(220,186,92,0.28); }
-.services-visual-notebook span { border-radius: 0.75rem; width: 3.2rem; border-color: rgba(238,243,250,0.22); }
-.services-visual-console span { width: 4.6rem; height: 2.6rem; border-radius: 0.75rem; }
-.services-visual-portal span { width: 3.4rem; height: 4.4rem; border-radius: 999px 999px 1rem 1rem; }
-.services-visual-path i { transform: rotate(-14deg); box-shadow: 16px 12px 0 rgba(126,211,255,0.16); }
-.services-visual-blueprint span { border-radius: 0.85rem; box-shadow: inset 14px 0 0 rgba(126,211,255,0.05), inset 0 14px 0 rgba(220,186,92,0.05); }
-
-.services-session-flow {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.7rem;
-  margin-top: 1.1rem;
+.services-visual-prism span {
+    border-radius: .9rem;
+    transform: translateY(-50%) rotate(12deg);
+    border-color: rgba(220, 186, 92, .28)
 }
 
-.services-session-flow article {
-  border: 1px solid rgba(238, 243, 250, 0.10);
-  border-radius: 1rem;
-  padding: 0.85rem;
-  background: rgba(255, 255, 255, 0.035);
+.services-visual-waveform i {
+    height: 2px;
+    box-shadow: 0 -8px 0 rgba(126, 211, 255, .12), 0 8px 0 rgba(220, 186, 92, .09)
 }
 
-.services-session-flow span {
-  color: rgba(220, 186, 92, 0.86);
-  font-size: 0.65rem;
-  font-weight: 900;
-  letter-spacing: 0.14em;
+.services-visual-mirror span {
+    border-radius: 50% 50% 44% 44%;
+    border-color: rgba(220, 186, 92, .24)
 }
 
-.services-session-flow strong {
-  display: block;
-  margin-top: 0.35rem;
-  color: rgba(248, 250, 255, 0.92);
+.services-visual-notebook span {
+    border-radius: .65rem;
+    width: 2.8rem
 }
 
-.services-session-flow p {
-  margin: 0.35rem 0 0 !important;
-  font-size: 0.78rem;
-  line-height: 1.45 !important;
+.services-visual-console span {
+    width: 3.8rem;
+    height: 2.2rem;
+    border-radius: .65rem
 }
 
-.services-live-card-sellable ul {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+.services-visual-portal span {
+    width: 2.8rem;
+    height: 3.6rem;
+    border-radius: 999px 999px .8rem .8rem
 }
 
-.services-live-card-sellable li {
-  border: 1px solid rgba(238, 243, 250, 0.10);
-  border-radius: 999px;
-  padding: 0.4rem 0.58rem;
-  color: rgba(238, 243, 250, 0.74);
-  background: rgba(255, 255, 255, 0.035);
-  font-size: 0.62rem;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+.services-visual-path i {
+    transform: rotate(-14deg);
+    box-shadow: 14px 10px 0 rgba(126, 211, 255, .12)
 }
 
-
-.services-note {
-  text-align: center;
-}
-
-.services-note h2,
-.services-section-heading h2,
-.services-skills h2,
-.services-process h2,
-.services-payment h2,
-.services-cta h2,
-.services-inquire-heading h1 {
-  max-width: 860px;
-  margin: 0 auto;
-  color: rgba(248, 250, 255, 0.96);
-  font-size: clamp(2rem, 5vw, 4.6rem);
-  line-height: 0.96;
-  letter-spacing: -0.06em;
-}
-
-.services-note p:not(.services-kicker),
-.services-section-heading p:not(.services-kicker),
-.services-skills p,
-.services-process p,
-.services-payment p,
-.services-cta p,
-.services-inquire-heading p {
-  max-width: 780px;
-  margin: 1rem auto 0;
-  color: rgba(224, 231, 240, 0.72);
-  line-height: 1.75;
-}
-
-.services-section-heading,
-.services-inquire-heading {
-  margin: 0 auto 1rem;
-  text-align: center;
-}
-
-.services-offer-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
-}
-
-.services-offer-card {
-  position: relative;
-  min-height: 39rem;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid rgba(238, 243, 250, 0.12);
-  border-radius: 1.55rem;
-  padding: 1.15rem;
-  background:
-    radial-gradient(circle at 14% 0%, rgba(126, 211, 255, 0.10), transparent 38%),
-    linear-gradient(145deg, rgba(255, 255, 255, 0.062), rgba(3, 6, 14, 0.56));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 18px 50px rgba(0, 0, 0, 0.22);
-  transition:
-    transform 180ms ease,
-    border-color 180ms ease,
-    background 180ms ease;
-}
-
-.services-offer-card.is-featured {
-  border-color: rgba(220, 186, 92, 0.30);
-  background:
-    radial-gradient(circle at 20% 0%, rgba(220, 186, 92, 0.12), transparent 38%),
-    radial-gradient(circle at 80% 12%, rgba(126, 211, 255, 0.10), transparent 34%),
-    linear-gradient(145deg, rgba(255, 255, 255, 0.078), rgba(3, 6, 14, 0.62));
+.services-visual-blueprint span {
+    border-radius: .7rem
 }
 
 .services-offer-topline,
 .services-offer-meta {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.75rem;
-  align-items: center;
-  margin-bottom: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: .6rem;
+    margin-bottom: .6rem
 }
 
 .services-offer-topline span,
-.services-free-card span,
-.services-skill-cloud span,
-.services-payment-list span {
-  color: rgba(220, 186, 92, 0.84);
-  font-size: 0.68rem;
-  font-weight: 900;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
+.services-status,
+.services-action-type,
+.services-offer-topline em {
+    font-size: .58rem;
+    font-weight: 900;
+    letter-spacing: .11em;
+    text-transform: uppercase
+}
+
+.services-offer-topline span {
+    color: rgba(220, 186, 92, .78)
 }
 
 .services-offer-topline em,
 .services-status,
 .services-action-type {
-  border: 1px solid rgba(220, 186, 92, 0.28);
-  border-radius: 999px;
-  padding: 0.32rem 0.52rem;
-  color: rgba(220, 186, 92, 0.92);
-  background: rgba(220, 186, 92, 0.08);
-  font-size: 0.62rem;
-  font-style: normal;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+    border: 1px solid rgba(220, 186, 92, .20);
+    border-radius: 999px;
+    padding: .27rem .42rem;
+    color: rgba(220, 186, 92, .86);
+    background: rgba(220, 186, 92, .055);
+    font-style: normal
 }
 
 .services-action-type {
-  color: rgba(126, 211, 255, 0.86);
-  border-color: rgba(126, 211, 255, 0.22);
-  background: rgba(126, 211, 255, 0.07);
+    color: rgba(188, 224, 255, .78);
+    border-color: rgba(188, 224, 255, .16);
+    background: rgba(188, 224, 255, .045)
 }
 
 .services-offer-card h3,
 .services-toolkit-card h3,
-.services-free-card h3 {
-  margin: 0;
-  color: rgba(248, 250, 255, 0.96);
-  line-height: 0.98;
-  letter-spacing: -0.04em;
+.services-free-card h3,
+.services-process-rail h3 {
+    margin: 0;
+    color: rgba(248, 250, 255, .95);
+    line-height: 1.02;
+    letter-spacing: -.035em
 }
 
 .services-offer-card h3 {
-  font-size: clamp(1.45rem, 3vw, 2.35rem);
+    font-size: clamp(1.3rem, 3vw, 1.9rem)
 }
 
 .services-price,
 .services-format {
-  margin: 0.8rem 0 0;
-  color: rgba(126, 211, 255, 0.90);
-  font-size: 0.75rem;
-  font-weight: 900;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+    margin: .7rem 0 0;
+    color: rgba(188, 224, 255, .84);
+    font-size: .68rem;
+    font-weight: 900;
+    letter-spacing: .11em;
+    text-transform: uppercase
 }
 
 .services-format {
-  margin-top: 0.45rem;
-  color: rgba(238, 243, 250, 0.62);
+    margin-top: .3rem;
+    color: rgba(238, 243, 250, .55)
+}
+
+.services-offer-body,
+.services-offer-detail p,
+.services-toolkit-card p,
+.services-free-card p,
+.services-process-rail p,
+.services-support-card p,
+.services-payment-compact p {
+    color: rgba(224, 231, 240, .68);
+    font-size: .86rem;
+    line-height: 1.6
 }
 
 .services-offer-body {
-  margin: 1rem 0 0;
-  color: rgba(224, 231, 240, 0.70);
-  font-size: 0.92rem;
-  line-height: 1.65;
+    margin: .8rem 0 0
+}
+
+.services-offer-includes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem;
+    margin: .8rem 0;
+    padding: 0;
+    list-style: none
+}
+
+.services-offer-includes li {
+    border: 1px solid rgba(238, 243, 250, .09);
+    border-radius: 999px;
+    padding: .32rem .45rem;
+    color: rgba(238, 243, 250, .68);
+    background: rgba(255, 255, 255, .025);
+    font-size: .57rem;
+    font-weight: 900;
+    letter-spacing: .07em;
+    text-transform: uppercase
+}
+
+.services-detail-toggle {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid rgba(238, 243, 250, .09);
+    border-radius: .75rem;
+    padding: .62rem .72rem;
+    color: rgba(238, 243, 250, .76);
+    background: rgba(255, 255, 255, .025);
+    font-size: .62rem;
+    font-weight: 900;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    cursor: pointer
+}
+
+.services-detail-toggle strong {
+    color: rgba(188, 224, 255, .88);
+    font-size: 1rem
+}
+
+.services-offer-expanded {
+    display: grid;
+    gap: .5rem;
+    margin-top: .55rem
 }
 
 .services-offer-detail {
-  margin-top: 0.75rem;
-  border: 1px solid rgba(238, 243, 250, 0.09);
-  border-radius: 1rem;
-  padding: 0.72rem;
-  background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(238, 243, 250, .08);
+    border-radius: .75rem;
+    padding: .6rem;
+    background: rgba(255, 255, 255, .022)
 }
 
 .services-offer-detail span {
-  display: block;
-  margin-bottom: 0.35rem;
-  color: rgba(126, 211, 255, 0.86);
-  font-size: 0.62rem;
-  font-weight: 900;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+    display: block;
+    margin-bottom: .25rem;
+    color: rgba(188, 224, 255, .76);
+    font-size: .56rem;
+    font-weight: 900;
+    letter-spacing: .11em;
+    text-transform: uppercase
 }
 
 .services-offer-detail p {
-  margin: 0;
-  color: rgba(224, 231, 240, 0.70);
-  font-size: 0.82rem;
-  line-height: 1.5;
+    margin: 0;
+    font-size: .78rem
 }
 
 .services-outcome {
-  border-color: rgba(220, 186, 92, 0.18);
-  background:
-    radial-gradient(circle at 0% 0%, rgba(220, 186, 92, 0.08), transparent 50%),
-    rgba(255, 255, 255, 0.035);
+    border-color: rgba(220, 186, 92, .14)
 }
 
 .services-outcome span {
-  color: rgba(220, 186, 92, 0.88);
+    color: rgba(220, 186, 92, .8)
 }
 
-.services-offer-card ul {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.42rem;
-  margin: 1rem 0 1.2rem;
-  padding: 0;
-  list-style: none;
+.services-offer-action {
+    width: 100%;
+    margin-top: .75rem
 }
 
-.services-offer-card li {
-  border: 1px solid rgba(238, 243, 250, 0.10);
-  border-radius: 999px;
-  padding: 0.38rem 0.58rem;
-  color: rgba(238, 243, 250, 0.74);
-  background: rgba(255, 255, 255, 0.035);
-  font-size: 0.68rem;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  line-height: 1.2;
-  text-transform: uppercase;
+.services-process-rail {
+    grid-auto-columns: minmax(230px, .28fr)
 }
 
-.services-offer-card a {
-  width: 100%;
-  margin-top: auto;
-}
-
-.services-section-support {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-top: 1rem;
-  border: 1px solid rgba(238, 243, 250, 0.10);
-  border-radius: 1.4rem;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.04);
-}
-
-.services-section-support p {
-  margin: 0;
-  color: rgba(224, 231, 240, 0.74);
-}
-
-.services-toolkit-grid,
-.services-free-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.9rem;
-}
-
+.services-process-rail article,
 .services-toolkit-card,
 .services-free-card {
-  min-height: 14rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.72rem;
-  border: 1px solid rgba(238, 243, 250, 0.12);
-  border-radius: 1.35rem;
-  padding: 1rem;
-  color: rgba(238, 243, 250, 0.88);
-  background:
-    radial-gradient(circle at 0% 0%, rgba(126, 211, 255, 0.12), transparent 42%),
-    rgba(255, 255, 255, 0.045);
-  text-align: left;
-  text-decoration: none;
-  transition:
-    transform 180ms ease,
-    border-color 180ms ease,
-    background 180ms ease;
+    min-height: 11rem;
+    display: flex;
+    flex-direction: column;
+    gap: .55rem;
+    border: 1px solid rgba(238, 243, 250, .09);
+    border-radius: 1rem;
+    padding: .85rem;
+    color: inherit;
+    background: rgba(255, 255, 255, .025);
+    text-decoration: none
 }
 
-.services-toolkit-card h3,
-.services-free-card h3 {
-  font-size: 1.15rem;
-  text-transform: uppercase;
+.services-process-rail article>span,
+.services-free-card>span {
+    color: rgba(220, 186, 92, .76);
+    font-size: .6rem;
+    font-weight: 900;
+    letter-spacing: .13em;
+    text-transform: uppercase
 }
 
+.services-process-rail p,
 .services-toolkit-card p,
 .services-free-card p {
-  margin: 0;
-  color: rgba(224, 231, 240, 0.68);
-  font-size: 0.88rem;
-  line-height: 1.55;
-}
-
-.services-toolkit-card a,
-.services-free-card strong {
-  margin-top: auto;
+    margin: 0
 }
 
 .services-free-card strong {
-  color: rgba(126, 211, 255, 0.88);
-  font-size: 0.68rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+    margin-top: auto;
+    color: rgba(188, 224, 255, .8);
+    font-size: .62rem;
+    letter-spacing: .1em;
+    text-transform: uppercase
 }
 
-.services-skills,
-.services-process,
-.services-payment {
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-  gap: 1.2rem;
-  align-items: center;
+.services-support-card,
+.services-skills-compact,
+.services-payment-compact {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1rem
 }
 
-.services-skills h2,
-.services-process h2,
-.services-payment h2 {
-  margin-inline: 0;
+.services-support-card p,
+.services-payment-compact p {
+    margin: .65rem 0 0
 }
 
-.services-skills p,
-.services-process p,
-.services-payment p {
-  margin-inline: 0;
+.services-support-card a {
+    white-space: nowrap
 }
 
 .services-skill-cloud,
 .services-payment-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.55rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: .4rem
 }
 
 .services-skill-cloud span,
 .services-payment-list span {
-  border: 1px solid rgba(238, 243, 250, 0.12);
-  border-radius: 999px;
-  padding: 0.55rem 0.75rem;
-  background: rgba(255, 255, 255, 0.045);
-  color: rgba(238, 243, 250, 0.78);
-}
-
-.services-process-steps {
-  display: grid;
-  gap: 0.75rem;
-}
-
-.services-process-steps article {
-  border: 1px solid rgba(238, 243, 250, 0.11);
-  border-radius: 1.25rem;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.045);
-}
-
-.services-process-steps span {
-  color: rgba(220, 186, 92, 0.82);
-  font-size: 0.7rem;
-  font-weight: 900;
-  letter-spacing: 0.16em;
-}
-
-.services-process-steps h3 {
-  margin: 0.4rem 0 0;
-  color: rgba(248, 250, 255, 0.94);
-}
-
-.services-process-steps p {
-  margin: 0.45rem 0 0;
-  font-size: 0.9rem;
+    border: 1px solid rgba(238, 243, 250, .09);
+    border-radius: 999px;
+    padding: .4rem .55rem;
+    color: rgba(220, 186, 92, .74);
+    background: rgba(255, 255, 255, .025);
+    font-size: .58rem;
+    font-weight: 900;
+    letter-spacing: .08em;
+    text-transform: uppercase
 }
 
 .services-cta {
-  text-align: center;
+    margin-top: 1rem;
+    border: 1px solid rgba(224, 232, 244, .12);
+    border-radius: 1.4rem;
+    padding: clamp(1.15rem, 3vw, 1.7rem);
+    background: linear-gradient(145deg, rgba(255, 255, 255, .052), rgba(8, 12, 22, .76));
+    text-align: center
 }
 
-.services-inquire-page {
-  display: grid;
-  place-items: start center;
+@media(min-width:980px) {
+    .services-horizontal-rail {
+        grid-auto-columns: minmax(300px, 1fr)
+    }
 }
 
-.services-inquire-card {
-  margin-top: 0;
+@media(max-width:760px) {
+    .services-page {
+        padding-inline: .8rem
+    }
+
+    .services-hero {
+        padding: 1.15rem .9rem
+    }
+
+    .services-nav {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr))
+    }
+
+    .services-nav a,
+    .services-hero-actions a,
+    .services-cta-actions a {
+        width: 100%
+    }
+
+    .services-hero-actions,
+    .services-cta-actions {
+        display: grid;
+        grid-template-columns: 1fr
+    }
+
+    .services-layer-trigger {
+        gap: .7rem;
+        padding: .9rem .8rem
+    }
+
+    .services-layer-copy small {
+        display: none
+    }
+
+    .services-layer-content,
+    .services-rail-group,
+    .services-details-block,
+    .services-skills-compact,
+    .services-payment-compact,
+    .services-support-card {
+        padding: .8rem
+    }
+
+    .services-rail-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: .35rem
+    }
+
+    .services-horizontal-rail,
+    .services-detail-rail,
+    .services-process-rail {
+        grid-auto-columns: min(84vw, 315px);
+        margin-right: -.8rem;
+        padding-right: .8rem
+    }
+
+    .services-support-card,
+    .services-skills-compact,
+    .services-payment-compact {
+        grid-template-columns: 1fr;
+        align-items: flex-start
+    }
+
+    .services-support-card a {
+        width: 100%
+    }
+
+    .services-skill-cloud,
+    .services-payment-list {
+        justify-content: flex-start
+    }
 }
 
-.services-inquire-form {
-  display: grid;
-  gap: 1rem;
-  margin-top: 1.2rem;
-}
-
-.services-inquire-form label {
-  display: grid;
-  gap: 0.5rem;
-  color: rgba(220, 186, 92, 0.86);
-  font-size: 0.7rem;
-  font-weight: 900;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.services-inquire-form input,
-.services-inquire-form select,
-.services-inquire-form textarea {
-  width: 100%;
-  border: 1px solid rgba(238, 243, 250, 0.14);
-  border-radius: 1rem;
-  padding: 0.9rem 1rem;
-  color: rgba(248, 250, 255, 0.94);
-  background: rgba(255, 255, 255, 0.055);
-  font: inherit;
-  font-size: 0.92rem;
-  letter-spacing: normal;
-  text-transform: none;
-  outline: none;
-}
-
-.services-inquire-form textarea {
-  min-height: 7rem;
-  resize: vertical;
-}
-
-.services-inquire-form input:focus,
-.services-inquire-form select:focus,
-.services-inquire-form textarea:focus {
-  border-color: rgba(126, 211, 255, 0.45);
-  box-shadow: 0 0 0 3px rgba(126, 211, 255, 0.10);
-}
-
-@media (max-width: 1080px) {
-  .services-offer-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .services-toolkit-grid,
-  .services-free-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .services-skills,
-  .services-process,
-  .services-payment,
-  .services-live-offer,
-  .services-support-card {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 640px) {
-  .services-page {
-    padding-inline: 0.85rem;
-  }
-
-  .services-hero h1 {
-    font-size: clamp(3rem, 17vw, 4.8rem);
-  }
-
-  .services-toolkit-grid,
-  .services-free-grid,
-  .services-offer-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .services-nav a,
-  .services-hero-actions a,
-  .services-cta-actions a,
-  .services-section-support a,
-  .services-inquire-actions a {
-    width: 100%;
-  }
-
-  .services-section-support {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .services-live-card a {
-    width: 100%;
-  }
-
-  .services-offer-card {
-    min-height: auto;
-  }
-}
-
-/* ===================================
-   SERVICES MOBILE COMPACT V1
-   - Desktop keeps full detail.
-   - Mobile scans by section, then swipes by offer.
-   =================================== */
-
-.services-mobile-hint {
-  display: none;
-}
-
-@media (max-width: 760px) {
-  .services-page {
-    overflow-x: hidden;
-    padding: 4.5rem 0.8rem 3rem;
-  }
-
-  .services-hero,
-  .services-note,
-  .services-offers-section,
-  .services-free-section,
-  .services-skills,
-  .services-toolkit,
-  .services-support-card,
-  .services-process,
-  .services-payment,
-  .services-cta,
-  .services-inquire-card {
-    border-radius: 1.45rem;
-  }
-
-  .services-hero {
-    padding: 1.2rem;
-  }
-
-  .services-hero::before {
-    inset: 0.55rem;
-  }
-
-  .services-nav {
-    justify-content: flex-start;
-    flex-wrap: nowrap;
-    gap: 0.5rem;
-    width: calc(100% + 0.6rem);
-    margin-left: -0.3rem;
-    margin-right: -0.3rem;
-    padding: 0 0.3rem 0.35rem;
-    overflow-x: auto;
-    scroll-snap-type: x proximity;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-
-  .services-nav::-webkit-scrollbar {
-    display: none;
-  }
-
-  .services-nav a {
-    width: auto;
-    flex: 0 0 auto;
-    min-height: 2.35rem;
-    padding: 0.55rem 0.8rem;
-    scroll-snap-align: start;
-  }
-
-  .services-hero h1 {
-    font-size: clamp(3rem, 16vw, 4.65rem);
-  }
-
-  .services-intro {
-    font-size: 0.95rem;
-    line-height: 1.7;
-  }
-
-  .services-hero-actions {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.6rem;
-  }
-
-  .services-note,
-  .services-offers-section,
-  .services-free-section,
-  .services-skills,
-  .services-toolkit,
-  .services-support-card,
-  .services-process,
-  .services-payment,
-  .services-cta {
-    padding: 1rem;
-  }
-
-  .services-note h2,
-  .services-section-heading h2,
-  .services-skills h2,
-  .services-process h2,
-  .services-payment h2,
-  .services-cta h2 {
-    font-size: clamp(1.8rem, 9vw, 2.8rem);
-  }
-
-  .services-section-heading {
-    margin-bottom: 0.55rem;
-  }
-
-  .services-section-heading p:not(.services-kicker),
-  .services-note p:not(.services-kicker),
-  .services-skills p,
-  .services-process p,
-  .services-payment p,
-  .services-cta p {
-    font-size: 0.92rem;
-    line-height: 1.6;
-  }
-
-  .services-mobile-hint {
-    display: block;
-    margin: 0.45rem 0 0.8rem;
-    color: rgba(126, 211, 255, 0.82);
-    font-size: 0.64rem;
-    font-weight: 900;
-    letter-spacing: 0.16em;
-    text-align: center;
-    text-transform: uppercase;
-  }
-
-  .services-offer-grid,
-  .services-toolkit-grid,
-  .services-free-grid {
-    display: flex;
-    grid-template-columns: none;
-    gap: 0.85rem;
-    width: calc(100% + 1rem);
-    margin-left: -0.5rem;
-    margin-right: -0.5rem;
-    padding: 0.1rem 0.5rem 0.4rem;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-
-  .services-offer-grid::-webkit-scrollbar,
-  .services-toolkit-grid::-webkit-scrollbar,
-  .services-free-grid::-webkit-scrollbar {
-    display: none;
-  }
-
-  .services-offer-card {
-    flex: 0 0 min(86%, 22rem);
-    min-width: min(86%, 22rem);
-    max-width: 22rem;
-    min-height: auto;
-    padding: 1rem;
-    border-radius: 1.25rem;
-    scroll-snap-align: start;
-  }
-
-  .services-toolkit-card,
-  .services-free-card {
-    flex: 0 0 min(82%, 20rem);
-    min-width: min(82%, 20rem);
-    max-width: 20rem;
-    min-height: 12rem;
-    scroll-snap-align: start;
-  }
-
-  .services-offer-topline,
-  .services-offer-meta {
-    gap: 0.45rem;
-    margin-bottom: 0.55rem;
-  }
-
-  .services-offer-topline {
-    flex-wrap: wrap;
-  }
-
-  .services-offer-meta {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .services-offer-topline em,
-  .services-status,
-  .services-action-type {
-    padding: 0.28rem 0.46rem;
-    font-size: 0.56rem;
-    letter-spacing: 0.1em;
-  }
-
-  .services-offer-card h3 {
-    font-size: clamp(1.55rem, 8vw, 2.15rem);
-  }
-
-  .services-price,
-  .services-format {
-    font-size: 0.68rem;
-    letter-spacing: 0.12em;
-  }
-
-  .services-offer-body {
-    display: -webkit-box;
-    margin-top: 0.8rem;
-    overflow: hidden;
-    color: rgba(224, 231, 240, 0.72);
-    font-size: 0.86rem;
-    line-height: 1.55;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
-  }
-
-  .services-detail-extra,
-  .services-offer-includes {
-    display: none;
-  }
-
-  .services-offer-detail {
-    margin-top: 0.65rem;
-    padding: 0.68rem;
-  }
-
-  .services-offer-detail p {
-    font-size: 0.78rem;
-    line-height: 1.45;
-  }
-
-  .services-outcome {
-    margin-bottom: 0.9rem;
-  }
-
-  .services-offer-card a,
-  .services-toolkit-card a {
-    margin-top: auto;
-    width: 100%;
-    min-height: 2.55rem;
-  }
-
-  .services-section-support {
-    display: grid;
-    grid-template-columns: 1fr;
-    margin-top: 0.85rem;
-    padding: 0.85rem;
-    text-align: center;
-  }
-
-  .services-skills,
-  .services-process,
-  .services-payment {
-    display: block;
-  }
-
-  .services-skill-cloud,
-  .services-payment-list {
-    flex-wrap: nowrap;
-    width: calc(100% + 1rem);
-    margin-left: -0.5rem;
-    margin-right: -0.5rem;
-    padding: 0.1rem 0.5rem 0.35rem;
-    overflow-x: auto;
-    scroll-snap-type: x proximity;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-
-  .services-skill-cloud::-webkit-scrollbar,
-  .services-payment-list::-webkit-scrollbar {
-    display: none;
-  }
-
-  .services-skill-cloud span,
-  .services-payment-list span {
-    flex: 0 0 auto;
-    white-space: nowrap;
-    scroll-snap-align: start;
-  }
-
-  .services-process-steps {
-    display: flex;
-    gap: 0.8rem;
-    width: calc(100% + 1rem);
-    margin-left: -0.5rem;
-    margin-right: -0.5rem;
-    padding: 0.1rem 0.5rem 0.35rem;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-
-  .services-process-steps::-webkit-scrollbar {
-    display: none;
-  }
-
-  .services-process-steps article {
-    flex: 0 0 min(84%, 20rem);
-    min-width: min(84%, 20rem);
-    scroll-snap-align: start;
-  }
-
-  .services-cta-actions {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.6rem;
-  }
-}
-
-@media (max-width: 420px) {
-  .services-page {
-    padding-inline: 0.68rem;
-  }
-
-  .services-market-badge,
-  .services-kicker {
-    font-size: 0.6rem;
-    letter-spacing: 0.15em;
-  }
-
-  .services-offer-card {
-    flex-basis: 88%;
-    min-width: 88%;
-  }
-
-  .services-toolkit-card,
-  .services-free-card,
-  .services-process-steps article {
-    flex-basis: 86%;
-    min-width: 86%;
-  }
-}
-
-/* ===================================
-   SERVICES INQUIRY POLISH V1
-   =================================== */
-
-.services-inquire-card-v2 {
-  overflow: hidden;
-}
-
-.services-inquire-nav {
-  margin-bottom: 1rem;
-}
-
-.services-inquire-layout {
-  display: grid;
-  grid-template-columns: minmax(16rem, 0.78fr) minmax(0, 1.22fr);
-  gap: 1rem;
-  align-items: start;
-  margin-top: 1.4rem;
-}
-
-.services-inquire-summary,
-.services-inquire-form-v2 {
-  min-width: 0;
-}
-
-.services-inquire-selected-card,
-.services-inquire-path article,
-.services-inquire-note {
-  border: 1px solid rgba(238, 243, 250, 0.11);
-  border-radius: 1.35rem;
-  padding: 1rem;
-  background:
-    radial-gradient(circle at 0% 0%, rgba(126, 211, 255, 0.10), transparent 40%),
-    rgba(255, 255, 255, 0.042);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-}
-
-.services-inquire-selected-card h2 {
-  margin: 0;
-  color: rgba(248, 250, 255, 0.96);
-  font-size: clamp(1.75rem, 4vw, 2.7rem);
-  line-height: 0.95;
-  letter-spacing: -0.055em;
-}
-
-.services-inquire-selected-card > p:not(.services-price) {
-  margin: 0.95rem 0 0;
-  color: rgba(224, 231, 240, 0.72);
-  line-height: 1.65;
-}
-
-.services-inquire-path {
-  display: grid;
-  gap: 0.75rem;
-  margin-top: 0.75rem;
-}
-
-.services-inquire-path article span {
-  display: inline-flex;
-  margin-bottom: 0.45rem;
-  color: rgba(220, 186, 92, 0.88);
-  font-size: 0.68rem;
-  font-weight: 900;
-  letter-spacing: 0.16em;
-}
-
-.services-inquire-path article strong {
-  display: block;
-  color: rgba(248, 250, 255, 0.92);
-  line-height: 1.25;
-}
-
-.services-inquire-path article p {
-  margin: 0.4rem 0 0;
-  color: rgba(224, 231, 240, 0.66);
-  font-size: 0.84rem;
-  line-height: 1.55;
-}
-
-.services-inquire-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-}
-
-.services-inquire-note {
-  color: rgba(224, 231, 240, 0.72);
-  line-height: 1.6;
-}
-
-.services-inquire-note strong {
-  display: block;
-  margin-bottom: 0.3rem;
-  color: rgba(220, 186, 92, 0.88);
-  font-size: 0.74rem;
-  font-weight: 900;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.services-inquire-note p {
-  margin: 0;
-}
-
-@media (max-width: 880px) {
-  .services-inquire-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .services-inquire-summary {
-    display: grid;
-    grid-template-columns: 1fr;
-  }
-
-  .services-inquire-path {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 640px) {
-  .services-inquire-card-v2 {
-    padding-inline: 1rem;
-  }
-
-  .services-inquire-grid,
-  .services-inquire-path {
-    grid-template-columns: 1fr;
-  }
-
-  .services-inquire-selected-card,
-  .services-inquire-path article,
-  .services-inquire-note {
-    border-radius: 1.1rem;
-    padding: 0.9rem;
-  }
-
-  .services-inquire-form textarea {
-    min-height: 8rem;
-  }
-}
-
-@media (max-width: 760px) {
-  .services-live-offer {
-    gap: 0.8rem;
-  }
-
-  .services-support-card {
-    grid-template-columns: 1fr;
-    text-align: left;
-  }
-
-  .services-support-card a {
-    width: 100%;
-  }
-
-  .services-session-flow {
-    grid-template-columns: 1fr;
-  }
-
-  .services-offer-visual {
-    min-height: 4.25rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .services-offer-visual span {
-    width: 3.3rem;
-    height: 3.3rem;
-  }
+@media(max-width:420px) {
+    .services-hero h1 {
+        font-size: clamp(2.55rem, 16vw, 3.8rem)
+    }
+
+    .services-layer-copy strong {
+        font-size: 1rem
+    }
+
+    .services-layer-number {
+        font-size: .58rem
+    }
 }
