@@ -244,11 +244,6 @@ function getReadinessItems(world: ReleaseWorld): ReadinessItem[] {
       isComplete: Boolean(world.currentFocus?.trim() || world.secondFocus?.trim()),
       hint: world.currentFocus?.trim() || world.secondFocus?.trim() ? "Lead/contrast signals are named." : "Name a lead signal or second signal.",
     },
-    {
-      label: "Nexus feature",
-      isComplete: Boolean(world.isFeatured),
-      hint: world.isFeatured ? "Eligible as the Nexus front-door feature." : "Feature this when the portal is ready.",
-    },
   ];
 }
 
@@ -263,10 +258,10 @@ function getReadinessScore(world: ReleaseWorld) {
     totalCount: items.length,
     percent,
     label:
-      percent >= 85
-        ? "Ready for soft share"
-        : percent >= 55
-          ? "Close to shareable"
+      percent === 100
+        ? "Foundations complete"
+        : percent >= 60
+          ? "Nearly ready"
           : "Needs setup",
   };
 }
@@ -312,7 +307,7 @@ export default function CreatorProjectsPage() {
   const creativeProfiles: CreativeProfile[] = profileData?.myCreativeProfiles ?? [];
 
   const activeProfile = useMemo(() => {
-    return creativeProfiles[0] ?? null;
+    return creativeProfiles.find((profile) => profile.isFeatured) ?? creativeProfiles[0] ?? null;
   }, [creativeProfiles]);
 
   function updateForm<K extends keyof NewProjectForm>(key: K, value: NewProjectForm[K]) {
@@ -380,7 +375,7 @@ export default function CreatorProjectsPage() {
 
   async function handleDropEP(world: ReleaseWorld) {
     const confirmed = window.confirm(
-      `Drop ${world.title} now? Every non-archived track with a full audio URL will become public and playable.`,
+      `Publish ${world.title} now? Every non-archived track with a full audio URL will become public and playable.`,
     );
 
     if (!confirmed) return;
@@ -389,7 +384,7 @@ export default function CreatorProjectsPage() {
       setDroppingWorldId(world.id);
       setDropMessages((current) => ({
         ...current,
-        [world.id]: "Dropping EP...",
+        [world.id]: "Publishing release...",
       }));
 
       const result = await dropReleaseWorld({
@@ -414,11 +409,11 @@ export default function CreatorProjectsPage() {
       const message =
         dropError instanceof Error
           ? dropError.message
-          : "Unknown EP drop error.";
+          : "Unknown release publishing error.";
 
       setDropMessages((current) => ({
         ...current,
-        [world.id]: `Could not drop EP: ${message}`,
+        [world.id]: `Could not publish release: ${message}`,
       }));
     } finally {
       setDroppingWorldId(null);
@@ -430,10 +425,10 @@ export default function CreatorProjectsPage() {
       <section className="creator-projects-shell">
         <div className="creator-projects-hero">
           <div>
-            <p className="creator-projects-kicker">Creator Console</p>
-            <h1>Project Library</h1>
+            <p className="creator-projects-kicker">Creator OS</p>
+            <h1>EPs / Release Worlds</h1>
             <p className="creator-projects-subtitle">
-              Manage EPs, campaigns, and release worlds from one launch dashboard — then send the strongest worlds into the Nexus.
+              Build and manage singles, EPs, albums, and campaigns from one project-level dashboard.
             </p>
           </div>
 
@@ -480,8 +475,7 @@ export default function CreatorProjectsPage() {
             <p className="creator-projects-kicker">Sign In Required</p>
             <h2>Connect your session to view saved projects.</h2>
             <p>
-              The backend data exists, but this page needs a signed-in NextAuth session so Apollo
-              can send your Authorization token.
+              Sign in to open your private creator workspace and manage saved release worlds.
             </p>
             <button
               className="creator-projects-primary-button"
@@ -644,7 +638,7 @@ export default function CreatorProjectsPage() {
             <article className="creator-projects-card creator-projects-loading-card">
               <p className="creator-projects-kicker">Loading</p>
               <h2>Pulling your release worlds...</h2>
-              <p>Reading from the GraphQL creator-world resolver.</p>
+              <p>Gathering your current projects and release progress.</p>
             </article>
           </section>
         )}
@@ -669,8 +663,7 @@ export default function CreatorProjectsPage() {
             <p className="creator-projects-kicker">Empty Library</p>
             <h2>No release worlds found yet.</h2>
             <p>
-              Your backend is connected, but this account does not have saved release worlds yet.
-              Create one above and it will appear here.
+              Create your first release world above and it will appear here.
             </p>
           </section>
         )}
@@ -717,7 +710,7 @@ export default function CreatorProjectsPage() {
                   <div className="creator-project-readiness-panel">
                     <div className="creator-project-readiness-header">
                       <div>
-                        <span>Release readiness</span>
+                        <span>Project setup</span>
                         <strong>{readiness.label}</strong>
                       </div>
                       <div className="creator-project-readiness-score">
@@ -763,21 +756,51 @@ export default function CreatorProjectsPage() {
                   </div>
 
                   <div className="creator-project-card-actions creator-project-card-actions-v2">
-                    <Link
-                      href={`/releases/${world.slug}`}
-                      className="creator-projects-primary-button"
-                    >
-                      Preview Portal
-                    </Link>
-                    <Link
-                      href={`/releases/${world.slug}/board`}
-                      className="creator-projects-secondary-button"
-                    >
-                      Signal Board
-                    </Link>
+                    {world.status === "active" && world.visibility === "public" ? (
+                      <>
+                        <Link
+                          href={`/releases/${world.slug}`}
+                          className="creator-projects-primary-button"
+                        >
+                          View Portal
+                        </Link>
+                        <Link
+                          href={`/releases/${world.slug}/board`}
+                          className="creator-projects-secondary-button"
+                        >
+                          Open Signal Board
+                        </Link>
+                      </>
+                    ) : (
+                      <>
+                        <Link
+                          href={`/releases/${world.slug}/board`}
+                          className="creator-projects-primary-button"
+                        >
+                          Open Signal Board
+                        </Link>
+                        <Link
+                          href={`/releases/${world.slug}`}
+                          className="creator-projects-secondary-button"
+                        >
+                          Preview Portal
+                        </Link>
+                      </>
+                    )}
                     <Link href="/nexus" className="creator-projects-secondary-button">
                       View Nexus
                     </Link>
+                  </div>
+
+                  <div className="creator-project-publishing-panel">
+                    <div>
+                      <span>Publishing</span>
+                      <strong>
+                        {world.status === "active" && world.visibility === "public"
+                          ? "Live release"
+                          : "Private or in progress"}
+                      </strong>
+                    </div>
                     <button
                       type="button"
                       className="creator-projects-drop-button"
@@ -785,10 +808,10 @@ export default function CreatorProjectsPage() {
                       onClick={() => handleDropEP(world)}
                     >
                       {droppingWorldId === world.id
-                        ? "Dropping..."
+                        ? "Publishing..."
                         : world.status === "active" && world.visibility === "public"
-                          ? "Re-sync EP"
-                          : "Drop EP"}
+                          ? "Sync Release"
+                          : "Publish Release"}
                     </button>
                   </div>
 
@@ -797,8 +820,6 @@ export default function CreatorProjectsPage() {
                       {dropMessages[world.id]}
                     </p>
                   )}
-
-                  <p className="creator-project-card-id">ReleaseWorld ID: {world.id}</p>
                 </article>
               );
             })}
