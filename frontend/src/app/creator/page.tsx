@@ -106,6 +106,18 @@ function formatLabel(value?: string | null) {
 function formatDate(value?: string | null) {
   if (!value) return 'TBD';
 
+  const calendarDate = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (calendarDate) {
+    const [, year, month, day] = calendarDate;
+    const date = new Date(Number(year), Number(month) - 1, Number(day));
+
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    }).format(date);
+  }
+
   const numericValue = Number(value);
   const date = Number.isFinite(numericValue)
     ? new Date(numericValue)
@@ -140,6 +152,16 @@ function formatRelativeSignal(value?: string | null) {
   if (diffDays < 30) return `${diffDays}d ago`;
 
   return formatDate(value);
+}
+
+function getTimestamp(value?: string | null) {
+  if (!value) return 0;
+
+  const numericValue = Number(value);
+  if (Number.isFinite(numericValue)) return numericValue;
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? 0 : date.getTime();
 }
 
 function countByStatus(projects: ReleaseWorld[], status: string) {
@@ -232,8 +254,13 @@ export default function CreatorDashboardPage() {
   const activeProfile = profiles[0] ?? null;
   const featuredProject = getFeaturedProject(projects, activeProfile);
   const activeProject = featuredProject ?? projects[0] ?? null;
-  const recentProjects = projects.slice(0, 4);
-  const nextProjects = projects.filter((project) => project.id !== activeProject?.id).slice(0, 4);
+  const recentProjects = [...projects]
+    .sort((a, b) => {
+      const aTime = getTimestamp(a.lastOpenedAt || a.updatedAt);
+      const bTime = getTimestamp(b.lastOpenedAt || b.updatedAt);
+      return bTime - aTime;
+    })
+    .slice(0, 6);
 
   const commandLinks = activeProject
     ? [
@@ -241,26 +268,31 @@ export default function CreatorDashboardPage() {
           label: 'Release Portal',
           href: `/releases/${activeProject.slug}`,
           meta: 'Public page',
+          priority: 'secondary',
         },
         {
           label: 'Signal Board',
           href: `/releases/${activeProject.slug}/board`,
           meta: 'Studio wall',
+          priority: 'primary',
         },
         {
           label: 'Creator Library',
           href: '/creator/library',
           meta: 'All tracks',
+          priority: 'secondary',
         },
         {
           label: 'Project Library',
           href: '/creator/projects',
           meta: 'All worlds',
+          priority: 'secondary',
         },
         {
           label: 'Nexus',
           href: '/nexus',
           meta: 'Universe hub',
+          priority: 'secondary',
         },
       ]
     : [
@@ -268,16 +300,19 @@ export default function CreatorDashboardPage() {
           label: 'Creator Library',
           href: '/creator/library',
           meta: 'All tracks',
+          priority: 'secondary',
         },
         {
           label: 'Project Library',
           href: '/creator/projects',
           meta: 'Create world',
+          priority: 'secondary',
         },
         {
           label: 'Nexus',
           href: '/nexus',
           meta: 'Universe hub',
+          priority: 'secondary',
         },
       ];
 
@@ -400,7 +435,11 @@ export default function CreatorDashboardPage() {
 
             <div className="creator-hero-actions">
               {commandLinks.map((link) => (
-                <Link key={link.href} href={link.href}>
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={link.priority === 'primary' ? 'is-primary' : undefined}
+                >
                   <span>{link.label}</span>
                   <em>{link.meta}</em>
                 </Link>
@@ -414,10 +453,26 @@ export default function CreatorDashboardPage() {
               <em>{activeProject ? formatRelativeSignal(activeProject.lastOpenedAt) : 'Ready'}</em>
             </div>
 
-            <ProjectCover project={activeProject} />
+            {activeProject ? (
+              <Link
+                href={`/releases/${activeProject.slug}/board`}
+                className="creator-feature-cover-link"
+                aria-label={`Open ${activeProject.title} Signal Board`}
+              >
+                <ProjectCover project={activeProject} />
+              </Link>
+            ) : (
+              <ProjectCover project={activeProject} />
+            )}
 
             <div className="creator-feature-copy">
-              <strong>{activeProject?.title ?? activeProfile?.artistName ?? 'No active project'}</strong>
+              {activeProject ? (
+                <Link href={`/releases/${activeProject.slug}`} className="creator-feature-title-link">
+                  {activeProject.title}
+                </Link>
+              ) : (
+                <strong>{activeProfile?.artistName ?? 'No active project'}</strong>
+              )}
               <p>{getProjectSignal(activeProject)}</p>
             </div>
 
@@ -462,32 +517,32 @@ export default function CreatorDashboardPage() {
           <article className="creator-console-panel creator-console-panel-featured">
             <div className="creator-panel-title-row">
               <div>
-                <p className="creator-console-kicker">Featured Release System</p>
-                <h2>Nexus pointer</h2>
+                <p className="creator-console-kicker">Featured Release</p>
+                <h2>Broadcast to Nexus</h2>
               </div>
               <Link href="/nexus">View Nexus</Link>
             </div>
 
             <p className="creator-console-note">
-              Creator OS decides the featured release. Nexus should display it as the main
-              listener-facing portal once the hub is wired to this data.
+              Your featured release is the primary project listeners encounter in the Nexus.
+              Change it whenever another world becomes the lead signal.
             </p>
 
             <div className="creator-feature-flow">
               <div>
                 <span>01</span>
                 <strong>Build</strong>
-                <p>Use the Signal Board to collect hooks, visuals, tracks, and rollout notes.</p>
+                <p>Shape the project inside its Signal Board.</p>
               </div>
               <div>
                 <span>02</span>
                 <strong>Feature</strong>
-                <p>Set the active ReleaseWorld here when it becomes the lead signal.</p>
+                <p>Choose the release leading the current chapter.</p>
               </div>
               <div>
                 <span>03</span>
                 <strong>Broadcast</strong>
-                <p>Nexus displays the featured release, cover art, and doorway into the world.</p>
+                <p>Its portal, artwork, and focus tracks move into the Nexus.</p>
               </div>
             </div>
           </article>
@@ -507,7 +562,7 @@ export default function CreatorDashboardPage() {
 
             <div className="creator-asset-mini-list">
               {recentProjects.length > 0 ? (
-                recentProjects.map((project) => (
+                recentProjects.slice(0, 4).map((project) => (
                   <div key={project.id}>
                     <span>{project.status}</span>
                     <p>{project.title}</p>
@@ -553,14 +608,14 @@ export default function CreatorDashboardPage() {
                       <code>/{project.slug}</code>
 
                       <div className="creator-project-card-actions">
-                        <Link href={`/releases/${project.slug}`}>Page</Link>
-                        <Link href={`/releases/${project.slug}/board`}>Board</Link>
+                        <Link href={`/releases/${project.slug}`}>Portal</Link>
+                        <Link href={`/releases/${project.slug}/board`}>Signal Board</Link>
                         <button
                           type="button"
                           disabled={isSettingFeatured || project.id === activeProject?.id}
                           onClick={() => handleSetFeatured(project)}
                         >
-                          {project.id === activeProject?.id ? 'Featured' : 'Feature'}
+                          {project.id === activeProject?.id ? 'Featured' : 'Set Featured'}
                         </button>
                       </div>
                     </div>
@@ -609,16 +664,16 @@ export default function CreatorDashboardPage() {
 
         <section className="creator-console-grid creator-console-grid-bottom">
           <article className="creator-console-panel creator-console-wide">
-            <p className="creator-console-kicker">Next Worlds</p>
-            <h2>Keep building</h2>
+            <p className="creator-console-kicker">Recent Activity</p>
+            <h2>Recently opened</h2>
 
             <div className="creator-console-track-strip">
-              {(nextProjects.length > 0 ? nextProjects : projects).slice(0, 6).map((project, index) => (
+              {recentProjects.map((project, index) => (
                 <div key={project.id}>
                   <span>{String(index + 1).padStart(2, '0')}</span>
                   <strong>{project.title}</strong>
                   <p>
-                    {formatLabel(project.status)} · {formatLabel(project.visibility)}
+                    {formatRelativeSignal(project.lastOpenedAt || project.updatedAt)} · {formatLabel(project.status)}
                   </p>
                 </div>
               ))}
@@ -634,8 +689,8 @@ export default function CreatorDashboardPage() {
           </article>
 
           <article className="creator-console-panel">
-            <p className="creator-console-kicker">Minimum viable loop</p>
-            <h2>Do not overbuild</h2>
+            <p className="creator-console-kicker">Core Workflow</p>
+            <h2>The Creator Loop</h2>
 
             <div className="creator-console-phases">
               {[
@@ -668,12 +723,6 @@ export default function CreatorDashboardPage() {
           </article>
         </section>
 
-        <footer className="creator-console-footer">
-          <p>
-            Workflow: create release world → shape the signal board → polish the release page →
-            set the featured release → let Nexus become the listener-facing universe map.
-          </p>
-        </footer>
       </section>
     </main>
   );
