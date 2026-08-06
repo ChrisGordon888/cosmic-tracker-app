@@ -1,33 +1,140 @@
-/* 🌠 Add Ritual Form Styling */
+/* ===================================
+   ADD RITUAL â€” INNER OS
+   =================================== */
+
+.add-ritual-form {
+    width: 100%;
+    display: grid;
+    gap: 0.9rem;
+    color: rgba(238, 243, 250, 0.92);
+}
+
+.add-ritual-heading,
+.add-ritual-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.add-ritual-eyebrow,
+.add-ritual-form label>span {
+    margin: 0;
+    color: rgba(220, 186, 92, 0.76);
+    font-size: 0.62rem;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.add-ritual-heading h2 {
+    margin: 0.35rem 0 0;
+    color: rgba(248, 250, 255, 0.96);
+    font-size: clamp(1.35rem, 3vw, 2rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
+}
+
+.add-ritual-heading>span {
+    flex: 0 0 auto;
+    border: 1px solid rgba(188, 224, 255, 0.14);
+    border-radius: 999px;
+    padding: 0.35rem 0.5rem;
+    color: rgba(188, 224, 255, 0.7);
+    background: rgba(126, 211, 255, 0.04);
+    font-size: 0.58rem;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.add-ritual-intro {
+    margin: 0;
+    color: rgba(224, 231, 240, 0.62);
+    font-size: 0.84rem;
+    line-height: 1.6;
+}
+
+.add-ritual-form label {
+    display: grid;
+    gap: 0.5rem;
+}
 
 .add-ritual-form input,
 .add-ritual-form textarea {
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(255, 0, 255, 0.4);
-  color: #e0e0e0;
-  width: 100%;
-  border-radius: 0.5rem;
-  padding: 0.75rem;
-  margin-bottom: 1rem;
-  font-family: 'Orbitron', Arial, sans-serif;
+    width: 100%;
+    border: 1px solid rgba(238, 243, 250, 0.12);
+    border-radius: 1rem;
+    padding: 0.9rem 1rem;
+    color: rgba(248, 250, 255, 0.94);
+    background:
+        radial-gradient(circle at 0% 0%, rgba(220, 186, 92, 0.04), transparent 42%),
+        rgba(255, 255, 255, 0.035);
+    outline: none;
+}
+
+.add-ritual-form textarea {
+    min-height: 7rem;
+    resize: vertical;
 }
 
 .add-ritual-form input::placeholder,
 .add-ritual-form textarea::placeholder {
-  color: #a5f3fc;
+    color: rgba(224, 231, 240, 0.38);
+}
+
+.add-ritual-form input:focus,
+.add-ritual-form textarea:focus {
+    border-color: rgba(220, 186, 92, 0.26);
+    box-shadow: 0 0 0 3px rgba(220, 186, 92, 0.055);
+}
+
+.add-ritual-status {
+    min-height: 1.2rem;
+    margin: 0;
+    color: rgba(224, 231, 240, 0.54);
+    font-size: 0.75rem;
+    line-height: 1.5;
+}
+
+.add-ritual-status.is-error {
+    color: rgba(255, 190, 205, 0.84);
+}
+
+.add-ritual-status.is-success {
+    color: rgba(220, 186, 92, 0.86);
 }
 
 .add-ritual-form button {
-  background: linear-gradient(90deg, #ff00ff, #00ffff);
-  color: #000;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+    min-height: 2.5rem;
+    border: 1px solid rgba(247, 239, 228, 0.42);
+    border-radius: 999px;
+    padding: 0.62rem 0.9rem;
+    color: #081018;
+    background: linear-gradient(135deg,
+            rgba(247, 239, 228, 0.94),
+            rgba(188, 224, 255, 0.84));
+    font-size: 0.64rem;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: transform 160ms ease;
 }
 
 .add-ritual-form button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+    transform: translateY(-1px);
+}
+
+@media (max-width: 560px) {
+
+    .add-ritual-heading,
+    .add-ritual-footer {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .add-ritual-form button {
+        width: 100%;
+    }
 }

@@ -25,29 +25,55 @@ export default function RitualList({
     onEdit,
     onDelete,
 }: RitualListProps) {
-    if (loading) return <p>Loading rituals...</p>;
+    if (loading) {
+        return <p className="ritual-list-status">Loading rituals...</p>;
+    }
 
     if (error) {
-        return <p className="text-red-600">Error: {error.message}</p>;
+        return (
+            <p className="ritual-list-status is-error" role="alert">
+                Unable to load rituals: {error.message}
+            </p>
+        );
     }
 
     if (!rituals || rituals.length === 0) {
-        return <p className="text-gray-500">You haven’t added any rituals yet.</p>;
+        return (
+            <div className="ritual-list-empty">
+                <strong>No rituals yet.</strong>
+                <p>Create the first repeatable anchor for your practice.</p>
+            </div>
+        );
     }
 
     return (
-        <ul className="space-y-4">
-            {rituals.map((ritual) => (
+        <ul className="rituals-list" aria-label="Ritual library">
+            {rituals.map((ritual, index) => (
                 <li key={ritual.id} className="rituals-list-item">
-                    <h2>{ritual.title}</h2>
-                    <p>{ritual.description}</p>
+                    <div className="rituals-list-index" aria-hidden="true">
+                        {String(index + 1).padStart(2, "0")}
+                    </div>
 
-                    <div className="flex gap-2">
-                        <button onClick={() => onEdit?.(ritual)}>
+                    <div className="rituals-list-copy">
+                        <p className="rituals-list-eyebrow">Reusable anchor</p>
+                        <h2>{ritual.title}</h2>
+                        <p>{ritual.description || "No description added yet."}</p>
+                    </div>
+
+                    <div className="rituals-list-actions">
+                        <button
+                            type="button"
+                            className="ritual-edit-button"
+                            onClick={() => onEdit?.(ritual)}
+                        >
                             Edit
                         </button>
 
-                        <button onClick={() => onDelete?.(ritual.id)}>
+                        <button
+                            type="button"
+                            className="ritual-delete-button"
+                            onClick={() => onDelete?.(ritual.id)}
+                        >
                             Delete
                         </button>
                     </div>
