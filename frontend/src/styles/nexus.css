@@ -590,7 +590,7 @@ moon silver, ice blue, champagne gold, smoked glass.
 }
 
 /* ===================================
-   ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â± NEXUS MOBILE POLISH
+   ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â°ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â± NEXUS MOBILE POLISH
    =================================== */
 
 @media (max-width: 768px) {
@@ -1320,7 +1320,7 @@ moon silver, ice blue, champagne gold, smoked glass.
 
 /* ===================================
    NEXUS RELEASE PREVIEW V9.3
-   Polished action states â€” appended safely.
+   Polished action states Ã¢â‚¬â€ appended safely.
    =================================== */
 
 .nexus-featured-release-action-button {
@@ -1438,4 +1438,72 @@ moon silver, ice blue, champagne gold, smoked glass.
 
 .nexus-featured-release-track-main p {
     color: rgba(205, 214, 225, 0.74);
+}
+
+/* ===================================
+   NEXUS V5G1 â€” DISTINCT SIGNAL + MICRO LINKS
+   =================================== */
+
+.nexus-micro-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--nexus-ice);
+    font: inherit;
+    font-weight: 700;
+    text-decoration: none;
+    text-underline-offset: 0.2em;
+    transition: color 160ms ease, opacity 160ms ease, text-decoration-color 160ms ease;
+}
+
+.nexus-micro-link:hover {
+    color: rgba(239, 247, 255, 0.98);
+    text-decoration: underline;
+    text-decoration-color: rgba(188, 224, 255, 0.42);
+}
+
+.nexus-micro-link-button {
+    width: 100%;
+    justify-content: space-between;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    cursor: pointer;
+    text-align: left;
+}
+
+.nexus-micro-link-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.52;
+    text-decoration: none;
+}
+
+.nexus-latest-signal {
+    border-color: rgba(188, 224, 255, 0.16);
+}
+
+.nexus-latest-signal-art {
+    background-color: rgba(8, 11, 20, 0.82);
+}
+
+/*
+  `/latest-signal.png` is an intentionally independent single-art slot.
+  Until custom art is added, the underlying chrome gradient remains usable.
+*/
+.nexus-latest-signal-art::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 26% 24%, rgba(188, 224, 255, 0.12), transparent 36%),
+        radial-gradient(circle at 76% 72%, rgba(220, 186, 92, 0.10), transparent 38%);
+    mix-blend-mode: screen;
+    opacity: 0.72;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .nexus-micro-link {
+        transition: none;
+    }
 }

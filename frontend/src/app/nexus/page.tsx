@@ -243,7 +243,7 @@ const CURATED_PLAYLIST_ART_OVERRIDES: Record<string, string> = {
     'realm-55-glory-and-command': '/glory-and-command.png',
     'realm-44-price-of-focus': '/price-of-focus.png',
     'realm-0-same-self-higher-form': '/same-self-higher-form.png',
-    'cosmic-featured-signal': '/featured-signal.png',
+    'cosmic-featured-signal': '/latest-signal.png',
 };
 
 function getRealmTint(realmId?: number | null) {
@@ -867,15 +867,11 @@ export default function CosmicNexusHub() {
         : '/nexus';
     const publicThreePieceCollections = PUBLIC_THREE_PIECE_COLLECTIONS;
     const releaseArtworkUrl = currentRelease?.coverArtUrl ?? null;
-    const dynamicFlagshipArtwork =
-        dynamicFlagshipTrack?.releaseWorldId === creatorFeaturedRelease?.id
-            ? creatorFeaturedArtworkUrl
-            : null;
+    // Latest Signal owns its own single artwork slot. It intentionally does
+    // not inherit the Featured Release cover, so the project portal and the
+    // single-track beacon remain visually distinct.
     const featuredSignalArtwork =
-        dynamicFlagshipArtwork ??
-        CURATED_PLAYLIST_ART_OVERRIDES['cosmic-featured-signal'] ??
-        releaseArtworkUrl ??
-        null;
+        CURATED_PLAYLIST_ART_OVERRIDES['cosmic-featured-signal'] ?? null;
     const getCuratedCollectionArtwork = (collection: any) => {
         return (
             CURATED_PLAYLIST_ART_OVERRIDES[collection.id] ??
@@ -953,7 +949,7 @@ export default function CosmicNexusHub() {
                             className="text-xs uppercase tracking-[0.24em] text-muted mb-3"
                             style={{ letterSpacing: '0.24em' }}
                         >
-                            Current Release
+                            Music Multiverse
                         </p>
 
                         <h1
@@ -1367,9 +1363,22 @@ export default function CosmicNexusHub() {
                                                 <p className="text-[10px] uppercase tracking-[0.16em] text-muted mb-1">
                                                     Recommended track
                                                 </p>
-                                                <p className="text-sm text-secondary">
-                                                    {guidanceModeContent.recommendedTrack}
-                                                </p>
+                                                {guidanceTrack ? (
+                                                    <button
+                                                        type="button"
+                                                        className="nexus-micro-link nexus-micro-link-button"
+                                                        onClick={() => tryPlayTrack(guidanceTrack)}
+                                                        disabled={guidanceTrackLocked}
+                                                        title={guidanceTrackLocked ? getTrackLockLabel(guidanceTrack) ?? 'Track locked' : 'Play recommended track'}
+                                                    >
+                                                        {guidanceModeContent.recommendedTrack}
+                                                        <span aria-hidden="true">↗</span>
+                                                    </button>
+                                                ) : (
+                                                    <p className="text-sm text-secondary">
+                                                        {guidanceModeContent.recommendedTrack}
+                                                    </p>
+                                                )}
                                             </div>
 
                                             <div className="flex flex-wrap gap-2">
@@ -1460,15 +1469,29 @@ export default function CosmicNexusHub() {
                                         {realmAlignment ? (
                                             <>
                                                 Aligned Realm:{' '}
-                                                <span
-                                                    className="font-medium"
-                                                    style={{
-                                                        color: moonRealmTint.accent,
-                                                        textShadow: moonRealmTint.textShadow,
-                                                    }}
-                                                >
-                                                    {realmAlignment.primaryRealm}
-                                                </span>
+                                                {moonRealmId !== null ? (
+                                                    <Link
+                                                        href={isSignedIn ? `/realms/${moonRealmId}` : '/find-your-realm'}
+                                                        className="nexus-micro-link"
+                                                        style={{
+                                                            color: moonRealmTint.accent,
+                                                            textShadow: moonRealmTint.textShadow,
+                                                        }}
+                                                    >
+                                                        {realmAlignment.primaryRealm}
+                                                        <span aria-hidden="true">↗</span>
+                                                    </Link>
+                                                ) : (
+                                                    <span
+                                                        className="font-medium"
+                                                        style={{
+                                                            color: moonRealmTint.accent,
+                                                            textShadow: moonRealmTint.textShadow,
+                                                        }}
+                                                    >
+                                                        {realmAlignment.primaryRealm}
+                                                    </span>
+                                                )}
                                             </>
                                         ) : (
                                             'Reading alignment'
@@ -1495,27 +1518,61 @@ export default function CosmicNexusHub() {
                                     </p>
                                     <p className="text-sm text-secondary">
                                         Try{' '}
-                                        <span
-                                            className="font-medium"
-                                            style={{
-                                                color: moonRealmTint.accent,
-                                                textShadow: moonRealmTint.textShadow,
-                                            }}
-                                        >
-                                            {realmAlignment.primaryRealm}
-                                        </span>{' '}
+                                        {moonRealmId !== null ? (
+                                            <Link
+                                                href={isSignedIn ? `/realms/${moonRealmId}` : '/find-your-realm'}
+                                                className="nexus-micro-link"
+                                                style={{
+                                                    color: moonRealmTint.accent,
+                                                    textShadow: moonRealmTint.textShadow,
+                                                }}
+                                            >
+                                                {realmAlignment.primaryRealm}
+                                                <span aria-hidden="true">↗</span>
+                                            </Link>
+                                        ) : (
+                                            <span
+                                                className="font-medium"
+                                                style={{
+                                                    color: moonRealmTint.accent,
+                                                    textShadow: moonRealmTint.textShadow,
+                                                }}
+                                            >
+                                                {realmAlignment.primaryRealm}
+                                            </span>
+                                        )}{' '}
                                         as today’s listening doorway.
                                     </p>
                                 </div>
                             )}
 
-                            <Link
-                                href="/find-your-realm"
-                                className="btn-secondary inline-flex"
-                                style={{ borderRadius: '999px' }}
-                            >
-                                Find My Realm
-                            </Link>
+                            <div className="flex flex-wrap gap-2">
+                                <Link
+                                    href="/calendar"
+                                    className="btn-secondary inline-flex"
+                                    style={{ borderRadius: '999px' }}
+                                >
+                                    Open Calendar
+                                </Link>
+
+                                {moonRealmId !== null && (
+                                    <Link
+                                        href={isSignedIn ? `/realms/${moonRealmId}` : '/find-your-realm'}
+                                        className="btn-primary inline-flex"
+                                        style={{ borderRadius: '999px' }}
+                                    >
+                                        Explore Today’s Realm
+                                    </Link>
+                                )}
+
+                                <Link
+                                    href="/find-your-realm"
+                                    className="btn-secondary inline-flex"
+                                    style={{ borderRadius: '999px' }}
+                                >
+                                    Find My Realm
+                                </Link>
+                            </div>
                         </div>
                     </div>
 
@@ -1592,7 +1649,7 @@ export default function CosmicNexusHub() {
                     </section>
 
                     <section
-                        className="glass-card nexus-panel fade-in mb-5 overflow-hidden"
+                        className="glass-card nexus-panel nexus-latest-signal fade-in mb-5 overflow-hidden"
                         style={{
                             ...sectionStyle,
                             animationDelay: '0.22s',
@@ -1601,7 +1658,7 @@ export default function CosmicNexusHub() {
                     >
                         <div className="grid grid-cols-1 md:grid-cols-[0.72fr_1.28fr] gap-0 items-stretch">
                             <div
-                                className="relative min-h-[180px] md:min-h-[240px]"
+                                className="nexus-latest-signal-art relative min-h-[180px] md:min-h-[240px]"
                                 style={{
                                     background: featuredSignalArtwork
                                         ? `linear-gradient(180deg, rgba(6,8,14,0.08), rgba(6,8,14,0.60)), url(${featuredSignalArtwork}) center/cover`
@@ -1618,7 +1675,7 @@ export default function CosmicNexusHub() {
 
                                 <div className="absolute left-4 top-4 flex flex-wrap gap-2">
                                     <span className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.16em] bg-black/28 border border-white/12 text-white/88 backdrop-blur-md">
-                                        Featured Signal
+                                        Latest Signal
                                     </span>
                                     <span className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.16em] bg-black/24 border border-white/10 text-white/70 backdrop-blur-md">
                                         {flagshipTrackLocked && flagshipUnlockLabel ? `Opens ${flagshipUnlockLabel}` : 'Available Signal'}
@@ -1628,7 +1685,7 @@ export default function CosmicNexusHub() {
 
                             <div className="p-5 md:p-6 flex flex-col justify-center">
                                 <p className="text-xs uppercase tracking-[0.2em] text-muted mb-2">
-                                    Nexus Beacon
+                                    Single Spotlight
                                 </p>
 
                                 <h3
@@ -1638,11 +1695,11 @@ export default function CosmicNexusHub() {
                                         lineHeight: 1,
                                     }}
                                 >
-                                    {flagshipTrack?.trackTitle ?? 'Featured Signal'}
+                                    {flagshipTrack?.trackTitle ?? 'Latest Signal'}
                                 </h3>
 
                                 <p className="text-secondary text-sm md:text-base leading-relaxed max-w-2xl mb-4">
-                                    The current sound the Nexus is pointing toward — one track, one image, and one clear doorway back into the world.
+                                    One track in focus, with its own visual identity and a direct doorway into the realm behind it.
                                 </p>
 
                                 <div className="flex flex-wrap gap-2 mb-4">
