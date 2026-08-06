@@ -1,0 +1,77 @@
+/* ===================================
+   INNER OS BACKGROUND REVEAL
+   Loaded after page-level styles.
+   =================================== */
+
+/*
+  The previous page overlays used nearly opaque midnight gradients to hide
+  the brighter lava-lamp video. The new ambient video is designed to be seen,
+  so these page-level covers are neutralized here.
+
+  Card-level glass remains unchanged.
+*/
+
+.practice-page::before,
+.tracker-page::before,
+.rituals-page::before,
+.calendar-page::before,
+.practice-subpage::before,
+.calendar-practice-page::before {
+  content: none !important;
+  display: none !important;
+  background: none !important;
+  opacity: 0 !important;
+}
+
+/*
+  Some versions place a dark fill directly on the page root.
+  Keep the page transparent so CosmicBackground can remain visible.
+*/
+.practice-page,
+.tracker-page,
+.rituals-page,
+.calendar-page,
+.practice-subpage,
+.calendar-practice-page {
+  background: transparent !important;
+}
+
+/*
+  Preserve a very subtle edge vignette for readability without covering
+  the center of the video. This is intentionally light and can be removed.
+*/
+.practice-page::after,
+.tracker-page::after,
+.rituals-page::after,
+.calendar-page::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(3, 5, 10, 0.12),
+      transparent 18%,
+      transparent 82%,
+      rgba(3, 5, 10, 0.12)
+    ),
+    linear-gradient(
+      180deg,
+      rgba(3, 5, 10, 0.08),
+      transparent 24%,
+      transparent 76%,
+      rgba(3, 5, 10, 0.12)
+    );
+}
+
+/* Respect reduced-transparency preferences without hiding the artwork. */
+@media (prefers-reduced-transparency: reduce) {
+  .practice-page::after,
+  .tracker-page::after,
+  .rituals-page::after,
+  .calendar-page::after {
+    background: rgba(3, 5, 10, 0.10);
+  }
+}

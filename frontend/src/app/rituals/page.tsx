@@ -12,6 +12,7 @@ import CosmicBackground from "@/components/CosmicBackground";
 import RitualList, { type Ritual } from "@/components/RitualList";
 import AddRitualForm from "@/components/AddRitualForm";
 import "@/styles/ritualsPage.css";
+import "@/styles/innerOSBackgroundReveal.css";
 
 export default function RitualsPage() {
   const { data, loading, error, refetch } = useQuery(ALL_RITUALS);

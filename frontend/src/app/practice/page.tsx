@@ -9,6 +9,7 @@ import SacredYesSection from "@/components/SacredYesSection";
 import MoodSection from "@/components/MoodSection";
 import PracticeQuestsSection from "@/components/PracticeQuestsSection";
 import CosmicBackground from "@/components/CosmicBackground";
+import "@/styles/innerOSBackgroundReveal.css";
 
 const PRACTICE_ROOMS = [
     {

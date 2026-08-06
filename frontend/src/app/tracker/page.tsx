@@ -7,6 +7,7 @@ import AddPracticeQuestForm from "@/components/AddPracticeQuestForm";
 import RitualPracticeSection from "@/components/RitualPracticeSection";
 import CosmicBackground from "@/components/CosmicBackground";
 import "@/styles/trackerPage.css";
+import "@/styles/innerOSBackgroundReveal.css";
 
 export default function TrackerPage() {
   const { data: session, status } = useSession();

@@ -12,6 +12,7 @@ import { ALL_PRACTICE_QUESTS } from "@/graphql/practiceQuest";
 import moonData from "@/data/moonPhases2026.json";
 import dayjs from "dayjs";
 import CosmicBackground from "@/components/CosmicBackground";
+import "@/styles/innerOSBackgroundReveal.css";
 
 type MoodEntry = {
   id?: string;
