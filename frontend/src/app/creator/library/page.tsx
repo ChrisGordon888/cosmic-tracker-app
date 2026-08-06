@@ -33,6 +33,8 @@ const CREATOR_LIBRARY_QUERY = gql`
       mood
       audioUrl
       previewAudioUrl
+      artworkUrl
+      releaseCoverArtUrl
       visibility
       playbackStatus
       dropDate
@@ -87,6 +89,8 @@ type ReleaseTrack = {
   mood?: string | null;
   audioUrl?: string | null;
   previewAudioUrl?: string | null;
+  artworkUrl?: string | null;
+  releaseCoverArtUrl?: string | null;
   visibility: string;
   playbackStatus: string;
   dropDate?: string | null;
@@ -291,12 +295,12 @@ export default function CreatorLibraryPage() {
           <div>
             <p className="creator-library-kicker">Creator OS</p>
             <h1>Creator Library</h1>
-            <p>See every track by release, realm, creative status, and publishing readiness.</p>
+            <p>Your catalog command center for artwork, playback, release placement, realm alignment, and Nexus publishing.</p>
           </div>
           <div className="creator-library-hero-actions">
-            <Link href="/creator">Creator Home</Link>
             <Link href="/creator/projects">Release Worlds</Link>
             <Link href="/nexus">View Nexus</Link>
+            <Link href="/creator">Creator Home</Link>
           </div>
         </header>
 
@@ -401,14 +405,14 @@ export default function CreatorLibraryPage() {
         ) : tracks.length === 0 ? (
           <section className="creator-library-empty">
             <p className="creator-library-kicker">Empty Library</p>
-            <h2>No Mongo-backed release tracks yet.</h2>
-            <p>Create tracks from a release Signal Board. Static registry tracks remain playable in the Nexus, but they will not appear here until migrated into Creator OS.</p>
+            <h2>Your catalog is ready for its first track.</h2>
+            <p>Create the first track from a Release World Signal Board, then manage its artwork, playback, realm, and Nexus state here.</p>
             <Link href="/creator/projects">Open Release Worlds</Link>
           </section>
         ) : view === "tracks" ? (
           <section className="creator-library-track-list">
             <div className="creator-library-list-heading">
-              <div><span>Track</span><small>{filteredTracks.length} shown</small></div>
+              <div><span>Signal</span><small>{filteredTracks.length} shown</small></div>
               <span>Release / Realm</span>
               <span>Status</span>
               <span>Publishing</span>
@@ -420,10 +424,22 @@ export default function CreatorLibraryPage() {
               return (
                 <article className="creator-library-track-row" key={track.id}>
                   <div className="creator-library-track-title">
-                    <span>{String(track.trackNumber ?? 1).padStart(2, "0")}</span>
+                    <div className="creator-library-track-art">
+                      {(track.artworkUrl || track.releaseCoverArtUrl || release?.coverArtUrl) ? (
+                        <img
+                          src={track.artworkUrl || track.releaseCoverArtUrl || release?.coverArtUrl || ""}
+                          alt=""
+                        />
+                      ) : (
+                        <span>{String(track.trackNumber ?? 1).padStart(2, "0")}</span>
+                      )}
+                    </div>
                     <div>
                       <strong>{track.title}</strong>
                       <p>{track.bpm ? `${track.bpm} BPM` : "BPM TBD"} · {track.keySignature || "Key TBD"}</p>
+                      <small className={track.artworkUrl ? "has-track-art" : "uses-release-art"}>
+                        {track.artworkUrl ? "Track artwork" : "Release artwork"}
+                      </small>
                     </div>
                   </div>
                   <div>
@@ -441,10 +457,12 @@ export default function CreatorLibraryPage() {
                     <p>{track.nexusSortOrder === 999 ? "Auto sort" : `Sort ${track.nexusSortOrder}`}</p>
                   </div>
                   <div className="creator-library-row-actions">
-                    {release && <Link href={`/releases/${release.slug}/board`}>Open Board</Link>}
-                    {release && <Link href={`/releases/${release.slug}`}>Portal</Link>}
-                    {track.showInNexus && <Link href="/nexus">Nexus</Link>}
-                    {realm && <Link href={`/realms/${realm.id}`}>Realm</Link>}
+                    {release && <Link className="is-primary" href={`/releases/${release.slug}/board`}>Open Board</Link>}
+                    {(track.audioUrl || track.previewAudioUrl) && (
+                      <a href={track.audioUrl || track.previewAudioUrl || ""} target="_blank" rel="noreferrer">
+                        {track.playbackStatus === "preview" ? "Preview" : "Play"}
+                      </a>
+                    )}
                     {track.showInNexus && (
                       <button
                         type="button"
@@ -455,6 +473,9 @@ export default function CreatorLibraryPage() {
                         {track.nexusRole === "flagship" ? "Current Signal" : "Set Featured"}
                       </button>
                     )}
+                    {release && <Link href={`/releases/${release.slug}`}>Portal</Link>}
+                    {realm && <Link href={`/realms/${realm.id}`}>Realm</Link>}
+                    {track.showInNexus && <Link href="/nexus">Nexus</Link>}
                   </div>
                 </article>
               );
@@ -467,6 +488,11 @@ export default function CreatorLibraryPage() {
               const releaseTracks = filteredTracks.filter((track) => track.releaseWorldId === release.id);
               return (
                 <article key={release.id} className="creator-library-group-card">
+                  {release.coverArtUrl && (
+                    <Link className="creator-library-release-art" href={`/releases/${release.slug}/board`}>
+                      <img src={release.coverArtUrl} alt="" />
+                    </Link>
+                  )}
                   <div className="creator-library-group-heading">
                     <div><span>{formatLabel(release.releaseType)}</span><h2>{release.title}</h2></div>
                     <strong>{releaseTracks.length}</strong>
@@ -525,10 +551,7 @@ export default function CreatorLibraryPage() {
           </section>
         )}
 
-        <footer className="creator-library-footer">
-          <p>Static musicRegistry tracks remain live as legacy seed content. Creator Library shows Mongo-backed tracks created through Release Worlds and Signal Boards.</p>
-          <span>Last refresh: {formatDate(new Date().toISOString())}</span>
-        </footer>
+
       </section>
     </main>
   );
