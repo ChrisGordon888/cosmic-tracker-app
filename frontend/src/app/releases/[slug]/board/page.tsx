@@ -2566,7 +2566,7 @@ export default function DynamicReleaseSignalBoardPage() {
                 aria-label="Signal board command bar"
             >
                 <div className="signal-board-command-left">
-                    <Link href="/creator/projects">Project Library</Link>
+                    <Link href="/creator/projects">All Projects</Link>
                     <Link href={`/releases/${slug}`}>Release Page</Link>
                 </div>
 

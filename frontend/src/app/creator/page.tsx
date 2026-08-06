@@ -283,9 +283,9 @@ export default function CreatorDashboardPage() {
           priority: 'secondary',
         },
         {
-          label: 'Project Library',
+          label: 'All Projects',
           href: '/creator/projects',
-          meta: 'All worlds',
+          meta: 'Release worlds',
           priority: 'secondary',
         },
         {
@@ -303,9 +303,9 @@ export default function CreatorDashboardPage() {
           priority: 'secondary',
         },
         {
-          label: 'Project Library',
+          label: 'All Projects',
           href: '/creator/projects',
-          meta: 'Create world',
+          meta: 'Create project',
           priority: 'secondary',
         },
         {
@@ -571,7 +571,7 @@ export default function CreatorDashboardPage() {
               ) : (
                 <div>
                   <span>empty</span>
-                  <p>No projects yet. Create one in Project Library.</p>
+                  <p>No projects yet. Create one in All Projects.</p>
                 </div>
               )}
             </div>
@@ -582,10 +582,10 @@ export default function CreatorDashboardPage() {
           <article className="creator-console-panel creator-console-wide">
             <div className="creator-panel-title-row">
               <div>
-                <p className="creator-console-kicker">Project Library Preview</p>
+                <p className="creator-console-kicker">All Projects Preview</p>
                 <h2>Release worlds</h2>
               </div>
-              <Link href="/creator/projects">Open Library</Link>
+              <Link href="/creator/projects">View All Projects</Link>
             </div>
 
             <div className="creator-project-library-grid">
@@ -627,7 +627,7 @@ export default function CreatorDashboardPage() {
                     <span>start</span>
                     <strong>Create a project</strong>
                     <p>Your next EP, single, album, campaign, or client world starts here.</p>
-                    <Link href="/creator/projects">Open Project Library</Link>
+                    <Link href="/creator/projects">Open All Projects</Link>
                   </div>
                 </article>
               )}
@@ -682,7 +682,7 @@ export default function CreatorDashboardPage() {
                 <div>
                   <span>00</span>
                   <strong>No release worlds yet</strong>
-                  <p>Create one in Project Library.</p>
+                  <p>Create one in All Projects.</p>
                 </div>
               )}
             </div>
@@ -696,7 +696,7 @@ export default function CreatorDashboardPage() {
               {[
                 {
                   title: 'Create',
-                  body: 'Start a ReleaseWorld in Project Library.',
+                  body: 'Start a release world in All Projects.',
                 },
                 {
                   title: 'Build',

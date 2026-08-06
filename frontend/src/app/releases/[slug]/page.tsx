@@ -629,7 +629,7 @@ export default function DynamicReleasePage() {
                             {isCreatorView && (
                                 <>
                                     <Link href={`/releases/${world.slug}/board`}>Open Signal Board</Link>
-                                    <Link href="/creator/projects">Project Library</Link>
+                                    <Link href="/creator/projects">All Projects</Link>
                                 </>
                             )}
                         </div>
