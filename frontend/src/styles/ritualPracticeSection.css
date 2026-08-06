@@ -1,82 +1,278 @@
+/* ===================================
+   RITUAL PRACTICE â€” INNER OS
+   =================================== */
+
 .ritual-practice-card {
-    background: rgba(64, 0, 64, 0.6);
-    border: 2px solid rgba(255, 0, 255, 0.4);
-    border-radius: 1rem;
-    padding: 1.5rem;
-    margin: 0 auto 2rem auto; /* centers card horizontally */
-    color: #e0e0e0;
-    box-shadow: 0 0 30px rgba(255, 0, 255, 0.2);
-    max-width: 600px;
     width: 100%;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    text-align: center;
-  }
-  
-  .ritual-practice-card:hover {
-    transform: scale(1.02);
-    box-shadow: 0 0 40px rgba(255, 0, 255, 0.4);
-  }
-  
-  .ritual-practice-card h2 {
-    font-size: 1.5rem;
-    color: #ff00ff;
-    text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff;
-    margin-bottom: 1rem;
-  }
-  
-  .ritual-practice-item {
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: grid;
+    gap: 0.9rem;
+    color: rgba(238, 243, 250, 0.92);
+}
+
+.ritual-practice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.ritual-practice-eyebrow,
+.ritual-practice-group-heading p,
+.ritual-practice-progress-copy span {
+    margin: 0;
+    color: rgba(188, 224, 255, 0.66);
+    font-size: 0.59rem;
+    font-weight: 900;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+}
+
+.ritual-practice-card h2 {
+    margin: 0.35rem 0 0;
+    color: rgba(248, 250, 255, 0.96);
+    font-size: clamp(1.35rem, 3vw, 2rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
+}
+
+.ritual-practice-summary {
+    flex: 0 0 auto;
+    display: grid;
+    justify-items: end;
+    gap: 0.15rem;
+}
+
+.ritual-practice-summary strong {
+    color: rgba(247, 239, 228, 0.94);
+    font-size: 1.25rem;
+}
+
+.ritual-practice-summary span {
+    color: rgba(224, 231, 240, 0.48);
+    font-size: 0.62rem;
+    text-transform: uppercase;
+}
+
+.ritual-practice-status,
+.ritual-practice-empty {
+    border: 1px dashed rgba(238, 243, 250, 0.12);
     border-radius: 1rem;
     padding: 1rem;
-    margin-bottom: 1.5rem;
-    text-align: left;
-    transition: transform 0.3s ease;
-  }
-  
-  .ritual-practice-item:hover {
-    transform: scale(1.02);
-    box-shadow: 0 0 20px rgba(255, 0, 255, 0.3);
-  }
-  
-  .ritual-practice-item h3 {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #ff00ff;
-    margin-bottom: 0.5rem;
-    text-shadow: 0 0 6px #ff00ff;
-  }
-  
-  .ritual-practice-item p {
-    color: #a5f3fc;
-    margin-bottom: 0.75rem;
-  }
-  
-  .ritual-practice-controls {
+    color: rgba(224, 231, 240, 0.6);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.ritual-practice-status {
+    margin: 0;
+    font-size: 0.8rem;
+}
+
+.ritual-practice-status.is-error {
+    color: rgba(255, 190, 205, 0.86);
+    border-style: solid;
+    border-color: rgba(255, 190, 205, 0.14);
+}
+
+.ritual-practice-empty strong {
+    color: rgba(248, 250, 255, 0.88);
+}
+
+.ritual-practice-empty p {
+    margin: 0.45rem 0 0;
+    color: rgba(224, 231, 240, 0.58);
+    font-size: 0.82rem;
+    line-height: 1.55;
+}
+
+.ritual-practice-groups {
+    display: grid;
+    gap: 0.8rem;
+}
+
+.ritual-practice-group {
+    display: grid;
+    gap: 0.7rem;
+    border: 1px solid rgba(238, 243, 250, 0.09);
+    border-radius: 1.1rem;
+    padding: 0.9rem;
+    background:
+        radial-gradient(circle at 0% 0%, rgba(220, 186, 92, 0.045), transparent 42%),
+        rgba(255, 255, 255, 0.025);
+}
+
+.ritual-practice-group-heading {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 1rem;
-    justify-content: center;
-    margin-top: 0.5rem;
-  }
-  
-  .ritual-practice-controls button {
-    padding: 0.5rem 0.75rem;
-    border-radius: 0.5rem;
-    font-size: 1.25rem;
-    border: none;
+}
+
+.ritual-practice-group-heading h3 {
+    margin: 0.32rem 0 0;
+    color: rgba(248, 250, 255, 0.94);
+    font-size: clamp(1.05rem, 3vw, 1.4rem);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+}
+
+.ritual-practice-group-heading>span {
+    min-width: 2rem;
+    min-height: 2rem;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(220, 186, 92, 0.14);
+    border-radius: 999px;
+    color: rgba(220, 186, 92, 0.78);
+    background: rgba(220, 186, 92, 0.04);
+    font-size: 0.62rem;
+    font-weight: 900;
+}
+
+.ritual-practice-group-description {
+    margin: 0;
+    color: rgba(224, 231, 240, 0.60);
+    font-size: 0.8rem;
+    line-height: 1.55;
+}
+
+.ritual-practice-list {
+    display: grid;
+    gap: 0.6rem;
+}
+
+.ritual-practice-item {
+    display: grid;
+    gap: 0.65rem;
+    border: 1px solid rgba(238, 243, 250, 0.08);
+    border-radius: 0.95rem;
+    padding: 0.85rem;
+    background:
+        radial-gradient(circle at 100% 0%, rgba(126, 211, 255, 0.035), transparent 40%),
+        rgba(255, 255, 255, 0.022);
+    transition: border-color 160ms ease, background 160ms ease;
+}
+
+.ritual-practice-item:hover {
+    border-color: rgba(188, 224, 255, 0.15);
+}
+
+.ritual-practice-item.is-complete {
+    border-color: rgba(220, 186, 92, 0.16);
+}
+
+.ritual-practice-item-copy h4 {
+    margin: 0;
+    color: rgba(248, 250, 255, 0.92);
+    font-size: 0.98rem;
+    line-height: 1.25;
+}
+
+.ritual-practice-item-copy p {
+    margin: 0.4rem 0 0;
+    color: rgba(224, 231, 240, 0.58);
+    font-size: 0.78rem;
+    line-height: 1.5;
+}
+
+.ritual-practice-progress-row {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.ritual-practice-progress-copy {
+    display: grid;
+    gap: 0.2rem;
+}
+
+.ritual-practice-progress {
+    color: rgba(248, 250, 255, 0.88);
+    font-size: 0.88rem;
+    font-weight: 900;
+}
+
+.ritual-practice-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.ritual-practice-controls button {
+    width: 2.2rem;
+    min-height: 2.2rem;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(238, 243, 250, 0.12);
+    border-radius: 999px;
+    padding: 0;
+    color: rgba(238, 243, 250, 0.84);
+    background: rgba(255, 255, 255, 0.04);
+    font-size: 1rem;
+    font-weight: 900;
     cursor: pointer;
-    background: #ff00ff;
-    color: white;
-    transition: transform 0.2s ease;
-  }
-  
-  .ritual-practice-controls button:hover {
-    transform: scale(1.1);
-  }
-  
-  .ritual-practice-progress {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #00ffff;
-  }
+    transition: transform 160ms ease, border-color 160ms ease;
+}
+
+.ritual-practice-controls button:hover:not(:disabled) {
+    transform: translateY(-1px);
+    border-color: rgba(188, 224, 255, 0.22);
+}
+
+.ritual-practice-controls button:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.ritual-practice-track {
+    height: 0.34rem;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.055);
+}
+
+.ritual-practice-track span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg,
+            rgba(168, 132, 255, 0.52),
+            rgba(188, 224, 255, 0.80));
+    transition: width 180ms ease;
+}
+
+.ritual-practice-item.is-complete .ritual-practice-track span {
+    background: linear-gradient(90deg,
+            rgba(220, 186, 92, 0.72),
+            rgba(247, 239, 228, 0.92));
+}
+
+.ritual-practice-completion {
+    margin: 0;
+    color: rgba(188, 224, 255, 0.60);
+    font-size: 0.59rem;
+    font-weight: 900;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+}
+
+.ritual-practice-completion.is-complete {
+    color: rgba(220, 186, 92, 0.82);
+}
+
+@media (max-width: 560px) {
+
+    .ritual-practice-header,
+    .ritual-practice-progress-row {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .ritual-practice-summary {
+        justify-items: start;
+    }
+
+    .ritual-practice-controls {
+        width: 100%;
+    }
+}
