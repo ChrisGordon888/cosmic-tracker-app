@@ -679,6 +679,39 @@ button.creator-projects-primary-button {
   font-size: 0.9rem;
 }
 
+
+.creator-project-publishing-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.creator-projects-publishing-review-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid rgba(126, 211, 255, 0.25);
+  border-radius: 999px;
+  color: rgba(247, 239, 228, 0.84);
+  background: rgba(126, 211, 255, 0.07);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.creator-projects-publishing-review-link:hover {
+  transform: translateY(-1px);
+  border-color: rgba(126, 211, 255, 0.48);
+  background: rgba(126, 211, 255, 0.12);
+}
+
 .creator-projects-drop-button {
   min-height: 40px;
   padding: 0 14px;
@@ -718,6 +751,14 @@ button.creator-projects-primary-button {
     flex-direction: column;
   }
 
+  .creator-projects-drop-button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 720px) {
+  .creator-project-publishing-actions,
+  .creator-projects-publishing-review-link,
   .creator-projects-drop-button {
     width: 100%;
   }

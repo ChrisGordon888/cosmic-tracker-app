@@ -801,18 +801,27 @@ export default function CreatorProjectsPage() {
                           : "Private or in progress"}
                       </strong>
                     </div>
-                    <button
-                      type="button"
-                      className="creator-projects-drop-button"
-                      disabled={droppingWorldId === world.id}
-                      onClick={() => handleDropEP(world)}
-                    >
-                      {droppingWorldId === world.id
-                        ? "Publishing..."
-                        : world.status === "active" && world.visibility === "public"
-                          ? "Sync Release"
-                          : "Publish Release"}
-                    </button>
+
+                    <div className="creator-project-publishing-actions">
+                      <Link
+                        href={`/creator/releases/${world.slug}/publish`}
+                        className="creator-projects-publishing-review-link"
+                      >
+                        Publishing Review
+                      </Link>
+                      <button
+                        type="button"
+                        className="creator-projects-drop-button"
+                        disabled={droppingWorldId === world.id}
+                        onClick={() => handleDropEP(world)}
+                      >
+                        {droppingWorldId === world.id
+                          ? "Publishing..."
+                          : world.status === "active" && world.visibility === "public"
+                            ? "Sync Release"
+                            : "Publish Release"}
+                      </button>
+                    </div>
                   </div>
 
                   {dropMessages[world.id] && (
