@@ -1699,7 +1699,9 @@ export default function CosmicNexusHub() {
                                 </h3>
 
                                 <p className="text-secondary text-sm md:text-base leading-relaxed max-w-2xl mb-4">
-                                    One track in focus, with its own visual identity and a direct doorway into the realm behind it.
+                                    “Look to the light, the fire inside. Don’t look outside—siren cries…”
+
+                                    A warning from beneath the surface: what calls to you is not always what guides you.
                                 </p>
 
                                 <div className="flex flex-wrap gap-2 mb-4">
