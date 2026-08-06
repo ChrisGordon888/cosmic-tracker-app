@@ -248,24 +248,44 @@ export default function PublishingReadinessPage() {
     return (
         <main className="px-4 py-8 sm:py-12">
             <div className="mx-auto max-w-5xl">
-                <Link
-                    href="/creator"
-                    className="text-xs font-medium uppercase tracking-[0.16em] text-white/45 transition hover:text-[#F4D982]"
-                >
-                    ← Creator OS
-                </Link>
+                <nav className="flex flex-wrap items-center gap-x-5 gap-y-3" aria-label="Publishing review navigation">
+                    <Link
+                        href="/creator"
+                        className="text-xs font-medium uppercase tracking-[0.16em] text-white/45 transition hover:text-[#F4D982]"
+                    >
+                        ← Creator OS
+                    </Link>
+                    <Link
+                        href="/creator/projects"
+                        className="text-xs font-medium uppercase tracking-[0.16em] text-white/45 transition hover:text-[#F4D982]"
+                    >
+                        All Projects
+                    </Link>
+                    <Link
+                        href={`/releases/${slug}/board`}
+                        className="text-xs font-medium uppercase tracking-[0.16em] text-white/45 transition hover:text-[#F4D982]"
+                    >
+                        Open Signal Board
+                    </Link>
+                    <Link
+                        href={`/releases/${slug}`}
+                        className="text-xs font-medium uppercase tracking-[0.16em] text-white/45 transition hover:text-[#F4D982]"
+                    >
+                        View Release Page
+                    </Link>
+                </nav>
 
                 <section className="mt-5 rounded-[2rem] border border-white/10 bg-gradient-to-br from-[#11182A] via-[#090D17] to-[#05070D] p-6 sm:p-10">
                     <p className="text-xs uppercase tracking-[0.24em] text-[#DCBA5C]/80">
-                        Publishing Readiness
+                        Publishing Review
                     </p>
                     <h1 className="mt-4 text-3xl font-semibold text-white sm:text-5xl">
                         {release?.title || "Release review"}
                     </h1>
                     <p className="mt-4 max-w-2xl text-sm leading-7 text-white/55">
-                        Cosmic is inspecting the real profile, release,
-                        artwork, tracks, playback states, dates, visibility,
-                        and Nexus configuration. Nothing is changed here.
+                        Review the release profile, artwork, tracks, playback,
+                        dates, visibility, and Nexus configuration before you
+                        publish, schedule, or update its public state.
                     </p>
                 </section>
 
@@ -319,9 +339,9 @@ export default function PublishingReadinessPage() {
                                       } found.`}
                             </h2>
                             <p className="mt-3 text-sm leading-6 text-white/55">
-                                V5A is diagnostic only. The guarded publish
-                                action comes after this engine is proven
-                                against real releases.
+                                This review uses the same guarded readiness
+                                engine as the publishing controls below. Resolve
+                                blockers before making the release public.
                             </p>
                         </section>
 
@@ -473,9 +493,8 @@ export default function PublishingReadinessPage() {
                                 <p className="mt-4 text-xs leading-5 text-white/35">
                                     Readiness is checked when the schedule is
                                     saved and again when publication becomes
-                                    due. Until a dedicated cron worker is
-                                    connected, due schedules are processed on
-                                    public release and Nexus requests.
+                                    due. The release will only publish if its
+                                    required configuration still passes review.
                                 </p>
 
                                 {release?.status === "scheduled" &&
