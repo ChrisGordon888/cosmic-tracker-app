@@ -1,39 +1,95 @@
-/* 🌕 MoonPhaseCard Styling */
+/* ===================================
+   MOON PHASE â€” INNER OS
+   =================================== */
 
 .moon-phase-card {
-    background: rgba(0, 32, 64, 0.6); /* match mood-card background */
-    border: 2px solid rgba(0, 255, 255, 0.4); /* same aqua border */
-    border-radius: 1rem;
-    padding: 1.5rem;
-    margin: 0 auto 2rem auto; /* center the card */
-    color: #e0e0e0; /* match text color with mood-card */
-    box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
-    max-width: 600px;
     width: 100%;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    text-align: center; /* center text inside the card */
-  }
-  
-  .moon-phase-card:hover {
-    transform: scale(1.02);
-    box-shadow: 0 0 40px rgba(0, 255, 255, 0.4);
-  }
-  
-  .moon-phase-card h2 {
-    font-size: 1.5rem;
-    color: #00ffff;
-    text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
-    margin-bottom: 1rem;
-  }
-  
-  .moon-phase-card .moon-icon {
-    font-size: 4rem;
-    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-    margin-bottom: 0.5rem; /* more balanced spacing */
-  }
-  
-  .moon-phase-card .moon-date {
-    font-size: 0.875rem;
-    color: #a5f3fc;
-    text-shadow: none;
-  }
+    display: grid;
+    gap: 0.9rem;
+    color: rgba(238, 243, 250, 0.92);
+}
+
+.moon-phase-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.moon-phase-eyebrow {
+    margin: 0;
+    color: rgba(188, 224, 255, 0.68);
+    font-size: 0.62rem;
+    font-weight: 900;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+}
+
+.moon-phase-card h2 {
+    margin: 0.35rem 0 0;
+    color: rgba(248, 250, 255, 0.96);
+    font-size: clamp(1.35rem, 3vw, 2rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
+}
+
+.moon-icon {
+    flex: 0 0 auto;
+    display: inline-grid;
+    place-items: center;
+    min-width: 4rem;
+    min-height: 4rem;
+    border: 1px solid rgba(247, 239, 228, 0.12);
+    border-radius: 999px;
+    background:
+        radial-gradient(circle, rgba(247, 239, 228, 0.10), transparent 68%),
+        rgba(255, 255, 255, 0.025);
+    font-size: clamp(2.1rem, 6vw, 3.2rem);
+    text-shadow: 0 0 16px rgba(247, 239, 228, 0.10);
+}
+
+.moon-phase-guidance {
+    margin: 0;
+    color: rgba(224, 231, 240, 0.66);
+    font-size: 0.84rem;
+    line-height: 1.65;
+}
+
+.moon-phase-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-top: 1px solid rgba(238, 243, 250, 0.08);
+    padding-top: 0.75rem;
+}
+
+.moon-phase-meta span {
+    color: rgba(220, 186, 92, 0.72);
+    font-size: 0.6rem;
+    font-weight: 900;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+}
+
+.moon-phase-meta strong {
+    color: rgba(248, 250, 255, 0.84);
+    font-size: 0.76rem;
+}
+
+
+.inner-status {
+    min-height: 1.2rem;
+    margin: 0;
+    color: rgba(224, 231, 240, 0.58);
+    font-size: 0.76rem;
+    line-height: 1.5;
+}
+
+.inner-status.is-error {
+    color: rgba(255, 190, 205, 0.88);
+}
+
+.inner-status.is-success {
+    color: rgba(220, 186, 92, 0.88);
+}

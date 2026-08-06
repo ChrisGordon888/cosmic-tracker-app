@@ -1,88 +1,168 @@
-/* 🪷 MoodSection Styling */
+/* ===================================
+   MOOD â€” INNER OS
+   =================================== */
 
 .mood-card {
-    background: rgba(0, 32, 64, 0.6) !important; /* match mood-card background */
-    border: 2px solid rgba(0, 255, 255, 0.4);
-    border-radius: 1rem;
-    padding: 1.5rem;
-    margin: 0 auto 2rem auto; /* 🌟 centers the card horizontally */
-    color: #e0e0e0;
-    box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
-    max-width: 600px;
     width: 100%;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    text-align: center; /* centers text inside the card */
-  }
-  
-  .mood-card:hover {
-    transform: scale(1.02);
-    box-shadow: 0 0 40px rgba(0, 255, 255, 0.4);
-  }
-  
-  .mood-card h2 {
-    font-size: 1.5rem;
-    color: #00ffff;
-    text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
-    margin-bottom: 1rem;
-  }
-  
-  .mood-card input[type="range"] {
+    display: grid;
+    gap: 0.9rem;
+    color: rgba(238, 243, 250, 0.92);
+}
+
+.mood-header,
+.mood-footer,
+.mood-scale-copy {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.mood-eyebrow,
+.mood-note-field>span {
+    margin: 0;
+    color: rgba(168, 132, 255, 0.72);
+    font-size: 0.62rem;
+    font-weight: 900;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+}
+
+.mood-card h2 {
+    margin: 0.35rem 0 0;
+    color: rgba(248, 250, 255, 0.96);
+    font-size: clamp(1.35rem, 3vw, 2rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
+}
+
+.mood-value {
+    min-width: 3.2rem;
+    min-height: 3.2rem;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(188, 224, 255, 0.16);
+    border-radius: 999px;
+    color: rgba(247, 239, 228, 0.94);
+    background:
+        radial-gradient(circle, rgba(168, 132, 255, 0.10), transparent 72%),
+        rgba(255, 255, 255, 0.035);
+    font-size: 1.2rem;
+    font-weight: 900;
+}
+
+.mood-scale-copy strong {
+    color: rgba(248, 250, 255, 0.9);
+    font-size: 0.9rem;
+}
+
+.mood-scale-copy span {
+    color: rgba(224, 231, 240, 0.52);
+    font-size: 0.7rem;
+}
+
+.mood-range-field,
+.mood-note-field {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.mood-card input[type="range"] {
     appearance: none;
     width: 100%;
-    height: 8px;
-    border-radius: 4px;
-    background: linear-gradient(90deg, #ff00ff, #00ffff);
+    height: 0.4rem;
+    border-radius: 999px;
+    background: linear-gradient(90deg,
+            rgba(168, 132, 255, 0.45),
+            rgba(188, 224, 255, 0.82));
     outline: none;
-    transition: background 0.3s ease;
-    margin-top: 0.5rem;
-  }
-  
-  .mood-card input[type="range"]::-webkit-slider-thumb {
+}
+
+.mood-card input[type="range"]::-webkit-slider-thumb {
     appearance: none;
-    width: 20px;
-    height: 20px;
-    background: #ff00ff;
+    width: 1.05rem;
+    height: 1.05rem;
+    border: 2px solid rgba(247, 239, 228, 0.82);
     border-radius: 50%;
+    background: rgba(188, 224, 255, 0.98);
+    box-shadow: 0 0 12px rgba(126, 211, 255, 0.14);
     cursor: pointer;
-    box-shadow: 0 0 10px #ff00ff;
-    transition: transform 0.2s ease;
-  }
-  
-  .mood-card input[type="range"]::-webkit-slider-thumb:hover {
-    transform: scale(1.2);
-  }
-  
-  .mood-card textarea {
-    background: rgba(0, 0, 0, 0.6);
-    border: 1px solid rgba(0, 255, 255, 0.4);
-    color: #e0e0e0;
+}
+
+.mood-range-labels {
+    display: flex;
+    justify-content: space-between;
+    color: rgba(224, 231, 240, 0.42);
+    font-size: 0.62rem;
+}
+
+.mood-card textarea {
     width: 100%;
-    border-radius: 0.5rem;
-    padding: 0.75rem;
-    margin-top: 1rem;
-    font-family: 'Orbitron', Arial, sans-serif;
-  }
-  
-  .mood-card textarea::placeholder {
-    color: #a5f3fc;
-  }
-  
-  .mood-card button {
-    background: linear-gradient(90deg, #ff00ff, #00ffff);
-    color: #000;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    font-weight: bold;
-    margin-top: 1rem;
+    min-height: 6.5rem;
+    border: 1px solid rgba(238, 243, 250, 0.12);
+    border-radius: 1rem;
+    padding: 0.9rem 1rem;
+    color: rgba(248, 250, 255, 0.94);
+    background:
+        radial-gradient(circle at 0% 0%, rgba(168, 132, 255, 0.055), transparent 44%),
+        rgba(255, 255, 255, 0.035);
+    resize: vertical;
+    outline: none;
+}
+
+.mood-card textarea::placeholder {
+    color: rgba(224, 231, 240, 0.38);
+}
+
+.mood-card textarea:focus,
+.mood-card input[type="range"]:focus-visible {
+    border-color: rgba(168, 132, 255, 0.28);
+    box-shadow: 0 0 0 3px rgba(168, 132, 255, 0.06);
+}
+
+.mood-card button {
+    min-height: 2.5rem;
+    border: 1px solid rgba(247, 239, 228, 0.42);
+    border-radius: 999px;
+    padding: 0.62rem 0.9rem;
+    color: #081018;
+    background: linear-gradient(135deg, rgba(247, 239, 228, 0.94), rgba(188, 224, 255, 0.84));
+    font-size: 0.64rem;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
     cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-  
-  .mood-card button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
-  }
-  
-  .mood-card .flex {
-    justify-content: center; /* 🌟 centers slider + number */
-  }
+}
+
+.mood-card button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+
+.inner-status {
+    min-height: 1.2rem;
+    margin: 0;
+    color: rgba(224, 231, 240, 0.58);
+    font-size: 0.76rem;
+    line-height: 1.5;
+}
+
+.inner-status.is-error {
+    color: rgba(255, 190, 205, 0.88);
+}
+
+.inner-status.is-success {
+    color: rgba(220, 186, 92, 0.88);
+}
+
+@media (max-width: 560px) {
+    .mood-footer {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .mood-card button {
+        width: 100%;
+    }
+}

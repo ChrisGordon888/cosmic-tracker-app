@@ -1,121 +1,271 @@
-/* 🧘 PracticeQuestsSection Cosmic Styling */
+/* ===================================
+   DAILY PRACTICES â€” INNER OS
+   =================================== */
+
 .practice-quests-card {
-    background: rgba(0, 255, 255, 0.05);
-    border: 1px solid rgba(0, 255, 255, 0.2);
-    color: #e0e0e0;
-    padding: 1.5rem;
-    border-radius: 1rem;
-    box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
-    margin: 0 auto 2rem auto; /* 🌟 center the whole card horizontally */
-    max-width: 600px;
-    width: 100%;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    text-align: center; /* 🌟 center text inside the card */
+  width: 100%;
+  display: grid;
+  gap: 0.9rem;
+  color: rgba(238, 243, 250, 0.92);
+}
+
+.practice-quests-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.practice-quests-eyebrow,
+.practice-quests-item-kicker,
+.practice-quests-progress-row span,
+.practice-quests-ritual span {
+  margin: 0;
+  color: rgba(188, 224, 255, 0.68);
+  font-size: 0.59rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.practice-quests-card h2 {
+  margin: 0.35rem 0 0;
+  color: rgba(248, 250, 255, 0.96);
+  font-size: clamp(1.35rem, 3vw, 2rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.practice-quests-summary {
+  flex: 0 0 auto;
+  display: grid;
+  justify-items: end;
+  gap: 0.15rem;
+}
+
+.practice-quests-summary strong {
+  color: rgba(247, 239, 228, 0.94);
+  font-size: 1.25rem;
+}
+
+.practice-quests-summary span {
+  color: rgba(224, 231, 240, 0.48);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+}
+
+.practice-quests-list {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.practice-quests-empty {
+  border: 1px dashed rgba(238, 243, 250, 0.12);
+  border-radius: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.practice-quests-empty strong {
+  color: rgba(248, 250, 255, 0.88);
+}
+
+.practice-quests-empty p {
+  margin: 0.45rem 0 0;
+  color: rgba(224, 231, 240, 0.58);
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+.practice-quests-item {
+  position: relative;
+  display: grid;
+  gap: 0.7rem;
+  border: 1px solid rgba(238, 243, 250, 0.09);
+  border-radius: 1rem;
+  padding: 0.9rem;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(126, 211, 255, 0.045), transparent 42%),
+    rgba(255, 255, 255, 0.027);
+}
+
+.practice-quests-item.is-complete {
+  border-color: rgba(220, 186, 92, 0.18);
+  background:
+    radial-gradient(circle at 0% 0%, rgba(220, 186, 92, 0.06), transparent 42%),
+    rgba(255, 255, 255, 0.027);
+}
+
+.practice-quests-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.practice-quests-item-title {
+  margin: 0.35rem 0 0;
+  color: rgba(248, 250, 255, 0.94);
+  font-size: 1.05rem;
+  line-height: 1.2;
+}
+
+.practice-quests-description {
+  margin: 0;
+  color: rgba(224, 231, 240, 0.62);
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
+.practice-quests-ritual {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.practice-quests-ritual strong {
+  color: rgba(220, 186, 92, 0.82);
+  font-size: 0.78rem;
+}
+
+.practice-quests-progress-row {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.practice-quests-progress-row > div:first-child {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.practice-quests-progress-row strong {
+  color: rgba(248, 250, 255, 0.9);
+  font-size: 0.88rem;
+}
+
+.practice-quests-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.practice-quests-card button {
+  min-height: 2.2rem;
+  border: 1px solid rgba(238, 243, 250, 0.12);
+  border-radius: 999px;
+  color: rgba(238, 243, 250, 0.82);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 0.78rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.practice-quests-card button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.practice-quests-card .minus-btn,
+.practice-quests-card .plus-btn {
+  width: 2.2rem;
+  padding: 0;
+  font-size: 1rem;
+}
+
+.practice-quests-card .delete-btn {
+  flex: 0 0 auto;
+  min-height: 2rem;
+  padding: 0.35rem 0.55rem;
+  color: rgba(255, 190, 205, 0.72);
+  border-color: rgba(255, 190, 205, 0.12);
+  background: rgba(255, 190, 205, 0.035);
+  font-size: 0.56rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.practice-quests-progress-track {
+  height: 0.34rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.practice-quests-progress-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    rgba(168, 132, 255, 0.58),
+    rgba(188, 224, 255, 0.82)
+  );
+  transition: width 180ms ease;
+}
+
+.practice-quests-item.is-complete .practice-quests-progress-track span {
+  background: linear-gradient(
+    90deg,
+    rgba(220, 186, 92, 0.72),
+    rgba(247, 239, 228, 0.92)
+  );
+}
+
+.practice-quests-status {
+  margin: 0;
+  color: rgba(188, 224, 255, 0.62);
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.practice-quests-status.is-complete {
+  color: rgba(220, 186, 92, 0.82);
+}
+
+
+.inner-status {
+  min-height: 1.2rem;
+  margin: 0;
+  color: rgba(224, 231, 240, 0.58);
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+
+.inner-status.is-error {
+  color: rgba(255, 190, 205, 0.88);
+}
+
+.inner-status.is-success {
+  color: rgba(220, 186, 92, 0.88);
+}
+
+@media (max-width: 560px) {
+  .practice-quests-header,
+  .practice-quests-item-header,
+  .practice-quests-progress-row {
+    align-items: flex-start;
+    flex-direction: column;
   }
-  
-  .practice-quests-card:hover {
-    transform: scale(1.02);
-    box-shadow: 0 0 40px rgba(0, 255, 255, 0.4);
+
+  .practice-quests-summary {
+    justify-items: start;
   }
-  
-  .practice-quests-title {
-    color: #ff00ff; /* Pink cosmic header */
-    text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff;
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
+
+  .practice-quests-item-header .delete-btn {
+    position: static;
   }
-  
-  .practice-quests-item {
-    position: relative;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 1rem;
-    padding: 1rem;
-    margin: 0 auto 1.5rem auto; /* 🌟 center each inner quest card */
-    max-width: 500px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    text-align: left; /* 🌟 keep content readable */
-  }
-  
-  .practice-quests-item:hover {
-    transform: scale(1.02);
-    box-shadow: 0 0 20px rgba(255, 0, 255, 0.3);
-  }
-  
-  .practice-quests-item-title {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #00ffff;
-    margin-bottom: 0.5rem;
-  }
-  
-  .practice-quests-header {
+
+  .practice-quests-progress-row {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
   }
-  
-  .delete-btn {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.75rem;
-    color: #ff4d4d;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    font-size: 1.25rem;
-    transition: transform 0.2s ease;
-  }
-  
-  .delete-btn:hover {
-    transform: scale(1.2);
-  }
-  
-  .practice-quests-ritual,
-  .practice-quests-description {
-    color: #a5f3fc;
-    margin-bottom: 0.5rem;
-  }
-  
+
   .practice-quests-controls {
-    display: flex;
-    justify-content: center; /* 🌟 center controls horizontally */
-    align-items: center;
-    gap: 1rem;
-    margin-top: 0.75rem;
+    width: 100%;
   }
-  
-  .minus-btn,
-  .plus-btn {
-    padding: 0.5rem 0.75rem;
-    border-radius: 0.5rem;
-    font-size: 1.25rem;
-    border: none;
-    cursor: pointer;
-    background: #ff00ff;
-    color: white;
-    transition: transform 0.2s ease;
-  }
-  
-  .minus-btn:hover,
-  .plus-btn:hover {
-    transform: scale(1.1);
-  }
-  
-  .practice-quests-progress {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #00ffff;
-  }
-  
-  .practice-quests-complete {
-    color: #00ff00;
-    font-weight: 700;
-    margin-top: 0.75rem;
-  }
-  
-  .practice-quests-progress-note {
-    color: #facc15;
-    font-weight: 700;
-    margin-top: 0.75rem;
-  }
+}
