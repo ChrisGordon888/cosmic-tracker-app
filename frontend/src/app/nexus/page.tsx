@@ -98,6 +98,8 @@ const FEATURED_RELEASE_TRACK_FIELDS = gql`
         audioUrl
         previewAudioUrl
         platformUrl
+        artworkUrl
+        releaseCoverArtUrl
         visibility
         playbackStatus
         dropDate
@@ -124,6 +126,24 @@ const GET_PUBLIC_FEATURED_RELEASE_TRACKS = gql`
     ${FEATURED_RELEASE_TRACK_FIELDS}
     query GetPublicFeaturedReleaseTracks($releaseWorldId: ID!) {
         getPublicReleaseTracks(releaseWorldId: $releaseWorldId) {
+            ...FeaturedReleaseTrackFields
+        }
+    }
+`;
+
+const GET_MY_FEATURED_SIGNAL = gql`
+    ${FEATURED_RELEASE_TRACK_FIELDS}
+    query GetMyFeaturedSignal {
+        getMyFeaturedSignal {
+            ...FeaturedReleaseTrackFields
+        }
+    }
+`;
+
+const GET_PUBLIC_FEATURED_SIGNAL = gql`
+    ${FEATURED_RELEASE_TRACK_FIELDS}
+    query GetPublicFeaturedSignal {
+        getPublicFeaturedSignal {
             ...FeaturedReleaseTrackFields
         }
     }
@@ -164,6 +184,8 @@ interface NexusFeaturedReleaseTrack {
     audioUrl?: string | null;
     previewAudioUrl?: string | null;
     platformUrl?: string | null;
+    artworkUrl?: string | null;
+    releaseCoverArtUrl?: string | null;
     visibility: string;
     playbackStatus: string;
     dropDate?: string | null;
@@ -243,7 +265,6 @@ const CURATED_PLAYLIST_ART_OVERRIDES: Record<string, string> = {
     'realm-55-glory-and-command': '/glory-and-command.png',
     'realm-44-price-of-focus': '/price-of-focus.png',
     'realm-0-same-self-higher-form': '/same-self-higher-form.png',
-    'cosmic-featured-signal': '/latest-signal.png',
 };
 
 function getRealmTint(realmId?: number | null) {
@@ -635,6 +656,16 @@ export default function CosmicNexusHub() {
         return meta?.name ?? 'None';
     })();
 
+    const { data: myFeaturedSignalData } = useQuery(GET_MY_FEATURED_SIGNAL, {
+        skip: !isCreatorView,
+        fetchPolicy: 'cache-and-network',
+    });
+
+    const { data: publicFeaturedSignalData } = useQuery(GET_PUBLIC_FEATURED_SIGNAL, {
+        skip: isCreatorView,
+        fetchPolicy: 'cache-and-network',
+    });
+
     const currentRelease = CURRENT_FEATURED_RELEASE;
     const currentReleaseTracks = useMemo(() => getCurrentReleaseTracks(), []);
     const creatorFeaturedRelease =
@@ -852,6 +883,12 @@ export default function CosmicNexusHub() {
         tryPlayTrack(fullTrack);
     };
 
+    const featuredSignalRecord = (
+        isCreatorView
+            ? myFeaturedSignalData?.getMyFeaturedSignal
+            : publicFeaturedSignalData?.getPublicFeaturedSignal
+    ) as NexusFeaturedReleaseTrack | null | undefined;
+
     const dynamicFlagshipTrack =
         runtimeMusicCatalog.find(
             (track) => track.source === 'creator' && track.role === 'flagship'
@@ -867,11 +904,14 @@ export default function CosmicNexusHub() {
         : '/nexus';
     const publicThreePieceCollections = PUBLIC_THREE_PIECE_COLLECTIONS;
     const releaseArtworkUrl = currentRelease?.coverArtUrl ?? null;
-    // Latest Signal owns its own single artwork slot. It intentionally does
-    // not inherit the Featured Release cover, so the project portal and the
-    // single-track beacon remain visually distinct.
+    // Track-specific artwork is preferred. The parent release cover remains
+    // the stable fallback, preserving existing projects without track art.
     const featuredSignalArtwork =
-        CURATED_PLAYLIST_ART_OVERRIDES['cosmic-featured-signal'] ?? null;
+        featuredSignalRecord?.artworkUrl?.trim() ||
+        featuredSignalRecord?.releaseCoverArtUrl?.trim() ||
+        creatorFeaturedArtworkUrl ||
+        releaseArtworkUrl ||
+        null;
     const getCuratedCollectionArtwork = (collection: any) => {
         return (
             CURATED_PLAYLIST_ART_OVERRIDES[collection.id] ??
@@ -1699,9 +1739,7 @@ export default function CosmicNexusHub() {
                                 </h3>
 
                                 <p className="text-secondary text-sm md:text-base leading-relaxed max-w-2xl mb-4">
-                                    “Look to the light, the fire inside. Don’t look outside—siren cries…”
-
-                                    A warning from beneath the surface: what calls to you is not always what guides you.
+                                    Look to the light, the fire inside. Don’t look outside—siren cries…
                                 </p>
 
                                 <div className="flex flex-wrap gap-2 mb-4">

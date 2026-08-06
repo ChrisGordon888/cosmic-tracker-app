@@ -577,15 +577,15 @@ async function applyPublishedReleaseState(releaseWorld, userId) {
 
     const coverQuery = releaseWorld.coverAssetId
         ? {
-              _id: releaseWorld.coverAssetId,
-              ownerId: userId,
-              releaseWorldId: releaseWorld._id,
-          }
+            _id: releaseWorld.coverAssetId,
+            ownerId: userId,
+            releaseWorldId: releaseWorld._id,
+        }
         : {
-              ownerId: userId,
-              releaseWorldId: releaseWorld._id,
-              $or: [{ usage: "cover" }, { kind: "cover" }],
-          };
+            ownerId: userId,
+            releaseWorldId: releaseWorld._id,
+            $or: [{ usage: "cover" }, { kind: "cover" }],
+        };
 
     await ReleaseAsset.findOneAndUpdate(
         coverQuery,
@@ -596,11 +596,11 @@ async function applyPublishedReleaseState(releaseWorld, userId) {
         releaseWorld.coverAssetId
             ? undefined
             : {
-                  sort: {
-                      updatedAt: -1,
-                      createdAt: -1,
-                  },
-              }
+                sort: {
+                    updatedAt: -1,
+                    createdAt: -1,
+                },
+            }
     );
 
     releaseWorld.status = "active";
@@ -846,6 +846,37 @@ async function getPublicFeaturedReleaseWorld() {
     });
 }
 
+async function getFeaturedSignalTrack(query = {}) {
+    return await ReleaseTrack.findOne({
+        ...query,
+        showInNexus: true,
+        nexusRole: "flagship",
+        status: { $ne: "archived" },
+    }).sort({
+        lastOpenedAt: -1,
+        updatedAt: -1,
+        createdAt: -1,
+    });
+}
+
+async function getTrackArtworkAsset(track, user) {
+    if (!track?._id) return null;
+
+    const query = {
+        trackId: track._id,
+        releaseWorldId: track.releaseWorldId,
+        usage: "track-artwork",
+    };
+
+    const ownsTrack = Boolean(user?.id && String(track.ownerId) === String(user.id));
+    if (!ownsTrack) query.isPublic = true;
+
+    return await ReleaseAsset.findOne(query).sort({
+        updatedAt: -1,
+        createdAt: -1,
+    });
+}
+
 async function syncReleaseWorldFocusFromTrack(track, userId) {
     if (!track) return;
 
@@ -894,7 +925,9 @@ async function syncReleaseWorldFocusFromTrack(track, userId) {
 async function syncReleaseAssetTargets(asset, userId) {
     if (!asset) return;
 
-    const isCoverAsset = asset.usage === "cover" || asset.kind === "cover";
+    const isCoverAsset =
+        asset.usage === "cover" ||
+        (asset.kind === "cover" && asset.usage !== "track-artwork");
     const isTrackAudioAsset =
         asset.usage === "track-audio" || asset.kind === "audio";
 
@@ -932,7 +965,9 @@ async function syncReleaseAssetTargets(asset, userId) {
 async function clearReleaseAssetTargets(asset, userId) {
     if (!asset) return;
 
-    const isCoverAsset = asset.usage === "cover" || asset.kind === "cover";
+    const isCoverAsset =
+        asset.usage === "cover" ||
+        (asset.kind === "cover" && asset.usage !== "track-artwork");
     const isTrackAudioAsset =
         asset.usage === "track-audio" || asset.kind === "audio";
 
@@ -976,8 +1011,11 @@ function isImageAssetLike({ kind, usage, mimeType = "", fileName = "", url = "" 
     const normalizedMime = String(mimeType || "").toLowerCase();
     const normalizedFile = String(fileName || url || "").toLowerCase();
 
-    const wantsCover = normalizedUsage === "cover" || normalizedKind === "cover";
-    if (!wantsCover) return true;
+    const wantsImage =
+        normalizedUsage === "cover" ||
+        normalizedUsage === "track-artwork" ||
+        normalizedKind === "cover";
+    if (!wantsImage) return true;
 
     return (
         normalizedMime.startsWith("image/") ||
@@ -1001,8 +1039,15 @@ function isAudioAssetLike({ kind, usage, mimeType = "", fileName = "", url = "" 
 }
 
 function validateReleaseAssetShape(input) {
+    const normalizedUsage = String(input.usage || "").toLowerCase();
+    const normalizedKind = String(input.kind || "").toLowerCase();
+
+    if (normalizedUsage === "track-artwork" && normalizedKind !== "image") {
+        throw new Error("Track artwork assets must use Image kind.");
+    }
+
     if (!isImageAssetLike(input)) {
-        throw new Error("Cover assets must be image files. Change Usage/Kind or upload an image.");
+        throw new Error("Cover and track artwork assets must be image files. Change Usage/Kind or upload an image.");
     }
 
     if (!isAudioAssetLike(input)) {
@@ -1058,6 +1103,22 @@ async function tryDeleteBlobForAsset(asset) {
 }
 
 module.exports = {
+    ReleaseTrack: {
+        artworkUrl: async (track, _, { user }) => {
+            const asset = await getTrackArtworkAsset(track, user);
+            return asset?.url || null;
+        },
+        releaseCoverArtUrl: async (track) => {
+            if (!track?.releaseWorldId) return null;
+
+            const releaseWorld = await ReleaseWorld.findOne({
+                _id: track.releaseWorldId,
+                ownerId: track.ownerId,
+            }).select("coverArtUrl");
+
+            return releaseWorld?.coverArtUrl || null;
+        },
+    },
     Query: {
         hello: () => "Hello Cosmic Tracker 🌙",
         todayMoonPhase: () => {
@@ -1403,9 +1464,9 @@ module.exports = {
             if (isReadyForActivation) {
                 status =
                     user.role === "owner" ||
-                    user.role === "admin" ||
-                    (user.role === "creator" &&
-                        user.creatorStatus === "active")
+                        user.role === "admin" ||
+                        (user.role === "creator" &&
+                            user.creatorStatus === "active")
                         ? "complete"
                         : "ready";
             }
@@ -1617,6 +1678,30 @@ module.exports = {
                 nexusSortOrder: 1,
                 trackNumber: 1,
                 createdAt: 1,
+            });
+        },
+
+        getMyFeaturedSignal: async (_, __, { user }) => {
+            requireCreator(user);
+            return await getFeaturedSignalTrack({ ownerId: user.id });
+        },
+
+        getPublicFeaturedSignal: async () => {
+            await processDueScheduledReleaseWorlds();
+
+            const publicReleaseWorldIds = await ReleaseWorld.find({
+                visibility: "public",
+                status: { $ne: "archived" },
+            }).distinct("_id");
+
+            if (publicReleaseWorldIds.length === 0) return null;
+
+            return await getFeaturedSignalTrack({
+                releaseWorldId: { $in: publicReleaseWorldIds },
+                $or: [
+                    { visibility: { $in: ["public", "listed"] } },
+                    { isPublic: true },
+                ],
             });
         },
 
@@ -2341,8 +2426,8 @@ module.exports = {
 
             const parsedBpm =
                 input.bpm === undefined ||
-                input.bpm === null ||
-                input.bpm === ""
+                    input.bpm === null ||
+                    input.bpm === ""
                     ? null
                     : Number(input.bpm);
 
@@ -2509,7 +2594,7 @@ module.exports = {
                 mimeType,
                 size:
                     input.size === undefined ||
-                    input.size === null
+                        input.size === null
                         ? artwork?.size || null
                         : Number(input.size),
                 isPublic: artwork
@@ -3348,6 +3433,10 @@ module.exports = {
             const normalizedTrackId = normalizeOptionalId(input.trackId);
             const normalizedBoardArtifactId = normalizeOptionalId(input.boardArtifactId);
 
+            if (input.usage === "track-artwork" && !normalizedTrackId) {
+                throw new Error("Track artwork must be connected to a track.");
+            }
+
             if (normalizedTrackId) {
                 const track = await getOwnedReleaseTrack(
                     normalizedTrackId,
@@ -3481,6 +3570,15 @@ module.exports = {
                 update.size = input.size === null ? null : input.size;
             }
             if (input.isPublic !== undefined) update.isPublic = input.isPublic;
+
+            const effectiveUsage =
+                update.usage !== undefined ? update.usage : existingAsset.usage;
+            const effectiveTrackId =
+                update.trackId !== undefined ? update.trackId : existingAsset.trackId;
+
+            if (effectiveUsage === "track-artwork" && !effectiveTrackId) {
+                throw new Error("Track artwork must be connected to a track.");
+            }
 
             const nextAssetShape = {
                 kind: update.kind !== undefined ? update.kind : existingAsset.kind,

@@ -244,6 +244,8 @@ const typeDefs = gql`
     audioUrl: String
     previewAudioUrl: String
     platformUrl: String
+    artworkUrl: String
+    releaseCoverArtUrl: String
     visibility: String!
     playbackStatus: String!
     dropDate: String
@@ -565,6 +567,8 @@ const typeDefs = gql`
     getReleaseTracks(releaseWorldId: ID!): [ReleaseTrack!]!
     getPublicReleaseTracks(releaseWorldId: ID!): [ReleaseTrack!]!
     getPublicNexusTracks(realmId: Int): [ReleaseTrack!]!
+    getMyFeaturedSignal: ReleaseTrack
+    getPublicFeaturedSignal: ReleaseTrack
     getReleaseTrack(id: ID!): ReleaseTrack
 
     getReleaseAssets(releaseWorldId: ID!): [ReleaseAsset!]!

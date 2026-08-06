@@ -615,6 +615,7 @@ const nexusRoleOptions = [
 const assetUsageOptions = [
     { value: "cover", label: "Cover Art" },
     { value: "track-audio", label: "Track Audio" },
+    { value: "track-artwork", label: "Track Artwork" },
     { value: "visual-reference", label: "Visual Reference" },
     { value: "promo", label: "Promo Asset" },
     { value: "canvas", label: "Canvas Clip" },
@@ -883,7 +884,7 @@ function getAssetInputFromForm(form: AssetForm, releaseWorldId: string) {
 
     return {
         releaseWorldId,
-        trackId: usage === "track-audio" && form.trackId ? form.trackId : null,
+        trackId: ["track-audio", "track-artwork"].includes(usage) && form.trackId ? form.trackId : null,
         kind,
         usage,
         title: form.title.trim(),
@@ -1988,6 +1989,7 @@ export default function DynamicReleaseSignalBoardPage() {
 
     function getUploadKindFromAssetForm() {
         if (assetForm.usage === "track-audio") return "audio";
+        if (assetForm.usage === "track-artwork") return "image";
         if (assetForm.usage === "cover") return "cover";
         return assetForm.kind || "asset";
     }
@@ -2025,6 +2027,7 @@ export default function DynamicReleaseSignalBoardPage() {
                 const usage = String(value);
                 if (usage === "cover") next.kind = "cover";
                 if (usage === "track-audio") next.kind = "audio";
+                if (usage === "track-artwork") next.kind = "image";
                 if (usage === "visual-reference") next.kind = "image";
             }
 
@@ -2044,8 +2047,8 @@ export default function DynamicReleaseSignalBoardPage() {
             return;
         }
 
-        if (assetForm.usage === "track-audio" && !assetForm.trackId) {
-            setAssetMessage("Upload failed: choose a track before attaching audio.");
+        if (["track-audio", "track-artwork"].includes(assetForm.usage) && !assetForm.trackId) {
+            setAssetMessage("Upload failed: choose a track before attaching this asset.");
             return;
         }
 
@@ -2056,6 +2059,11 @@ export default function DynamicReleaseSignalBoardPage() {
 
         if (assetForm.usage === "track-audio" && !selectedAssetFile.type.startsWith("audio/")) {
             setAssetMessage("Upload failed: track audio must be an audio file.");
+            return;
+        }
+
+        if (assetForm.usage === "track-artwork" && !selectedAssetFile.type.startsWith("image/")) {
+            setAssetMessage("Upload failed: track artwork must be an image file.");
             return;
         }
 
@@ -2152,7 +2160,7 @@ export default function DynamicReleaseSignalBoardPage() {
                             : current.usage === "cover"
                                 ? "cover"
                                 : "image",
-                    trackId: current.usage === "track-audio" ? current.trackId : "",
+                    trackId: ["track-audio", "track-artwork"].includes(current.usage) ? current.trackId : "",
                 }));
             } else {
                 setAssetMessage("Uploaded and saved, but no asset was returned.");
@@ -2184,7 +2192,7 @@ export default function DynamicReleaseSignalBoardPage() {
             return;
         }
 
-        if (assetForm.usage === "track-audio" && !assetForm.trackId) {
+        if (["track-audio", "track-artwork"].includes(assetForm.usage) && !assetForm.trackId) {
             setAssetMessage("Asset save failed: choose a track before attaching audio.");
             return;
         }
@@ -2214,7 +2222,7 @@ export default function DynamicReleaseSignalBoardPage() {
                     ...getEmptyAssetForm(),
                     usage: current.usage,
                     kind: current.usage === "track-audio" ? "audio" : current.usage === "cover" ? "cover" : "image",
-                    trackId: current.usage === "track-audio" ? current.trackId : "",
+                    trackId: ["track-audio", "track-artwork"].includes(current.usage) ? current.trackId : "",
                 }));
             } else {
                 setAssetMessage("Asset saved, but no asset was returned.");
@@ -3386,6 +3394,8 @@ export default function DynamicReleaseSignalBoardPage() {
                                             accept={
                                                 assetForm.usage === "track-audio"
                                                     ? "audio/*"
+                                                    : assetForm.usage === "track-artwork"
+                                                        ? "image/*"
                                                     : assetForm.kind === "video"
                                                         ? "video/*"
                                                         : assetForm.kind === "document"
@@ -3459,7 +3469,7 @@ export default function DynamicReleaseSignalBoardPage() {
                                         </select>
                                     </label>
 
-                                    {assetForm.usage === "track-audio" && (
+                                    {["track-audio", "track-artwork"].includes(assetForm.usage) && (
                                         <label className="signal-board-wide-field">
                                             Attach to track
                                             <select
