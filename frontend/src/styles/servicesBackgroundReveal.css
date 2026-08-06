@@ -1,0 +1,61 @@
+/* ===================================
+   SERVICES BACKGROUND REVEAL
+   Load after servicesPage.css / servicesInquiry.css.
+   =================================== */
+
+/*
+  The old Services surfaces used a solid midnight root and a nearly opaque
+  fixed ::before gradient. The new ambient background is designed to remain
+  visible, so only those page-level covers are removed.
+*/
+
+.services-page,
+.services-inquire-page {
+  background: transparent !important;
+}
+
+.services-page::before,
+.services-inquire-page::before {
+  content: none !important;
+  display: none !important;
+  background: none !important;
+  opacity: 0 !important;
+}
+
+/*
+  Remove the old grid veil on the main Services route. Card and section
+  backgrounds remain untouched.
+*/
+.services-page::after {
+  content: none !important;
+  display: none !important;
+  background: none !important;
+  opacity: 0 !important;
+}
+
+/*
+  Keep a very light edge vignette for legibility while allowing the moving
+  artwork to remain fully visible through the page center.
+*/
+.services-inquire-page::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(3, 5, 10, 0.10),
+      transparent 18%,
+      transparent 82%,
+      rgba(3, 5, 10, 0.10)
+    ),
+    linear-gradient(
+      180deg,
+      rgba(3, 5, 10, 0.07),
+      transparent 24%,
+      transparent 76%,
+      rgba(3, 5, 10, 0.10)
+    );
+}

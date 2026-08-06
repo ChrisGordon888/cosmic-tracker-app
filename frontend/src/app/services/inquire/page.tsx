@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import "@/styles/servicesInquiry.css";
 import CosmicBackground from "@/components/CosmicBackground";
+import "@/styles/servicesBackgroundReveal.css";
 
 type OfferOption = {
     slug: string;

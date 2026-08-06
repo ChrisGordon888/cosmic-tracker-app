@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import "@/styles/servicesPage.css";
 import CosmicBackground from "@/components/CosmicBackground";
+import "@/styles/servicesBackgroundReveal.css";
 
 type OfferStatus = "Available Now" | "Limited Openings" | "Application Only" | "Custom Quote" | "Coming Soon";
 type ActionType = "book" | "buy" | "request" | "apply" | "quote";
