@@ -1,15 +1,37 @@
+/* COSMIC BACKGROUND â€” GLOBAL AMBIENT FIELD */
+
 .cosmic-background {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -10; /* sits behind everything */
-    overflow: hidden;
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(188, 224, 255, 0.07), transparent 34rem),
+    radial-gradient(circle at 82% 82%, rgba(215, 190, 120, 0.05), transparent 34rem),
+    #05070d;
+}
+
+.cosmic-background-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  pointer-events: none;
+  user-select: none;
+}
+
+.cosmic-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: rgba(3, 5, 10, 0.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cosmic-background-video {
+    animation: none;
   }
-  
-  .cosmic-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.3); /* optional: tint/darken */
-  }
+}

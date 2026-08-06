@@ -1,4 +1,4 @@
-/* ðŸŒŒ BottomNav â€” V3 foundation */
+/* BottomNav â€” Cosmic V4 */
 
 nav.bottom-nav {
   position: fixed;
@@ -95,5 +95,15 @@ nav.bottom-nav a.nav-icon.active {
   .nav-icon-label {
     font-size: 0.49rem;
     letter-spacing: 0.045em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  nav.bottom-nav a.nav-icon {
+    transition: none;
+  }
+
+  nav.bottom-nav a.nav-icon:hover {
+    transform: none;
   }
 }

@@ -1,0 +1,21 @@
+/* GLOBAL SHELL COHESION */
+
+@media (max-width: 899px) {
+  body {
+    padding-bottom: calc(5.65rem + env(safe-area-inset-bottom));
+  }
+
+  .cosmic-mini-player.is-expanded {
+    bottom: calc(env(safe-area-inset-bottom) + 5.8rem);
+  }
+
+  .cosmic-mini-player.is-collapsed {
+    bottom: calc(env(safe-area-inset-bottom) + 5.95rem);
+  }
+}
+
+@media (min-width: 900px) {
+  body {
+    padding-bottom: 0;
+  }
+}
