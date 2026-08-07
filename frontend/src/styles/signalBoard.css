@@ -2213,3 +2213,336 @@
   .signal-board-coverage { padding:.8rem; }
   .signal-board-coverage-map { max-height:12rem; overflow:auto; }
 }
+
+/* ===================================
+   V5J1A — SIGNAL BOARD TIGHTENING PASS
+   Mobile board fit / overview / track containment
+   =================================== */
+
+/* Keep every form/grid child inside its card. */
+.signal-board-track-workflow,
+.signal-board-track-section-card,
+.signal-board-track-form-grid,
+.signal-board-track-form-grid > *,
+.signal-board-campaign-toggles,
+.signal-board-nexus-intent,
+.signal-board-nexus-intent > *,
+.signal-board-panel-actions,
+.signal-board-field-note {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.signal-board-track-section-card {
+  overflow: hidden;
+}
+
+.signal-board-track-form-grid {
+  gap: .78rem;
+}
+
+.signal-board-track-section-heading {
+  margin-bottom: .78rem;
+}
+
+.signal-board-track-section-heading > span {
+  max-width: 25rem;
+  line-height: 1.45;
+}
+
+/* Campaign checkboxes behave like compact controls, not loose inline text. */
+.signal-board-campaign-toggles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 13rem)) minmax(220px, 1fr);
+  align-items: stretch;
+  gap: .55rem;
+}
+
+.signal-board-campaign-toggles label,
+.signal-board-nexus-intent > label {
+  width: 100%;
+  min-width: 0;
+  min-height: 2.65rem;
+  padding: .58rem .7rem;
+  border: 1px solid rgba(214,224,235,.11);
+  border-radius: .8rem;
+  background: rgba(255,255,255,.035);
+  overflow: hidden;
+}
+
+.signal-board-campaign-toggles input,
+.signal-board-nexus-intent input {
+  flex: 0 0 auto;
+}
+
+.signal-board-campaign-toggles .signal-board-toggle-note {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+  padding: .58rem .7rem;
+  border: 1px solid rgba(214,224,235,.08);
+  border-radius: .8rem;
+  background: rgba(255,255,255,.022);
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+/* Board Overview: compact top row, coverage underneath. */
+.signal-board-coverage {
+  grid-template-columns: minmax(220px, .72fr) minmax(0, 1.28fr);
+  grid-template-areas:
+    "copy stats"
+    "map map";
+  align-items: stretch;
+  gap: .75rem 1rem;
+  padding: .9rem 1rem;
+}
+
+.signal-board-coverage-copy {
+  grid-area: copy;
+  align-self: center;
+}
+
+.signal-board-coverage-stats {
+  grid-area: stats;
+  align-self: center;
+}
+
+.signal-board-coverage-map {
+  grid-area: map;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: .45rem;
+  padding-top: .75rem;
+  border-top: 1px solid rgba(214,224,235,.08);
+}
+
+.signal-board-coverage-map > div {
+  min-width: 0;
+}
+
+.signal-board-coverage-map > div span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Nexus block stays contained and calmer. */
+.signal-board-nexus-intent {
+  grid-template-columns: minmax(0, .65fr) minmax(0, .65fr) minmax(220px, 1.2fr);
+}
+
+.signal-board-nexus-status {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.signal-board-nexus-status strong {
+  overflow-wrap: anywhere;
+}
+
+.signal-board-publish-actions {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* Mobile board is a real mobile canvas, not an 860px desktop board in a scroller. */
+@media (max-width: 860px) {
+  .signal-board-frame-scroll {
+    width: 100%;
+    overflow-x: hidden;
+    border-radius: 1.35rem;
+  }
+
+  .signal-board-frame,
+  .signal-board-frame-compact {
+    width: 100%;
+    min-width: 100%;
+    min-height: 720px;
+    border-radius: 1.35rem;
+  }
+
+  .signal-board-pin {
+    left: clamp(5.2rem, var(--pin-x), calc(100% - 5.2rem));
+    width: min(10.4rem, 46vw);
+    min-height: 7.6rem;
+    padding: .68rem;
+  }
+
+  .signal-board-pin-size-sm {
+    width: min(8.8rem, 40vw);
+    min-height: 6.8rem;
+  }
+
+  .signal-board-pin-size-md {
+    width: min(10.4rem, 46vw);
+    min-height: 7.6rem;
+  }
+
+  .signal-board-pin-size-lg {
+    width: min(12.2rem, 54vw);
+    min-height: 9.2rem;
+    padding: .78rem;
+  }
+
+  .signal-board-pin-size-xl {
+    width: min(14.2rem, 62vw);
+    min-height: 10.6rem;
+    padding: .85rem;
+  }
+
+  .signal-board-pin h2,
+  .signal-board-pin-size-lg h2,
+  .signal-board-pin-size-xl h2 {
+    font-size: clamp(.72rem, 3.2vw, .92rem);
+  }
+
+  .signal-board-pin-body,
+  .signal-board-pin-size-lg .signal-board-pin-body,
+  .signal-board-pin-size-xl .signal-board-pin-body {
+    font-size: clamp(.64rem, 2.8vw, .76rem);
+  }
+
+  .signal-board-cover-stack {
+    transform: scale(.8);
+    transform-origin: center top;
+    margin-bottom: -.2rem;
+  }
+
+  .signal-board-coverage {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "copy"
+      "stats"
+      "map";
+  }
+
+  .signal-board-coverage-map {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .signal-board-campaign-toggles,
+  .signal-board-nexus-intent {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .signal-board-campaign-toggles .signal-board-toggle-note,
+  .signal-board-nexus-status {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 620px) {
+  .signal-board-workspace {
+    padding-left: .55rem;
+    padding-right: .55rem;
+  }
+
+  .signal-board-coverage {
+    margin-bottom: .7rem;
+    padding: .72rem;
+    border-radius: 1.05rem;
+  }
+
+  .signal-board-coverage-copy span {
+    font-size: .73rem;
+  }
+
+  .signal-board-coverage-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: .3rem;
+  }
+
+  .signal-board-coverage-stats div {
+    min-width: 0;
+    padding: .52rem .42rem;
+    text-align: center;
+  }
+
+  .signal-board-coverage-stats span {
+    font-size: .52rem;
+    letter-spacing: .06em;
+  }
+
+  .signal-board-coverage-stats strong {
+    font-size: .92rem;
+  }
+
+  .signal-board-coverage-map {
+    max-height: 9.5rem;
+    overflow-y: auto;
+    padding-top: .58rem;
+  }
+
+  .signal-board-frame,
+  .signal-board-frame-compact {
+    min-height: 650px;
+  }
+
+  .signal-board-frame::before {
+    inset: .48rem;
+    border-radius: 1rem;
+  }
+
+  .signal-board-pin {
+    left: clamp(4.65rem, var(--pin-x), calc(100% - 4.65rem));
+  }
+
+  .signal-board-track-workflow {
+    gap: .72rem;
+  }
+
+  .signal-board-track-section-card {
+    padding: .68rem;
+    border-radius: .9rem;
+  }
+
+  .signal-board-track-section-heading {
+    gap: .28rem;
+    margin-bottom: .65rem;
+  }
+
+  .signal-board-track-section-heading > span {
+    font-size: .72rem;
+  }
+
+  .signal-board-track-form-grid {
+    gap: .62rem;
+  }
+
+  .signal-board-campaign-toggles,
+  .signal-board-nexus-intent {
+    grid-template-columns: 1fr;
+    gap: .42rem;
+  }
+
+  .signal-board-campaign-toggles .signal-board-toggle-note,
+  .signal-board-nexus-status {
+    grid-column: auto;
+  }
+
+  .signal-board-campaign-toggles label,
+  .signal-board-nexus-intent > label,
+  .signal-board-campaign-toggles .signal-board-toggle-note,
+  .signal-board-nexus-status {
+    min-height: 2.55rem;
+    padding: .52rem .6rem;
+  }
+
+  .signal-board-publish-guide {
+    gap: .42rem;
+  }
+
+  .signal-board-publish-actions {
+    position: static;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    backdrop-filter: none;
+  }
+
+  .signal-board-track-save-actions {
+    margin-top: .7rem;
+  }
+}
