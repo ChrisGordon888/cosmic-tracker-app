@@ -289,6 +289,13 @@ export default function Realm303() {
 
             <div className="min-h-screen pb-32 realm-303-shell">
                 <div className="container mx-auto px-4 py-8 max-w-6xl realm-303-container">
+                    <nav className="realm-303-top-nav fade-in" aria-label="Realm navigation">
+                        <Link href="/nexus" className="realm-303-back-link">
+                            ← Nexus
+                        </Link>
+                        <span>Realm 303</span>
+                    </nav>
+
                     <header className="text-center mb-10 fade-in realm-303-hero">
                         <div className="realm-symbol-mark mb-4">∴</div>
 
@@ -297,7 +304,10 @@ export default function Realm303() {
                         </h1>
 
                         <p className="text-xl text-secondary mb-2">[ REALM 303 ]</p>
-                        <p className="text-lg text-muted">
+                        <p className="text-lg text-secondary realm-303-promise">
+                            Where pressure becomes motion.
+                        </p>
+                        <p className="text-sm md:text-base text-muted mt-1">
                             Chaos &amp; Creation • Where Reality Breaks
                         </p>
 

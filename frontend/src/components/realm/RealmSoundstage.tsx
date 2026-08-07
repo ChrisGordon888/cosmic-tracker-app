@@ -11,7 +11,6 @@ import {
     mapReleaseTracksToMusicTracks,
     mergeMusicCatalogs,
     type PublicNexusReleaseTrack,
-    type RuntimeMusicTrack,
 } from '@/lib/publicMusicCatalog';
 import type { RealmId } from '@/lib/realmStateMap';
 import { useMusicPlayer } from '@/hooks/useMusicPlayer';
@@ -135,6 +134,15 @@ export default function RealmSoundstage({
         return availability.label;
     };
 
+    const playableRealmTracks = realmTracks.filter(
+        (track) => !isTrackLocked(track) && Boolean(track.trackUrl)
+    );
+
+    const realmFlowOptions = {
+        source: 'realm' as const,
+        label: `${realmName} flow`,
+    };
+
     const featuredTrack =
         realmTracks.find((track) => !isTrackLocked(track) && track.isRealmAnchor) ??
         realmTracks.find((track) => !isTrackLocked(track) && track.isPublicPick) ??
@@ -157,13 +165,15 @@ export default function RealmSoundstage({
             return;
         }
 
-        void playOrToggleTrack(fullTrack);
+        const queue = playableRealmTracks.length > 0 ? playableRealmTracks : [fullTrack];
+        void playOrToggleTrack(fullTrack, queue, realmFlowOptions);
     };
 
     const handlePlayFeaturedTrack = () => {
         if (featuredTrackLocked) return;
 
-        void playOrToggleTrack(featuredTrack);
+        const queue = playableRealmTracks.length > 0 ? playableRealmTracks : [featuredTrack];
+        void playOrToggleTrack(featuredTrack, queue, realmFlowOptions);
     };
 
     return (
@@ -201,6 +211,9 @@ export default function RealmSoundstage({
                 compactOnMobile={compactOnMobile}
                 isTrackLocked={isTrackLocked}
                 getTrackLockLabel={getTrackLockLabel}
+                flowTracks={playableRealmTracks}
+                flowSource="realm"
+                flowLabel={`${realmName} flow`}
             />
 
             <div
