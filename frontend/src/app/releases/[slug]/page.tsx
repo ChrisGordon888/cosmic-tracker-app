@@ -48,6 +48,8 @@ const RELEASE_TRACK_FIELDS = gql`
     audioUrl
     previewAudioUrl
     platformUrl
+    artworkUrl
+    releaseCoverArtUrl
     visibility
     playbackStatus
     dropDate
@@ -157,6 +159,8 @@ type ReleaseTrack = {
     audioUrl?: string | null;
     previewAudioUrl?: string | null;
     platformUrl?: string | null;
+    artworkUrl?: string | null;
+    releaseCoverArtUrl?: string | null;
     visibility?: string | null;
     playbackStatus?: string | null;
     dropDate?: string | null;
@@ -355,6 +359,15 @@ function getTrackFanLine(track: ReleaseTrack, world: ReleaseWorld) {
 
     if (dropDate !== 'TBD') return `Opens ${dropDate}`;
     return 'Release timing forming';
+}
+
+function getTrackArtworkUrl(track: ReleaseTrack, world: ReleaseWorld) {
+    return (
+        track.artworkUrl?.trim() ||
+        track.releaseCoverArtUrl?.trim() ||
+        world.coverArtUrl?.trim() ||
+        null
+    );
 }
 
 function getSectionArtifacts(
@@ -569,7 +582,7 @@ export default function DynamicReleasePage() {
             unlockDate: track.unlockDate ?? null,
             dropDate: track.dropDate ?? null,
             isPublic: track.isPublic,
-            artworkUrl: world.coverArtUrl ?? undefined,
+            artworkUrl: getTrackArtworkUrl(track, world) ?? undefined,
         };
     };
 
@@ -586,8 +599,8 @@ export default function DynamicReleasePage() {
             .map(toPlayerTrack);
 
         void playOrToggleTrack(toPlayerTrack(track), flowTracks, {
-            source: 'nexus',
-            label: world.title,
+            source: 'release',
+            label: `${world.title} release`,
         });
     };
 
@@ -702,6 +715,26 @@ export default function DynamicReleasePage() {
                                         <em>{action.label}</em>
                                     </div>
 
+                                    <div className="release-world-track-artwork" aria-hidden="true">
+                                        {getTrackArtworkUrl(track, world) ? (
+                                            <img
+                                                src={getTrackArtworkUrl(track, world) ?? ''}
+                                                alt=""
+                                                className="release-world-track-artwork-image"
+                                            />
+                                        ) : (
+                                            <div className="release-world-track-artwork-fallback">
+                                                <span>{String(track.trackNumber).padStart(2, '0')}</span>
+                                                <strong>Cosmic</strong>
+                                            </div>
+                                        )}
+                                        {(track.isFocusTrack || track.isSecondFocus) && (
+                                            <span className="release-world-track-signal-badge">
+                                                {track.isFocusTrack ? 'First Signal' : 'Second Signal'}
+                                            </span>
+                                        )}
+                                    </div>
+
                                     <h3>{track.title}</h3>
                                     <p>{getTrackFanLine(track, world)}</p>
 
@@ -712,19 +745,32 @@ export default function DynamicReleasePage() {
                                         </div>
                                     )}
 
-                                    {action.isPlayable && action.href ? (
-                                        <button
-                                            type="button"
-                                            className={`release-world-track-button ${action.className}`}
-                                            onClick={() => playReleaseTrack(track)}
-                                        >
-                                            {currentTrack?.id === `release-${track.id}` && isPlaying ? 'Pause' : action.label}
-                                        </button>
-                                    ) : (
-                                        <span className={`release-world-track-pending ${action.className}`}>
-                                            {action.label}
-                                        </span>
-                                    )}
+                                    <div className="release-world-track-actions">
+                                        {action.isPlayable && action.href ? (
+                                            <button
+                                                type="button"
+                                                className={`release-world-track-button ${action.className}`}
+                                                onClick={() => playReleaseTrack(track)}
+                                            >
+                                                {currentTrack?.id === `release-${track.id}` && isPlaying ? 'Pause' : action.label}
+                                            </button>
+                                        ) : (
+                                            <span className={`release-world-track-pending ${action.className}`}>
+                                                {action.label}
+                                            </span>
+                                        )}
+
+                                        {track.platformUrl && (
+                                            <a
+                                                href={track.platformUrl}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="release-world-track-platform-link"
+                                            >
+                                                Open platform ↗
+                                            </a>
+                                        )}
+                                    </div>
                                 </article>
                             );
                         })}
