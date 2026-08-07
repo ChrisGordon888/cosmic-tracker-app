@@ -172,6 +172,11 @@ export default function Realm0() {
 
             <div className="min-h-screen pb-32 realm-0-shell">
                 <div className="container mx-auto px-4 py-8 max-w-6xl realm-0-container">
+                    <div className="fade-in mb-5 flex items-center justify-between gap-4 px-1 py-2" aria-label="Realm navigation">
+                        <Link href="/nexus" className="text-[11px] uppercase tracking-[0.16em] text-white/70 transition hover:text-white">← Nexus</Link>
+                        <span className="text-[11px] uppercase tracking-[0.16em] text-white/50">Realm 0</span>
+                    </div>
+
                     <header className="text-center mb-10 fade-in realm-0-hero">
                         <div className="realm-0-symbol-mark mb-4">∞</div>
 
@@ -180,7 +185,8 @@ export default function Realm0() {
                         </h1>
 
                         <p className="text-xl text-secondary mb-2">[ REALM 0 • THE SOURCE ]</p>
-                        <p className="text-lg text-muted">
+                        <p className="mx-auto mt-1 mb-2 max-w-2xl text-base md:text-xl leading-relaxed text-white/90">Return to center. Move from the highest signal.</p>
+                        <p className="text-lg text-muted mt-1">
                             Source &amp; Balance • Where All Paths Converge
                         </p>
 

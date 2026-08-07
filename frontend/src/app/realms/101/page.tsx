@@ -238,6 +238,11 @@ export default function Realm101() {
 
             <div className="min-h-screen pb-32 realm-101-shell">
                 <div className="container mx-auto px-4 py-8 max-w-6xl realm-101-container">
+                    <div className="realm-top-nav fade-in" aria-label="Realm navigation">
+                        <Link href="/nexus" className="realm-top-nav-link">← Nexus</Link>
+                        <span className="realm-top-nav-label">Realm 101</span>
+                    </div>
+
                     <header className="text-center mb-10 fade-in realm-101-hero">
                         <div className="realm-101-symbol-mark mb-4">☾</div>
 
@@ -246,7 +251,8 @@ export default function Realm101() {
                         </h1>
 
                         <p className="text-xl text-secondary mb-2">[ REALM 101 ]</p>
-                        <p className="text-lg text-muted">
+                        <p className="realm-core-promise">Find your way through what remains.</p>
+                        <p className="text-lg text-muted realm-myth-line">
                             Reflection &amp; Shadows • Where Memory Meets Mystery
                         </p>
 

@@ -414,3 +414,64 @@
         width: 100%;
     }
 }
+/* ===================================
+   Nexus ↔ Realm continuity
+   =================================== */
+.realm-top-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    padding: 0.45rem 0.2rem;
+}
+
+.realm-top-nav-link,
+.realm-top-nav-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.realm-top-nav-link {
+    color: rgba(232, 238, 246, 0.76);
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.realm-top-nav-link:hover {
+    color: rgba(248, 250, 252, 0.96);
+    transform: translateX(-2px);
+}
+
+.realm-top-nav-label {
+    color: rgba(203, 213, 225, 0.58);
+}
+
+.realm-core-promise {
+    margin: 0.35rem auto 0.45rem;
+    max-width: 42rem;
+    color: rgba(245, 247, 252, 0.92);
+    font-size: clamp(1rem, 2.3vw, 1.25rem);
+    line-height: 1.5;
+    letter-spacing: 0.015em;
+}
+
+.realm-myth-line {
+    margin-top: 0.15rem;
+}
+
+@media (max-width: 640px) {
+    .realm-top-nav {
+        margin-bottom: 0.8rem;
+    }
+
+    .realm-top-nav-link,
+    .realm-top-nav-label {
+        font-size: 0.65rem;
+        letter-spacing: 0.12em;
+    }
+
+    .realm-core-promise {
+        padding-inline: 0.5rem;
+    }
+}

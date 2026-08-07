@@ -256,6 +256,11 @@ export default function Realm202() {
 
             <div className="min-h-screen pb-32 realm-202-shell">
                 <div className="container mx-auto px-4 py-8 max-w-6xl realm-202-container">
+                    <div className="realm-top-nav fade-in" aria-label="Realm navigation">
+                        <Link href="/nexus" className="realm-top-nav-link">← Nexus</Link>
+                        <span className="realm-top-nav-label">Realm 202</span>
+                    </div>
+
                     <header className="text-center mb-10 fade-in realm-202-hero">
                         <div className="realm-202-symbol-mark mb-4">◐</div>
 
@@ -264,7 +269,8 @@ export default function Realm202() {
                         </h1>
 
                         <p className="text-xl text-secondary mb-2">[ REALM 202 ]</p>
-                        <p className="text-lg text-muted">
+                        <p className="realm-core-promise">What is hidden still speaks.</p>
+                        <p className="text-lg text-muted realm-myth-line">
                             Dreams &amp; Longing • Between Sleep and Waking
                         </p>
 

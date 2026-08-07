@@ -257,6 +257,11 @@ export default function Realm55() {
 
             <div className="min-h-screen pb-32 realm-55-shell">
                 <div className="container mx-auto px-4 py-8 max-w-6xl realm-55-container">
+                    <div className="realm-top-nav fade-in" aria-label="Realm navigation">
+                        <Link href="/nexus" className="realm-top-nav-link">← Nexus</Link>
+                        <span className="realm-top-nav-label">Realm 55</span>
+                    </div>
+
                     <header className="text-center mb-10 fade-in realm-55-hero">
                         <div className="realm-55-symbol-mark mb-4">△</div>
 
@@ -265,7 +270,8 @@ export default function Realm55() {
                         </h1>
 
                         <p className="text-xl text-secondary mb-2">[ REALM 55 ]</p>
-                        <p className="text-lg text-muted">
+                        <p className="realm-core-promise">Rise through disciplined intention.</p>
+                        <p className="text-lg text-muted realm-myth-line">
                             Power &amp; Manifestation • Where Will Becomes Reality
                         </p>
 

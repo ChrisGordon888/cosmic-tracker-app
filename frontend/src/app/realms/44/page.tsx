@@ -259,6 +259,11 @@ export default function Realm44() {
 
             <div className="min-h-screen pb-32 realm-44-shell">
                 <div className="container mx-auto px-4 py-8 max-w-6xl realm-44-container">
+                    <div className="realm-top-nav fade-in" aria-label="Realm navigation">
+                        <Link href="/nexus" className="realm-top-nav-link">← Nexus</Link>
+                        <span className="realm-top-nav-label">Realm 44</span>
+                    </div>
+
                     <header className="text-center mb-10 fade-in realm-44-hero">
                         <div className="realm-44-symbol-mark mb-4">◇</div>
 
@@ -267,7 +272,8 @@ export default function Realm44() {
                         </h1>
 
                         <p className="text-xl text-secondary mb-2">[ REALM 44 ]</p>
-                        <p className="text-lg text-muted">
+                        <p className="realm-core-promise">Choose what is worthy of your energy.</p>
+                        <p className="text-lg text-muted realm-myth-line">
                             Value &amp; Exchange • Where Everything Has Its Price
                         </p>
 
