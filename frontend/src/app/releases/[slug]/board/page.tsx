@@ -1419,7 +1419,7 @@ export default function DynamicReleaseSignalBoardPage() {
     const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
     const [isCreatingNewTrack, setIsCreatingNewTrack] = useState(false);
     const [activePanel, setActivePanel] = useState<
-        "tracks" | "assets" | "signals" | "style" | "portal"
+        "tracks" | "assets" | "signals" | "portal"
     >("tracks");
     const [trackForm, setTrackForm] = useState<TrackForm>(() =>
         getEmptyTrackForm(1),
@@ -2637,6 +2637,28 @@ export default function DynamicReleaseSignalBoardPage() {
                     <Link href={`/releases/${slug}`}>Preview Portal</Link>
                 </aside>
 
+                <aside className="signal-board-coverage" aria-label="Signal map and board coverage">
+                    <div className="signal-board-coverage-copy">
+                        <p className="signal-board-panel-kicker">Board Overview</p>
+                        <h3>Signal map</h3>
+                        <span>See where the world is developed and where the board still feels thin.</span>
+                    </div>
+                    <div className="signal-board-coverage-stats">
+                        <div><span>Cards</span><strong>{artifacts.length}</strong></div>
+                        <div><span>Public</span><strong>{artifacts.filter((artifact) => artifact.isPublic).length}</strong></div>
+                        <div><span>Tracks</span><strong>{releaseTracks.length}</strong></div>
+                        <div><span>Nexus</span><strong>{releaseTracks.filter((track) => track.showInNexus).length}</strong></div>
+                    </div>
+                    <div className="signal-board-theme-map signal-board-coverage-map">
+                        {hookCounts.map((target) => (
+                            <div key={target.slug}>
+                                <span>{target.title}</span>
+                                <strong>{target.count}</strong>
+                            </div>
+                        ))}
+                    </div>
+                </aside>
+
                 <section
                     className="signal-board-canvas-zone"
                     aria-label="Main interactive board stage"
@@ -2807,10 +2829,8 @@ export default function DynamicReleaseSignalBoardPage() {
                                     : activePanel === "assets"
                                         ? "Asset Manager"
                                         : activePanel === "signals"
-                                            ? "Create Signals"
-                                            : activePanel === "style"
-                                                ? "Style + Map"
-                                                : "Portal Final Pass"}
+                                            ? "Create + Style"
+                                            : "Portal Final Pass"}
                             </h2>
                         </div>
 
@@ -2839,16 +2859,8 @@ export default function DynamicReleaseSignalBoardPage() {
                                 className={activePanel === "signals" ? "is-active" : ""}
                                 onClick={() => setActivePanel("signals")}
                             >
-                                <span>✎</span>
-                                Signals
-                            </button>
-                            <button
-                                type="button"
-                                className={activePanel === "style" ? "is-active" : ""}
-                                onClick={() => setActivePanel("style")}
-                            >
-                                <span>◐</span>
-                                Style
+                                <span>✦</span>
+                                Create
                             </button>
                             <button
                                 type="button"
@@ -2942,358 +2954,316 @@ export default function DynamicReleaseSignalBoardPage() {
                                     ))}
                                 </div>
 
-                                <div className="signal-board-track-form-grid signal-board-track-form-grid-compact">
-                                    <label className="signal-board-wide-field">
-                                        Title
-                                        <input
-                                            value={trackForm.title}
-                                            onChange={(event) =>
-                                                updateTrackForm("title", event.target.value)
-                                            }
-                                            placeholder="Track title"
-                                        />
-                                    </label>
-                                    <label>
-                                        #
-                                        <input
-                                            type="number"
-                                            min="1"
-                                            value={trackForm.trackNumber}
-                                            onChange={(event) =>
-                                                updateTrackForm("trackNumber", event.target.value)
-                                            }
-                                        />
-                                    </label>
-                                    <label>
-                                        Role
-                                        <select
-                                            value={trackForm.role}
-                                            onChange={(event) =>
-                                                updateTrackForm("role", event.target.value)
-                                            }
-                                        >
-                                            {trackRoleOptions.map((option) => (
-                                                <option key={option.value} value={option.value}>
-                                                    {option.label}
-                                                </option>
+                                <div className="signal-board-track-workflow">
+                                    <section className="signal-board-track-section-card">
+                                        <div className="signal-board-track-section-heading">
+                                            <div><p className="signal-board-panel-kicker">Song</p><h3>Shape the record</h3></div>
+                                            <span>Identity, creative context, and production notes.</span>
+                                        </div>
+                                        <div className="signal-board-track-form-grid signal-board-track-form-grid-compact">
+                                        <label className="signal-board-wide-field">
+                                            Title
+                                            <input
+                                                value={trackForm.title}
+                                                onChange={(event) =>
+                                                    updateTrackForm("title", event.target.value)
+                                                }
+                                                placeholder="Track title"
+                                            />
+                                        </label>
+                                        <label>
+                                            #
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                value={trackForm.trackNumber}
+                                                onChange={(event) =>
+                                                    updateTrackForm("trackNumber", event.target.value)
+                                                }
+                                            />
+                                        </label>
+                                        <label>
+                                            Role
+                                            <select
+                                                value={trackForm.role}
+                                                onChange={(event) =>
+                                                    updateTrackForm("role", event.target.value)
+                                                }
+                                            >
+                                                {trackRoleOptions.map((option) => (
+                                                    <option key={option.value} value={option.value}>
+                                                        {option.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </label>
+                                        <label>
+                                            Status
+                                            <select
+                                                value={trackForm.status}
+                                                onChange={(event) =>
+                                                    updateTrackForm("status", event.target.value)
+                                                }
+                                            >
+                                                {trackStatusOptions.map((option) => (
+                                                    <option key={option.value} value={option.value}>
+                                                        {option.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </label>
+                                        <label>
+                                            BPM
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                value={trackForm.bpm}
+                                                onChange={(event) =>
+                                                    updateTrackForm("bpm", event.target.value)
+                                                }
+                                                placeholder="140"
+                                            />
+                                        </label>
+                                        <label>
+                                            Key
+                                            <input
+                                                value={trackForm.keySignature}
+                                                onChange={(event) =>
+                                                    updateTrackForm("keySignature", event.target.value)
+                                                }
+                                                placeholder="F minor"
+                                            />
+                                        </label>
+                                        <label className="signal-board-wide-field">
+                                            Mood
+                                            <input
+                                                value={trackForm.mood}
+                                                onChange={(event) =>
+                                                    updateTrackForm("mood", event.target.value)
+                                                }
+                                                placeholder="blue chrome night drive"
+                                            />
+                                        </label>
+                                        <label className="signal-board-wide-field">
+                                            Hook
+                                            <textarea
+                                                value={trackForm.hook}
+                                                onChange={(event) =>
+                                                    updateTrackForm("hook", event.target.value)
+                                                }
+                                                rows={3}
+                                                placeholder="Main hook or signal line"
+                                            />
+                                        </label>
+                                        <label className="signal-board-wide-field">
+                                            Notes
+                                            <textarea
+                                                value={trackForm.notes}
+                                                onChange={(event) =>
+                                                    updateTrackForm("notes", event.target.value)
+                                                }
+                                                rows={3}
+                                                placeholder="Production notes, story notes, rollout notes..."
+                                            />
+                                        </label>
+                                        </div>
+                                        <div className="signal-board-toggle-row signal-board-campaign-toggles">
+                                            <label><input type="checkbox" checked={trackForm.isFocusTrack} onChange={(event) => updateTrackForm("isFocusTrack", event.target.checked)} /> Focus track</label>
+                                            <label><input type="checkbox" checked={trackForm.isSecondFocus} onChange={(event) => updateTrackForm("isSecondFocus", event.target.checked)} /> Second focus</label>
+                                            <span className="signal-board-field-note signal-board-toggle-note">These identify the primary and secondary songs for this release campaign.</span>
+                                        </div>
+                                    </section>
+
+                                    <section className="signal-board-track-section-card">
+                                        <div className="signal-board-track-section-heading">
+                                            <div><p className="signal-board-panel-kicker">Release</p><h3>Control the listener path</h3></div>
+                                            <span>Visibility, playback, dates, audio, and destination links.</span>
+                                        </div>
+                                        <div className="signal-board-track-form-grid signal-board-track-form-grid-compact">
+                                        <label>
+                                            Visibility
+                                            <select
+                                                value={trackForm.visibility}
+                                                onChange={(event) => {
+                                                    const value = event.target.value;
+                                                    updateTrackForm("visibility", value);
+                                                    updateTrackForm("isPublic", value === "public" || value === "listed");
+                                                }}
+                                            >
+                                                {trackVisibilityOptions.map((option) => (
+                                                    <option key={option.value} value={option.value}>
+                                                        {option.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <span className="signal-board-field-note">
+                                                Private stays hidden. Listed appears inside this release. Public can appear on broader surfaces later.
+                                            </span>
+                                        </label>
+                                        <label>
+                                            Playback
+                                            <select
+                                                value={trackForm.playbackStatus}
+                                                onChange={(event) =>
+                                                    updateTrackForm("playbackStatus", event.target.value)
+                                                }
+                                            >
+                                                {playbackStatusOptions.map((option) => (
+                                                    <option key={option.value} value={option.value}>
+                                                        {option.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <span className="signal-board-field-note">
+                                                Locked shows the track without audio. Preview needs Preview Audio URL. Playable uses full Audio URL.
+                                            </span>
+                                        </label>
+                                        <label>
+                                            Drop Date
+                                            <input
+                                                type="date"
+                                                value={trackForm.dropDate}
+                                                onChange={(event) =>
+                                                    updateTrackForm("dropDate", event.target.value)
+                                                }
+                                            />
+                                        </label>
+                                        <label>
+                                            Unlock Date
+                                            <input
+                                                type="date"
+                                                value={trackForm.unlockDate}
+                                                onChange={(event) =>
+                                                    updateTrackForm("unlockDate", event.target.value)
+                                                }
+                                            />
+                                        </label>
+                                        <label className="signal-board-wide-field">
+                                            Audio URL
+                                            <input
+                                                value={trackForm.audioUrl}
+                                                onChange={(event) =>
+                                                    updateTrackForm("audioUrl", event.target.value)
+                                                }
+                                                placeholder="/audio/song.mp3 or external URL"
+                                            />
+                                        </label>
+                                        <label className="signal-board-wide-field">
+                                            Preview Audio URL
+                                            <input
+                                                value={trackForm.previewAudioUrl}
+                                                onChange={(event) =>
+                                                    updateTrackForm("previewAudioUrl", event.target.value)
+                                                }
+                                                placeholder="15–30 second teaser audio URL"
+                                            />
+                                            <span className="signal-board-field-note">
+                                                Public preview uses this URL only. It will not fall back to the full track.
+                                            </span>
+                                        </label>
+                                        <label className="signal-board-wide-field">
+                                            Platform URL
+                                            <input
+                                                value={trackForm.platformUrl}
+                                                onChange={(event) =>
+                                                    updateTrackForm("platformUrl", event.target.value)
+                                                }
+                                                placeholder="Spotify, SoundCloud, YouTube, or pre-save link"
+                                            />
+                                        </label>
+                                        </div>
+                                    </section>
+
+                                    <section className="signal-board-track-section-card signal-board-track-section-nexus">
+                                        <div className="signal-board-track-section-heading">
+                                            <div><p className="signal-board-panel-kicker">Nexus + Realm</p><h3>Place the signal</h3></div>
+                                            <span>Choose where the song lives before it enters the wider Cosmic catalog.</span>
+                                        </div>
+                                        <div className="signal-board-track-form-grid signal-board-track-form-grid-compact signal-board-nexus-grid">
+                                        <label>
+                                            Realm
+                                            <select
+                                                value={trackForm.realmId}
+                                                onChange={(event) =>
+                                                    updateTrackForm("realmId", event.target.value)
+                                                }
+                                            >
+                                                {realmPublishingOptions.map((option) => (
+                                                    <option key={option.value || "none"} value={option.value}>
+                                                        {option.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <span className="signal-board-field-note">
+                                                Assign the song to the realm ecosystem before publishing to Nexus.
+                                            </span>
+                                        </label>
+                                        <label>
+                                            Nexus Role
+                                            <select
+                                                value={trackForm.nexusRole}
+                                                onChange={(event) =>
+                                                    updateTrackForm("nexusRole", event.target.value)
+                                                }
+                                            >
+                                                {nexusRoleOptions.map((option) => (
+                                                    <option key={option.value} value={option.value}>
+                                                        {option.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </label>
+                                        <label>
+                                            Nexus Sort
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                value={trackForm.nexusSortOrder}
+                                                onChange={(event) =>
+                                                    updateTrackForm("nexusSortOrder", event.target.value)
+                                                }
+                                                placeholder="999"
+                                            />
+                                        </label>
+                                        </div>
+                                        <div className="signal-board-nexus-intent">
+                                            <label><input type="checkbox" checked={trackForm.isRealmAnchor} onChange={(event) => updateTrackForm("isRealmAnchor", event.target.checked)} /> Realm Anchor</label>
+                                            <label><input type="checkbox" checked={trackForm.isPublicPick} onChange={(event) => updateTrackForm("isPublicPick", event.target.checked)} /> Public Pick</label>
+                                            <div className="signal-board-nexus-status">
+                                                <span>Catalog state</span>
+                                                <strong>{trackForm.showInNexus ? "Published to Nexus + Realm" : "Not published to Nexus"}</strong>
+                                            </div>
+                                        </div>
+
+                                        <div className="signal-board-publish-guide signal-board-nexus-readiness" aria-label="Publish Signal readiness">
+                                            <article>
+                                                <span>Publish Signal</span>
+                                                <strong>{publishSignalState}</strong>
+                                                <p>Publish once to place this song in the Nexus, its assigned realm page, and the shared global-player catalog.</p>
+                                            </article>
+                                            {publishSignalReadiness.checks.map((check) => (
+                                                <article key={check.key}>
+                                                    <span>{check.ready ? "Ready" : "Required"}</span>
+                                                    <strong>{check.ready ? "✓ " : "• "}{check.label}</strong>
+                                                    <p>{check.detail}</p>
+                                                </article>
                                             ))}
-                                        </select>
-                                    </label>
-                                    <label>
-                                        Status
-                                        <select
-                                            value={trackForm.status}
-                                            onChange={(event) =>
-                                                updateTrackForm("status", event.target.value)
-                                            }
-                                        >
-                                            {trackStatusOptions.map((option) => (
-                                                <option key={option.value} value={option.value}>
-                                                    {option.label}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </label>
-                                    <label>
-                                        Visibility
-                                        <select
-                                            value={trackForm.visibility}
-                                            onChange={(event) => {
-                                                const value = event.target.value;
-                                                updateTrackForm("visibility", value);
-                                                updateTrackForm("isPublic", value === "public" || value === "listed");
-                                            }}
-                                        >
-                                            {trackVisibilityOptions.map((option) => (
-                                                <option key={option.value} value={option.value}>
-                                                    {option.label}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <span className="signal-board-field-note">
-                                            Private stays hidden. Listed appears inside this release. Public can appear on broader surfaces later.
-                                        </span>
-                                    </label>
-                                    <label>
-                                        Playback
-                                        <select
-                                            value={trackForm.playbackStatus}
-                                            onChange={(event) =>
-                                                updateTrackForm("playbackStatus", event.target.value)
-                                            }
-                                        >
-                                            {playbackStatusOptions.map((option) => (
-                                                <option key={option.value} value={option.value}>
-                                                    {option.label}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <span className="signal-board-field-note">
-                                            Locked shows the track without audio. Preview needs Preview Audio URL. Playable uses full Audio URL.
-                                        </span>
-                                    </label>
-                                    <label>
-                                        Realm
-                                        <select
-                                            value={trackForm.realmId}
-                                            onChange={(event) =>
-                                                updateTrackForm("realmId", event.target.value)
-                                            }
-                                        >
-                                            {realmPublishingOptions.map((option) => (
-                                                <option key={option.value || "none"} value={option.value}>
-                                                    {option.label}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <span className="signal-board-field-note">
-                                            Assign the song to the realm ecosystem before publishing to Nexus.
-                                        </span>
-                                    </label>
-                                    <label>
-                                        Nexus Role
-                                        <select
-                                            value={trackForm.nexusRole}
-                                            onChange={(event) =>
-                                                updateTrackForm("nexusRole", event.target.value)
-                                            }
-                                        >
-                                            {nexusRoleOptions.map((option) => (
-                                                <option key={option.value} value={option.value}>
-                                                    {option.label}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </label>
-                                    <label>
-                                        Nexus Sort
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            value={trackForm.nexusSortOrder}
-                                            onChange={(event) =>
-                                                updateTrackForm("nexusSortOrder", event.target.value)
-                                            }
-                                            placeholder="999"
-                                        />
-                                    </label>
-                                    <label>
-                                        BPM
-                                        <input
-                                            type="number"
-                                            min="1"
-                                            value={trackForm.bpm}
-                                            onChange={(event) =>
-                                                updateTrackForm("bpm", event.target.value)
-                                            }
-                                            placeholder="140"
-                                        />
-                                    </label>
-                                    <label>
-                                        Key
-                                        <input
-                                            value={trackForm.keySignature}
-                                            onChange={(event) =>
-                                                updateTrackForm("keySignature", event.target.value)
-                                            }
-                                            placeholder="F minor"
-                                        />
-                                    </label>
-                                    <label className="signal-board-wide-field">
-                                        Mood
-                                        <input
-                                            value={trackForm.mood}
-                                            onChange={(event) =>
-                                                updateTrackForm("mood", event.target.value)
-                                            }
-                                            placeholder="blue chrome night drive"
-                                        />
-                                    </label>
-                                    <label>
-                                        Drop Date
-                                        <input
-                                            type="date"
-                                            value={trackForm.dropDate}
-                                            onChange={(event) =>
-                                                updateTrackForm("dropDate", event.target.value)
-                                            }
-                                        />
-                                    </label>
-                                    <label>
-                                        Unlock Date
-                                        <input
-                                            type="date"
-                                            value={trackForm.unlockDate}
-                                            onChange={(event) =>
-                                                updateTrackForm("unlockDate", event.target.value)
-                                            }
-                                        />
-                                    </label>
-                                    <label className="signal-board-wide-field">
-                                        Hook
-                                        <textarea
-                                            value={trackForm.hook}
-                                            onChange={(event) =>
-                                                updateTrackForm("hook", event.target.value)
-                                            }
-                                            rows={3}
-                                            placeholder="Main hook or signal line"
-                                        />
-                                    </label>
-                                    <label className="signal-board-wide-field">
-                                        Notes
-                                        <textarea
-                                            value={trackForm.notes}
-                                            onChange={(event) =>
-                                                updateTrackForm("notes", event.target.value)
-                                            }
-                                            rows={3}
-                                            placeholder="Production notes, story notes, rollout notes..."
-                                        />
-                                    </label>
-                                    <label className="signal-board-wide-field">
-                                        Audio URL
-                                        <input
-                                            value={trackForm.audioUrl}
-                                            onChange={(event) =>
-                                                updateTrackForm("audioUrl", event.target.value)
-                                            }
-                                            placeholder="/audio/song.mp3 or external URL"
-                                        />
-                                    </label>
-                                    <label className="signal-board-wide-field">
-                                        Preview Audio URL
-                                        <input
-                                            value={trackForm.previewAudioUrl}
-                                            onChange={(event) =>
-                                                updateTrackForm("previewAudioUrl", event.target.value)
-                                            }
-                                            placeholder="15–30 second teaser audio URL"
-                                        />
-                                        <span className="signal-board-field-note">
-                                            Public preview uses this URL only. It will not fall back to the full track.
-                                        </span>
-                                    </label>
-                                    <label className="signal-board-wide-field">
-                                        Platform URL
-                                        <input
-                                            value={trackForm.platformUrl}
-                                            onChange={(event) =>
-                                                updateTrackForm("platformUrl", event.target.value)
-                                            }
-                                            placeholder="Spotify, SoundCloud, YouTube, or pre-save link"
-                                        />
-                                    </label>
+                                        </div>
+
+                                        <div className="signal-board-panel-actions signal-board-publish-actions">
+                                            <button type="button" onClick={handlePublishSignal} disabled={isCreatingTrack || isUpdatingTrack || !releaseWorldId || (!trackForm.showInNexus && !publishSignalReadiness.ready)}>
+                                                {isCreatingTrack || isUpdatingTrack ? "Saving..." : trackForm.showInNexus ? "Remove from Nexus + Realm" : "Publish to Nexus + Realm"}
+                                            </button>
+                                        </div>
+                                    </section>
                                 </div>
 
-                                <div className="signal-board-publish-guide" aria-label="Publish Signal readiness">
-                                    <article>
-                                        <span>Publish Signal</span>
-                                        <strong>{publishSignalState}</strong>
-                                        <p>
-                                            Publish once to place this song in the Nexus, its assigned realm page,
-                                            and the shared global-player catalog.
-                                        </p>
-                                    </article>
-                                    {publishSignalReadiness.checks.map((check) => (
-                                        <article key={check.key}>
-                                            <span>{check.ready ? "Ready" : "Required"}</span>
-                                            <strong>{check.ready ? "✓ " : "• "}{check.label}</strong>
-                                            <p>{check.detail}</p>
-                                        </article>
-                                    ))}
-                                </div>
-
-                                <div className="signal-board-panel-actions">
-                                    <button
-                                        type="button"
-                                        onClick={handlePublishSignal}
-                                        disabled={
-                                            isCreatingTrack ||
-                                            isUpdatingTrack ||
-                                            !releaseWorldId ||
-                                            (!trackForm.showInNexus && !publishSignalReadiness.ready)
-                                        }
-                                    >
-                                        {isCreatingTrack || isUpdatingTrack
-                                            ? "Saving..."
-                                            : trackForm.showInNexus
-                                                ? "Remove from Nexus + Realm"
-                                                : "Publish to Nexus + Realm"}
+                                <div className="signal-board-panel-actions signal-board-track-save-actions">
+                                    <button type="button" onClick={() => void handleSaveTrack()} disabled={isCreatingTrack || isUpdatingTrack || !releaseWorldId}>
+                                        {isCreatingTrack || isUpdatingTrack ? "Saving..." : isCreatingNewTrack || !selectedTrackId ? "Create Track" : "Update Track"}
                                     </button>
                                 </div>
 
-                                <div className="signal-board-toggle-row">
-                                    <label>
-                                        <input
-                                            type="checkbox"
-                                            checked={trackForm.isFocusTrack}
-                                            onChange={(event) =>
-                                                updateTrackForm("isFocusTrack", event.target.checked)
-                                            }
-                                        />
-                                        Focus
-                                    </label>
-                                    <label>
-                                        <input
-                                            type="checkbox"
-                                            checked={trackForm.isSecondFocus}
-                                            onChange={(event) =>
-                                                updateTrackForm("isSecondFocus", event.target.checked)
-                                            }
-                                        />
-                                        Second
-                                    </label>
-                                    <label>
-                                        <input
-                                            type="checkbox"
-                                            checked={trackForm.showInNexus}
-                                            onChange={(event) =>
-                                                updateTrackForm("showInNexus", event.target.checked)
-                                            }
-                                        />
-                                        Published to Nexus + Realm
-                                    </label>
-                                    <label>
-                                        <input
-                                            type="checkbox"
-                                            checked={trackForm.isRealmAnchor}
-                                            onChange={(event) =>
-                                                updateTrackForm("isRealmAnchor", event.target.checked)
-                                            }
-                                        />
-                                        Realm Anchor
-                                    </label>
-                                    <label>
-                                        <input
-                                            type="checkbox"
-                                            checked={trackForm.isPublicPick}
-                                            onChange={(event) =>
-                                                updateTrackForm("isPublicPick", event.target.checked)
-                                            }
-                                        />
-                                        Public Pick
-                                    </label>
-                                    <span className="signal-board-field-note signal-board-toggle-note">
-                                        Nexus tracks should have a realm, public/listed visibility, playable/preview status, and audio or preview audio attached.
-                                    </span>
-                                </div>
-
-                                <div className="signal-board-panel-actions">
-                                    <button
-                                        type="button"
-                                        onClick={() => void handleSaveTrack()}
-                                        disabled={
-                                            isCreatingTrack || isUpdatingTrack || !releaseWorldId
-                                        }
-                                    >
-                                        {isCreatingTrack || isUpdatingTrack
-                                            ? "Saving..."
-                                            : isCreatingNewTrack || !selectedTrackId
-                                                ? "Create Track"
-                                                : "Update Track"}
-                                    </button>
-                                </div>
 
                                 {selectedTrackId && !isCreatingNewTrack && (
                                     <div className="signal-board-danger-mini">
@@ -3309,7 +3279,6 @@ export default function DynamicReleaseSignalBoardPage() {
                                 )}
                             </section>
                         )}
-
                         {activePanel === "assets" && (
                             <section className="signal-board-panel-section">
                                 <div className="signal-board-panel-heading">
@@ -3604,208 +3573,80 @@ export default function DynamicReleaseSignalBoardPage() {
                         )}
 
                         {activePanel === "signals" && (
-                            <section className="signal-board-panel-section">
+                            <section className="signal-board-panel-section signal-board-create-panel">
                                 <div className="signal-board-panel-heading">
                                     <div>
-                                        <p className="signal-board-panel-kicker">Create Signals</p>
-                                        <h2>Add to board</h2>
+                                        <p className="signal-board-panel-kicker">Create + Style</p>
+                                        <h2>Build a signal card</h2>
+                                        <p>Write the idea, choose how it should feel, then add exactly that card to the board.</p>
                                     </div>
+                                    <button type="button" onClick={resetBoard}>Reset Starter Board</button>
                                 </div>
 
-                                <div className="signal-board-compact-grid">
-                                    <div className="signal-board-toolbox-card signal-board-toolbox-card-flat">
-                                        <p className="signal-board-panel-kicker">Hook Lab</p>
-                                        <h2>Add hook artifact</h2>
+                                <div className="signal-board-create-layout">
+                                    <div className="signal-board-create-compose">
+                                        <div className="signal-board-toolbox-card signal-board-toolbox-card-flat">
+                                            <p className="signal-board-panel-kicker">Hook Lab</p>
+                                            <h2>Add hook artifact</h2>
+                                            <label>Attach to
+                                                <select value={selectedTrackSlug} onChange={(event) => setSelectedTrackSlug(event.target.value)}>
+                                                    {hookTargetOptions.map((target) => (<option key={target.slug} value={target.slug}>{target.title}</option>))}
+                                                </select>
+                                            </label>
+                                            <label>Hook title<input value={hookTitle} onChange={(event) => setHookTitle(event.target.value)} placeholder="Short hook title" /></label>
+                                            <label>Hook description<textarea value={hookDescription} onChange={(event) => setHookDescription(event.target.value)} placeholder="Add the full hook, phrase, theme, or lyric..." rows={4} /></label>
+                                            <button type="button" onClick={addHook}>Add Hook</button>
+                                        </div>
 
-                                        <label>
-                                            Attach to
-                                            <select
-                                                value={selectedTrackSlug}
-                                                onChange={(event) =>
-                                                    setSelectedTrackSlug(event.target.value)
-                                                }
-                                            >
-                                                {hookTargetOptions.map((target) => (
-                                                    <option key={target.slug} value={target.slug}>
-                                                        {target.title}
-                                                    </option>
+                                        <div className="signal-board-toolbox-card signal-board-toolbox-card-flat">
+                                            <p className="signal-board-panel-kicker">Artifact Drop</p>
+                                            <h2>Add custom note</h2>
+                                            <label>Tag<input value={noteTag} onChange={(event) => setNoteTag(event.target.value)} placeholder="Visual idea, Cover note, Symbol..." /></label>
+                                            <label>Title<input value={noteTitle} onChange={(event) => setNoteTitle(event.target.value)} placeholder="Short artifact title" /></label>
+                                            <label>Description<textarea value={noteBody} onChange={(event) => setNoteBody(event.target.value)} placeholder="Add the actual note, idea, symbol, clip thought, or reminder..." rows={4} /></label>
+                                            <button type="button" onClick={addNoteArtifact}>Add Note</button>
+                                        </div>
+                                    </div>
+
+                                    <aside className="signal-board-create-style">
+                                        <div className={`signal-board-card-preview signal-board-pin-color-${selectedColor} signal-board-card-preview-${selectedSize}`}>
+                                            <span>{noteTag || "Signal"}</span>
+                                            <strong>{hookTitle || noteTitle || "Your next signal"}</strong>
+                                            <p>{hookDescription || noteBody || `Attached to ${getHookTargetTitle(selectedTrackSlug, hookTargetOptions)}`}</p>
+                                            <em>{sizeOptions.find((option) => option.value === selectedSize)?.label} • Layer {selectedLayer}</em>
+                                        </div>
+
+                                        <div className="signal-board-toolbox-card signal-board-toolbox-card-flat">
+                                            <p className="signal-board-panel-kicker">Card Appearance</p>
+                                            <h2>Style before you drop</h2>
+                                            <div className="signal-board-style-row" aria-label="New card color">
+                                                {colorOptions.map((option) => (
+                                                    <button key={option.value} type="button" className={`signal-board-swatch signal-board-swatch-${option.value} ${selectedColor === option.value ? "is-active" : ""}`} onClick={() => setSelectedColor(option.value)}>{option.label}</button>
                                                 ))}
-                                            </select>
-                                        </label>
-
-                                        <label>
-                                            Hook title
-                                            <input
-                                                value={hookTitle}
-                                                onChange={(event) => setHookTitle(event.target.value)}
-                                                placeholder="Short hook title"
-                                            />
-                                        </label>
-
-                                        <label>
-                                            Hook description
-                                            <textarea
-                                                value={hookDescription}
-                                                onChange={(event) =>
-                                                    setHookDescription(event.target.value)
-                                                }
-                                                placeholder="Add the full hook, phrase, theme, or lyric..."
-                                                rows={4}
-                                            />
-                                        </label>
-
-                                        <button type="button" onClick={addHook}>
-                                            Add Hook
-                                        </button>
-                                    </div>
-
-                                    <div className="signal-board-toolbox-card signal-board-toolbox-card-flat">
-                                        <p className="signal-board-panel-kicker">Artifact Drop</p>
-                                        <h2>Add custom note</h2>
-
-                                        <label>
-                                            Tag
-                                            <input
-                                                value={noteTag}
-                                                onChange={(event) => setNoteTag(event.target.value)}
-                                                placeholder="Visual idea, Cover note, Symbol..."
-                                            />
-                                        </label>
-
-                                        <label>
-                                            Title
-                                            <input
-                                                value={noteTitle}
-                                                onChange={(event) => setNoteTitle(event.target.value)}
-                                                placeholder="Short artifact title"
-                                            />
-                                        </label>
-
-                                        <label>
-                                            Description
-                                            <textarea
-                                                value={noteBody}
-                                                onChange={(event) => setNoteBody(event.target.value)}
-                                                placeholder="Add the actual note, idea, symbol, clip thought, or reminder..."
-                                                rows={4}
-                                            />
-                                        </label>
-
-                                        <button type="button" onClick={addNoteArtifact}>
-                                            Add Note
-                                        </button>
-                                    </div>
-                                </div>
-                            </section>
-                        )}
-
-                        {activePanel === "style" && (
-                            <section className="signal-board-panel-section">
-                                <div className="signal-board-panel-heading">
-                                    <div>
-                                        <p className="signal-board-panel-kicker">Style</p>
-                                        <h2>Board + new cards</h2>
-                                    </div>
-                                    <button type="button" onClick={resetBoard}>
-                                        Reset Local
-                                    </button>
-                                </div>
-
-                                <div className="signal-board-compact-grid">
-                                    <div className="signal-board-toolbox-card signal-board-toolbox-card-flat">
-                                        <p className="signal-board-panel-kicker">Board Theme</p>
-                                        <h2>Starter board</h2>
-                                        <div
-                                            className="signal-board-style-row"
-                                            aria-label="Starter board color"
-                                        >
-                                            {colorOptions.map((option) => (
-                                                <button
-                                                    key={option.value}
-                                                    type="button"
-                                                    className={`signal-board-swatch signal-board-swatch-${option.value} ${boardColor === option.value ? "is-active" : ""
-                                                        }`}
-                                                    onClick={() => applyStarterBoardColor(option.value)}
-                                                >
-                                                    {option.label}
-                                                </button>
-                                            ))}
-                                        </div>
-                                        <p className="signal-board-tool-note">
-                                            Applies to generated starter artifacts only. User-added
-                                            notes keep their chosen style.
-                                        </p>
-                                    </div>
-
-                                    <div className="signal-board-toolbox-card signal-board-toolbox-card-flat">
-                                        <p className="signal-board-panel-kicker">
-                                            New Card Defaults
-                                        </p>
-                                        <h2>Signal style</h2>
-                                        <div
-                                            className="signal-board-style-row"
-                                            aria-label="Sticky note color"
-                                        >
-                                            {colorOptions.map((option) => (
-                                                <button
-                                                    key={option.value}
-                                                    type="button"
-                                                    className={`signal-board-swatch signal-board-swatch-${option.value} ${selectedColor === option.value ? "is-active" : ""
-                                                        }`}
-                                                    onClick={() => setSelectedColor(option.value)}
-                                                >
-                                                    {option.label}
-                                                </button>
-                                            ))}
-                                        </div>
-
-                                        <div
-                                            className="signal-board-size-row"
-                                            aria-label="Sticky note size"
-                                        >
-                                            {sizeOptions.map((option) => (
-                                                <button
-                                                    key={option.value}
-                                                    type="button"
-                                                    className={
-                                                        selectedSize === option.value ? "is-active" : ""
-                                                    }
-                                                    onClick={() => setSelectedSize(option.value)}
-                                                >
-                                                    {option.label}
-                                                </button>
-                                            ))}
-                                        </div>
-
-                                        <label>
-                                            Layer priority
-                                            <select
-                                                value={selectedLayer}
-                                                onChange={(event) =>
-                                                    setSelectedLayer(Number(event.target.value))
-                                                }
-                                            >
-                                                {layerOptions.map((layer) => (
-                                                    <option key={layer} value={layer}>
-                                                        Layer {layer}
-                                                    </option>
+                                            </div>
+                                            <div className="signal-board-size-row" aria-label="New card size">
+                                                {sizeOptions.map((option) => (
+                                                    <button key={option.value} type="button" className={selectedSize === option.value ? "is-active" : ""} onClick={() => setSelectedSize(option.value)}>{option.label}</button>
                                                 ))}
-                                            </select>
-                                        </label>
-                                    </div>
-
-                                    <div className="signal-board-toolbox-card signal-board-toolbox-card-flat signal-board-wide-field">
-                                        <p className="signal-board-panel-kicker">Signal Map</p>
-                                        <h2>Hooks by target</h2>
-                                        <div className="signal-board-theme-map">
-                                            {hookCounts.map((target) => (
-                                                <div key={target.slug}>
-                                                    <span>{target.title}</span>
-                                                    <strong>{target.count}</strong>
-                                                </div>
-                                            ))}
+                                            </div>
+                                            <label>Layer priority
+                                                <select value={selectedLayer} onChange={(event) => setSelectedLayer(Number(event.target.value))}>
+                                                    {layerOptions.map((layer) => (<option key={layer} value={layer}>Layer {layer}</option>))}
+                                                </select>
+                                            </label>
                                         </div>
-                                    </div>
+
+                                        <div className="signal-board-toolbox-card signal-board-toolbox-card-flat">
+                                            <p className="signal-board-panel-kicker">Starter Board</p>
+                                            <h2>Generated card theme</h2>
+                                            <div className="signal-board-style-row" aria-label="Starter board color">
+                                                {colorOptions.map((option) => (
+                                                    <button key={option.value} type="button" className={`signal-board-swatch signal-board-swatch-${option.value} ${boardColor === option.value ? "is-active" : ""}`} onClick={() => applyStarterBoardColor(option.value)}>{option.label}</button>
+                                                ))}
+                                            </div>
+                                            <p className="signal-board-tool-note">Changes generated starter cards only. User-created cards keep their chosen appearance.</p>
+                                        </div>
+                                    </aside>
                                 </div>
                             </section>
                         )}

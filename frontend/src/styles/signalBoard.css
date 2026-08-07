@@ -2110,3 +2110,106 @@
     justify-content: flex-start;
   }
 }
+
+/* ===================================
+   V5J1 — CREATOR WORKFLOW + MOBILE PASS
+   Tracks / Create / Assets / Portal
+   =================================== */
+.signal-board-horizontal-tabs {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  max-width: 660px;
+}
+
+.signal-board-coverage {
+  display: grid;
+  grid-template-columns: minmax(220px, .8fr) minmax(280px, .8fr) minmax(0, 1.4fr);
+  gap: 1rem;
+  align-items: center;
+  margin: 0 0 1rem;
+  padding: 1rem;
+  border: 1px solid rgba(126,211,255,.14);
+  border-radius: 1.35rem;
+  background: linear-gradient(145deg, rgba(255,255,255,.05), rgba(7,11,20,.72));
+}
+.signal-board-coverage-copy h3 { margin:.2rem 0 .25rem; font-size:1.05rem; }
+.signal-board-coverage-copy span { color:var(--sb-muted); font-size:.78rem; line-height:1.45; }
+.signal-board-coverage-stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.45rem; }
+.signal-board-coverage-stats div { padding:.7rem; border:1px solid rgba(214,224,235,.10); border-radius:.85rem; background:rgba(255,255,255,.035); }
+.signal-board-coverage-stats span,.signal-board-coverage-stats strong { display:block; }
+.signal-board-coverage-stats span { color:var(--sb-soft); font-size:.6rem; letter-spacing:.1em; text-transform:uppercase; }
+.signal-board-coverage-stats strong { margin-top:.2rem; font-size:1.05rem; }
+.signal-board-coverage-map { margin:0; }
+
+.signal-board-track-workflow { display:grid; gap:1rem; margin-top:1rem; }
+.signal-board-track-section-card {
+  padding:1rem;
+  border:1px solid rgba(214,224,235,.11);
+  border-radius:1.15rem;
+  background:rgba(255,255,255,.028);
+}
+.signal-board-track-section-nexus {
+  border-color:rgba(126,211,255,.20);
+  background:radial-gradient(circle at 10% 0%,rgba(126,211,255,.08),transparent 34%),rgba(255,255,255,.03);
+}
+.signal-board-track-section-heading { display:flex; align-items:end; justify-content:space-between; gap:1rem; margin-bottom:.9rem; }
+.signal-board-track-section-heading h3 { margin:.15rem 0 0; font-size:1.1rem; }
+.signal-board-track-section-heading > span { max-width:30rem; color:var(--sb-muted); font-size:.78rem; text-align:right; }
+.signal-board-campaign-toggles { margin-top:.85rem; }
+.signal-board-nexus-intent { display:grid; grid-template-columns:auto auto minmax(220px,1fr); gap:.65rem; align-items:center; margin-top:.85rem; }
+.signal-board-nexus-intent > label { min-height:2.7rem; display:flex; align-items:center; gap:.5rem; padding:.6rem .75rem; border:1px solid rgba(214,224,235,.11); border-radius:.85rem; background:rgba(255,255,255,.035); }
+.signal-board-nexus-status { padding:.7rem .85rem; border:1px solid rgba(126,211,255,.15); border-radius:.85rem; background:rgba(126,211,255,.055); }
+.signal-board-nexus-status span,.signal-board-nexus-status strong { display:block; }
+.signal-board-nexus-status span { color:var(--sb-soft); font-size:.61rem; letter-spacing:.12em; text-transform:uppercase; }
+.signal-board-nexus-status strong { margin-top:.2rem; font-size:.82rem; }
+.signal-board-nexus-readiness { margin-top:1rem; }
+.signal-board-publish-actions { position:sticky; bottom:.75rem; z-index:12; margin-top:1rem; padding:.65rem; border:1px solid rgba(126,211,255,.16); border-radius:1rem; background:rgba(3,5,10,.82); backdrop-filter:blur(16px); }
+.signal-board-publish-actions button { width:100%; min-height:3rem; }
+.signal-board-track-save-actions { justify-content:flex-end; margin-top:1rem; }
+
+.signal-board-create-layout { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(300px,.8fr); gap:1rem; align-items:start; }
+.signal-board-create-compose,.signal-board-create-style { display:grid; gap:1rem; }
+.signal-board-create-style { position:sticky; top:6.5rem; }
+.signal-board-card-preview { min-height:13rem; display:flex; flex-direction:column; justify-content:flex-end; gap:.4rem; padding:1rem; border-radius:1rem; box-shadow:0 18px 40px rgba(0,0,0,.24); color:rgba(22,27,36,.90); }
+.signal-board-card-preview span { font-size:.62rem; letter-spacing:.14em; text-transform:uppercase; opacity:.65; }
+.signal-board-card-preview strong { font-size:1.1rem; }
+.signal-board-card-preview p { margin:0; font-size:.82rem; line-height:1.5; opacity:.72; }
+.signal-board-card-preview em { margin-top:.4rem; font-size:.64rem; font-style:normal; opacity:.55; text-transform:uppercase; }
+.signal-board-card-preview-sm { min-height:9rem; }
+.signal-board-card-preview-md { min-height:12rem; }
+.signal-board-card-preview-lg { min-height:15rem; }
+.signal-board-card-preview-xl { min-height:18rem; }
+.signal-board-pin-color-graphite.signal-board-card-preview { color:rgba(248,250,255,.94); }
+
+@media (max-width: 980px) {
+  .signal-board-coverage { grid-template-columns:1fr; }
+  .signal-board-create-layout { grid-template-columns:1fr; }
+  .signal-board-create-style { position:static; grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .signal-board-card-preview { grid-column:1 / -1; }
+  .signal-board-track-section-heading { align-items:flex-start; flex-direction:column; }
+  .signal-board-track-section-heading > span { text-align:left; }
+}
+
+@media (max-width: 760px) {
+  .signal-board-horizontal-tabs button { min-width:7.4rem; min-height:2.9rem; }
+  .signal-board-coverage-stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .signal-board-create-style { grid-template-columns:1fr; }
+  .signal-board-card-preview { grid-column:auto; }
+  .signal-board-nexus-intent { grid-template-columns:1fr; }
+  .signal-board-track-section-card { padding:.85rem; }
+  .signal-board-publish-actions { bottom:.5rem; }
+  .signal-board-track-strip { scroll-snap-type:x proximity; }
+  .signal-board-track-strip > button { scroll-snap-align:start; }
+}
+
+@media (max-width: 560px) {
+  .signal-board-tool-dock { width:calc(100% - .5rem); padding:.6rem; border-radius:1.15rem; }
+  .signal-board-panel-section { padding:.8rem; }
+  .signal-board-horizontal-tabs { margin-left:-.2rem; margin-right:-.2rem; padding:.28rem; }
+  .signal-board-horizontal-tabs button { min-width:6.8rem; font-size:.62rem; }
+  .signal-board-track-section-card { border-radius:1rem; padding:.75rem; }
+  .signal-board-track-section-heading h3 { font-size:1rem; }
+  .signal-board-publish-actions { margin-left:-.15rem; margin-right:-.15rem; }
+  .signal-board-publish-actions button,.signal-board-track-save-actions button,.signal-board-create-panel .signal-board-toolbox-card > button { width:100%; min-height:3rem; }
+  .signal-board-coverage { padding:.8rem; }
+  .signal-board-coverage-map { max-height:12rem; overflow:auto; }
+}
