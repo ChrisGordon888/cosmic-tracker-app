@@ -361,9 +361,13 @@ function getTrackFanLine(track: ReleaseTrack, world: ReleaseWorld) {
     return 'Release timing forming';
 }
 
-function getTrackArtworkUrl(track: ReleaseTrack, world: ReleaseWorld) {
+function getUniqueTrackArtworkUrl(track: ReleaseTrack) {
+    return track.artworkUrl?.trim() || null;
+}
+
+function getPlayerArtworkUrl(track: ReleaseTrack, world: ReleaseWorld) {
     return (
-        track.artworkUrl?.trim() ||
+        getUniqueTrackArtworkUrl(track) ||
         track.releaseCoverArtUrl?.trim() ||
         world.coverArtUrl?.trim() ||
         null
@@ -582,7 +586,7 @@ export default function DynamicReleasePage() {
             unlockDate: track.unlockDate ?? null,
             dropDate: track.dropDate ?? null,
             isPublic: track.isPublic,
-            artworkUrl: getTrackArtworkUrl(track, world) ?? undefined,
+            artworkUrl: getPlayerArtworkUrl(track, world) ?? undefined,
         };
     };
 
@@ -708,32 +712,34 @@ export default function DynamicReleasePage() {
                         {releaseTracks.map((track) => {
                             const action = getTrackAvailability(track, isCreatorView, isSignedInForMusic);
 
+                            const uniqueTrackArtworkUrl = getUniqueTrackArtworkUrl(track);
+
                             return (
-                                <article key={track.id} className="release-world-track-card">
+                                <article
+                                    key={track.id}
+                                    className={`release-world-track-card${uniqueTrackArtworkUrl ? ' release-world-track-card-has-artwork' : ''}`}
+                                >
                                     <div className="release-world-track-card-top">
                                         <span>{String(track.trackNumber).padStart(2, '0')}</span>
-                                        <em>{action.label}</em>
+                                        <div className="release-world-track-card-status">
+                                            {(track.isFocusTrack || track.isSecondFocus) && (
+                                                <strong>
+                                                    {track.isFocusTrack ? 'First Signal' : 'Second Signal'}
+                                                </strong>
+                                            )}
+                                            <em>{action.label}</em>
+                                        </div>
                                     </div>
 
-                                    <div className="release-world-track-artwork" aria-hidden="true">
-                                        {getTrackArtworkUrl(track, world) ? (
+                                    {uniqueTrackArtworkUrl && (
+                                        <div className="release-world-track-artwork">
                                             <img
-                                                src={getTrackArtworkUrl(track, world) ?? ''}
-                                                alt=""
+                                                src={uniqueTrackArtworkUrl}
+                                                alt={`${track.title} artwork`}
                                                 className="release-world-track-artwork-image"
                                             />
-                                        ) : (
-                                            <div className="release-world-track-artwork-fallback">
-                                                <span>{String(track.trackNumber).padStart(2, '0')}</span>
-                                                <strong>Cosmic</strong>
-                                            </div>
-                                        )}
-                                        {(track.isFocusTrack || track.isSecondFocus) && (
-                                            <span className="release-world-track-signal-badge">
-                                                {track.isFocusTrack ? 'First Signal' : 'Second Signal'}
-                                            </span>
-                                        )}
-                                    </div>
+                                        </div>
+                                    )}
 
                                     <h3>{track.title}</h3>
                                     <p>{getTrackFanLine(track, world)}</p>
