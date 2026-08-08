@@ -1,5 +1,11 @@
 const mongoose = require('mongoose');
 
+const PLATFORM_PERMISSION_VALUES = [
+  'creator.support',
+  'nexus.publish',
+  'nexus.editorial'
+];
+
 const UserSchema = new mongoose.Schema({
   // ==========================================
   // AUTHENTICATION (NextAuth/GitHub)
@@ -10,11 +16,10 @@ const UserSchema = new mongoose.Schema({
     unique: true
   },
   name: String,
-  image: String, // GitHub avatar
+  image: String,
 
-  // OAuth provider data
   accounts: [{
-    provider: String,      // 'github'
+    provider: String,
     providerAccountId: String,
     type: String,
     access_token: String
@@ -37,36 +42,36 @@ const UserSchema = new mongoose.Schema({
     index: true
   },
 
+  // Fine-grained elevation for trusted admins. Owners implicitly have all
+  // platform permissions and do not need entries here.
+  platformPermissions: {
+    type: [{
+      type: String,
+      enum: PLATFORM_PERMISSION_VALUES
+    }],
+    default: []
+  },
+
+  // Creator ownerIds this admin is explicitly allowed to assist.
+  // This does not grant Nexus publishing/editorial authority by itself.
+  creatorAccessOwnerIds: {
+    type: [String],
+    default: [],
+    index: true
+  },
+
   // ==========================================
   // GAMIFICATION
   // ==========================================
-  level: {
-    type: Number,
-    default: 1
-  },
-
-  xp: {
-    type: Number,
-    default: 0
-  },
-
-  xpToNextLevel: {
-    type: Number,
-    default: 100
-  },
+  level: { type: Number, default: 1 },
+  xp: { type: Number, default: 0 },
+  xpToNextLevel: { type: Number, default: 100 },
 
   // ==========================================
   // REALM PROGRESS
   // ==========================================
-  currentRealm: {
-    type: Number,
-    default: 303 // Starting realm: Fractured Frontier
-  },
-
-  unlockedRealms: {
-    type: [Number],
-    default: [303, 202] // Start with 2 realms unlocked
-  },
+  currentRealm: { type: Number, default: 303 },
+  unlockedRealms: { type: [Number], default: [303, 202] },
 
   // ==========================================
   // TRIAL COMPLETION
@@ -102,7 +107,7 @@ const UserSchema = new mongoose.Schema({
       trackTitle: String,
       artist: { type: String, default: 'Cosmic 888' },
       listenCount: { type: Number, default: 0 },
-      totalListenTime: { type: Number, default: 0 }, // seconds
+      totalListenTime: { type: Number, default: 0 },
       firstListenedAt: Date,
       lastListenedAt: Date,
       xpEarned: { type: Number, default: 0 }
@@ -133,10 +138,6 @@ const UserSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
-
-// ==========================================
-// HELPER METHODS
-// ==========================================
 
 UserSchema.methods.calculateXPForNextLevel = function() {
   return Math.floor(100 * Math.pow(1.5, this.level - 1));

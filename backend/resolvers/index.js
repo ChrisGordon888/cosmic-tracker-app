@@ -67,6 +67,75 @@ function requireOwner(user) {
     return user;
 }
 
+const PLATFORM_PERMISSION_VALUES = new Set([
+    "creator.support",
+    "nexus.publish",
+    "nexus.editorial",
+]);
+
+function normalizePlatformPermission(permission) {
+    return String(permission || "").trim().toLowerCase();
+}
+
+function hasPlatformPermission(user, permission) {
+    if (!user) return false;
+    if (isPlatformOwner(user)) return true;
+
+    const normalized = normalizePlatformPermission(permission);
+    return Array.isArray(user.platformPermissions) &&
+        user.platformPermissions.some(
+            (item) => normalizePlatformPermission(item) === normalized
+        );
+}
+
+function canReviewNexus(user) {
+    return isPlatformAdmin(user);
+}
+
+function canPublishToNexus(user) {
+    return isPlatformOwner(user) || hasPlatformPermission(user, "nexus.publish");
+}
+
+function canManageNexusEditorial(user) {
+    return isPlatformOwner(user) || hasPlatformPermission(user, "nexus.editorial");
+}
+
+function canManageCreatorContent(user, creatorOwnerId) {
+    if (!user || !creatorOwnerId) return false;
+    if (String(user.id) === String(creatorOwnerId)) return hasCreatorAccess(user);
+    if (isPlatformOwner(user)) return true;
+    if (user.role !== "admin") return false;
+
+    const grants = Array.isArray(user.creatorAccessOwnerIds)
+        ? user.creatorAccessOwnerIds
+        : [];
+
+    return grants.some((ownerId) => String(ownerId) === String(creatorOwnerId));
+}
+
+function requireNexusReview(user) {
+    requireUser(user);
+    if (!canReviewNexus(user)) {
+        throw new Error("Nexus review access required.");
+    }
+    return user;
+}
+
+function requireNexusPublish(user) {
+    requireUser(user);
+    if (!canPublishToNexus(user)) {
+        throw new Error("Nexus publishing permission required.");
+    }
+    return user;
+}
+
+function requireNexusEditorial(user) {
+    requireUser(user);
+    if (!canManageNexusEditorial(user)) {
+        throw new Error("Nexus editorial permission required.");
+    }
+    return user;
+}
 
 function hasCreatorOnboardingAccess(user) {
     if (!user) return false;
@@ -1261,7 +1330,7 @@ module.exports = {
 
             return await User.find(query)
                 .select(
-                    "_id email name image role creatorStatus createdAt updatedAt"
+                    "_id email name image role creatorStatus platformPermissions creatorAccessOwnerIds createdAt updatedAt"
                 )
                 .sort({ createdAt: -1 });
         },
@@ -1270,7 +1339,7 @@ module.exports = {
             requireAdmin(user);
 
             return await User.findById(id).select(
-                "_id email name image role creatorStatus createdAt updatedAt"
+                "_id email name image role creatorStatus platformPermissions creatorAccessOwnerIds createdAt updatedAt"
             );
         },
 
@@ -3033,6 +3102,90 @@ module.exports = {
             return targetUser;
         },
 
+
+        setPlatformPermissions: async (_, { userId, permissions }, { user }) => {
+            requireOwner(user);
+
+            const targetUser = await User.findById(userId);
+            if (!targetUser) throw new Error("User not found.");
+
+            if (targetUser.role !== "admin") {
+                throw new Error("Fine-grained platform permissions can only be assigned to administrators.");
+            }
+
+            const normalizedPermissions = [...new Set(
+                (permissions || []).map(normalizePlatformPermission).filter(Boolean)
+            )];
+
+            for (const permission of normalizedPermissions) {
+                if (!PLATFORM_PERMISSION_VALUES.has(permission)) {
+                    throw new Error(`Invalid platform permission: ${permission}.`);
+                }
+            }
+
+            targetUser.platformPermissions = normalizedPermissions;
+            await targetUser.save();
+            return targetUser;
+        },
+
+        grantAdminCreatorAccess: async (
+            _,
+            { adminUserId, creatorUserId },
+            { user }
+        ) => {
+            requireOwner(user);
+
+            const [adminUser, creatorUser] = await Promise.all([
+                User.findById(adminUserId),
+                User.findById(creatorUserId),
+            ]);
+
+            if (!adminUser) throw new Error("Administrator not found.");
+            if (!creatorUser) throw new Error("Creator not found.");
+            if (adminUser.role !== "admin") {
+                throw new Error("Creator support access can only be granted to an administrator.");
+            }
+            if (creatorUser.role !== "creator") {
+                throw new Error("Support access must target a creator account.");
+            }
+
+            const creatorOwnerId = String(creatorUser._id);
+            const grants = new Set(
+                (adminUser.creatorAccessOwnerIds || []).map((value) => String(value))
+            );
+            grants.add(creatorOwnerId);
+
+            adminUser.creatorAccessOwnerIds = [...grants];
+            await adminUser.save();
+            return adminUser;
+        },
+
+        revokeAdminCreatorAccess: async (
+            _,
+            { adminUserId, creatorUserId },
+            { user }
+        ) => {
+            requireOwner(user);
+
+            const [adminUser, creatorUser] = await Promise.all([
+                User.findById(adminUserId),
+                User.findById(creatorUserId),
+            ]);
+
+            if (!adminUser) throw new Error("Administrator not found.");
+            if (!creatorUser) throw new Error("Creator not found.");
+            if (adminUser.role !== "admin") {
+                throw new Error("Creator support access can only be revoked from an administrator.");
+            }
+
+            const creatorOwnerId = String(creatorUser._id);
+            adminUser.creatorAccessOwnerIds = (adminUser.creatorAccessOwnerIds || [])
+                .map((value) => String(value))
+                .filter((value) => value !== creatorOwnerId);
+
+            await adminUser.save();
+            return adminUser;
+        },
         // ========================================
         // 🌌 CREATOR WORLD MUTATIONS
         // ========================================
@@ -3309,6 +3462,8 @@ module.exports = {
             return updatedTrack;
         },
 
+        // Compatibility path for the current creator UI. V5L2 will move this
+        // behind requireNexusEditorial once the creator-facing review flow lands.
         setFeaturedSignal: async (_, { trackId }, { user }) => {
             requireCreator(user);
 

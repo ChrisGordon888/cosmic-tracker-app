@@ -50,6 +50,8 @@ const typeDefs = gql`
     image: String
     role: String!
     creatorStatus: String!
+    platformPermissions: [String!]!
+    creatorAccessOwnerIds: [String!]!
 
     level: Int!
     xp: Int!
@@ -78,6 +80,8 @@ const typeDefs = gql`
     image: String
     role: String!
     creatorStatus: String!
+    platformPermissions: [String!]!
+    creatorAccessOwnerIds: [String!]!
     createdAt: String
     updatedAt: String
   }
@@ -678,6 +682,9 @@ const typeDefs = gql`
     restoreCreator(userId: ID!): PlatformUser!
     setCreatorStatus(userId: ID!, creatorStatus: String!): PlatformUser!
     setPlatformRole(userId: ID!, role: String!): PlatformUser!
+    setPlatformPermissions(userId: ID!, permissions: [String!]!): PlatformUser!
+    grantAdminCreatorAccess(adminUserId: ID!, creatorUserId: ID!): PlatformUser!
+    revokeAdminCreatorAccess(adminUserId: ID!, creatorUserId: ID!): PlatformUser!
 
     # Creator Worlds
     createCreativeProfile(input: CreativeProfileInput!): CreativeProfile!
