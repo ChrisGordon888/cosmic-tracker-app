@@ -1443,6 +1443,7 @@ export default function DynamicReleaseSignalBoardPage() {
     const [noteTag, setNoteTag] = useState("Creator Note");
     const [noteTitle, setNoteTitle] = useState("");
     const [noteBody, setNoteBody] = useState("");
+    const [createMode, setCreateMode] = useState<"hook" | "note">("hook");
 
     const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
     const [isCreatingNewTrack, setIsCreatingNewTrack] = useState(false);
@@ -2976,23 +2977,14 @@ export default function DynamicReleaseSignalBoardPage() {
                                     {tracksError?.message || trackMessage}
                                 </p>
 
-                                <div className="signal-board-publish-guide" aria-label="Track publishing guide">
-                                    <article>
-                                        <span>Visibility</span>
-                                        <strong>Private / Listed / Public</strong>
-                                        <p>Listed and Public tracks appear in the Release Page tracklist. Private stays creator-only.</p>
-                                    </article>
-                                    <article>
-                                        <span>Playback</span>
-                                        <strong>Locked / Preview / Playable</strong>
-                                        <p>Playback decides what fans can hear: full audio, preview audio, or a locked coming-soon state.</p>
-                                    </article>
-                                    <article>
-                                        <span>Dates</span>
-                                        <strong>Drop + unlock timing</strong>
-                                        <p>Dates shape the portal copy: Available now, Preview available, or Opens on a calendar day.</p>
-                                    </article>
-                                </div>
+                                <details className="signal-board-help-disclosure">
+                                    <summary>How release controls work</summary>
+                                    <div className="signal-board-help-grid">
+                                        <span><strong>Visibility</strong> — Listed/Public appears on the Release Page.</span>
+                                        <span><strong>Playback</strong> — Locked, preview, or full playable audio.</span>
+                                        <span><strong>Dates</strong> — Drop and unlock timing shape listener access.</span>
+                                    </div>
+                                </details>
 
                                 <div
                                     className="signal-board-track-strip"
@@ -3142,10 +3134,12 @@ export default function DynamicReleaseSignalBoardPage() {
                                             />
                                         </label>
                                         </div>
-                                        <div className="signal-board-toggle-row signal-board-campaign-toggles">
-                                            <label><input type="checkbox" checked={trackForm.isFocusTrack} onChange={(event) => updateTrackForm("isFocusTrack", event.target.checked)} /> Focus track</label>
-                                            <label><input type="checkbox" checked={trackForm.isSecondFocus} onChange={(event) => updateTrackForm("isSecondFocus", event.target.checked)} /> Second focus</label>
-                                            <span className="signal-board-field-note signal-board-toggle-note">These identify the primary and secondary songs for this release campaign.</span>
+                                        <div className="signal-board-campaign-control">
+                                            <span className="signal-board-control-label">Release focus</span>
+                                            <div className="signal-board-campaign-toggles">
+                                                <label className={trackForm.isFocusTrack ? "is-active" : ""}><input type="checkbox" checked={trackForm.isFocusTrack} onChange={(event) => updateTrackForm("isFocusTrack", event.target.checked)} /> Primary focus</label>
+                                                <label className={trackForm.isSecondFocus ? "is-active" : ""}><input type="checkbox" checked={trackForm.isSecondFocus} onChange={(event) => updateTrackForm("isSecondFocus", event.target.checked)} /> Secondary focus</label>
+                                            </div>
                                         </div>
                                     </section>
 
@@ -3677,34 +3671,41 @@ export default function DynamicReleaseSignalBoardPage() {
 
                                 <div className="signal-board-create-layout">
                                     <div className="signal-board-create-compose">
-                                        <div className="signal-board-toolbox-card signal-board-toolbox-card-flat">
-                                            <p className="signal-board-panel-kicker">Hook Lab</p>
-                                            <h2>Add hook artifact</h2>
-                                            <label>Attach to
-                                                <select value={selectedTrackSlug} onChange={(event) => setSelectedTrackSlug(event.target.value)}>
-                                                    {hookTargetOptions.map((target) => (<option key={target.slug} value={target.slug}>{target.title}</option>))}
-                                                </select>
-                                            </label>
-                                            <label>Hook title<input value={hookTitle} onChange={(event) => setHookTitle(event.target.value)} placeholder="Short hook title" /></label>
-                                            <label>Hook description<textarea value={hookDescription} onChange={(event) => setHookDescription(event.target.value)} placeholder="Add the full hook, phrase, theme, or lyric..." rows={4} /></label>
-                                            <button type="button" onClick={addHook}>Add Hook</button>
+                                        <div className="signal-board-create-mode" role="tablist" aria-label="Signal card type">
+                                            <button type="button" className={createMode === "hook" ? "is-active" : ""} onClick={() => setCreateMode("hook")}>Hook</button>
+                                            <button type="button" className={createMode === "note" ? "is-active" : ""} onClick={() => setCreateMode("note")}>Note</button>
                                         </div>
 
-                                        <div className="signal-board-toolbox-card signal-board-toolbox-card-flat">
-                                            <p className="signal-board-panel-kicker">Artifact Drop</p>
-                                            <h2>Add custom note</h2>
-                                            <label>Tag<input value={noteTag} onChange={(event) => setNoteTag(event.target.value)} placeholder="Visual idea, Cover note, Symbol..." /></label>
-                                            <label>Title<input value={noteTitle} onChange={(event) => setNoteTitle(event.target.value)} placeholder="Short artifact title" /></label>
-                                            <label>Description<textarea value={noteBody} onChange={(event) => setNoteBody(event.target.value)} placeholder="Add the actual note, idea, symbol, clip thought, or reminder..." rows={4} /></label>
-                                            <button type="button" onClick={addNoteArtifact}>Add Note</button>
-                                        </div>
+                                        {createMode === "hook" ? (
+                                            <div className="signal-board-toolbox-card signal-board-toolbox-card-flat signal-board-create-form">
+                                                <p className="signal-board-panel-kicker">Hook Lab</p>
+                                                <h2>Add hook artifact</h2>
+                                                <label>Attach to
+                                                    <select value={selectedTrackSlug} onChange={(event) => setSelectedTrackSlug(event.target.value)}>
+                                                        {hookTargetOptions.map((target) => (<option key={target.slug} value={target.slug}>{target.title}</option>))}
+                                                    </select>
+                                                </label>
+                                                <label>Title<input value={hookTitle} onChange={(event) => setHookTitle(event.target.value)} placeholder="Short hook title" /></label>
+                                                <label>Signal<textarea value={hookDescription} onChange={(event) => setHookDescription(event.target.value)} placeholder="Hook, phrase, theme, or lyric..." rows={3} /></label>
+                                                <button type="button" onClick={addHook}>Add Hook</button>
+                                            </div>
+                                        ) : (
+                                            <div className="signal-board-toolbox-card signal-board-toolbox-card-flat signal-board-create-form">
+                                                <p className="signal-board-panel-kicker">Artifact Drop</p>
+                                                <h2>Add custom note</h2>
+                                                <label>Tag<input value={noteTag} onChange={(event) => setNoteTag(event.target.value)} placeholder="Visual idea, symbol, rollout..." /></label>
+                                                <label>Title<input value={noteTitle} onChange={(event) => setNoteTitle(event.target.value)} placeholder="Short artifact title" /></label>
+                                                <label>Note<textarea value={noteBody} onChange={(event) => setNoteBody(event.target.value)} placeholder="Idea, symbol, clip thought, or reminder..." rows={3} /></label>
+                                                <button type="button" onClick={addNoteArtifact}>Add Note</button>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <aside className="signal-board-create-style">
                                         <div className={`signal-board-card-preview signal-board-pin-color-${selectedColor} signal-board-card-preview-${selectedSize}`}>
-                                            <span>{noteTag || "Signal"}</span>
-                                            <strong>{hookTitle || noteTitle || "Your next signal"}</strong>
-                                            <p>{hookDescription || noteBody || `Attached to ${getHookTargetTitle(selectedTrackSlug, hookTargetOptions)}`}</p>
+                                            <span>{createMode === "hook" ? "Hook" : noteTag || "Note"}</span>
+                                            <strong>{createMode === "hook" ? hookTitle || "Your next hook" : noteTitle || "Your next note"}</strong>
+                                            <p>{createMode === "hook" ? hookDescription || `Attached to ${getHookTargetTitle(selectedTrackSlug, hookTargetOptions)}` : noteBody || "Add the idea, visual, or reminder."}</p>
                                             <em>{sizeOptions.find((option) => option.value === selectedSize)?.label} • Layer {selectedLayer}</em>
                                         </div>
 
@@ -3728,16 +3729,17 @@ export default function DynamicReleaseSignalBoardPage() {
                                             </label>
                                         </div>
 
-                                        <div className="signal-board-toolbox-card signal-board-toolbox-card-flat">
-                                            <p className="signal-board-panel-kicker">Starter Board</p>
-                                            <h2>Generated card theme</h2>
-                                            <div className="signal-board-style-row" aria-label="Starter board color">
-                                                {colorOptions.map((option) => (
-                                                    <button key={option.value} type="button" className={`signal-board-swatch signal-board-swatch-${option.value} ${boardColor === option.value ? "is-active" : ""}`} onClick={() => applyStarterBoardColor(option.value)}>{option.label}</button>
-                                                ))}
+                                        <details className="signal-board-style-disclosure">
+                                            <summary>Starter board theme</summary>
+                                            <div className="signal-board-style-disclosure-body">
+                                                <div className="signal-board-style-row" aria-label="Starter board color">
+                                                    {colorOptions.map((option) => (
+                                                        <button key={option.value} type="button" className={`signal-board-swatch signal-board-swatch-${option.value} ${boardColor === option.value ? "is-active" : ""}`} onClick={() => applyStarterBoardColor(option.value)}>{option.label}</button>
+                                                    ))}
+                                                </div>
+                                                <p className="signal-board-tool-note">Generated starter cards only.</p>
                                             </div>
-                                            <p className="signal-board-tool-note">Changes generated starter cards only. User-created cards keep their chosen appearance.</p>
-                                        </div>
+                                        </details>
                                     </aside>
                                 </div>
                             </section>
