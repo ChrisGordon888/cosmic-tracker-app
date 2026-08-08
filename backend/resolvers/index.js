@@ -2496,7 +2496,7 @@ module.exports = {
                 unlockDate: null,
                 isSecondFocus: false,
                 realmId: null,
-                nexusRole: "signal",
+                nexusRole: "public",
                 isRealmAnchor: false,
                 isPublicPick: false,
                 nexusSortOrder: 0,
@@ -3182,6 +3182,12 @@ module.exports = {
             const trackNumber = input.trackNumber || existingTracksCount + 1;
             const slug = normalizeTrackSlug(input.slug, input.title);
 
+            if (input.nexusRole === "flagship") {
+                throw new Error(
+                    "Use setFeaturedSignal after publishing the track to choose the Featured Signal."
+                );
+            }
+
             const createPayload = {
                 ownerId: user.id,
                 releaseWorldId: releaseWorld._id,
@@ -3242,6 +3248,15 @@ module.exports = {
 
             if (!existingTrack) {
                 throw new Error("Release track not found.");
+            }
+
+            if (
+                input.nexusRole === "flagship" &&
+                existingTrack.nexusRole !== "flagship"
+            ) {
+                throw new Error(
+                    "Use setFeaturedSignal to promote a published track to the Featured Signal."
+                );
             }
 
             const releaseWorld = await getOwnedReleaseWorld(existingTrack.releaseWorldId, user.id);

@@ -230,6 +230,34 @@ const UPDATE_RELEASE_TRACK = gql`
   }
 `;
 
+const GET_MY_FEATURED_SIGNAL = gql`
+  query GetMyFeaturedSignal {
+    getMyFeaturedSignal {
+      id
+      releaseWorldId
+      title
+      realmId
+      showInNexus
+      nexusRole
+    }
+  }
+`;
+
+const SET_FEATURED_SIGNAL = gql`
+  mutation SetFeaturedSignal($trackId: ID!) {
+    setFeaturedSignal(trackId: $trackId) {
+      id
+      releaseWorldId
+      title
+      realmId
+      showInNexus
+      nexusRole
+      updatedAt
+      lastOpenedAt
+    }
+  }
+`;
+
 const DELETE_RELEASE_TRACK = gql`
   mutation DeleteReleaseTrack($id: ID!) {
     deleteReleaseTrack(id: $id) {
@@ -392,6 +420,15 @@ interface ReleaseTrack {
     createdAt?: string | null;
     updatedAt?: string | null;
     lastOpenedAt?: string | null;
+}
+
+interface FeaturedSignalTrack {
+    id: string;
+    releaseWorldId: string;
+    title: string;
+    realmId?: number | null;
+    showInNexus: boolean;
+    nexusRole: string;
 }
 
 interface TrackForm {
@@ -602,15 +639,6 @@ const realmPublishingOptions = [
     { value: "0", label: "0 — InterSiddhi" },
 ];
 
-const nexusRoleOptions = [
-    { value: "public", label: "Public Track" },
-    { value: "featured", label: "Featured" },
-    { value: "anchor", label: "Realm Anchor" },
-    { value: "flagship", label: "Flagship" },
-    { value: "expansion", label: "Expansion" },
-    { value: "vault", label: "Vault" },
-    { value: "premium", label: "Premium" },
-];
 
 const assetUsageOptions = [
     { value: "cover", label: "Cover Art" },
@@ -1489,6 +1517,17 @@ export default function DynamicReleaseSignalBoardPage() {
     });
 
     const {
+        data: featuredSignalData,
+        refetch: refetchFeaturedSignal,
+    } = useQuery(GET_MY_FEATURED_SIGNAL, {
+        fetchPolicy: "cache-and-network",
+    });
+
+    const featuredSignal = (featuredSignalData?.getMyFeaturedSignal ?? null) as
+        | FeaturedSignalTrack
+        | null;
+
+    const {
         data: assetData,
         loading: assetsLoading,
         error: assetsError,
@@ -1543,6 +1582,8 @@ export default function DynamicReleaseSignalBoardPage() {
         useMutation(CREATE_RELEASE_TRACK);
     const [updateReleaseTrack, { loading: isUpdatingTrack }] =
         useMutation(UPDATE_RELEASE_TRACK);
+    const [setFeaturedSignal, { loading: isSettingFeaturedSignal }] =
+        useMutation(SET_FEATURED_SIGNAL);
     const [deleteReleaseTrack, { loading: isDeletingTrack }] =
         useMutation(DELETE_RELEASE_TRACK);
     const [createReleaseAsset, { loading: isCreatingAsset }] =
@@ -1918,6 +1959,40 @@ export default function DynamicReleaseSignalBoardPage() {
 
     async function handleSaveTrack() {
         await saveTrackForm(trackForm);
+    }
+
+    async function handleSetFeaturedSignal() {
+        if (!selectedTrackId || isCreatingNewTrack) {
+            setTrackMessage("Save this track before making it the Featured Signal.");
+            return;
+        }
+
+        if (!selectedTrack?.showInNexus) {
+            setTrackMessage("Publish this track to Nexus + Realm before making it the Featured Signal.");
+            return;
+        }
+
+        try {
+            const result = await setFeaturedSignal({
+                variables: { trackId: selectedTrackId },
+            });
+            const featured = result.data?.setFeaturedSignal as ReleaseTrack | undefined;
+
+            await Promise.all([
+                refetchReleaseTracks(),
+                refetchFeaturedSignal(),
+            ]);
+
+            setTrackMessage(
+                `${featured?.title || selectedTrack.title} is now the Featured Signal across Nexus.`,
+            );
+        } catch (featuredError) {
+            const message =
+                featuredError instanceof Error
+                    ? featuredError.message
+                    : "Unknown Featured Signal error.";
+            setTrackMessage(`Featured Signal update failed: ${message}`);
+        }
     }
 
     async function handlePublishSignal() {
@@ -3180,59 +3255,76 @@ export default function DynamicReleaseSignalBoardPage() {
                                             <span>Choose where the song lives before it enters the wider Cosmic catalog.</span>
                                         </div>
                                         <div className="signal-board-track-form-grid signal-board-track-form-grid-compact signal-board-nexus-grid">
-                                        <label>
-                                            Realm
-                                            <select
-                                                value={trackForm.realmId}
-                                                onChange={(event) =>
-                                                    updateTrackForm("realmId", event.target.value)
-                                                }
-                                            >
-                                                {realmPublishingOptions.map((option) => (
-                                                    <option key={option.value || "none"} value={option.value}>
-                                                        {option.label}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            <span className="signal-board-field-note">
-                                                Assign the song to the realm ecosystem before publishing to Nexus.
-                                            </span>
-                                        </label>
-                                        <label>
-                                            Nexus Role
-                                            <select
-                                                value={trackForm.nexusRole}
-                                                onChange={(event) =>
-                                                    updateTrackForm("nexusRole", event.target.value)
-                                                }
-                                            >
-                                                {nexusRoleOptions.map((option) => (
-                                                    <option key={option.value} value={option.value}>
-                                                        {option.label}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </label>
-                                        <label>
-                                            Nexus Sort
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                value={trackForm.nexusSortOrder}
-                                                onChange={(event) =>
-                                                    updateTrackForm("nexusSortOrder", event.target.value)
-                                                }
-                                                placeholder="999"
-                                            />
-                                        </label>
-                                        </div>
-                                        <div className="signal-board-nexus-intent">
-                                            <label><input type="checkbox" checked={trackForm.isRealmAnchor} onChange={(event) => updateTrackForm("isRealmAnchor", event.target.checked)} /> Realm Anchor</label>
-                                            <label><input type="checkbox" checked={trackForm.isPublicPick} onChange={(event) => updateTrackForm("isPublicPick", event.target.checked)} /> Public Pick</label>
+                                            <label>
+                                                Realm
+                                                <select
+                                                    value={trackForm.realmId}
+                                                    onChange={(event) =>
+                                                        updateTrackForm("realmId", event.target.value)
+                                                    }
+                                                >
+                                                    {realmPublishingOptions.map((option) => (
+                                                        <option key={option.value || "none"} value={option.value}>
+                                                            {option.label}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <span className="signal-board-field-note">
+                                                    Assign the song to the realm ecosystem before publishing to Nexus.
+                                                </span>
+                                            </label>
+                                            <label>
+                                                Nexus Order
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    value={trackForm.nexusSortOrder}
+                                                    onChange={(event) =>
+                                                        updateTrackForm("nexusSortOrder", event.target.value)
+                                                    }
+                                                    placeholder="999"
+                                                />
+                                                <span className="signal-board-field-note">
+                                                    Lower numbers appear earlier inside the realm catalog.
+                                                </span>
+                                            </label>
                                             <div className="signal-board-nexus-status">
-                                                <span>Catalog state</span>
+                                                <span>Nexus presence</span>
                                                 <strong>{trackForm.showInNexus ? "Published to Nexus + Realm" : "Not published to Nexus"}</strong>
                                             </div>
+                                        </div>
+
+                                        <div className={`signal-board-featured-signal-card ${featuredSignal?.id === selectedTrackId ? "is-current" : ""}`}>
+                                            <div className="signal-board-featured-signal-copy">
+                                                <p className="signal-board-panel-kicker">Featured Signal</p>
+                                                <strong>
+                                                    {featuredSignal?.id === selectedTrackId
+                                                        ? "This track is the current Featured Signal"
+                                                        : featuredSignal
+                                                            ? `Current: ${featuredSignal.title}`
+                                                            : "No Featured Signal selected"}
+                                                </strong>
+                                                <span>
+                                                    The Featured Signal is the single creator-level track spotlighted most prominently across Nexus.
+                                                </span>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => void handleSetFeaturedSignal()}
+                                                disabled={
+                                                    isSettingFeaturedSignal ||
+                                                    isCreatingNewTrack ||
+                                                    !selectedTrackId ||
+                                                    !selectedTrack?.showInNexus ||
+                                                    featuredSignal?.id === selectedTrackId
+                                                }
+                                            >
+                                                {isSettingFeaturedSignal
+                                                    ? "Updating..."
+                                                    : featuredSignal?.id === selectedTrackId
+                                                        ? "Current Featured Signal"
+                                                        : "Make Featured Signal"}
+                                            </button>
                                         </div>
 
                                         <div className="signal-board-publish-guide signal-board-nexus-readiness" aria-label="Publish Signal readiness">
