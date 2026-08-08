@@ -3335,10 +3335,8 @@ module.exports = {
             const trackNumber = input.trackNumber || existingTracksCount + 1;
             const slug = normalizeTrackSlug(input.slug, input.title);
 
-            if (input.nexusRole === "flagship") {
-                throw new Error(
-                    "Use setFeaturedSignal after publishing the track to choose the Featured Signal."
-                );
+            if (input.nexusRole === "flagship" && !canManageNexusEditorial(user)) {
+                throw new Error("Nexus Featured Signal is controlled by platform editorial.");
             }
 
             const createPayload = {
@@ -3368,8 +3366,9 @@ module.exports = {
                         ? input.isPublic
                         : input.visibility === "public",
                 realmId: input.realmId === undefined ? null : input.realmId,
-                showInNexus: input.showInNexus || false,
-                nexusRole: input.nexusRole || "public",
+                showInNexus: canPublishToNexus(user) ? Boolean(input.showInNexus) : false,
+                nexusRole: canManageNexusEditorial(user) ? (input.nexusRole || "public") : "public",
+                nexusReviewStatus: "draft",
                 isRealmAnchor: input.isRealmAnchor || false,
                 isPublicPick: input.isPublicPick || false,
                 nexusSortOrder:
@@ -3403,13 +3402,12 @@ module.exports = {
                 throw new Error("Release track not found.");
             }
 
-            if (
-                input.nexusRole === "flagship" &&
-                existingTrack.nexusRole !== "flagship"
-            ) {
-                throw new Error(
-                    "Use setFeaturedSignal to promote a published track to the Featured Signal."
-                );
+            if (input.showInNexus !== undefined && !canPublishToNexus(user)) {
+                delete input.showInNexus;
+            }
+
+            if (input.nexusRole !== undefined && !canManageNexusEditorial(user)) {
+                delete input.nexusRole;
             }
 
             const releaseWorld = await getOwnedReleaseWorld(existingTrack.releaseWorldId, user.id);
@@ -3442,6 +3440,28 @@ module.exports = {
                 delete update.bpm;
             }
 
+            const materialNexusFields = [
+                "audioUrl", "previewAudioUrl", "realmId", "visibility", "isPublic",
+                "playbackStatus", "dropDate", "unlockDate", "status"
+            ];
+            const hasMaterialNexusChange = materialNexusFields.some(
+                (field) => Object.prototype.hasOwnProperty.call(input, field) &&
+                    String(input[field] ?? "") !== String(existingTrack[field] ?? "")
+            );
+
+            if (
+                hasMaterialNexusChange &&
+                ["approved", "published"].includes(existingTrack.nexusReviewStatus || "draft") &&
+                !canPublishToNexus(user)
+            ) {
+                update.showInNexus = false;
+                update.nexusReviewStatus = "draft";
+                update.nexusSubmittedAt = null;
+                update.nexusReviewedAt = null;
+                update.nexusReviewedBy = "";
+                update.nexusReviewNotes = "Material track changes require a new Nexus review.";
+            }
+
             const publicationCandidate = getNexusPublicationCandidate(existingTrack, update);
             validateNexusPublication(publicationCandidate, releaseWorld);
 
@@ -3462,19 +3482,44 @@ module.exports = {
             return updatedTrack;
         },
 
-        // Compatibility path for the current creator UI. V5L2 will move this
-        // behind requireNexusEditorial once the creator-facing review flow lands.
-        setFeaturedSignal: async (_, { trackId }, { user }) => {
+        // Creator submission path: validates readiness but does not publish to Nexus.
+        submitTrackForNexusReview: async (_, { trackId }, { user }) => {
             requireCreator(user);
 
             const track = await getOwnedReleaseTrack(trackId, user.id);
+            if (!track) throw new Error("Track not found.");
+
+            const releaseWorld = await getOwnedReleaseWorld(track.releaseWorldId, user.id);
+            if (!releaseWorld) throw new Error("Release world not found.");
+
+            validateNexusPublication(
+                getNexusPublicationCandidate(track, { showInNexus: true }),
+                releaseWorld
+            );
+
+            track.showInNexus = false;
+            track.nexusReviewStatus = "in-review";
+            track.nexusSubmittedAt = new Date();
+            track.nexusReviewedAt = null;
+            track.nexusReviewedBy = "";
+            track.nexusReviewNotes = "";
+            track.lastOpenedAt = new Date();
+            await track.save();
+
+            return track;
+        },
+
+        setFeaturedSignal: async (_, { trackId }, { user }) => {
+            requireNexusEditorial(user);
+
+            const track = await ReleaseTrack.findById(trackId);
             if (!track) throw new Error("Track not found.");
 
             if (!track.showInNexus) {
                 throw new Error("Publish this track to Nexus + Realm before making it the Featured Signal.");
             }
 
-            const releaseWorld = await getOwnedReleaseWorld(track.releaseWorldId, user.id);
+            const releaseWorld = await ReleaseWorld.findById(track.releaseWorldId);
 
             validateNexusPublication(
                 getNexusPublicationCandidate(track, {
@@ -3486,7 +3531,6 @@ module.exports = {
 
             await ReleaseTrack.updateMany(
                 {
-                    ownerId: user.id,
                     _id: { $ne: track._id },
                     nexusRole: "flagship",
                 },
@@ -3500,6 +3544,9 @@ module.exports = {
 
             track.nexusRole = "flagship";
             track.showInNexus = true;
+            track.nexusReviewStatus = "published";
+            track.nexusReviewedAt = new Date();
+            track.nexusReviewedBy = String(user.id || "");
             track.lastOpenedAt = new Date();
             await track.save();
 

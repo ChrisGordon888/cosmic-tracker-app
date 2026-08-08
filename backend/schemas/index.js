@@ -263,6 +263,11 @@ const typeDefs = gql`
     isRealmAnchor: Boolean!
     isPublicPick: Boolean!
     nexusSortOrder: Int!
+    nexusReviewStatus: String!
+    nexusSubmittedAt: String
+    nexusReviewedAt: String
+    nexusReviewedBy: String
+    nexusReviewNotes: String
     createdAt: String
     updatedAt: String
     lastOpenedAt: String
@@ -696,6 +701,7 @@ const typeDefs = gql`
     createReleaseTrack(input: ReleaseTrackInput!): ReleaseTrack!
     updateReleaseTrack(id: ID!, input: UpdateReleaseTrackInput!): ReleaseTrack!
     deleteReleaseTrack(id: ID!): ReleaseTrack
+    submitTrackForNexusReview(trackId: ID!): ReleaseTrack!
     setFeaturedSignal(trackId: ID!): ReleaseTrack!
     reorderReleaseTracks(
       releaseWorldId: ID!

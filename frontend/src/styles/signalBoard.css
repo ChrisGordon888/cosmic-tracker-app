@@ -3321,3 +3321,65 @@
     width: 100%;
   }
 }
+
+/* ===================================
+   V5L2 — CREATOR NEXUS REVIEW FLOW
+   =================================== */
+.signal-board-track-section-nexus .signal-board-nexus-status {
+  min-height: 100%;
+  display: grid;
+  align-content: center;
+  gap: .22rem;
+}
+
+.signal-board-nexus-status small {
+  color: rgba(224, 231, 240, .52);
+  font-size: .68rem;
+  line-height: 1.35;
+}
+
+.signal-board-realm-guide {
+  margin-top: .7rem;
+}
+
+.signal-board-realm-guide > div {
+  display: grid;
+  gap: .45rem;
+  padding-top: .65rem;
+}
+
+.signal-board-realm-guide p,
+.signal-board-review-note p {
+  margin: 0;
+  color: rgba(224, 231, 240, .66);
+  font-size: .78rem;
+  line-height: 1.5;
+}
+
+.signal-board-review-note {
+  margin-top: .7rem;
+  padding: .72rem .82rem;
+  border: 1px solid rgba(220, 186, 92, .16);
+  border-radius: .9rem;
+  background: rgba(220, 186, 92, .045);
+}
+
+.signal-board-review-note > span {
+  display: block;
+  margin-bottom: .3rem;
+  color: rgba(243, 231, 209, .76);
+  font-size: .65rem;
+  font-weight: 800;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 620px) {
+  .signal-board-track-section-nexus .signal-board-nexus-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .signal-board-track-section-nexus .signal-board-publish-actions button {
+    width: 100%;
+  }
+}
