@@ -3366,7 +3366,7 @@ export default function DynamicReleaseSignalBoardPage() {
                             </section>
                         )}
                         {activePanel === "assets" && (
-                            <section className="signal-board-panel-section">
+                            <section className="signal-board-panel-section signal-board-assets-panel">
                                 <div className="signal-board-panel-heading">
                                     <div>
                                         <p className="signal-board-panel-kicker">Asset Manager</p>
@@ -3379,23 +3379,14 @@ export default function DynamicReleaseSignalBoardPage() {
                                     {assetsError?.message || assetMessage}
                                 </p>
 
-                                <div className="signal-board-publish-guide signal-board-publish-guide-assets" aria-label="Asset publishing guide">
-                                    <article>
-                                        <span>Cover art</span>
-                                        <strong>Updates the portal hero</strong>
-                                        <p>Use Cover Art for the main release image shown in Nexus, Creator Projects, and the Release Page.</p>
-                                    </article>
-                                    <article>
-                                        <span>Track audio</span>
-                                        <strong>Attach to one song</strong>
-                                        <p>Choose Track Audio and select a track so playback can flow through the mini-player.</p>
-                                    </article>
-                                    <article>
-                                        <span>References</span>
-                                        <strong>Support the world</strong>
-                                        <p>Visual references and promo assets can stay internal or become public fragments later.</p>
-                                    </article>
-                                </div>
+                                <details className="signal-board-help-disclosure signal-board-asset-help">
+                                    <summary>How assets flow through the release</summary>
+                                    <div className="signal-board-help-grid">
+                                        <span><strong>Cover art</strong> updates the release hero across public surfaces.</span>
+                                        <span><strong>Track audio</strong> attaches playback directly to a song.</span>
+                                        <span><strong>References</strong> can stay private or become public creative material later.</span>
+                                    </div>
+                                </details>
 
                                 <div className="signal-board-asset-overview">
                                     <article className="signal-board-toolbox-card signal-board-toolbox-card-flat">
@@ -3589,8 +3580,12 @@ export default function DynamicReleaseSignalBoardPage() {
                                     </label>
                                 </div>
 
-                                <div className="signal-board-toggle-row">
-                                    <label>
+                                <div className="signal-board-asset-visibility">
+                                    <div>
+                                        <span className="signal-board-control-label">Visibility</span>
+                                        <small>{assetForm.isPublic ? "Available to public release surfaces" : "Private to the creator workspace"}</small>
+                                    </div>
+                                    <label className={assetForm.isPublic ? "is-active" : ""}>
                                         <input
                                             type="checkbox"
                                             checked={assetForm.isPublic}
@@ -3746,7 +3741,7 @@ export default function DynamicReleaseSignalBoardPage() {
                         )}
 
                         {activePanel === "portal" && (
-                            <section className="signal-board-panel-section">
+                            <section className="signal-board-panel-section signal-board-portal-panel">
                                 <div className="signal-board-panel-heading">
                                     <div>
                                         <p className="signal-board-panel-kicker">
@@ -3900,7 +3895,11 @@ export default function DynamicReleaseSignalBoardPage() {
                                     </label>
                                 </div>
 
-                                <div className="signal-board-panel-actions">
+                                <div className="signal-board-portal-save-bar" role="region" aria-label="Portal save controls">
+                                    <div>
+                                        <span className="signal-board-control-label">Portal changes</span>
+                                        <small>Save these fields to update the Release Page.</small>
+                                    </div>
                                     <button
                                         type="button"
                                         onClick={handleSavePortalSettings}

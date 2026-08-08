@@ -2906,3 +2906,236 @@
   .signal-board-pin-size-xl { width:min(8.5rem,38vw); }
   .signal-board-campaign-toggles { grid-template-columns:1fr; }
 }
+
+/* ===================================
+   SIGNAL BOARD V5J2B — TOOL COHESION
+   Assets + Portal now follow the same compact creator-control language as Tracks.
+   =================================== */
+
+/* Asset guidance is optional context, not permanent vertical UI. */
+.signal-board-asset-help {
+  margin: 0 0 .72rem;
+}
+
+/* Public Asset is a contained intent control, not a loose checkbox row. */
+.signal-board-asset-visibility {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .8rem;
+  min-width: 0;
+  margin-top: .72rem;
+  padding: .68rem .72rem;
+  border: 1px solid rgba(214,224,235,.10);
+  border-radius: .85rem;
+  background: rgba(255,255,255,.025);
+}
+
+.signal-board-asset-visibility > div {
+  min-width: 0;
+  display: grid;
+  gap: .18rem;
+}
+
+.signal-board-asset-visibility small {
+  color: var(--sb-muted);
+  font-size: .68rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.signal-board-asset-visibility label {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 0;
+  min-height: 2.25rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  margin: 0;
+  padding: .45rem .65rem;
+  border: 1px solid rgba(214,224,235,.11);
+  border-radius: 999px;
+  background: rgba(255,255,255,.025);
+  color: rgba(224,231,240,.78);
+  font-size: .7rem;
+  line-height: 1;
+  letter-spacing: .04em;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.signal-board-asset-visibility label.is-active {
+  border-color: rgba(126,211,255,.32);
+  background: rgba(126,211,255,.08);
+  color: rgba(238,246,255,.95);
+}
+
+.signal-board-asset-visibility input[type="checkbox"] {
+  appearance: auto;
+  width: .9rem !important;
+  height: .9rem !important;
+  min-width: .9rem !important;
+  min-height: .9rem !important;
+  margin: 0;
+  padding: 0 !important;
+  border: 0;
+  border-radius: .2rem;
+  flex: 0 0 .9rem;
+  accent-color: #8fdcff;
+}
+
+/* Asset registration action aligns with the compact contained-control rhythm. */
+.signal-board-assets-panel > .signal-board-panel-actions {
+  margin-top: .65rem;
+}
+
+.signal-board-assets-panel > .signal-board-panel-actions button {
+  min-height: 2.55rem;
+}
+
+/* Portal becomes a finishing workspace rather than a long form with a hidden CTA. */
+.signal-board-portal-panel {
+  padding-bottom: 5.25rem;
+}
+
+.signal-board-portal-output-card {
+  margin-bottom: .72rem;
+}
+
+.signal-board-portal-grid,
+.signal-board-portal-grid-compact {
+  gap: .62rem .7rem;
+}
+
+.signal-board-portal-panel textarea {
+  min-height: 6.25rem;
+}
+
+.signal-board-portal-save-bar {
+  position: sticky;
+  bottom: max(.65rem, env(safe-area-inset-bottom));
+  z-index: 18;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .85rem;
+  width: 100%;
+  min-width: 0;
+  margin-top: .8rem;
+  padding: .68rem .72rem;
+  border: 1px solid rgba(126,211,255,.18);
+  border-radius: .95rem;
+  background: rgba(12,18,29,.88);
+  box-shadow: 0 12px 30px rgba(0,0,0,.28), inset 0 0 0 1px rgba(255,255,255,.025);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.signal-board-portal-save-bar > div {
+  min-width: 0;
+  display: grid;
+  gap: .16rem;
+}
+
+.signal-board-portal-save-bar small {
+  color: var(--sb-muted);
+  font-size: .68rem;
+  line-height: 1.35;
+}
+
+.signal-board-portal-save-bar button {
+  flex: 0 0 auto;
+  min-width: 8.8rem;
+  min-height: 2.55rem;
+  padding: .62rem .85rem;
+  border-radius: .78rem;
+  font-size: .69rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+/* Tablet / phone: controls remain contained and the sticky save bar does not hide fields. */
+@media (max-width: 760px) {
+  .signal-board-asset-visibility {
+    align-items: stretch;
+  }
+
+  .signal-board-portal-panel {
+    padding-bottom: 6.2rem;
+  }
+}
+
+@media (max-width: 620px) {
+  .signal-board-asset-visibility {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: .5rem;
+    padding: .62rem;
+  }
+
+  .signal-board-asset-visibility label {
+    width: 100%;
+    justify-content: flex-start;
+    min-height: 2.4rem;
+  }
+
+  .signal-board-assets-panel .signal-board-asset-overview {
+    gap: .6rem;
+  }
+
+  .signal-board-portal-output-card {
+    padding: .72rem;
+  }
+
+  .signal-board-portal-output-card > div:first-child > span {
+    display: none;
+  }
+
+  .signal-board-portal-output-stats {
+    gap: .32rem;
+  }
+
+  .signal-board-portal-output-stats span {
+    padding: .34rem .45rem;
+    font-size: .61rem;
+  }
+
+  .signal-board-portal-panel {
+    padding-bottom: 6.8rem;
+  }
+
+  .signal-board-portal-save-bar {
+    bottom: max(.45rem, env(safe-area-inset-bottom));
+    display: grid;
+    grid-template-columns: minmax(0,1fr) auto;
+    gap: .55rem;
+    padding: .58rem;
+    border-radius: .82rem;
+  }
+
+  .signal-board-portal-save-bar small {
+    display: none;
+  }
+
+  .signal-board-portal-save-bar button {
+    min-width: 7.2rem;
+    min-height: 2.45rem;
+    padding: .55rem .68rem;
+  }
+}
+
+@media (max-width: 390px) {
+  .signal-board-portal-save-bar {
+    grid-template-columns: 1fr;
+  }
+
+  .signal-board-portal-save-bar > div {
+    display: none;
+  }
+
+  .signal-board-portal-save-bar button {
+    width: 100%;
+  }
+}
