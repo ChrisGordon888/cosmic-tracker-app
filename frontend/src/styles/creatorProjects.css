@@ -763,3 +763,415 @@ button.creator-projects-primary-button {
     width: 100%;
   }
 }
+
+/* ===================================
+   CREATOR PROJECTS V5K2 — MOBILE COHESION
+   Tightens mobile density + guarantees action runway
+   =================================== */
+
+.creator-projects-page {
+  overflow-x: clip;
+}
+
+.creator-projects-shell {
+  min-width: 0;
+}
+
+@media (max-width: 860px) {
+  .creator-projects-page {
+    padding:
+      74px
+      max(12px, env(safe-area-inset-left))
+      calc(7rem + env(safe-area-inset-bottom))
+      max(12px, env(safe-area-inset-right));
+    scroll-padding-bottom: calc(8rem + env(safe-area-inset-bottom));
+  }
+
+  .creator-projects-shell,
+  .creator-projects-card,
+  .creator-project-card,
+  .creator-projects-create-card,
+  .creator-project-publishing-panel,
+  .creator-project-readiness-panel {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .creator-projects-hero {
+    gap: 16px;
+    padding: 20px;
+    margin-bottom: 14px;
+  }
+
+  .creator-projects-hero h1 {
+    font-size: clamp(2.4rem, 11vw, 4.4rem);
+    line-height: 0.94;
+  }
+
+  .creator-projects-subtitle {
+    margin-top: 14px;
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+
+  .creator-projects-hero-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    gap: 8px;
+  }
+
+  .creator-projects-hero-actions .creator-projects-ghost-button {
+    width: 100%;
+    min-height: 42px;
+  }
+
+  /* Preserve information without creating a three-card vertical wall. */
+  .creator-projects-status-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin: 12px 0 14px;
+  }
+
+  .creator-projects-status-strip > div {
+    min-height: 0;
+    padding: 12px;
+    border-radius: 17px;
+  }
+
+  .creator-projects-status-strip > div:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .creator-projects-status-label {
+    margin-bottom: 4px;
+    font-size: 0.61rem;
+  }
+
+  .creator-projects-status-strip strong {
+    font-size: 0.86rem;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  /* New-project setup should feel like a compact composer, not a long form. */
+  .creator-projects-create-card,
+  .creator-projects-message-card,
+  .creator-projects-loading-card {
+    margin-top: 14px;
+    padding: 20px;
+  }
+
+  .creator-projects-create-heading {
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .creator-projects-create-card h2,
+  .creator-projects-message-card h2 {
+    font-size: clamp(1.65rem, 8vw, 2.4rem);
+  }
+
+  .creator-projects-create-card p,
+  .creator-projects-message-card p,
+  .creator-projects-loading-card p {
+    line-height: 1.5;
+  }
+
+  .creator-projects-profile-pill {
+    min-width: 0;
+    padding: 11px 12px;
+    border-radius: 16px;
+  }
+
+  .creator-projects-form {
+    gap: 11px;
+  }
+
+  .creator-projects-form-grid {
+    gap: 11px;
+  }
+
+  .creator-projects-form label {
+    gap: 6px;
+    font-size: 0.66rem;
+  }
+
+  .creator-projects-form input,
+  .creator-projects-form select,
+  .creator-projects-form textarea {
+    min-height: 44px;
+    padding: 11px 12px;
+    border-radius: 14px;
+  }
+
+  .creator-projects-form textarea {
+    min-height: 108px;
+  }
+
+  .creator-projects-form-footer {
+    gap: 10px;
+    padding-top: 4px;
+  }
+
+  .creator-projects-form-footer p {
+    font-size: 0.78rem;
+    line-height: 1.45;
+  }
+
+  /* Project cards retain their hierarchy while shedding vertical weight. */
+  .creator-projects-grid {
+    gap: 12px;
+    margin-top: 14px;
+  }
+
+  .creator-project-card,
+  .creator-project-card-v2 {
+    padding: 18px;
+    border-radius: 24px;
+  }
+
+  .creator-project-card-topline {
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .creator-project-card-topline span {
+    min-height: 26px;
+    padding: 0 8px;
+    font-size: 0.62rem;
+  }
+
+  .creator-project-card-mainline {
+    grid-template-columns: 72px minmax(0, 1fr);
+    gap: 12px;
+    align-items: start;
+    margin-top: 10px;
+  }
+
+  .creator-project-card-cover {
+    width: 72px;
+    border-radius: 17px;
+  }
+
+  .creator-project-card h2 {
+    font-size: clamp(1.5rem, 7vw, 2.15rem);
+  }
+
+  .creator-project-card-slug {
+    margin: 7px 0 9px;
+    font-size: 0.76rem;
+  }
+
+  .creator-project-card-summary {
+    display: -webkit-box;
+    margin-bottom: 12px;
+    overflow: hidden;
+    font-size: 0.83rem;
+    line-height: 1.45;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .creator-project-card-meta,
+  .creator-project-card-meta-v2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+    margin: 12px 0 0;
+  }
+
+  .creator-project-card-meta div {
+    padding: 10px;
+    border-radius: 14px;
+  }
+
+  .creator-project-card-meta span {
+    margin-bottom: 4px;
+    font-size: 0.59rem;
+  }
+
+  .creator-project-card-meta strong {
+    font-size: 0.78rem;
+    overflow-wrap: anywhere;
+  }
+
+  .creator-project-readiness-panel {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 18px;
+  }
+
+  .creator-project-readiness-header {
+    gap: 10px;
+    margin-bottom: 9px;
+  }
+
+  .creator-project-readiness-header span {
+    font-size: 0.59rem;
+  }
+
+  .creator-project-readiness-header strong {
+    font-size: 0.86rem;
+  }
+
+  .creator-project-readiness-score {
+    min-width: 50px;
+    height: 36px;
+    padding: 0 9px;
+    font-size: 0.78rem;
+  }
+
+  .creator-project-readiness-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .creator-project-readiness-list div {
+    gap: 6px;
+    padding: 8px;
+    border-radius: 12px;
+  }
+
+  .creator-project-readiness-list div span {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    font-size: 0.65rem;
+  }
+
+  .creator-project-readiness-list div strong {
+    font-size: 0.69rem;
+  }
+
+  /* Distinguish navigation actions from the final publishing decision. */
+  .creator-project-card-actions,
+  .creator-project-card-actions-v2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+    margin-top: 12px;
+  }
+
+  .creator-project-card-actions a,
+  .creator-project-card-actions button,
+  .creator-project-card-actions-v2 a,
+  .creator-project-card-actions-v2 button {
+    width: 100%;
+    min-width: 0;
+    min-height: 40px;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .creator-project-publishing-panel {
+    gap: 12px;
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 17px;
+  }
+
+  .creator-project-publishing-panel span {
+    margin-bottom: 3px;
+    font-size: 0.59rem;
+  }
+
+  .creator-project-publishing-panel strong {
+    font-size: 0.8rem;
+    line-height: 1.35;
+  }
+
+  .creator-project-publishing-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    gap: 7px;
+  }
+
+  .creator-projects-publishing-review-link,
+  .creator-projects-drop-button {
+    width: 100%;
+    min-width: 0;
+    min-height: 42px;
+    padding: 0 10px;
+    font-size: 0.65rem;
+    text-align: center;
+  }
+
+  .creator-projects-drop-message {
+    margin-top: 9px;
+    font-size: 0.75rem;
+    line-height: 1.45;
+  }
+
+  /* Shared card runway: final project actions never sit against browser chrome. */
+  .creator-project-card-v2:last-child,
+  .creator-projects-grid:last-child {
+    margin-bottom: 2rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .creator-projects-page {
+    padding-top: 66px;
+    padding-bottom: calc(7.5rem + env(safe-area-inset-bottom));
+  }
+
+  .creator-projects-hero {
+    padding: 17px;
+    border-radius: 22px;
+  }
+
+  .creator-projects-hero h1 {
+    font-size: clamp(2.2rem, 12vw, 3.25rem);
+  }
+
+  .creator-projects-hero-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .creator-projects-status-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .creator-projects-create-card,
+  .creator-project-card,
+  .creator-project-card-v2,
+  .creator-projects-message-card,
+  .creator-projects-loading-card {
+    padding: 15px;
+    border-radius: 20px;
+  }
+
+  .creator-project-card-mainline {
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .creator-project-card-cover {
+    width: 64px;
+    border-radius: 15px;
+  }
+
+  .creator-project-card-meta,
+  .creator-project-card-meta-v2 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .creator-project-readiness-list {
+    grid-template-columns: 1fr;
+  }
+
+  .creator-project-card-actions,
+  .creator-project-card-actions-v2,
+  .creator-project-publishing-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .creator-projects-primary-button,
+  .creator-projects-secondary-button,
+  .creator-projects-ghost-button,
+  .creator-projects-publishing-review-link,
+  .creator-projects-drop-button {
+    min-height: 44px;
+  }
+}
