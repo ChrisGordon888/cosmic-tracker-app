@@ -3139,3 +3139,77 @@
     width: 100%;
   }
 }
+
+/* ===================================
+   SIGNAL BOARD TOOL ACTION RUNWAY V5J2C
+   Shared bottom breathing room across every creator tool.
+   Keeps final actions fully reachable without changing tool logic.
+   =================================== */
+
+.signal-board-tool-dock {
+  overflow: visible;
+}
+
+.signal-board-tool-dock .signal-board-work-panel,
+.signal-board-work-panel-docked {
+  overflow: visible;
+  padding-bottom: clamp(1.1rem, 2vw, 1.6rem);
+  scroll-padding-bottom: 7rem;
+}
+
+/* Every active tool gets a comfortable final-action runway. */
+.signal-board-work-panel > .signal-board-panel-section {
+  min-width: 0;
+  padding-bottom: clamp(4.75rem, 7vw, 6.5rem);
+}
+
+/* Portal already owns a sticky finishing bar; preserve its slightly larger reserve. */
+.signal-board-work-panel > .signal-board-portal-panel {
+  padding-bottom: clamp(5.5rem, 8vw, 7rem);
+}
+
+/* Keep last action groups visually detached from the tool boundary. */
+.signal-board-track-save-actions,
+.signal-board-assets-panel > .signal-board-panel-actions,
+.signal-board-create-panel > .signal-board-panel-actions,
+.signal-board-danger-mini {
+  margin-bottom: .7rem;
+}
+
+/* The danger zone should never feel fused to the bottom edge. */
+.signal-board-danger-mini {
+  margin-top: .85rem;
+}
+
+@media (max-width: 760px) {
+  .signal-board-tool-dock .signal-board-work-panel,
+  .signal-board-work-panel-docked {
+    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
+    scroll-padding-bottom: calc(8rem + env(safe-area-inset-bottom));
+  }
+
+  .signal-board-work-panel > .signal-board-panel-section {
+    padding-bottom: calc(6.5rem + env(safe-area-inset-bottom));
+  }
+
+  .signal-board-work-panel > .signal-board-portal-panel {
+    padding-bottom: calc(7.25rem + env(safe-area-inset-bottom));
+  }
+
+  .signal-board-track-save-actions,
+  .signal-board-assets-panel > .signal-board-panel-actions,
+  .signal-board-create-panel > .signal-board-panel-actions,
+  .signal-board-danger-mini {
+    margin-bottom: 1rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .signal-board-work-panel > .signal-board-panel-section {
+    padding-bottom: calc(7.25rem + env(safe-area-inset-bottom));
+  }
+
+  .signal-board-work-panel > .signal-board-portal-panel {
+    padding-bottom: calc(8rem + env(safe-area-inset-bottom));
+  }
+}
