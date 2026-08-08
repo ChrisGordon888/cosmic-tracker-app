@@ -905,3 +905,306 @@
         justify-content: center;
     }
 }
+/* ===================================
+   CREATOR HOME MOBILE COHESION V2
+   Compact mobile rhythm + bottom runway
+   =================================== */
+
+@media (max-width: 720px) {
+    .creator-console-shell {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: clip;
+    }
+
+    .creator-console-rail {
+        min-width: 0;
+        padding: 0.72rem 0.85rem;
+        gap: 0.7rem;
+    }
+
+    .creator-console-mark {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 0.82rem;
+        flex: 0 0 auto;
+    }
+
+    .creator-console-rail-lines {
+        margin-left: auto;
+        gap: 0.38rem;
+    }
+
+    .creator-console-rail p {
+        flex: 0 0 auto;
+        font-size: 0.62rem;
+        letter-spacing: 0.18em;
+    }
+
+    .creator-console {
+        width: 100%;
+        max-width: 100%;
+        padding: 0.85rem 0.78rem calc(7rem + env(safe-area-inset-bottom));
+        scroll-padding-bottom: calc(7rem + env(safe-area-inset-bottom));
+    }
+
+    .creator-hero,
+    .creator-console-grid,
+    .creator-console-topline {
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .creator-hero-copy,
+    .creator-feature-card,
+    .creator-console-panel,
+    .creator-console-footer,
+    .creator-console-header > div:first-child,
+    .creator-console-status {
+        border-radius: 1.15rem;
+    }
+
+    .creator-hero-copy,
+    .creator-console-panel {
+        padding: 0.9rem;
+    }
+
+    .creator-hero-copy h1,
+    .creator-console-header h1 {
+        margin: 0.35rem 0 0.55rem;
+        font-size: clamp(2rem, 12vw, 3.35rem);
+        line-height: 0.94;
+    }
+
+    .creator-hero-copy > p:not(.creator-console-kicker),
+    .creator-console-note {
+        font-size: 0.82rem;
+        line-height: 1.52;
+    }
+
+    .creator-hero-actions {
+        gap: 0.5rem;
+        margin-top: 0.85rem;
+    }
+
+    .creator-hero-actions a {
+        min-height: 2.75rem;
+        padding: 0.65rem 0.7rem;
+    }
+
+    /* Keep high-level metrics compact instead of a four-card vertical wall. */
+    .creator-console-topline {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .creator-console-topline article {
+        padding: 0.78rem;
+    }
+
+    .creator-console-topline article strong {
+        font-size: 1.15rem;
+    }
+
+    .creator-console-topline article p {
+        font-size: 0.72rem;
+        line-height: 1.35;
+    }
+
+    /* Featured release stays visually important without consuming a full phone screen. */
+    .creator-feature-card {
+        padding: 0.85rem;
+        gap: 0.7rem;
+    }
+
+    .creator-feature-card .creator-release-cover {
+        width: min(72vw, 270px);
+        margin-inline: auto;
+    }
+
+    .creator-feature-copy,
+    .creator-feature-topline {
+        min-width: 0;
+    }
+
+    .creator-feature-metrics {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.4rem;
+    }
+
+    .creator-feature-metrics div {
+        padding: 0.52rem 0.42rem;
+    }
+
+    .creator-feature-metrics span {
+        font-size: 0.58rem;
+        letter-spacing: 0.08em;
+    }
+
+    .creator-feature-metrics strong {
+        font-size: 0.7rem;
+    }
+
+    .creator-panel-title-row {
+        margin-bottom: 0.7rem;
+    }
+
+    .creator-panel-title-row h2,
+    .creator-console-panel h2 {
+        margin-bottom: 0.7rem;
+    }
+
+    /* Status counts are easier to scan as a 2x2 block. */
+    .creator-asset-status-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    /* Project preview becomes a compact media row instead of a full-width poster per project. */
+    .creator-project-library-grid {
+        grid-template-columns: 1fr;
+        gap: 0.62rem;
+    }
+
+    .creator-project-card {
+        grid-template-columns: 88px minmax(0, 1fr);
+        align-items: start;
+        gap: 0.68rem;
+        padding: 0.68rem;
+    }
+
+    .creator-project-card .creator-release-cover {
+        grid-column: 1;
+        grid-row: 1;
+        width: 88px;
+        max-height: none;
+        aspect-ratio: 1;
+        border-radius: 0.78rem;
+    }
+
+    .creator-project-card-body {
+        grid-column: 2;
+        min-width: 0;
+    }
+
+    .creator-project-card-body > strong {
+        margin: 0.25rem 0;
+        font-size: 0.78rem;
+    }
+
+    .creator-project-card-body p {
+        margin-bottom: 0.45rem;
+        font-size: 0.72rem;
+        -webkit-line-clamp: 2;
+    }
+
+    .creator-project-card-body code {
+        display: none;
+    }
+
+    .creator-project-card-actions {
+        gap: 0.35rem;
+        margin-top: 0.5rem;
+    }
+
+    .creator-project-card-actions a,
+    .creator-project-card-actions button {
+        flex: 1 1 7.2rem;
+        min-height: 2.15rem;
+        justify-content: center;
+        padding: 0.46rem 0.52rem;
+        font-size: 0.59rem;
+    }
+
+    /* Recent activity becomes a swipeable strip instead of six tall stacked cards. */
+    .creator-console-track-strip {
+        display: flex;
+        gap: 0.55rem;
+        margin-right: -0.9rem;
+        padding-right: 0.9rem;
+        overflow-x: auto;
+        scroll-snap-type: x proximity;
+        scrollbar-width: none;
+    }
+
+    .creator-console-track-strip::-webkit-scrollbar {
+        display: none;
+    }
+
+    .creator-console-track-strip > div {
+        flex: 0 0 min(72vw, 240px);
+        min-height: 0;
+        padding: 0.7rem;
+        scroll-snap-align: start;
+    }
+
+    .creator-console-track-strip strong {
+        margin: 0.4rem 0;
+        font-size: 0.72rem;
+    }
+
+    /* Workflow remains readable while taking less vertical space. */
+    .creator-console-phases {
+        gap: 0.5rem;
+    }
+
+    .creator-console-phases > div {
+        grid-template-columns: 2.2rem minmax(0, 1fr);
+        gap: 0.65rem;
+        padding: 0.68rem;
+    }
+
+    .creator-console-phases > div > span {
+        width: 1.9rem;
+        height: 1.9rem;
+    }
+
+    .creator-console-footer:last-child,
+    .creator-console-grid:last-child {
+        margin-bottom: 0;
+    }
+}
+
+@media (max-width: 520px) {
+    .creator-console {
+        padding-inline: 0.68rem;
+        padding-bottom: calc(7.5rem + env(safe-area-inset-bottom));
+    }
+
+    .creator-console-rail {
+        padding-inline: 0.68rem;
+    }
+
+    .creator-hero-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .creator-hero-actions a {
+        width: 100%;
+    }
+
+    .creator-panel-title-row {
+        gap: 0.55rem;
+    }
+
+    .creator-panel-title-row a {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .creator-project-card {
+        grid-template-columns: 76px minmax(0, 1fr);
+    }
+
+    .creator-project-card .creator-release-cover {
+        width: 76px;
+    }
+
+    .creator-project-card-actions a,
+    .creator-project-card-actions button {
+        flex: 1 1 calc(50% - 0.35rem);
+        width: auto;
+    }
+
+    .creator-project-card-actions > :last-child:nth-child(odd) {
+        flex-basis: 100%;
+    }
+}
