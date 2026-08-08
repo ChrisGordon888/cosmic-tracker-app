@@ -3344,25 +3344,35 @@ export default function DynamicReleaseSignalBoardPage() {
                                     </section>
                                 </div>
 
-                                <div className="signal-board-panel-actions signal-board-track-save-actions">
-                                    <button type="button" onClick={() => void handleSaveTrack()} disabled={isCreatingTrack || isUpdatingTrack || !releaseWorldId}>
-                                        {isCreatingTrack || isUpdatingTrack ? "Saving..." : isCreatingNewTrack || !selectedTrackId ? "Create Track" : "Update Track"}
-                                    </button>
-                                </div>
+                                <footer className="signal-board-track-footer">
+                                    <div className="signal-board-track-save-copy">
+                                        <span>{isCreatingNewTrack || !selectedTrackId ? "New track" : "Track changes"}</span>
+                                        <strong>{isCreatingNewTrack || !selectedTrackId ? "Create this track when it is ready." : "Save the edits made to this track."}</strong>
+                                    </div>
 
-
-                                {selectedTrackId && !isCreatingNewTrack && (
-                                    <div className="signal-board-danger-mini">
-                                        <span>Danger zone</span>
-                                        <button
-                                            type="button"
-                                            onClick={handleDeleteTrack}
-                                            disabled={isDeletingTrack}
-                                        >
-                                            {isDeletingTrack ? "Deleting..." : "Delete Track"}
+                                    <div className="signal-board-panel-actions signal-board-track-save-actions">
+                                        <button type="button" onClick={() => void handleSaveTrack()} disabled={isCreatingTrack || isUpdatingTrack || !releaseWorldId}>
+                                            {isCreatingTrack || isUpdatingTrack ? "Saving..." : isCreatingNewTrack || !selectedTrackId ? "Create Track" : "Update Track"}
                                         </button>
                                     </div>
-                                )}
+
+                                    {selectedTrackId && !isCreatingNewTrack && (
+                                        <div className="signal-board-track-danger-zone">
+                                            <div>
+                                                <span>Danger zone</span>
+                                                <strong>Delete this track from the release workspace.</strong>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                className="signal-board-danger-mini"
+                                                onClick={handleDeleteTrack}
+                                                disabled={isDeletingTrack}
+                                            >
+                                                {isDeletingTrack ? "Deleting..." : "Delete Track"}
+                                            </button>
+                                        </div>
+                                    )}
+                                </footer>
                             </section>
                         )}
                         {activePanel === "assets" && (

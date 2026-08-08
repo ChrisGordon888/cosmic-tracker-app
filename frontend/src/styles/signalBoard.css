@@ -3213,3 +3213,111 @@
     padding-bottom: calc(8rem + env(safe-area-inset-bottom));
   }
 }
+
+/* ===================================
+   V5J2D — TRACK FOOTER COHESION
+   One clear desktop finish area: save first, danger separated.
+   =================================== */
+.signal-board-track-footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.85rem 1rem;
+  align-items: center;
+  margin-top: 1.15rem;
+  padding: 0.95rem;
+  border: 1px solid rgba(214, 224, 235, 0.11);
+  border-radius: 1.15rem;
+  background: rgba(255, 255, 255, 0.026);
+}
+
+.signal-board-track-save-copy {
+  min-width: 0;
+  display: grid;
+  gap: 0.22rem;
+}
+
+.signal-board-track-save-copy span,
+.signal-board-track-danger-zone span {
+  color: var(--sb-soft);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.signal-board-track-save-copy strong,
+.signal-board-track-danger-zone strong {
+  color: var(--sb-muted);
+  font-size: 0.76rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.signal-board-track-footer .signal-board-track-save-actions {
+  margin: 0;
+  justify-content: flex-end;
+}
+
+.signal-board-track-footer .signal-board-track-save-actions button {
+  min-width: 10.5rem;
+  min-height: 2.85rem;
+}
+
+.signal-board-track-danger-zone {
+  grid-column: 1 / -1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.05rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid rgba(244, 121, 148, 0.13);
+}
+
+.signal-board-track-danger-zone > div {
+  min-width: 0;
+  display: grid;
+  gap: 0.18rem;
+}
+
+.signal-board-track-danger-zone > div > span {
+  color: rgba(244, 121, 148, 0.82);
+}
+
+.signal-board-track-danger-zone .signal-board-danger-mini {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 8.75rem;
+  min-height: 2.55rem;
+  margin: 0;
+  padding: 0.62rem 0.85rem;
+}
+
+/* The footer owns its own internal spacing; don't double the shared runway margins. */
+.signal-board-track-footer .signal-board-track-save-actions,
+.signal-board-track-footer .signal-board-danger-mini {
+  margin-bottom: 0;
+}
+
+@media (max-width: 760px) {
+  .signal-board-track-footer {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+    padding: 0.85rem;
+  }
+
+  .signal-board-track-footer .signal-board-track-save-actions,
+  .signal-board-track-footer .signal-board-track-save-actions button {
+    width: 100%;
+  }
+
+  .signal-board-track-danger-zone {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .signal-board-track-danger-zone .signal-board-danger-mini {
+    width: 100%;
+  }
+}
