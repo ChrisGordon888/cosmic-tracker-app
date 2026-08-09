@@ -3230,7 +3230,7 @@ export default function DynamicReleaseSignalBoardPage() {
                                         <details className="signal-board-help-disclosure signal-board-realm-guide">
                                             <summary>Need help choosing a Realm?</summary>
                                             <div>
-                                                <p>Use the Realm that feels closest to the track's mood, story, and world. Your choice is a creative suggestion, not a permanent platform decision.</p>
+                                                <p>Use the Realm that feels closest to the track’s mood, story, and world. Your choice is a creative suggestion, not a permanent platform decision.</p>
                                                 <p>A lightweight Realm Finder can plug into this step next without changing the review workflow.</p>
                                             </div>
                                         </details>
