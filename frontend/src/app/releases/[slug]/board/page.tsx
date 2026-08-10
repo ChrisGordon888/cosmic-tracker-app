@@ -635,6 +635,158 @@ const realmPublishingOptions = [
 ];
 
 
+type RealmFinderRealmId = 303 | 202 | 101 | 55 | 44 | 0;
+
+interface RealmFinderOption {
+    id: string;
+    label: string;
+    detail: string;
+    realms: RealmFinderRealmId[];
+}
+
+interface RealmFinderQuestion {
+    id: string;
+    prompt: string;
+    eyebrow: string;
+    options: RealmFinderOption[];
+}
+
+const realmFinderRealms: Record<
+    RealmFinderRealmId,
+    { name: string; summary: string; signals: string[] }
+> = {
+    303: {
+        name: "Fractured Frontier",
+        summary: "Raw pressure, rupture, survival, rebellion, and forward motion through instability.",
+        signals: ["intense", "fractured", "defiant"],
+    },
+    202: {
+        name: "The Veil",
+        summary: "Mystery, liminal emotion, shadow, dream logic, and the feeling of moving between worlds.",
+        signals: ["mysterious", "liminal", "dreamlike"],
+    },
+    101: {
+        name: "Moonlit Roads",
+        summary: "Reflection, longing, romance, memory, and emotional movement through a nocturnal landscape.",
+        signals: ["reflective", "emotional", "wandering"],
+    },
+    55: {
+        name: "Skybound City",
+        summary: "Ambition, momentum, scale, confidence, futurism, and the energy of rising into something larger.",
+        signals: ["expansive", "driven", "future-facing"],
+    },
+    44: {
+        name: "Astral Bazaar",
+        summary: "Color, exchange, play, sensuality, eclectic culture, charisma, and social movement.",
+        signals: ["eclectic", "social", "vivid"],
+    },
+    0: {
+        name: "InterSiddhi",
+        summary: "Stillness, transcendence, ritual, spiritual depth, altered perspective, and inner-space exploration.",
+        signals: ["transcendent", "meditative", "otherworldly"],
+    },
+};
+
+const realmFinderQuestions: RealmFinderQuestion[] = [
+    {
+        id: "emotional-center",
+        eyebrow: "01 · Emotional center",
+        prompt: "What is the signal carrying at its core?",
+        options: [
+            { id: "pressure", label: "Pressure + release", detail: "Raw, urgent, defiant, breaking through.", realms: [303, 55] },
+            { id: "mystery", label: "Mystery + shadow", detail: "Unclear edges, hidden meaning, dream-state emotion.", realms: [202, 0] },
+            { id: "longing", label: "Longing + reflection", detail: "Memory, romance, distance, inner movement.", realms: [101, 202] },
+            { id: "magnetism", label: "Magnetism + color", detail: "Charisma, play, seduction, social energy.", realms: [44, 55] },
+        ],
+    },
+    {
+        id: "movement",
+        eyebrow: "02 · Movement",
+        prompt: "How does the track move through its world?",
+        options: [
+            { id: "collision", label: "Collision", detail: "Jagged, volatile, confrontational.", realms: [303, 44] },
+            { id: "drift", label: "Drift", detail: "Floating, liminal, dissolving between spaces.", realms: [202, 0] },
+            { id: "journey", label: "Journey", detail: "A road, memory, emotional progression.", realms: [101, 55] },
+            { id: "ascent", label: "Ascent", detail: "Climbing, accelerating, arriving, expanding.", realms: [55, 303] },
+        ],
+    },
+    {
+        id: "world",
+        eyebrow: "03 · World",
+        prompt: "Where does this signal feel most alive?",
+        options: [
+            { id: "ruins", label: "At the edge", detail: "Broken structures, danger, transformation.", realms: [303, 202] },
+            { id: "night-road", label: "On a night road", detail: "Headlights, distance, rain, memory.", realms: [101, 202] },
+            { id: "city", label: "Above the city", detail: "Lights, height, speed, possibility.", realms: [55, 44] },
+            { id: "temple", label: "Inside the unseen", detail: "Ritual, inner space, altered awareness.", realms: [0, 202] },
+        ],
+    },
+    {
+        id: "social-energy",
+        eyebrow: "04 · Social energy",
+        prompt: "How close are other people to the signal?",
+        options: [
+            { id: "alone", label: "Almost completely alone", detail: "Private, internal, intimate.", realms: [101, 0] },
+            { id: "hidden", label: "Present but obscured", detail: "Figures behind glass, masks, distance.", realms: [202, 101] },
+            { id: "crowd", label: "Inside a living crowd", detail: "Exchange, fashion, movement, chemistry.", realms: [44, 55] },
+            { id: "against", label: "Against the world", detail: "Defiance, conflict, proving something.", realms: [303, 55] },
+        ],
+    },
+    {
+        id: "aftertaste",
+        eyebrow: "05 · Aftertaste",
+        prompt: "What should remain after the signal ends?",
+        options: [
+            { id: "impact", label: "Impact", detail: "A hit of force, urgency, disruption.", realms: [303, 55] },
+            { id: "haunting", label: "A haunting feeling", detail: "Questions, atmosphere, unresolved emotion.", realms: [202, 101] },
+            { id: "glow", label: "A glow", detail: "Energy, attraction, color, possibility.", realms: [44, 55] },
+            { id: "stillness", label: "Stillness", detail: "Space, awe, integration, transcendence.", realms: [0, 202] },
+        ],
+    },
+];
+
+function getRealmFinderResult(answers: Record<string, string>) {
+    const scores: Record<RealmFinderRealmId, number> = {
+        303: 0,
+        202: 0,
+        101: 0,
+        55: 0,
+        44: 0,
+        0: 0,
+    };
+
+    realmFinderQuestions.forEach((question) => {
+        const answerId = answers[question.id];
+        const option = question.options.find((candidate) => candidate.id === answerId);
+        if (!option) return;
+
+        option.realms.forEach((realmId, index) => {
+            scores[realmId] += index === 0 ? 2 : 1;
+        });
+    });
+
+    const ranked = (Object.entries(scores) as Array<[string, number]>)
+        .map(([realmId, score]) => ({
+            realmId: Number(realmId) as RealmFinderRealmId,
+            score,
+        }))
+        .sort((a, b) => b.score - a.score || a.realmId - b.realmId);
+
+    const answeredCount = Object.keys(answers).length;
+    const winner = ranked[0];
+    const runnerUp = ranked[1];
+    const maxPossible = Math.max(answeredCount * 2, 1);
+    const confidence = Math.min(99, Math.round((winner.score / maxPossible) * 100));
+
+    return {
+        ...winner,
+        confidence,
+        runnerUp,
+        meta: realmFinderRealms[winner.realmId],
+    };
+}
+
+
 const assetUsageOptions = [
     { value: "cover", label: "Cover Art" },
     { value: "track-audio", label: "Track Audio" },
@@ -1448,6 +1600,10 @@ export default function DynamicReleaseSignalBoardPage() {
         "Tracks shape the public listening path. Set visibility, playback, dates, and audio before previewing the Release Page.",
     );
 
+    const [isRealmFinderOpen, setIsRealmFinderOpen] = useState(false);
+    const [realmFinderStep, setRealmFinderStep] = useState(0);
+    const [realmFinderAnswers, setRealmFinderAnswers] = useState<Record<string, string>>({});
+
     const [assetForm, setAssetForm] = useState<AssetForm>(() =>
         getEmptyAssetForm(),
     );
@@ -1560,6 +1716,12 @@ export default function DynamicReleaseSignalBoardPage() {
                     : publishSignalReadiness.ready
                         ? "Ready for review"
                         : "Draft";
+
+    const realmFinderQuestion = realmFinderQuestions[realmFinderStep] ?? realmFinderQuestions[0];
+    const realmFinderIsComplete = realmFinderQuestions.every(
+        (question) => Boolean(realmFinderAnswers[question.id]),
+    );
+    const realmFinderResult = getRealmFinderResult(realmFinderAnswers);
 
     const [saveBoardArtifacts, { loading: isSaving }] =
         useMutation(SAVE_BOARD_ARTIFACTS);
@@ -1843,6 +2005,31 @@ export default function DynamicReleaseSignalBoardPage() {
         );
 
         return highestTrackNumber + 1;
+    }
+
+    function handleRealmFinderAnswer(questionId: string, optionId: string) {
+        setRealmFinderAnswers((current) => ({
+            ...current,
+            [questionId]: optionId,
+        }));
+
+        if (realmFinderStep < realmFinderQuestions.length - 1) {
+            setRealmFinderStep((current) => current + 1);
+        }
+    }
+
+    function handleRealmFinderReset() {
+        setRealmFinderAnswers({});
+        setRealmFinderStep(0);
+    }
+
+    function handleUseRealmFinderResult() {
+        const realmId = String(realmFinderResult.realmId);
+        updateTrackForm("realmId", realmId);
+        setTrackMessage(
+            `Realm Finder suggested ${realmFinderResult.realmId} — ${realmFinderResult.meta.name}. Save the track when you are ready.`,
+        );
+        setIsRealmFinderOpen(false);
     }
 
     function updateTrackForm<K extends keyof TrackForm>(
@@ -3227,13 +3414,121 @@ export default function DynamicReleaseSignalBoardPage() {
                                             </div>
                                         </div>
 
-                                        <details className="signal-board-help-disclosure signal-board-realm-guide">
-                                            <summary>Need help choosing a Realm?</summary>
-                                            <div>
-                                                <p>Use the Realm that feels closest to the track’s mood, story, and world. Your choice is a creative suggestion, not a permanent platform decision.</p>
-                                                <p>A lightweight Realm Finder can plug into this step next without changing the review workflow.</p>
-                                            </div>
-                                        </details>
+                                        <section className={`signal-board-realm-finder${isRealmFinderOpen ? " is-open" : ""}`}>
+                                            <button
+                                                type="button"
+                                                className="signal-board-realm-finder-toggle"
+                                                onClick={() => setIsRealmFinderOpen((current) => !current)}
+                                                aria-expanded={isRealmFinderOpen}
+                                            >
+                                                <span>
+                                                    <small>Realm Finder</small>
+                                                    <strong>Need help choosing a Realm?</strong>
+                                                </span>
+                                                <em>{isRealmFinderOpen ? "Close" : "Find My Realm"}</em>
+                                            </button>
+
+                                            {isRealmFinderOpen && (
+                                                <div className="signal-board-realm-finder-body">
+                                                    {!realmFinderIsComplete ? (
+                                                        <>
+                                                            <div className="signal-board-realm-finder-progress">
+                                                                <span>
+                                                                    {realmFinderQuestion.eyebrow}
+                                                                </span>
+                                                                <strong>
+                                                                    {realmFinderStep + 1} / {realmFinderQuestions.length}
+                                                                </strong>
+                                                            </div>
+
+                                                            <div className="signal-board-realm-finder-question">
+                                                                <h4>{realmFinderQuestion.prompt}</h4>
+                                                                <p>Choose what feels closest. There is no permanent answer here.</p>
+                                                            </div>
+
+                                                            <div className="signal-board-realm-finder-options">
+                                                                {realmFinderQuestion.options.map((option) => {
+                                                                    const isSelected =
+                                                                        realmFinderAnswers[realmFinderQuestion.id] === option.id;
+
+                                                                    return (
+                                                                        <button
+                                                                            key={option.id}
+                                                                            type="button"
+                                                                            className={isSelected ? "is-selected" : ""}
+                                                                            onClick={() =>
+                                                                                handleRealmFinderAnswer(
+                                                                                    realmFinderQuestion.id,
+                                                                                    option.id,
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            <strong>{option.label}</strong>
+                                                                            <span>{option.detail}</span>
+                                                                        </button>
+                                                                    );
+                                                                })}
+                                                            </div>
+
+                                                            <div className="signal-board-realm-finder-nav">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() =>
+                                                                        setRealmFinderStep((current) =>
+                                                                            Math.max(0, current - 1)
+                                                                        )
+                                                                    }
+                                                                    disabled={realmFinderStep === 0}
+                                                                >
+                                                                    Back
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={handleRealmFinderReset}
+                                                                    disabled={Object.keys(realmFinderAnswers).length === 0}
+                                                                >
+                                                                    Start over
+                                                                </button>
+                                                            </div>
+                                                        </>
+                                                    ) : (
+                                                        <div className="signal-board-realm-finder-result">
+                                                            <div className="signal-board-realm-finder-result-topline">
+                                                                <span>Suggested Realm</span>
+                                                                <small>{realmFinderResult.confidence}% alignment</small>
+                                                            </div>
+                                                            <strong className="signal-board-realm-finder-result-title">
+                                                                {realmFinderResult.realmId} — {realmFinderResult.meta.name}
+                                                            </strong>
+                                                            <p>{realmFinderResult.meta.summary}</p>
+
+                                                            <div className="signal-board-realm-finder-signals">
+                                                                {realmFinderResult.meta.signals.map((signal) => (
+                                                                    <span key={signal}>{signal}</span>
+                                                                ))}
+                                                            </div>
+
+                                                            <div className="signal-board-realm-finder-result-actions">
+                                                                <button
+                                                                    type="button"
+                                                                    className="is-primary"
+                                                                    onClick={handleUseRealmFinderResult}
+                                                                >
+                                                                    Use This Realm
+                                                                </button>
+                                                                <button type="button" onClick={handleRealmFinderReset}>
+                                                                    Try Again
+                                                                </button>
+                                                            </div>
+
+                                                            <small className="signal-board-realm-finder-disclaimer">
+                                                                This is a creative sorting aid. You can still choose another Realm, and Cosmic review can adjust final Nexus placement.
+                                                            </small>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </section>
 
                                         <div className="signal-board-publish-guide signal-board-nexus-readiness" aria-label="Nexus review readiness">
                                             <article>
