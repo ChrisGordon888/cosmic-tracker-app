@@ -3411,6 +3411,15 @@ module.exports = {
                     input.nexusSortOrder === undefined || input.nexusSortOrder === null
                         ? 999
                         : input.nexusSortOrder,
+                realmFinderSuggestedRealmId:
+                    input.realmFinderSuggestedRealmId === undefined ? null : input.realmFinderSuggestedRealmId,
+                realmFinderSecondaryRealmId:
+                    input.realmFinderSecondaryRealmId === undefined ? null : input.realmFinderSecondaryRealmId,
+                realmFinderAlignment:
+                    input.realmFinderAlignment === undefined ? null : input.realmFinderAlignment,
+                realmFinderSignals: Array.isArray(input.realmFinderSignals) ? input.realmFinderSignals : [],
+                realmFinderSummary: String(input.realmFinderSummary || "").trim(),
+                realmFinderVersion: String(input.realmFinderVersion || "").trim(),
                 lastOpenedAt: new Date(),
             };
 

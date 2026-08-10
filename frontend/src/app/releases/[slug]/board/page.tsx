@@ -153,6 +153,12 @@ const GET_RELEASE_TRACKS = gql`
       nexusSubmittedAt
       nexusReviewedAt
       nexusReviewNotes
+      realmFinderSuggestedRealmId
+      realmFinderSecondaryRealmId
+      realmFinderAlignment
+      realmFinderSignals
+      realmFinderSummary
+      realmFinderVersion
       createdAt
       updatedAt
       lastOpenedAt
@@ -194,6 +200,12 @@ const CREATE_RELEASE_TRACK = gql`
       nexusSubmittedAt
       nexusReviewedAt
       nexusReviewNotes
+      realmFinderSuggestedRealmId
+      realmFinderSecondaryRealmId
+      realmFinderAlignment
+      realmFinderSignals
+      realmFinderSummary
+      realmFinderVersion
       createdAt
       updatedAt
       lastOpenedAt
@@ -235,6 +247,12 @@ const UPDATE_RELEASE_TRACK = gql`
       nexusSubmittedAt
       nexusReviewedAt
       nexusReviewNotes
+      realmFinderSuggestedRealmId
+      realmFinderSecondaryRealmId
+      realmFinderAlignment
+      realmFinderSignals
+      realmFinderSummary
+      realmFinderVersion
       createdAt
       updatedAt
       lastOpenedAt
@@ -420,6 +438,12 @@ interface ReleaseTrack {
     nexusSubmittedAt?: string | null;
     nexusReviewedAt?: string | null;
     nexusReviewNotes?: string | null;
+    realmFinderSuggestedRealmId?: number | null;
+    realmFinderSecondaryRealmId?: number | null;
+    realmFinderAlignment?: number | null;
+    realmFinderSignals?: string[] | null;
+    realmFinderSummary?: string | null;
+    realmFinderVersion?: string | null;
     createdAt?: string | null;
     updatedAt?: string | null;
     lastOpenedAt?: string | null;
@@ -452,6 +476,12 @@ interface TrackForm {
     isRealmAnchor: boolean;
     isPublicPick: boolean;
     nexusSortOrder: string;
+    realmFinderSuggestedRealmId: string;
+    realmFinderSecondaryRealmId: string;
+    realmFinderAlignment: string;
+    realmFinderSignals: string[];
+    realmFinderSummary: string;
+    realmFinderVersion: string;
 }
 
 interface ReleaseAsset {
@@ -694,9 +724,9 @@ const realmFinderQuestions: RealmFinderQuestion[] = [
         prompt: "What is the signal carrying at its core?",
         options: [
             { id: "pressure", label: "Pressure + release", detail: "Raw, urgent, defiant, breaking through.", realms: [303, 55] },
-            { id: "mystery", label: "Mystery + shadow", detail: "Unclear edges, hidden meaning, dream-state emotion.", realms: [202, 0] },
+            { id: "mystery", label: "Mystery + shadow", detail: "Hidden meaning, dream-state emotion, unclear edges.", realms: [202, 0] },
             { id: "longing", label: "Longing + reflection", detail: "Memory, romance, distance, inner movement.", realms: [101, 202] },
-            { id: "magnetism", label: "Magnetism + color", detail: "Charisma, play, seduction, social energy.", realms: [44, 55] },
+            { id: "magnetism", label: "Magnetism + color", detail: "Charisma, sensuality, play, social energy.", realms: [44, 55] },
         ],
     },
     {
@@ -706,7 +736,7 @@ const realmFinderQuestions: RealmFinderQuestion[] = [
         options: [
             { id: "collision", label: "Collision", detail: "Jagged, volatile, confrontational.", realms: [303, 44] },
             { id: "drift", label: "Drift", detail: "Floating, liminal, dissolving between spaces.", realms: [202, 0] },
-            { id: "journey", label: "Journey", detail: "A road, memory, emotional progression.", realms: [101, 55] },
+            { id: "journey", label: "Journey", detail: "A road, memory, emotional progression.", realms: [101, 202] },
             { id: "ascent", label: "Ascent", detail: "Climbing, accelerating, arriving, expanding.", realms: [55, 303] },
         ],
     },
@@ -715,10 +745,10 @@ const realmFinderQuestions: RealmFinderQuestion[] = [
         eyebrow: "03 · World",
         prompt: "Where does this signal feel most alive?",
         options: [
-            { id: "ruins", label: "At the edge", detail: "Broken structures, danger, transformation.", realms: [303, 202] },
+            { id: "edge", label: "At the edge", detail: "Broken structures, danger, transformation.", realms: [303, 202] },
             { id: "night-road", label: "On a night road", detail: "Headlights, distance, rain, memory.", realms: [101, 202] },
             { id: "city", label: "Above the city", detail: "Lights, height, speed, possibility.", realms: [55, 44] },
-            { id: "temple", label: "Inside the unseen", detail: "Ritual, inner space, altered awareness.", realms: [0, 202] },
+            { id: "unseen", label: "Inside the unseen", detail: "Ritual, inner space, altered awareness.", realms: [0, 202] },
         ],
     },
     {
@@ -727,14 +757,25 @@ const realmFinderQuestions: RealmFinderQuestion[] = [
         prompt: "How close are other people to the signal?",
         options: [
             { id: "alone", label: "Almost completely alone", detail: "Private, internal, intimate.", realms: [101, 0] },
-            { id: "hidden", label: "Present but obscured", detail: "Figures behind glass, masks, distance.", realms: [202, 101] },
+            { id: "hidden", label: "Present but obscured", detail: "Figures behind glass, masks, emotional distance.", realms: [202, 101] },
             { id: "crowd", label: "Inside a living crowd", detail: "Exchange, fashion, movement, chemistry.", realms: [44, 55] },
             { id: "against", label: "Against the world", detail: "Defiance, conflict, proving something.", realms: [303, 55] },
         ],
     },
     {
+        id: "texture",
+        eyebrow: "05 · Texture",
+        prompt: "What texture best describes the signal?",
+        options: [
+            { id: "metal", label: "Steel + sparks", detail: "Hard edges, friction, impact, distortion.", realms: [303, 55] },
+            { id: "fog", label: "Fog + glass", detail: "Soft focus, shimmer, concealment, suspended detail.", realms: [202, 101] },
+            { id: "neon", label: "Neon + chrome", detail: "Bright surfaces, motion, nightlife, futuristic polish.", realms: [55, 44] },
+            { id: "incense", label: "Incense + space", detail: "Air, ritual, silence, resonance, inner depth.", realms: [0, 202] },
+        ],
+    },
+    {
         id: "aftertaste",
-        eyebrow: "05 · Aftertaste",
+        eyebrow: "06 · Aftertaste",
         prompt: "What should remain after the signal ends?",
         options: [
             { id: "impact", label: "Impact", detail: "A hit of force, urgency, disruption.", realms: [303, 55] },
@@ -761,7 +802,7 @@ function getRealmFinderResult(answers: Record<string, string>) {
         if (!option) return;
 
         option.realms.forEach((realmId, index) => {
-            scores[realmId] += index === 0 ? 2 : 1;
+            scores[realmId] += index === 0 ? 3 : 1;
         });
     });
 
@@ -775,14 +816,17 @@ function getRealmFinderResult(answers: Record<string, string>) {
     const answeredCount = Object.keys(answers).length;
     const winner = ranked[0];
     const runnerUp = ranked[1];
-    const maxPossible = Math.max(answeredCount * 2, 1);
-    const confidence = Math.min(99, Math.round((winner.score / maxPossible) * 100));
+    const maxPossible = Math.max(answeredCount * 3, 1);
+    const rawAlignment = Math.round((winner.score / maxPossible) * 100);
+    const margin = winner.score - runnerUp.score;
+    const alignment = Math.min(96, Math.max(50, rawAlignment + Math.min(12, margin * 2)));
 
     return {
         ...winner,
-        confidence,
+        alignment,
         runnerUp,
         meta: realmFinderRealms[winner.realmId],
+        runnerUpMeta: realmFinderRealms[runnerUp.realmId],
     };
 }
 
@@ -888,6 +932,12 @@ function getEmptyTrackForm(nextTrackNumber = 1): TrackForm {
         isRealmAnchor: false,
         isPublicPick: false,
         nexusSortOrder: String(nextTrackNumber),
+        realmFinderSuggestedRealmId: "",
+        realmFinderSecondaryRealmId: "",
+        realmFinderAlignment: "",
+        realmFinderSignals: [],
+        realmFinderSummary: "",
+        realmFinderVersion: "",
     };
 }
 
@@ -918,6 +968,18 @@ function getTrackFormFromReleaseTrack(track: ReleaseTrack): TrackForm {
         isRealmAnchor: Boolean(track.isRealmAnchor),
         isPublicPick: Boolean(track.isPublicPick),
         nexusSortOrder: String(track.nexusSortOrder ?? track.trackNumber ?? 999),
+        realmFinderSuggestedRealmId:
+            track.realmFinderSuggestedRealmId === 0 || track.realmFinderSuggestedRealmId
+                ? String(track.realmFinderSuggestedRealmId)
+                : "",
+        realmFinderSecondaryRealmId:
+            track.realmFinderSecondaryRealmId === 0 || track.realmFinderSecondaryRealmId
+                ? String(track.realmFinderSecondaryRealmId)
+                : "",
+        realmFinderAlignment: track.realmFinderAlignment ? String(track.realmFinderAlignment) : "",
+        realmFinderSignals: track.realmFinderSignals ?? [],
+        realmFinderSummary: track.realmFinderSummary ?? "",
+        realmFinderVersion: track.realmFinderVersion ?? "",
     };
 }
 
@@ -946,6 +1008,15 @@ function getTrackInputFromForm(form: TrackForm) {
         isPublic: form.visibility === "public" || form.visibility === "listed",
         realmId: form.realmId === "" ? null : Number(form.realmId),
         nexusSortOrder: form.nexusSortOrder.trim() ? Number(form.nexusSortOrder) : 999,
+        realmFinderSuggestedRealmId:
+            form.realmFinderSuggestedRealmId === "" ? null : Number(form.realmFinderSuggestedRealmId),
+        realmFinderSecondaryRealmId:
+            form.realmFinderSecondaryRealmId === "" ? null : Number(form.realmFinderSecondaryRealmId),
+        realmFinderAlignment:
+            form.realmFinderAlignment === "" ? null : Number(form.realmFinderAlignment),
+        realmFinderSignals: form.realmFinderSignals,
+        realmFinderSummary: form.realmFinderSummary.trim(),
+        realmFinderVersion: form.realmFinderVersion.trim(),
     };
 }
 
@@ -2025,9 +2096,20 @@ export default function DynamicReleaseSignalBoardPage() {
 
     function handleUseRealmFinderResult() {
         const realmId = String(realmFinderResult.realmId);
-        updateTrackForm("realmId", realmId);
+
+        setTrackForm((current) => ({
+            ...current,
+            realmId,
+            realmFinderSuggestedRealmId: realmId,
+            realmFinderSecondaryRealmId: String(realmFinderResult.runnerUp.realmId),
+            realmFinderAlignment: String(realmFinderResult.alignment),
+            realmFinderSignals: realmFinderResult.meta.signals,
+            realmFinderSummary: realmFinderResult.meta.summary,
+            realmFinderVersion: "v2",
+        }));
+
         setTrackMessage(
-            `Realm Finder suggested ${realmFinderResult.realmId} — ${realmFinderResult.meta.name}. Save the track when you are ready.`,
+            `Realm Finder suggested ${realmFinderResult.realmId} — ${realmFinderResult.meta.name}, with a secondary pull toward ${realmFinderResult.runnerUp.realmId} — ${realmFinderResult.runnerUpMeta.name}. Save the track when you are ready.`,
         );
         setIsRealmFinderOpen(false);
     }
@@ -3407,6 +3489,23 @@ export default function DynamicReleaseSignalBoardPage() {
                                                 </span>
                                             </label>
 
+                                            {trackForm.realmFinderSuggestedRealmId && (
+                                                <div className="signal-board-realm-finder-saved">
+                                                    <span>Realm Finder snapshot</span>
+                                                    <strong>
+                                                        {trackForm.realmFinderSuggestedRealmId} — {realmFinderRealms[Number(trackForm.realmFinderSuggestedRealmId) as RealmFinderRealmId]?.name}
+                                                    </strong>
+                                                    <small>
+                                                        {trackForm.realmFinderAlignment
+                                                            ? `${trackForm.realmFinderAlignment}% quiz alignment`
+                                                            : "Saved quiz result"}
+                                                        {trackForm.realmFinderSecondaryRealmId
+                                                            ? ` · secondary ${trackForm.realmFinderSecondaryRealmId}`
+                                                            : ""}
+                                                    </small>
+                                                </div>
+                                            )}
+
                                             <div className="signal-board-nexus-status">
                                                 <span>Nexus review</span>
                                                 <strong>{publishSignalState}</strong>
@@ -3495,12 +3594,19 @@ export default function DynamicReleaseSignalBoardPage() {
                                                         <div className="signal-board-realm-finder-result">
                                                             <div className="signal-board-realm-finder-result-topline">
                                                                 <span>Suggested Realm</span>
-                                                                <small>{realmFinderResult.confidence}% alignment</small>
+                                                                <small>{realmFinderResult.alignment}% quiz alignment</small>
                                                             </div>
                                                             <strong className="signal-board-realm-finder-result-title">
                                                                 {realmFinderResult.realmId} — {realmFinderResult.meta.name}
                                                             </strong>
                                                             <p>{realmFinderResult.meta.summary}</p>
+
+                                                            <div className="signal-board-realm-finder-secondary">
+                                                                <span>Secondary pull</span>
+                                                                <strong>
+                                                                    {realmFinderResult.runnerUp.realmId} — {realmFinderResult.runnerUpMeta.name}
+                                                                </strong>
+                                                            </div>
 
                                                             <div className="signal-board-realm-finder-signals">
                                                                 {realmFinderResult.meta.signals.map((signal) => (

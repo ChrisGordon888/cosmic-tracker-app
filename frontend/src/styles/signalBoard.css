@@ -3634,3 +3634,43 @@
     flex: 1 1 9rem;
   }
 }
+
+
+/* V5L5 — saved Realm Finder context + secondary result */
+.signal-board-realm-finder-secondary,
+.signal-board-realm-finder-saved {
+  display: grid;
+  gap: .2rem;
+  min-width: 0;
+  padding: .62rem .7rem;
+  border: 1px solid rgba(168,132,255,.16);
+  border-radius: .8rem;
+  background: rgba(168,132,255,.045);
+}
+
+.signal-board-realm-finder-secondary span,
+.signal-board-realm-finder-saved span {
+  color: rgba(168,132,255,.78);
+  font-size: .58rem;
+  font-weight: 800;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.signal-board-realm-finder-secondary strong,
+.signal-board-realm-finder-saved strong {
+  color: rgba(242,244,250,.92);
+  font-size: .76rem;
+}
+
+.signal-board-realm-finder-saved small {
+  color: var(--sb-muted);
+  font-size: .65rem;
+  line-height: 1.4;
+}
+
+@media (max-width: 620px) {
+  .signal-board-realm-finder-saved {
+    grid-column: 1 / -1;
+  }
+}

@@ -274,6 +274,12 @@ const typeDefs = gql`
     nexusReviewedAt: String
     nexusReviewedBy: String
     nexusReviewNotes: String
+    realmFinderSuggestedRealmId: Int
+    realmFinderSecondaryRealmId: Int
+    realmFinderAlignment: Int
+    realmFinderSignals: [String!]!
+    realmFinderSummary: String
+    realmFinderVersion: String
     createdAt: String
     updatedAt: String
     lastOpenedAt: String
@@ -442,6 +448,12 @@ const typeDefs = gql`
     isRealmAnchor: Boolean
     isPublicPick: Boolean
     nexusSortOrder: Int
+    realmFinderSuggestedRealmId: Int
+    realmFinderSecondaryRealmId: Int
+    realmFinderAlignment: Int
+    realmFinderSignals: [String!]
+    realmFinderSummary: String
+    realmFinderVersion: String
   }
 
   input UpdateReleaseTrackInput {
@@ -471,6 +483,12 @@ const typeDefs = gql`
     isRealmAnchor: Boolean
     isPublicPick: Boolean
     nexusSortOrder: Int
+    realmFinderSuggestedRealmId: Int
+    realmFinderSecondaryRealmId: Int
+    realmFinderAlignment: Int
+    realmFinderSignals: [String!]
+    realmFinderSummary: String
+    realmFinderVersion: String
   }
 
   input ReleaseAssetInput {
