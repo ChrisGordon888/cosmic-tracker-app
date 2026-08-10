@@ -31,6 +31,12 @@ export default function AdminLayout({
                                 Users
                             </Link>
                             <Link
+                                href="/admin/nexus"
+                                className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-white/70 transition hover:bg-white/10 hover:text-white"
+                            >
+                                Nexus Review
+                            </Link>
+                            <Link
                                 href="/creator"
                                 className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-white/70 transition hover:bg-white/10 hover:text-white"
                             >

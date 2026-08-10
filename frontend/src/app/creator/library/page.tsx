@@ -51,16 +51,6 @@ const CREATOR_LIBRARY_QUERY = gql`
 `;
 
 
-const SET_FEATURED_SIGNAL = gql`
-  mutation SetFeaturedSignal($trackId: ID!) {
-    setFeaturedSignal(trackId: $trackId) {
-      id
-      showInNexus
-      nexusRole
-      updatedAt
-    }
-  }
-`;
 
 type LibraryView = "tracks" | "releases" | "realms" | "publishing";
 
@@ -180,10 +170,6 @@ export default function CreatorLibraryPage() {
     fetchPolicy: "cache-and-network",
   });
 
-  const [setFeaturedSignal, { loading: isSettingFeaturedSignal }] =
-    useMutation(SET_FEATURED_SIGNAL);
-  const [featuredSignalMessage, setFeaturedSignalMessage] = useState("");
-
   const releases: ReleaseWorld[] = data?.myReleaseWorlds ?? [];
   const tracks: ReleaseTrack[] = data?.myReleaseTracks ?? [];
 
@@ -233,26 +219,6 @@ export default function CreatorLibraryPage() {
     });
   }, [enrichedTracks, search, releaseFilter, realmFilter, statusFilter, publishingFilter]);
 
-  async function handleSetFeaturedSignal(track: ReleaseTrack) {
-    if (!track.showInNexus) {
-      setFeaturedSignalMessage("Publish this track to Nexus + Realm before featuring it.");
-      return;
-    }
-
-    try {
-      setFeaturedSignalMessage(`Setting ${track.title} as the Featured Signal...`);
-      await setFeaturedSignal({ variables: { trackId: track.id } });
-      setFeaturedSignalMessage(`${track.title} is now the Featured Signal.`);
-      await refetch();
-    } catch (featuredError) {
-      setFeaturedSignalMessage(
-        featuredError instanceof Error
-          ? featuredError.message
-          : "Could not update the Featured Signal."
-      );
-    }
-  }
-
   const summary = useMemo(() => {
     return {
       total: tracks.length,
@@ -295,7 +261,7 @@ export default function CreatorLibraryPage() {
           <div>
             <p className="creator-library-kicker">Creator OS</p>
             <h1>Creator Library</h1>
-            <p>Your catalog command center for artwork, playback, release placement, realm alignment, and Nexus publishing.</p>
+            <p>Your catalog command center for artwork, playback, release placement, realm alignment, and publishing readiness.</p>
           </div>
           <div className="creator-library-hero-actions">
             <Link href="/creator/projects">Release Worlds</Link>
@@ -394,19 +360,13 @@ export default function CreatorLibraryPage() {
           </div>
         </section>
 
-        {featuredSignalMessage && (
-          <section className="creator-library-featured-message">
-            {featuredSignalMessage}
-          </section>
-        )}
-
         {loading ? (
           <section className="creator-library-empty"><h2>Loading your tracks...</h2></section>
         ) : tracks.length === 0 ? (
           <section className="creator-library-empty">
             <p className="creator-library-kicker">Empty Library</p>
             <h2>Your catalog is ready for its first track.</h2>
-            <p>Create the first track from a Release World Signal Board, then manage its artwork, playback, realm, and Nexus state here.</p>
+            <p>Create the first track from a Release World Signal Board, then manage its artwork, playback, realm, and publishing readiness here.</p>
             <Link href="/creator/projects">Open Release Worlds</Link>
           </section>
         ) : view === "tracks" ? (
@@ -462,16 +422,6 @@ export default function CreatorLibraryPage() {
                       <a href={track.audioUrl || track.previewAudioUrl || ""} target="_blank" rel="noreferrer">
                         {track.playbackStatus === "preview" ? "Preview" : "Play"}
                       </a>
-                    )}
-                    {track.showInNexus && (
-                      <button
-                        type="button"
-                        className={track.nexusRole === "flagship" ? "is-current-signal" : ""}
-                        disabled={isSettingFeaturedSignal || track.nexusRole === "flagship"}
-                        onClick={() => handleSetFeaturedSignal(track)}
-                      >
-                        {track.nexusRole === "flagship" ? "Current Signal" : "Set Featured"}
-                      </button>
                     )}
                     {release && <Link href={`/releases/${release.slug}`}>Portal</Link>}
                     {realm && <Link href={`/realms/${realm.id}`}>Realm</Link>}

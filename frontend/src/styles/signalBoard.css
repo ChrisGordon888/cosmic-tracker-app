@@ -2112,7 +2112,7 @@
 }
 
 /* ===================================
-   V5J1 — CREATOR WORKFLOW + MOBILE PASS
+   V5J1 â€” CREATOR WORKFLOW + MOBILE PASS
    Tracks / Create / Assets / Portal
    =================================== */
 .signal-board-horizontal-tabs {
@@ -2215,7 +2215,7 @@
 }
 
 /* ===================================
-   V5J1A — SIGNAL BOARD TIGHTENING PASS
+   V5J1A â€” SIGNAL BOARD TIGHTENING PASS
    Mobile board fit / overview / track containment
    =================================== */
 
@@ -2548,7 +2548,7 @@
 }
 
 /* ===================================
-   V5J2 — NEXUS CONTROL SIMPLIFICATION
+   V5J2 â€” NEXUS CONTROL SIMPLIFICATION
    Featured Signal is an action, not a raw role selector.
    =================================== */
 .signal-board-nexus-grid {
@@ -2637,7 +2637,7 @@
 }
 
 /* ===================================
-   V5J2A — VISUAL DENSITY + BOARD FIT
+   V5J2A â€” VISUAL DENSITY + BOARD FIT
    Final creator-workbench tightening
    =================================== */
 
@@ -2674,7 +2674,7 @@
 }
 
 .signal-board-help-disclosure[open] summary::after,
-.signal-board-style-disclosure[open] summary::after { content: "–"; }
+.signal-board-style-disclosure[open] summary::after { content: "â€“"; }
 
 .signal-board-help-grid {
   display: grid;
@@ -2908,7 +2908,7 @@
 }
 
 /* ===================================
-   SIGNAL BOARD V5J2B — TOOL COHESION
+   SIGNAL BOARD V5J2B â€” TOOL COHESION
    Assets + Portal now follow the same compact creator-control language as Tracks.
    =================================== */
 
@@ -3215,7 +3215,7 @@
 }
 
 /* ===================================
-   V5J2D — TRACK FOOTER COHESION
+   V5J2D â€” TRACK FOOTER COHESION
    One clear desktop finish area: save first, danger separated.
    =================================== */
 .signal-board-track-footer {
@@ -3323,7 +3323,7 @@
 }
 
 /* ===================================
-   V5L2 — CREATOR NEXUS REVIEW FLOW
+   V5L2 â€” CREATOR NEXUS REVIEW FLOW
    =================================== */
 .signal-board-track-section-nexus .signal-board-nexus-status {
   min-height: 100%;

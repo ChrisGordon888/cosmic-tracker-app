@@ -1662,6 +1662,42 @@ module.exports = {
             });
         },
 
+        nexusReviewQueue: async (_, { status }, { user }) => {
+            requireNexusReview(user);
+
+            const query = {
+                nexusReviewStatus: status || { $in: ["in-review", "needs-changes", "approved", "published"] },
+            };
+
+            const tracks = await ReleaseTrack.find(query).sort({
+                nexusSubmittedAt: -1,
+                updatedAt: -1,
+            });
+
+            if (tracks.length === 0) return [];
+
+            const releaseIds = [...new Set(tracks.map((track) => String(track.releaseWorldId)))];
+            const releases = await ReleaseWorld.find({ _id: { $in: releaseIds } });
+            const releaseMap = new Map(releases.map((release) => [String(release._id), release]));
+
+            const profileIds = [...new Set(releases.map((release) => String(release.creativeProfileId)))];
+            const profiles = await CreativeProfile.find({ _id: { $in: profileIds } });
+            const profileMap = new Map(profiles.map((profile) => [String(profile._id), profile]));
+
+            return tracks
+                .map((track) => {
+                    const releaseWorld = releaseMap.get(String(track.releaseWorldId));
+                    if (!releaseWorld) return null;
+
+                    return {
+                        track,
+                        releaseWorld,
+                        creativeProfile: profileMap.get(String(releaseWorld.creativeProfileId)) || null,
+                    };
+                })
+                .filter(Boolean);
+        },
+
         getReleaseTracks: async (_, { releaseWorldId }, { user }) => {
             requireCreator(user);
 
@@ -3503,6 +3539,68 @@ module.exports = {
             track.nexusReviewedAt = null;
             track.nexusReviewedBy = "";
             track.nexusReviewNotes = "";
+            track.lastOpenedAt = new Date();
+            await track.save();
+
+            return track;
+        },
+
+        reviewNexusSubmission: async (_, { trackId, decision, realmId, notes }, { user }) => {
+            requireNexusReview(user);
+
+            const track = await ReleaseTrack.findById(trackId);
+            if (!track) throw new Error("Track not found.");
+
+            if (track.nexusReviewStatus !== "in-review") {
+                throw new Error("Only submissions currently in review can be reviewed.");
+            }
+
+            const normalizedDecision = String(decision || "").trim().toLowerCase();
+            if (!["approve", "needs-changes"].includes(normalizedDecision)) {
+                throw new Error("Choose approve or needs-changes.");
+            }
+
+            if (realmId !== undefined && realmId !== null) {
+                const normalizedRealm = Number(realmId);
+                if (!NEXUS_REALM_IDS.has(normalizedRealm)) {
+                    throw new Error("Choose a valid Realm.");
+                }
+                track.realmId = normalizedRealm;
+            }
+
+            track.showInNexus = false;
+            track.nexusReviewStatus = normalizedDecision === "approve" ? "approved" : "needs-changes";
+            track.nexusReviewedAt = new Date();
+            track.nexusReviewedBy = String(user.id || "");
+            track.nexusReviewNotes = String(notes || "").trim();
+            track.lastOpenedAt = new Date();
+            await track.save();
+
+            return track;
+        },
+
+        publishTrackToNexus: async (_, { trackId }, { user }) => {
+            requireNexusPublish(user);
+
+            const track = await ReleaseTrack.findById(trackId);
+            if (!track) throw new Error("Track not found.");
+
+            if (track.nexusReviewStatus !== "approved" && track.nexusReviewStatus !== "published") {
+                throw new Error("Approve this submission before publishing it to Nexus.");
+            }
+
+            const releaseWorld = await ReleaseWorld.findById(track.releaseWorldId);
+            if (!releaseWorld) throw new Error("Release world not found.");
+
+            validateNexusPublication(
+                getNexusPublicationCandidate(track, { showInNexus: true }),
+                releaseWorld
+            );
+
+            track.showInNexus = true;
+            track.nexusReviewStatus = "published";
+            track.nexusReviewedAt = new Date();
+            track.nexusReviewedBy = String(user.id || "");
             track.lastOpenedAt = new Date();
             await track.save();
 

@@ -231,6 +231,12 @@ const typeDefs = gql`
     message: String!
   }
 
+  type NexusReviewItem {
+    track: ReleaseTrack!
+    releaseWorld: ReleaseWorld!
+    creativeProfile: CreativeProfile
+  }
+
   type ReleaseTrack {
     id: ID!
     ownerId: String!
@@ -573,6 +579,7 @@ const typeDefs = gql`
     getPublicFeaturedReleaseWorld: ReleaseWorld
     getPublicReleaseWorldBySlug(slug: String!): ReleaseWorld
 
+    nexusReviewQueue(status: String): [NexusReviewItem!]!
     getReleaseTracks(releaseWorldId: ID!): [ReleaseTrack!]!
     getPublicReleaseTracks(releaseWorldId: ID!): [ReleaseTrack!]!
     getPublicNexusTracks(realmId: Int): [ReleaseTrack!]!
@@ -702,6 +709,13 @@ const typeDefs = gql`
     updateReleaseTrack(id: ID!, input: UpdateReleaseTrackInput!): ReleaseTrack!
     deleteReleaseTrack(id: ID!): ReleaseTrack
     submitTrackForNexusReview(trackId: ID!): ReleaseTrack!
+    reviewNexusSubmission(
+      trackId: ID!
+      decision: String!
+      realmId: Int
+      notes: String
+    ): ReleaseTrack!
+    publishTrackToNexus(trackId: ID!): ReleaseTrack!
     setFeaturedSignal(trackId: ID!): ReleaseTrack!
     reorderReleaseTracks(
       releaseWorldId: ID!
