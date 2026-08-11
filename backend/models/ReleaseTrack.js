@@ -41,6 +41,10 @@ const ReleaseTrackSchema = new mongoose.Schema(
     nexusReviewedAt: { type: Date, default: null },
     nexusReviewedBy: { type: String, default: "" },
     nexusReviewNotes: { type: String, default: "" },
+    nexusPublishedAt: { type: Date, default: null },
+    nexusPublishedBy: { type: String, default: "" },
+    nexusUnpublishedAt: { type: Date, default: null },
+    nexusUnpublishedBy: { type: String, default: "" },
 
     // Realm Finder stores a lightweight creative snapshot for editorial review.
     // It is advisory only; realmId remains the creator/admin placement field.

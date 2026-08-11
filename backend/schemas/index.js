@@ -235,6 +235,7 @@ const typeDefs = gql`
     track: ReleaseTrack!
     releaseWorld: ReleaseWorld!
     creativeProfile: CreativeProfile
+    releaseTrackCount: Int!
   }
 
   type RealmFinderScores {
@@ -292,6 +293,10 @@ const typeDefs = gql`
     nexusReviewedAt: String
     nexusReviewedBy: String
     nexusReviewNotes: String
+    nexusPublishedAt: String
+    nexusPublishedBy: String
+    nexusUnpublishedAt: String
+    nexusUnpublishedBy: String
     realmFinderSuggestedRealmId: Int
     realmFinderSecondaryRealmId: Int
     realmFinderTraceRealmId: Int
@@ -764,6 +769,7 @@ const typeDefs = gql`
       notes: String
     ): ReleaseTrack!
     publishTrackToNexus(trackId: ID!): ReleaseTrack!
+    unpublishTrackFromNexus(trackId: ID!, notes: String): ReleaseTrack!
     setFeaturedSignal(trackId: ID!): ReleaseTrack!
     reorderReleaseTracks(
       releaseWorldId: ID!
