@@ -172,7 +172,7 @@ export default function NexusReviewPage() {
                           <summary className="cursor-pointer text-[10px] uppercase tracking-[0.14em] text-white/40">Full resonance</summary>
                           <div className="mt-3 grid gap-2">
                             {REALMS.map((realm) => {
-                              const key = `realm${realm.id}` as keyof NonNullable<Track["realmFinderScores"]>;
+                              const key = `realm${realm.id}` as keyof NonNullable<ReviewItem["track"]["realmFinderScores"]>;
                               const score = track.realmFinderScores?.[key] ?? 0;
                               return (
                                 <div key={realm.id}>
