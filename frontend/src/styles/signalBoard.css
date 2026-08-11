@@ -3674,3 +3674,103 @@
     grid-column: 1 / -1;
   }
 }
+
+
+/* V5L6 — Realm Profile Foundation */
+.signal-board-realm-finder-saved em {
+  display: block;
+  margin-top: 0.38rem;
+  color: rgba(226, 232, 240, 0.62);
+  font-size: 0.72rem;
+  font-style: normal;
+  letter-spacing: 0.02em;
+}
+
+.signal-board-realm-profile-top-three {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin: 1rem 0;
+}
+
+.signal-board-realm-profile-top-three article {
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  background: rgba(255,255,255,0.025);
+  padding: 0.8rem;
+}
+
+.signal-board-realm-profile-top-three article.is-home {
+  border-color: rgba(196, 181, 253, 0.22);
+  background: rgba(196, 181, 253, 0.055);
+}
+
+.signal-board-realm-profile-top-three span {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: rgba(226,232,240,0.42);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.signal-board-realm-profile-top-three strong {
+  color: rgba(255,255,255,0.88);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.signal-board-realm-profile-details {
+  margin-top: 0.95rem;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 0.85rem;
+}
+
+.signal-board-realm-profile-details summary {
+  cursor: pointer;
+  color: rgba(221,214,254,0.72);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.signal-board-realm-profile-bars {
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 0.85rem;
+}
+
+.signal-board-realm-profile-bar > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.3rem;
+}
+
+.signal-board-realm-profile-bar span,
+.signal-board-realm-profile-bar strong {
+  font-size: 0.68rem;
+}
+
+.signal-board-realm-profile-bar span { color: rgba(226,232,240,0.56); }
+.signal-board-realm-profile-bar strong { color: rgba(255,255,255,0.76); }
+
+.signal-board-realm-profile-bar > i {
+  display: block;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.055);
+}
+
+.signal-board-realm-profile-bar > i > b {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(191,219,254,0.5), rgba(221,214,254,0.72));
+}
+
+@media (max-width: 760px) {
+  .signal-board-realm-profile-top-three { grid-template-columns: 1fr; }
+}

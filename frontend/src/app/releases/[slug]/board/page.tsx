@@ -155,9 +155,13 @@ const GET_RELEASE_TRACKS = gql`
       nexusReviewNotes
       realmFinderSuggestedRealmId
       realmFinderSecondaryRealmId
+      realmFinderTraceRealmId
       realmFinderAlignment
       realmFinderSignals
       realmFinderSummary
+      realmFinderDominantSignal
+      realmFinderExplanation
+      realmFinderScores { realm303 realm202 realm101 realm55 realm44 realm0 }
       realmFinderVersion
       createdAt
       updatedAt
@@ -202,9 +206,13 @@ const CREATE_RELEASE_TRACK = gql`
       nexusReviewNotes
       realmFinderSuggestedRealmId
       realmFinderSecondaryRealmId
+      realmFinderTraceRealmId
       realmFinderAlignment
       realmFinderSignals
       realmFinderSummary
+      realmFinderDominantSignal
+      realmFinderExplanation
+      realmFinderScores { realm303 realm202 realm101 realm55 realm44 realm0 }
       realmFinderVersion
       createdAt
       updatedAt
@@ -249,9 +257,13 @@ const UPDATE_RELEASE_TRACK = gql`
       nexusReviewNotes
       realmFinderSuggestedRealmId
       realmFinderSecondaryRealmId
+      realmFinderTraceRealmId
       realmFinderAlignment
       realmFinderSignals
       realmFinderSummary
+      realmFinderDominantSignal
+      realmFinderExplanation
+      realmFinderScores { realm303 realm202 realm101 realm55 realm44 realm0 }
       realmFinderVersion
       createdAt
       updatedAt
@@ -440,15 +452,28 @@ interface ReleaseTrack {
     nexusReviewNotes?: string | null;
     realmFinderSuggestedRealmId?: number | null;
     realmFinderSecondaryRealmId?: number | null;
+    realmFinderTraceRealmId?: number | null;
     realmFinderAlignment?: number | null;
     realmFinderSignals?: string[] | null;
     realmFinderSummary?: string | null;
+    realmFinderDominantSignal?: string | null;
+    realmFinderExplanation?: string | null;
+    realmFinderScores?: RealmFinderScores | null;
     realmFinderVersion?: string | null;
     createdAt?: string | null;
     updatedAt?: string | null;
     lastOpenedAt?: string | null;
 }
 
+
+interface RealmFinderScores {
+    realm303: number;
+    realm202: number;
+    realm101: number;
+    realm55: number;
+    realm44: number;
+    realm0: number;
+}
 
 interface TrackForm {
     title: string;
@@ -478,9 +503,13 @@ interface TrackForm {
     nexusSortOrder: string;
     realmFinderSuggestedRealmId: string;
     realmFinderSecondaryRealmId: string;
+    realmFinderTraceRealmId: string;
     realmFinderAlignment: string;
     realmFinderSignals: string[];
     realmFinderSummary: string;
+    realmFinderDominantSignal: string;
+    realmFinderExplanation: string;
+    realmFinderScores: RealmFinderScores | null;
     realmFinderVersion: string;
 }
 
@@ -683,94 +712,110 @@ interface RealmFinderQuestion {
 
 const realmFinderRealms: Record<
     RealmFinderRealmId,
-    { name: string; summary: string; signals: string[] }
+    { name: string; core: string; summary: string; signals: string[] }
 > = {
     303: {
         name: "Fractured Frontier",
-        summary: "Raw pressure, rupture, survival, rebellion, and forward motion through instability.",
-        signals: ["intense", "fractured", "defiant"],
+        core: "Creation / Rupture",
+        summary: "Raw creation under instability — experimentation, survival, disruption, freedom, and turning chaos into intentional form.",
+        signals: ["experimental", "disruptive", "adaptive"],
     },
     202: {
         name: "The Veil",
-        summary: "Mystery, liminal emotion, shadow, dream logic, and the feeling of moving between worlds.",
-        signals: ["mysterious", "liminal", "dreamlike"],
+        core: "Perception / Illusion",
+        summary: "Perception, desire, dream, projection, narrative, and learning to see what is shaping what feels real.",
+        signals: ["perceptive", "dreamlike", "ambiguous"],
     },
     101: {
         name: "Moonlit Roads",
-        summary: "Reflection, longing, romance, memory, and emotional movement through a nocturnal landscape.",
-        signals: ["reflective", "emotional", "wandering"],
+        core: "Reflection / Identity",
+        summary: "Self-reflection through lived experience — memory, relationships, emotional patterns, acceptance, and choosing what comes next.",
+        signals: ["reflective", "personal", "integrative"],
     },
     55: {
         name: "Skybound City",
-        summary: "Ambition, momentum, scale, confidence, futurism, and the energy of rising into something larger.",
-        signals: ["expansive", "driven", "future-facing"],
+        core: "Construction / Power",
+        summary: "Directed aspiration made visible — ambition, leadership, achievement, purpose, responsibility, and what we choose to build.",
+        signals: ["driven", "expansive", "purposeful"],
     },
     44: {
         name: "Astral Bazaar",
-        summary: "Color, exchange, play, sensuality, eclectic culture, charisma, and social movement.",
-        signals: ["eclectic", "social", "vivid"],
+        core: "Exchange / Value",
+        summary: "Value moving through relationship — timing, opportunity, resources, reciprocity, negotiation, and wise exchange.",
+        signals: ["resourceful", "relational", "flowing"],
     },
     0: {
         name: "InterSiddhi",
-        summary: "Stillness, transcendence, ritual, spiritual depth, altered perspective, and inner-space exploration.",
-        signals: ["transcendent", "meditative", "otherworldly"],
+        core: "Integration / Authenticity",
+        summary: "Integrated awareness — authenticity, presence, integrity, coherence, and truth beyond the need to perform an identity.",
+        signals: ["authentic", "coherent", "aware"],
     },
 };
 
 const realmFinderQuestions: RealmFinderQuestion[] = [
     {
-        id: "emotional-center",
-        eyebrow: "01 · Emotional center",
-        prompt: "What is the signal carrying at its core?",
+        id: "dominant-signal",
+        eyebrow: "01 · Dominant signal",
+        prompt: "What is this signal really about?",
         options: [
-            { id: "pressure", label: "Pressure + release", detail: "Raw, urgent, defiant, breaking through.", realms: [303, 55] },
-            { id: "mystery", label: "Mystery + shadow", detail: "Hidden meaning, dream-state emotion, unclear edges.", realms: [202, 0] },
-            { id: "longing", label: "Longing + reflection", detail: "Memory, romance, distance, inner movement.", realms: [101, 202] },
-            { id: "magnetism", label: "Magnetism + color", detail: "Charisma, sensuality, play, social energy.", realms: [44, 55] },
+            { id: "create", label: "Break, survive, invent", detail: "Creating through instability, rupture, risk, rebellion, or raw possibility.", realms: [303, 55] },
+            { id: "perceive", label: "Question what is real", detail: "Dream, desire, projection, hidden influence, ambiguity, or perception itself.", realms: [202, 101] },
+            { id: "reflect", label: "Understand what shaped me", detail: "Memory, relationships, regret, healing, identity, or emotional patterns.", realms: [101, 202] },
+            { id: "build", label: "Build, rise, lead", detail: "Ambition, purpose, achievement, leadership, influence, or legacy.", realms: [55, 44] },
+            { id: "exchange", label: "Understand value and exchange", detail: "Money, time, opportunity, reciprocity, resources, relationships, or timing.", realms: [44, 55] },
+            { id: "integrate", label: "Speak from what feels true", detail: "Authenticity, awareness, coherence, integrity, or identity beyond performance.", realms: [0, 101] },
         ],
     },
     {
         id: "movement",
         eyebrow: "02 · Movement",
-        prompt: "How does the track move through its world?",
+        prompt: "What kind of movement drives the signal?",
         options: [
-            { id: "collision", label: "Collision", detail: "Jagged, volatile, confrontational.", realms: [303, 44] },
-            { id: "drift", label: "Drift", detail: "Floating, liminal, dissolving between spaces.", realms: [202, 0] },
-            { id: "journey", label: "Journey", detail: "A road, memory, emotional progression.", realms: [101, 202] },
-            { id: "ascent", label: "Ascent", detail: "Climbing, accelerating, arriving, expanding.", realms: [55, 303] },
+            { id: "rupture", label: "Rupture", detail: "Breaking structure, improvising, surviving, transforming.", realms: [303, 202] },
+            { id: "drift", label: "Drift", detail: "Floating through desire, uncertainty, memory, or altered perception.", realms: [202, 101] },
+            { id: "return", label: "Return", detail: "Revisiting experience to understand, accept, or choose differently.", realms: [101, 0] },
+            { id: "ascent", label: "Ascent", detail: "Building momentum, growing influence, pursuing a vision.", realms: [55, 303] },
+            { id: "circulation", label: "Circulation", detail: "Trading energy, resources, attention, opportunity, or connection.", realms: [44, 55] },
+            { id: "center", label: "Centering", detail: "Moving toward congruence, presence, honesty, or coherence.", realms: [0, 101] },
         ],
     },
     {
         id: "world",
         eyebrow: "03 · World",
-        prompt: "Where does this signal feel most alive?",
+        prompt: "Which world naturally appears around it?",
         options: [
-            { id: "edge", label: "At the edge", detail: "Broken structures, danger, transformation.", realms: [303, 202] },
-            { id: "night-road", label: "On a night road", detail: "Headlights, distance, rain, memory.", realms: [101, 202] },
-            { id: "city", label: "Above the city", detail: "Lights, height, speed, possibility.", realms: [55, 44] },
-            { id: "unseen", label: "Inside the unseen", detail: "Ritual, inner space, altered awareness.", realms: [0, 202] },
+            { id: "frontier", label: "A fractured frontier", detail: "Unfinished structures, sparks, broken rules, unstable terrain.", realms: [303, 55] },
+            { id: "veil", label: "A dream behind glass", detail: "Fog, screens, reflections, lanterns, hidden narratives.", realms: [202, 101] },
+            { id: "roads", label: "A road through memory", detail: "Rain, mirrors, trains, old places, different versions of self.", realms: [101, 202] },
+            { id: "skybound", label: "A city above the clouds", detail: "Towers, rooftops, scale, construction, visibility, achievement.", realms: [55, 44] },
+            { id: "bazaar", label: "A living marketplace", detail: "Doors, clocks, contracts, conversations, trade, opportunity.", realms: [44, 55] },
+            { id: "center", label: "An open center", detail: "Space, sunlight, transparent forms, presence, nothing to prove.", realms: [0, 101] },
         ],
     },
     {
-        id: "social-energy",
-        eyebrow: "04 · Social energy",
-        prompt: "How close are other people to the signal?",
+        id: "tension",
+        eyebrow: "04 · Creative tension",
+        prompt: "Which tension feels closest to the work?",
         options: [
-            { id: "alone", label: "Almost completely alone", detail: "Private, internal, intimate.", realms: [101, 0] },
-            { id: "hidden", label: "Present but obscured", detail: "Figures behind glass, masks, emotional distance.", realms: [202, 101] },
-            { id: "crowd", label: "Inside a living crowd", detail: "Exchange, fashion, movement, chemistry.", realms: [44, 55] },
-            { id: "against", label: "Against the world", detail: "Defiance, conflict, proving something.", realms: [303, 55] },
+            { id: "freedom-form", label: "Freedom ↔ form", detail: "How much structure can exist without killing possibility?", realms: [303, 55] },
+            { id: "imagination-reality", label: "Imagination ↔ reality", detail: "What is felt, desired, projected, or actually known?", realms: [202, 0] },
+            { id: "repetition-integration", label: "Repetition ↔ integration", detail: "Will the past repeat, or become something understood?", realms: [101, 0] },
+            { id: "ambition-stewardship", label: "Ambition ↔ stewardship", detail: "What is power for, and what responsibility comes with it?", realms: [55, 44] },
+            { id: "value-timing", label: "Value ↔ timing", detail: "What is worth pursuing, exchanging, keeping, or releasing?", realms: [44, 202] },
+            { id: "persona-authenticity", label: "Persona ↔ authenticity", detail: "Who remains when performance, proof, or identity falls away?", realms: [0, 101] },
         ],
     },
     {
         id: "texture",
         eyebrow: "05 · Texture",
-        prompt: "What texture best describes the signal?",
+        prompt: "What texture best carries the signal?",
         options: [
-            { id: "metal", label: "Steel + sparks", detail: "Hard edges, friction, impact, distortion.", realms: [303, 55] },
-            { id: "fog", label: "Fog + glass", detail: "Soft focus, shimmer, concealment, suspended detail.", realms: [202, 101] },
-            { id: "neon", label: "Neon + chrome", detail: "Bright surfaces, motion, nightlife, futuristic polish.", realms: [55, 44] },
-            { id: "incense", label: "Incense + space", detail: "Air, ritual, silence, resonance, inner depth.", realms: [0, 202] },
+            { id: "raw", label: "Raw + fractured", detail: "Friction, distortion, exposed edges, volatile contrast.", realms: [303, 55] },
+            { id: "haze", label: "Haze + reflection", detail: "Soft focus, shimmer, concealment, dreamlike detail.", realms: [202, 101] },
+            { id: "rain", label: "Rain + memory", detail: "Intimacy, repetition, late-night movement, emotional residue.", realms: [101, 202] },
+            { id: "scale", label: "Scale + polish", detail: "Height, momentum, precision, cinematic or commanding space.", realms: [55, 44] },
+            { id: "groove", label: "Groove + exchange", detail: "Rhythm, dialogue, movement between elements, social energy.", realms: [44, 55] },
+            { id: "clarity", label: "Clarity + space", detail: "Breath, cohesion, directness, openness, unforced presence.", realms: [0, 101] },
         ],
     },
     {
@@ -778,22 +823,19 @@ const realmFinderQuestions: RealmFinderQuestion[] = [
         eyebrow: "06 · Aftertaste",
         prompt: "What should remain after the signal ends?",
         options: [
-            { id: "impact", label: "Impact", detail: "A hit of force, urgency, disruption.", realms: [303, 55] },
-            { id: "haunting", label: "A haunting feeling", detail: "Questions, atmosphere, unresolved emotion.", realms: [202, 101] },
-            { id: "glow", label: "A glow", detail: "Energy, attraction, color, possibility.", realms: [44, 55] },
-            { id: "stillness", label: "Stillness", detail: "Space, awe, integration, transcendence.", realms: [0, 202] },
+            { id: "possibility", label: "Possibility", detail: "Something broke open; a new form could emerge.", realms: [303, 55] },
+            { id: "question", label: "A question", detail: "Reality feels layered, uncertain, seductive, or newly visible.", realms: [202, 101] },
+            { id: "understanding", label: "Understanding", detail: "The experience means something different now.", realms: [101, 0] },
+            { id: "momentum", label: "Momentum", detail: "A desire to build, lead, rise, or carry responsibility forward.", realms: [55, 303] },
+            { id: "discernment", label: "Discernment about value", detail: "A clearer sense of what deserves time, trust, energy, or exchange.", realms: [44, 202] },
+            { id: "truth", label: "A sense of truth", detail: "Less performance, more coherence, presence, or honest being.", realms: [0, 101] },
         ],
     },
 ];
 
 function getRealmFinderResult(answers: Record<string, string>) {
     const scores: Record<RealmFinderRealmId, number> = {
-        303: 0,
-        202: 0,
-        101: 0,
-        55: 0,
-        44: 0,
-        0: 0,
+        303: 0, 202: 0, 101: 0, 55: 0, 44: 0, 0: 0,
     };
 
     realmFinderQuestions.forEach((question) => {
@@ -801,32 +843,46 @@ function getRealmFinderResult(answers: Record<string, string>) {
         const option = question.options.find((candidate) => candidate.id === answerId);
         if (!option) return;
 
+        const isDominantSignal = question.id === "dominant-signal";
         option.realms.forEach((realmId, index) => {
-            scores[realmId] += index === 0 ? 3 : 1;
+            const primaryWeight = isDominantSignal ? 5 : 3;
+            const secondaryWeight = isDominantSignal ? 2 : 1;
+            scores[realmId] += index === 0 ? primaryWeight : secondaryWeight;
         });
     });
 
     const ranked = (Object.entries(scores) as Array<[string, number]>)
-        .map(([realmId, score]) => ({
-            realmId: Number(realmId) as RealmFinderRealmId,
-            score,
-        }))
+        .map(([realmId, score]) => ({ realmId: Number(realmId) as RealmFinderRealmId, score }))
         .sort((a, b) => b.score - a.score || a.realmId - b.realmId);
 
-    const answeredCount = Object.keys(answers).length;
     const winner = ranked[0];
     const runnerUp = ranked[1];
-    const maxPossible = Math.max(answeredCount * 3, 1);
-    const rawAlignment = Math.round((winner.score / maxPossible) * 100);
-    const margin = winner.score - runnerUp.score;
-    const alignment = Math.min(96, Math.max(50, rawAlignment + Math.min(12, margin * 2)));
+    const trace = ranked[2];
+    const maxPossible = realmFinderQuestions.reduce(
+        (total, question) => total + (question.id === "dominant-signal" ? 5 : 3),
+        0,
+    );
+    const resonanceScores = Object.fromEntries(
+        ranked.map((item) => [item.realmId, Math.round((item.score / maxPossible) * 100)]),
+    ) as Record<RealmFinderRealmId, number>;
+
+    const dominantAnswerId = answers["dominant-signal"];
+    const dominantOption = realmFinderQuestions[0].options.find((option) => option.id === dominantAnswerId);
+    const dominantSignal = realmFinderRealms[winner.realmId].core;
+    const explanation = dominantOption
+        ? `Your dominant answer points toward ${dominantOption.label.toLowerCase()}, while the supporting answers cluster most strongly around ${realmFinderRealms[winner.realmId].name}. ${realmFinderRealms[runnerUp.realmId].name} appears as a secondary influence, with ${realmFinderRealms[trace.realmId].name} present as a subtler trace.`
+        : `Your answers cluster most strongly around ${realmFinderRealms[winner.realmId].name}, with ${realmFinderRealms[runnerUp.realmId].name} secondary and ${realmFinderRealms[trace.realmId].name} as a subtler trace.`;
 
     return {
         ...winner,
-        alignment,
         runnerUp,
+        trace,
         meta: realmFinderRealms[winner.realmId],
         runnerUpMeta: realmFinderRealms[runnerUp.realmId],
+        traceMeta: realmFinderRealms[trace.realmId],
+        dominantSignal,
+        explanation,
+        resonanceScores,
     };
 }
 
@@ -934,9 +990,13 @@ function getEmptyTrackForm(nextTrackNumber = 1): TrackForm {
         nexusSortOrder: String(nextTrackNumber),
         realmFinderSuggestedRealmId: "",
         realmFinderSecondaryRealmId: "",
+        realmFinderTraceRealmId: "",
         realmFinderAlignment: "",
         realmFinderSignals: [],
         realmFinderSummary: "",
+        realmFinderDominantSignal: "",
+        realmFinderExplanation: "",
+        realmFinderScores: null,
         realmFinderVersion: "",
     };
 }
@@ -976,9 +1036,16 @@ function getTrackFormFromReleaseTrack(track: ReleaseTrack): TrackForm {
             track.realmFinderSecondaryRealmId === 0 || track.realmFinderSecondaryRealmId
                 ? String(track.realmFinderSecondaryRealmId)
                 : "",
+        realmFinderTraceRealmId:
+            track.realmFinderTraceRealmId === 0 || track.realmFinderTraceRealmId
+                ? String(track.realmFinderTraceRealmId)
+                : "",
         realmFinderAlignment: track.realmFinderAlignment ? String(track.realmFinderAlignment) : "",
         realmFinderSignals: track.realmFinderSignals ?? [],
         realmFinderSummary: track.realmFinderSummary ?? "",
+        realmFinderDominantSignal: track.realmFinderDominantSignal ?? "",
+        realmFinderExplanation: track.realmFinderExplanation ?? "",
+        realmFinderScores: track.realmFinderScores ?? null,
         realmFinderVersion: track.realmFinderVersion ?? "",
     };
 }
@@ -1012,10 +1079,15 @@ function getTrackInputFromForm(form: TrackForm) {
             form.realmFinderSuggestedRealmId === "" ? null : Number(form.realmFinderSuggestedRealmId),
         realmFinderSecondaryRealmId:
             form.realmFinderSecondaryRealmId === "" ? null : Number(form.realmFinderSecondaryRealmId),
+        realmFinderTraceRealmId:
+            form.realmFinderTraceRealmId === "" ? null : Number(form.realmFinderTraceRealmId),
         realmFinderAlignment:
             form.realmFinderAlignment === "" ? null : Number(form.realmFinderAlignment),
         realmFinderSignals: form.realmFinderSignals,
         realmFinderSummary: form.realmFinderSummary.trim(),
+        realmFinderDominantSignal: form.realmFinderDominantSignal.trim(),
+        realmFinderExplanation: form.realmFinderExplanation.trim(),
+        realmFinderScores: form.realmFinderScores,
         realmFinderVersion: form.realmFinderVersion.trim(),
     };
 }
@@ -2102,14 +2174,25 @@ export default function DynamicReleaseSignalBoardPage() {
             realmId,
             realmFinderSuggestedRealmId: realmId,
             realmFinderSecondaryRealmId: String(realmFinderResult.runnerUp.realmId),
-            realmFinderAlignment: String(realmFinderResult.alignment),
+            realmFinderTraceRealmId: String(realmFinderResult.trace.realmId),
+            realmFinderAlignment: "",
             realmFinderSignals: realmFinderResult.meta.signals,
             realmFinderSummary: realmFinderResult.meta.summary,
-            realmFinderVersion: "v2",
+            realmFinderDominantSignal: realmFinderResult.dominantSignal,
+            realmFinderExplanation: realmFinderResult.explanation,
+            realmFinderScores: {
+                realm303: realmFinderResult.resonanceScores[303],
+                realm202: realmFinderResult.resonanceScores[202],
+                realm101: realmFinderResult.resonanceScores[101],
+                realm55: realmFinderResult.resonanceScores[55],
+                realm44: realmFinderResult.resonanceScores[44],
+                realm0: realmFinderResult.resonanceScores[0],
+            },
+            realmFinderVersion: "v3",
         }));
 
         setTrackMessage(
-            `Realm Finder suggested ${realmFinderResult.realmId} — ${realmFinderResult.meta.name}, with a secondary pull toward ${realmFinderResult.runnerUp.realmId} — ${realmFinderResult.runnerUpMeta.name}. Save the track when you are ready.`,
+            `Realm Profile suggests ${realmFinderResult.realmId} — ${realmFinderResult.meta.name} as Home, ${realmFinderResult.runnerUp.realmId} — ${realmFinderResult.runnerUpMeta.name} as Secondary, and ${realmFinderResult.trace.realmId} — ${realmFinderResult.traceMeta.name} as Trace. Save the track when you are ready.`,
         );
         setIsRealmFinderOpen(false);
     }
@@ -3491,18 +3574,15 @@ export default function DynamicReleaseSignalBoardPage() {
 
                                             {trackForm.realmFinderSuggestedRealmId && (
                                                 <div className="signal-board-realm-finder-saved">
-                                                    <span>Realm Finder snapshot</span>
+                                                    <span>Realm Profile snapshot</span>
                                                     <strong>
-                                                        {trackForm.realmFinderSuggestedRealmId} — {realmFinderRealms[Number(trackForm.realmFinderSuggestedRealmId) as RealmFinderRealmId]?.name}
+                                                        Home suggestion · {trackForm.realmFinderSuggestedRealmId} — {realmFinderRealms[Number(trackForm.realmFinderSuggestedRealmId) as RealmFinderRealmId]?.name}
                                                     </strong>
                                                     <small>
-                                                        {trackForm.realmFinderAlignment
-                                                            ? `${trackForm.realmFinderAlignment}% quiz alignment`
-                                                            : "Saved quiz result"}
-                                                        {trackForm.realmFinderSecondaryRealmId
-                                                            ? ` · secondary ${trackForm.realmFinderSecondaryRealmId}`
-                                                            : ""}
+                                                        {trackForm.realmFinderSecondaryRealmId ? `Secondary ${trackForm.realmFinderSecondaryRealmId}` : ""}
+                                                        {trackForm.realmFinderTraceRealmId ? ` · Trace ${trackForm.realmFinderTraceRealmId}` : ""}
                                                     </small>
+                                                    {trackForm.realmFinderDominantSignal && <em>{trackForm.realmFinderDominantSignal}</em>}
                                                 </div>
                                             )}
 
@@ -3593,20 +3673,43 @@ export default function DynamicReleaseSignalBoardPage() {
                                                     ) : (
                                                         <div className="signal-board-realm-finder-result">
                                                             <div className="signal-board-realm-finder-result-topline">
-                                                                <span>Suggested Realm</span>
-                                                                <small>{realmFinderResult.alignment}% quiz alignment</small>
+                                                                <span>Realm Profile</span>
+                                                                <small>{realmFinderResult.dominantSignal}</small>
                                                             </div>
-                                                            <strong className="signal-board-realm-finder-result-title">
-                                                                {realmFinderResult.realmId} — {realmFinderResult.meta.name}
-                                                            </strong>
-                                                            <p>{realmFinderResult.meta.summary}</p>
 
-                                                            <div className="signal-board-realm-finder-secondary">
-                                                                <span>Secondary pull</span>
-                                                                <strong>
-                                                                    {realmFinderResult.runnerUp.realmId} — {realmFinderResult.runnerUpMeta.name}
-                                                                </strong>
+                                                            <div className="signal-board-realm-profile-top-three">
+                                                                <article className="is-home">
+                                                                    <span>Home suggestion</span>
+                                                                    <strong>{realmFinderResult.realmId} — {realmFinderResult.meta.name}</strong>
+                                                                </article>
+                                                                <article>
+                                                                    <span>Secondary resonance</span>
+                                                                    <strong>{realmFinderResult.runnerUp.realmId} — {realmFinderResult.runnerUpMeta.name}</strong>
+                                                                </article>
+                                                                <article>
+                                                                    <span>Trace resonance</span>
+                                                                    <strong>{realmFinderResult.trace.realmId} — {realmFinderResult.traceMeta.name}</strong>
+                                                                </article>
                                                             </div>
+
+                                                            <p>{realmFinderResult.explanation}</p>
+
+                                                            <details className="signal-board-realm-profile-details">
+                                                                <summary>View full Realm resonance</summary>
+                                                                <div className="signal-board-realm-profile-bars">
+                                                                    {([303, 202, 101, 55, 44, 0] as RealmFinderRealmId[])
+                                                                        .sort((a, b) => realmFinderResult.resonanceScores[b] - realmFinderResult.resonanceScores[a])
+                                                                        .map((realmId) => (
+                                                                            <div key={realmId} className="signal-board-realm-profile-bar">
+                                                                                <div>
+                                                                                    <span>{realmId} — {realmFinderRealms[realmId].name}</span>
+                                                                                    <strong>{realmFinderResult.resonanceScores[realmId]}</strong>
+                                                                                </div>
+                                                                                <i><b style={{ width: `${realmFinderResult.resonanceScores[realmId]}%` }} /></i>
+                                                                            </div>
+                                                                        ))}
+                                                                </div>
+                                                            </details>
 
                                                             <div className="signal-board-realm-finder-signals">
                                                                 {realmFinderResult.meta.signals.map((signal) => (
@@ -3620,7 +3723,7 @@ export default function DynamicReleaseSignalBoardPage() {
                                                                     className="is-primary"
                                                                     onClick={handleUseRealmFinderResult}
                                                                 >
-                                                                    Use This Realm
+                                                                    Use Home Suggestion
                                                                 </button>
                                                                 <button type="button" onClick={handleRealmFinderReset}>
                                                                     Try Again

@@ -237,6 +237,24 @@ const typeDefs = gql`
     creativeProfile: CreativeProfile
   }
 
+  type RealmFinderScores {
+    realm303: Int!
+    realm202: Int!
+    realm101: Int!
+    realm55: Int!
+    realm44: Int!
+    realm0: Int!
+  }
+
+  input RealmFinderScoresInput {
+    realm303: Int
+    realm202: Int
+    realm101: Int
+    realm55: Int
+    realm44: Int
+    realm0: Int
+  }
+
   type ReleaseTrack {
     id: ID!
     ownerId: String!
@@ -276,9 +294,13 @@ const typeDefs = gql`
     nexusReviewNotes: String
     realmFinderSuggestedRealmId: Int
     realmFinderSecondaryRealmId: Int
+    realmFinderTraceRealmId: Int
     realmFinderAlignment: Int
     realmFinderSignals: [String!]!
     realmFinderSummary: String
+    realmFinderDominantSignal: String
+    realmFinderExplanation: String
+    realmFinderScores: RealmFinderScores
     realmFinderVersion: String
     createdAt: String
     updatedAt: String
@@ -450,9 +472,13 @@ const typeDefs = gql`
     nexusSortOrder: Int
     realmFinderSuggestedRealmId: Int
     realmFinderSecondaryRealmId: Int
+    realmFinderTraceRealmId: Int
     realmFinderAlignment: Int
     realmFinderSignals: [String!]
     realmFinderSummary: String
+    realmFinderDominantSignal: String
+    realmFinderExplanation: String
+    realmFinderScores: RealmFinderScoresInput
     realmFinderVersion: String
   }
 
@@ -485,9 +511,13 @@ const typeDefs = gql`
     nexusSortOrder: Int
     realmFinderSuggestedRealmId: Int
     realmFinderSecondaryRealmId: Int
+    realmFinderTraceRealmId: Int
     realmFinderAlignment: Int
     realmFinderSignals: [String!]
     realmFinderSummary: String
+    realmFinderDominantSignal: String
+    realmFinderExplanation: String
+    realmFinderScores: RealmFinderScoresInput
     realmFinderVersion: String
   }
 

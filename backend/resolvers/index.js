@@ -3415,10 +3415,15 @@ module.exports = {
                     input.realmFinderSuggestedRealmId === undefined ? null : input.realmFinderSuggestedRealmId,
                 realmFinderSecondaryRealmId:
                     input.realmFinderSecondaryRealmId === undefined ? null : input.realmFinderSecondaryRealmId,
+                realmFinderTraceRealmId:
+                    input.realmFinderTraceRealmId === undefined ? null : input.realmFinderTraceRealmId,
                 realmFinderAlignment:
                     input.realmFinderAlignment === undefined ? null : input.realmFinderAlignment,
                 realmFinderSignals: Array.isArray(input.realmFinderSignals) ? input.realmFinderSignals : [],
                 realmFinderSummary: String(input.realmFinderSummary || "").trim(),
+                realmFinderDominantSignal: String(input.realmFinderDominantSignal || "").trim(),
+                realmFinderExplanation: String(input.realmFinderExplanation || "").trim(),
+                realmFinderScores: input.realmFinderScores || undefined,
                 realmFinderVersion: String(input.realmFinderVersion || "").trim(),
                 lastOpenedAt: new Date(),
             };

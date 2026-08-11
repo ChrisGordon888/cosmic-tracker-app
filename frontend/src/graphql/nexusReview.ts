@@ -8,8 +8,10 @@ export const NEXUS_REVIEW_QUEUE_QUERY = gql`
       track {
         id title slug ownerId realmId nexusReviewStatus nexusSubmittedAt
         nexusReviewedAt nexusReviewNotes showInNexus status visibility playbackStatus
-        realmFinderSuggestedRealmId realmFinderSecondaryRealmId realmFinderAlignment
-        realmFinderSignals realmFinderSummary realmFinderVersion
+        realmFinderSuggestedRealmId realmFinderSecondaryRealmId realmFinderTraceRealmId realmFinderAlignment
+        realmFinderSignals realmFinderSummary realmFinderDominantSignal realmFinderExplanation
+        realmFinderScores { realm303 realm202 realm101 realm55 realm44 realm0 }
+        realmFinderVersion
       }
       releaseWorld { id title slug visibility status }
       creativeProfile { id artistName slug displayName }
