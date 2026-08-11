@@ -276,13 +276,49 @@ const SUBMIT_TRACK_FOR_NEXUS_REVIEW = gql`
   mutation SubmitTrackForNexusReview($trackId: ID!) {
     submitTrackForNexusReview(trackId: $trackId) {
       id
+      title
+      slug
+      trackNumber
+      role
+      status
+      bpm
+      keySignature
+      mood
+      hook
+      notes
+      audioUrl
+      previewAudioUrl
+      platformUrl
+      visibility
+      playbackStatus
+      dropDate
+      unlockDate
+      isFocusTrack
+      isSecondFocus
+      isPublic
       realmId
       showInNexus
+      nexusRole
+      isRealmAnchor
+      isPublicPick
+      nexusSortOrder
       nexusReviewStatus
       nexusSubmittedAt
       nexusReviewedAt
       nexusReviewNotes
+      realmFinderSuggestedRealmId
+      realmFinderSecondaryRealmId
+      realmFinderTraceRealmId
+      realmFinderAlignment
+      realmFinderSignals
+      realmFinderSummary
+      realmFinderDominantSignal
+      realmFinderExplanation
+      realmFinderScores { realm303 realm202 realm101 realm55 realm44 realm0 }
+      realmFinderVersion
+      createdAt
       updatedAt
+      lastOpenedAt
     }
   }
 `;
@@ -2312,6 +2348,15 @@ export default function DynamicReleaseSignalBoardPage() {
         }
 
         try {
+            // Persist the current Signal Board form first so Realm Finder intelligence,
+            // Realm choice, and any other unsaved edits are part of the submitted snapshot.
+            await updateReleaseTrack({
+                variables: {
+                    id: selectedTrackId,
+                    input: getTrackInputFromForm(trackForm),
+                },
+            });
+
             const result = await submitTrackForNexusReview({
                 variables: { trackId: selectedTrackId },
             });
