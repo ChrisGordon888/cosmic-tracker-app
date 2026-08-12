@@ -18,7 +18,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   const usersActive = pathname === "/admin";
   const reviewActive = pathname === "/admin/nexus";
-  const editorialActive = pathname.startsWith("/admin/nexus/editorial");
+  const editorialActive = (pathname ?? "").startsWith("/admin/nexus/editorial");
 
   return (
     <AdminAccessGate>
