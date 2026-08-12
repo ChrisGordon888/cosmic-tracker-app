@@ -10,6 +10,115 @@ const ReleaseWorld = require("../models/ReleaseWorld");
 const BoardArtifact = require("../models/BoardArtifact");
 const ReleaseTrack = require("../models/ReleaseTrack");
 const ReleaseAsset = require("../models/ReleaseAsset");
+const NexusEditorialConfig = require("../models/NexusEditorialConfig");
+
+
+const NEXUS_EDITORIAL_REALMS = [303, 202, 101, 55, 44, 0];
+
+async function getOrCreateNexusEditorialConfig() {
+    let config = await NexusEditorialConfig.findOne({ key: "global" });
+    if (config) return config;
+
+    const [legacyFeatured, legacyAnchors, legacyPublished] = await Promise.all([
+        ReleaseTrack.findOne({ showInNexus: true, nexusRole: "flagship" }).sort({ updatedAt: -1 }),
+        ReleaseTrack.find({ showInNexus: true, isRealmAnchor: true, realmId: { $in: NEXUS_EDITORIAL_REALMS } }),
+        ReleaseTrack.find({ showInNexus: true, nexusReviewStatus: "published", realmId: { $in: NEXUS_EDITORIAL_REALMS } })
+            .sort({ realmId: 1, nexusSortOrder: 1, trackNumber: 1, createdAt: 1 }),
+    ]);
+
+    config = new NexusEditorialConfig({
+        key: "global",
+        featuredTrackId: legacyFeatured?._id || null,
+        realmAnchors: NEXUS_EDITORIAL_REALMS.map((realmId) => ({
+            realmId,
+            trackId: legacyAnchors.find((track) => Number(track.realmId) === realmId)?._id || null,
+        })),
+        realmOrders: NEXUS_EDITORIAL_REALMS.map((realmId) => ({
+            realmId,
+            trackIds: legacyPublished.filter((track) => Number(track.realmId) === realmId).map((track) => track._id),
+        })),
+    });
+    await config.save();
+    return config;
+}
+
+function getRealmEditorialEntry(items, realmId) {
+    const normalizedRealm = Number(realmId);
+    return Array.isArray(items)
+        ? items.find((entry) => Number(entry.realmId) === normalizedRealm)
+        : null;
+}
+
+async function requirePublishedNexusTrack(trackId, realmId = null) {
+    const track = await ReleaseTrack.findById(trackId);
+    if (!track) throw new Error("Track not found.");
+    if (!track.showInNexus || track.nexusReviewStatus !== "published") {
+        throw new Error("Only a published Nexus signal can be curated.");
+    }
+    if (realmId !== null && Number(track.realmId) !== Number(realmId)) {
+        throw new Error("Choose a published signal from this Realm.");
+    }
+    return track;
+}
+
+async function syncLegacyEditorialFields(config) {
+    const featuredId = config.featuredTrackId ? String(config.featuredTrackId) : null;
+    if (featuredId) {
+        await ReleaseTrack.updateMany(
+            { _id: { $ne: config.featuredTrackId }, nexusRole: "flagship" },
+            { $set: { nexusRole: "featured" } }
+        );
+        await ReleaseTrack.findByIdAndUpdate(config.featuredTrackId, { $set: { nexusRole: "flagship" } });
+    }
+
+    await ReleaseTrack.updateMany({ isRealmAnchor: true }, { $set: { isRealmAnchor: false } });
+    const anchorIds = (config.realmAnchors || []).map((entry) => entry.trackId).filter(Boolean);
+    if (anchorIds.length) {
+        await ReleaseTrack.updateMany({ _id: { $in: anchorIds } }, { $set: { isRealmAnchor: true } });
+    }
+
+    for (const realm of NEXUS_EDITORIAL_REALMS) {
+        const order = getRealmEditorialEntry(config.realmOrders, realm);
+        if (!order || !Array.isArray(order.trackIds)) continue;
+        await Promise.all(order.trackIds.map((trackId, index) =>
+            ReleaseTrack.findByIdAndUpdate(trackId, { $set: { nexusSortOrder: index + 1 } })
+        ));
+    }
+}
+
+async function removeTrackFromNexusEditorialConfig(trackId, userId = "") {
+    const config = await NexusEditorialConfig.findOne({ key: "global" });
+    if (!config) return;
+
+    const normalizedTrackId = String(trackId);
+    let changed = false;
+    if (config.featuredTrackId && String(config.featuredTrackId) === normalizedTrackId) {
+        config.featuredTrackId = null;
+        changed = true;
+    }
+
+    for (const entry of config.realmAnchors || []) {
+        if (entry.trackId && String(entry.trackId) === normalizedTrackId) {
+            entry.trackId = null;
+            changed = true;
+        }
+    }
+    for (const entry of config.realmOrders || []) {
+        const next = (entry.trackIds || []).filter((id) => String(id) !== normalizedTrackId);
+        if (next.length !== (entry.trackIds || []).length) {
+            entry.trackIds = next;
+            changed = true;
+        }
+    }
+
+    if (changed) {
+        config.updatedBy = String(userId || "");
+        config.markModified("realmAnchors");
+        config.markModified("realmOrders");
+        await config.save();
+        await syncLegacyEditorialFields(config);
+    }
+}
 
 function requireUser(user) {
     if (!user) {
@@ -1705,6 +1814,43 @@ module.exports = {
                     };
                 })
                 .filter(Boolean);
+        },
+
+        nexusEditorialConfig: async (_, __, { user }) => {
+            requireNexusEditorial(user);
+            return await getOrCreateNexusEditorialConfig();
+        },
+
+        nexusPublishedSignals: async (_, { realmId }, { user }) => {
+            requireNexusEditorial(user);
+            const query = {
+                showInNexus: true,
+                nexusReviewStatus: "published",
+                realmId: { $ne: null },
+                status: { $ne: "archived" },
+            };
+            if (realmId !== undefined && realmId !== null) query.realmId = Number(realmId);
+
+            const tracks = await ReleaseTrack.find(query).sort({ realmId: 1, nexusSortOrder: 1, trackNumber: 1, createdAt: 1 });
+            if (!tracks.length) return [];
+
+            const releaseIds = [...new Set(tracks.map((track) => String(track.releaseWorldId)))];
+            const releases = await ReleaseWorld.find({ _id: { $in: releaseIds } });
+            const releaseMap = new Map(releases.map((release) => [String(release._id), release]));
+            const profileIds = [...new Set(releases.map((release) => String(release.creativeProfileId)))];
+            const profiles = await CreativeProfile.find({ _id: { $in: profileIds } });
+            const profileMap = new Map(profiles.map((profile) => [String(profile._id), profile]));
+
+            return tracks.map((track) => {
+                const releaseWorld = releaseMap.get(String(track.releaseWorldId));
+                if (!releaseWorld) return null;
+                return {
+                    track,
+                    releaseWorld,
+                    creativeProfile: profileMap.get(String(releaseWorld.creativeProfileId)) || null,
+                    releaseTrackCount: 0,
+                };
+            }).filter(Boolean);
         },
 
         getReleaseTracks: async (_, { releaseWorldId }, { user }) => {
@@ -3533,6 +3679,10 @@ module.exports = {
                 { new: true }
             );
 
+            if (hasMaterialNexusChange && update.showInNexus === false) {
+                await removeTrackFromNexusEditorialConfig(updatedTrack._id, user.id);
+            }
+
             await syncReleaseWorldFocusFromTrack(updatedTrack, user.id);
 
             releaseWorld.lastOpenedAt = new Date();
@@ -3653,8 +3803,71 @@ module.exports = {
             if (normalizedNotes) track.nexusReviewNotes = normalizedNotes;
             track.lastOpenedAt = new Date();
             await track.save();
+            await removeTrackFromNexusEditorialConfig(track._id, user.id);
 
             return track;
+        },
+
+        setNexusFeaturedSignal: async (_, { trackId }, { user }) => {
+            requireNexusEditorial(user);
+            const track = await requirePublishedNexusTrack(trackId);
+            const config = await getOrCreateNexusEditorialConfig();
+            config.featuredTrackId = track._id;
+            config.updatedBy = String(user.id || "");
+            await config.save();
+            await syncLegacyEditorialFields(config);
+            return config;
+        },
+
+        setNexusRealmAnchor: async (_, { realmId, trackId }, { user }) => {
+            requireNexusEditorial(user);
+            const normalizedRealm = Number(realmId);
+            if (!NEXUS_REALM_IDS.has(normalizedRealm)) throw new Error("Choose a valid Realm.");
+            const track = await requirePublishedNexusTrack(trackId, normalizedRealm);
+            const config = await getOrCreateNexusEditorialConfig();
+            let entry = getRealmEditorialEntry(config.realmAnchors, normalizedRealm);
+            if (!entry) {
+                config.realmAnchors.push({ realmId: normalizedRealm, trackId: track._id });
+            } else {
+                entry.trackId = track._id;
+            }
+            config.updatedBy = String(user.id || "");
+            config.markModified("realmAnchors");
+            await config.save();
+            await syncLegacyEditorialFields(config);
+            return config;
+        },
+
+        setNexusRealmOrder: async (_, { realmId, orderedTrackIds }, { user }) => {
+            requireNexusEditorial(user);
+            const normalizedRealm = Number(realmId);
+            if (!NEXUS_REALM_IDS.has(normalizedRealm)) throw new Error("Choose a valid Realm.");
+            const ids = Array.isArray(orderedTrackIds) ? orderedTrackIds.map(String) : [];
+            const uniqueIds = [...new Set(ids)];
+            if (uniqueIds.length !== ids.length) throw new Error("Editorial order contains duplicate tracks.");
+
+            const publishedTracks = await ReleaseTrack.find({
+                _id: { $in: uniqueIds },
+                realmId: normalizedRealm,
+                showInNexus: true,
+                nexusReviewStatus: "published",
+            });
+            if (publishedTracks.length !== uniqueIds.length) {
+                throw new Error("Editorial order may only contain published signals from this Realm.");
+            }
+
+            const config = await getOrCreateNexusEditorialConfig();
+            let entry = getRealmEditorialEntry(config.realmOrders, normalizedRealm);
+            if (!entry) {
+                config.realmOrders.push({ realmId: normalizedRealm, trackIds: uniqueIds });
+            } else {
+                entry.trackIds = uniqueIds;
+            }
+            config.updatedBy = String(user.id || "");
+            config.markModified("realmOrders");
+            await config.save();
+            await syncLegacyEditorialFields(config);
+            return config;
         },
 
         setFeaturedSignal: async (_, { trackId }, { user }) => {
@@ -3698,6 +3911,12 @@ module.exports = {
             track.lastOpenedAt = new Date();
             await track.save();
 
+            const config = await getOrCreateNexusEditorialConfig();
+            config.featuredTrackId = track._id;
+            config.updatedBy = String(user.id || "");
+            await config.save();
+            await syncLegacyEditorialFields(config);
+
             return track;
         },
 
@@ -3723,6 +3942,10 @@ module.exports = {
                 _id: id,
                 ownerId: user.id,
             });
+
+            if (deletedTrack) {
+                await removeTrackFromNexusEditorialConfig(deletedTrack._id, user.id);
+            }
 
             if (deletedTrack?.isFocusTrack) {
                 releaseWorld.currentFocus = "";

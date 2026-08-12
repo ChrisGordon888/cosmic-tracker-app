@@ -238,6 +238,27 @@ const typeDefs = gql`
     releaseTrackCount: Int!
   }
 
+  type NexusRealmAnchorConfig {
+    realmId: Int!
+    trackId: ID
+  }
+
+  type NexusRealmOrderConfig {
+    realmId: Int!
+    trackIds: [ID!]!
+  }
+
+  type NexusEditorialConfig {
+    id: ID!
+    key: String!
+    featuredTrackId: ID
+    realmAnchors: [NexusRealmAnchorConfig!]!
+    realmOrders: [NexusRealmOrderConfig!]!
+    updatedBy: String
+    createdAt: String
+    updatedAt: String
+  }
+
   type RealmFinderScores {
     realm303: Int!
     realm202: Int!
@@ -633,6 +654,8 @@ const typeDefs = gql`
     getPublicReleaseWorldBySlug(slug: String!): ReleaseWorld
 
     nexusReviewQueue(status: String): [NexusReviewItem!]!
+    nexusEditorialConfig: NexusEditorialConfig!
+    nexusPublishedSignals(realmId: Int): [NexusReviewItem!]!
     getReleaseTracks(releaseWorldId: ID!): [ReleaseTrack!]!
     getPublicReleaseTracks(releaseWorldId: ID!): [ReleaseTrack!]!
     getPublicNexusTracks(realmId: Int): [ReleaseTrack!]!
@@ -770,6 +793,9 @@ const typeDefs = gql`
     ): ReleaseTrack!
     publishTrackToNexus(trackId: ID!): ReleaseTrack!
     unpublishTrackFromNexus(trackId: ID!, notes: String): ReleaseTrack!
+    setNexusFeaturedSignal(trackId: ID!): NexusEditorialConfig!
+    setNexusRealmAnchor(realmId: Int!, trackId: ID!): NexusEditorialConfig!
+    setNexusRealmOrder(realmId: Int!, orderedTrackIds: [ID!]!): NexusEditorialConfig!
     setFeaturedSignal(trackId: ID!): ReleaseTrack!
     reorderReleaseTracks(
       releaseWorldId: ID!
