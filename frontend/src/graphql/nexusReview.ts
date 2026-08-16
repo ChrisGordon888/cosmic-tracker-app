@@ -11,7 +11,7 @@ export const NEXUS_REVIEW_QUEUE_QUERY = gql`
         audioUrl previewAudioUrl platformUrl artworkUrl releaseCoverArtUrl
         realmId nexusReviewStatus nexusSubmittedAt nexusReviewedAt nexusReviewedBy nexusReviewNotes
         nexusPublishedAt nexusPublishedBy nexusUnpublishedAt nexusUnpublishedBy
-        showInNexus visibility playbackStatus
+        showInNexus visibility accessTier canAccessAudio accessGate playbackStatus
         realmFinderSuggestedRealmId realmFinderSecondaryRealmId realmFinderTraceRealmId realmFinderAlignment
         realmFinderSignals realmFinderSummary realmFinderDominantSignal realmFinderExplanation
         realmFinderScores { realm303 realm202 realm101 realm55 realm44 realm0 }

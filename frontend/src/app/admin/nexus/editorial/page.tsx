@@ -32,6 +32,9 @@ type Track = {
   releaseCoverArtUrl?: string | null;
   audioUrl?: string | null;
   previewAudioUrl?: string | null;
+  accessTier: string;
+  canAccessAudio: boolean;
+  accessGate: string;
   nexusReviewStatus: string;
   showInNexus: boolean;
 };
@@ -208,6 +211,7 @@ export default function NexusEditorialPage() {
                             {isAnchor && <span className="rounded-full border border-violet-300/20 bg-violet-300/[0.07] px-2 py-0.5 text-[9px] uppercase tracking-[0.12em] text-violet-100">Anchor</span>}
                           </div>
                           <p className="mt-1 truncate text-xs text-white/40">{creatorName(signal)} · {signal.releaseWorld.title}</p>
+                          <p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-white/30">Access · {signal.track.accessTier || "public"}</p>
                         </div>
                         <div className="flex flex-wrap gap-2 sm:justify-end">
                           <button type="button" disabled={index === 0 || working === `order:${realm.id}`} onClick={() => move(realm.id, signal.track.id, -1)} className="rounded-full border border-white/10 px-3 py-1.5 text-xs text-white/55 disabled:opacity-25">↑</button>

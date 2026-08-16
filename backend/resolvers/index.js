@@ -11,6 +11,7 @@ const BoardArtifact = require("../models/BoardArtifact");
 const ReleaseTrack = require("../models/ReleaseTrack");
 const ReleaseAsset = require("../models/ReleaseAsset");
 const NexusEditorialConfig = require("../models/NexusEditorialConfig");
+const MusicCollection = require("../models/MusicCollection");
 
 
 const NEXUS_EDITORIAL_REALMS = [303, 202, 101, 55, 44, 0];
@@ -1280,8 +1281,35 @@ async function tryDeleteBlobForAsset(asset) {
     }
 }
 
+function canAccessTrackAudio(track, user) {
+    const tier = String(track?.accessTier || "public").toLowerCase();
+    if (tier === "public") return true;
+    if (tier === "signup") return Boolean(user);
+    if (tier === "premium") {
+        // Premium listener entitlements arrive in V5S. Until then, only the
+        // creator and platform editorial roles can access premium audio.
+        return Boolean(user) && (
+            String(user.id) === String(track?.ownerId) ||
+            user.role === "admin" ||
+            user.role === "owner"
+        );
+    }
+    return false;
+}
+
+function getTrackAccessGate(track, user) {
+    if (canAccessTrackAudio(track, user)) return "open";
+    return String(track?.accessTier || "public") === "premium"
+        ? "premium-required"
+        : "signup-required";
+}
+
 module.exports = {
     ReleaseTrack: {
+        audioUrl: (track, _, { user }) => canAccessTrackAudio(track, user) ? (track.audioUrl || "") : null,
+        previewAudioUrl: (track, _, { user }) => canAccessTrackAudio(track, user) ? (track.previewAudioUrl || "") : null,
+        canAccessAudio: (track, _, { user }) => canAccessTrackAudio(track, user),
+        accessGate: (track, _, { user }) => getTrackAccessGate(track, user),
         artworkUrl: async (track, _, { user }) => {
             const asset = await getTrackArtworkAsset(track, user);
             return asset?.url || null;
@@ -1851,6 +1879,13 @@ module.exports = {
                     releaseTrackCount: 0,
                 };
             }).filter(Boolean);
+        },
+
+        myMusicCollections: async (_, { includeInactive = false }, { user }) => {
+            requireCreator(user);
+            const query = { ownerId: user.id };
+            if (!includeInactive) query.isActive = true;
+            return await MusicCollection.find(query).sort({ sortOrder: 1, createdAt: 1 });
         },
 
         getReleaseTracks: async (_, { releaseWorldId }, { user }) => {
@@ -3547,6 +3582,7 @@ module.exports = {
                 previewAudioUrl: input.previewAudioUrl || "",
                 platformUrl: input.platformUrl || "",
                 visibility: input.visibility || (input.isPublic ? "public" : "private"),
+                accessTier: input.accessTier || "public",
                 playbackStatus: input.playbackStatus || "locked",
                 dropDate: input.dropDate || null,
                 unlockDate: input.unlockDate || null,

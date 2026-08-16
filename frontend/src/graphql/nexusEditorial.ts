@@ -17,7 +17,7 @@ export const NEXUS_EDITORIAL_QUERY = gql`
       track {
         id title slug realmId nexusRole isRealmAnchor nexusSortOrder
         artworkUrl releaseCoverArtUrl audioUrl previewAudioUrl
-        nexusReviewStatus showInNexus
+        accessTier canAccessAudio accessGate nexusReviewStatus showInNexus
       }
       releaseWorld { id title slug releaseType coverArtUrl }
       creativeProfile { id artistName displayName slug }

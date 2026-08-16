@@ -1,0 +1,9 @@
+{
+  "projects": {
+    "sirens-in-neverland": "PUT_RELEASE_WORLD_OBJECT_ID_HERE"
+  },
+  "tracks": {
+    "realm-303-not-enough": "OPTIONAL_RELEASE_WORLD_OBJECT_ID",
+    "realm-303-war-ready": "OPTIONAL_RELEASE_WORLD_OBJECT_ID"
+  }
+}

@@ -32,7 +32,7 @@ type ReviewItem = {
     nexusReviewedAt?: string | null; nexusReviewedBy?: string | null; nexusReviewNotes?: string | null;
     nexusPublishedAt?: string | null; nexusPublishedBy?: string | null;
     nexusUnpublishedAt?: string | null; nexusUnpublishedBy?: string | null;
-    showInNexus: boolean; status: string; visibility: string; playbackStatus: string;
+    showInNexus: boolean; status: string; visibility: string; accessTier: string; canAccessAudio: boolean; accessGate: string; playbackStatus: string;
     bpm?: number | null; keySignature?: string | null; mood?: string | null; hook?: string | null; notes?: string | null;
     audioUrl?: string | null; previewAudioUrl?: string | null; platformUrl?: string | null;
     artworkUrl?: string | null; releaseCoverArtUrl?: string | null;
@@ -228,11 +228,12 @@ export default function NexusReviewPage() {
                     </div>
                   </div>
 
-                  <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                  <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                     <div className="rounded-2xl border border-white/10 bg-black/20 p-3"><span className="text-[9px] uppercase tracking-[0.16em] text-white/35">BPM</span><strong className="mt-1 block text-sm text-white/80">{track.bpm ?? "—"}</strong></div>
                     <div className="rounded-2xl border border-white/10 bg-black/20 p-3"><span className="text-[9px] uppercase tracking-[0.16em] text-white/35">Key</span><strong className="mt-1 block text-sm text-white/80">{track.keySignature || "—"}</strong></div>
                     <div className="rounded-2xl border border-white/10 bg-black/20 p-3"><span className="text-[9px] uppercase tracking-[0.16em] text-white/35">Creative state</span><strong className="mt-1 block text-sm text-white/80">{label(track.status)}</strong></div>
                     <div className="rounded-2xl border border-white/10 bg-black/20 p-3"><span className="text-[9px] uppercase tracking-[0.16em] text-white/35">Role</span><strong className="mt-1 block text-sm text-white/80">{label(track.role)}</strong></div>
+                    <div className="rounded-2xl border border-white/10 bg-black/20 p-3"><span className="text-[9px] uppercase tracking-[0.16em] text-white/35">Listener access</span><strong className="mt-1 block text-sm text-white/80">{label(track.accessTier || "public")}</strong></div>
                   </div>
 
                   <div className="mt-5 grid gap-3 lg:grid-cols-2">

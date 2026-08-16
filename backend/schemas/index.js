@@ -297,6 +297,15 @@ const typeDefs = gql`
     artworkUrl: String
     releaseCoverArtUrl: String
     visibility: String!
+    accessTier: String!
+    canAccessAudio: Boolean!
+    accessGate: String!
+    legacyRegistryId: String
+    legacyReleaseBatch: String
+    legacyEnergy: String
+    legacyVibe: [String!]!
+    legacyBestUse: [String!]!
+    legacyImportedAt: String
     playbackStatus: String!
     dropDate: String
     unlockDate: String
@@ -331,6 +340,27 @@ const typeDefs = gql`
     createdAt: String
     updatedAt: String
     lastOpenedAt: String
+  }
+
+  type MusicCollection {
+    id: ID!
+    ownerId: String!
+    legacyRegistryId: String
+    title: String!
+    slug: String!
+    type: String!
+    realmId: Int
+    releaseWorldId: ID
+    description: String
+    story: String
+    artworkUrl: String
+    trackIds: [ID!]!
+    accessTier: String!
+    isActive: Boolean!
+    sortOrder: Int!
+    legacyImportedAt: String
+    createdAt: String
+    updatedAt: String
   }
 
   type ReleaseAsset {
@@ -484,6 +514,7 @@ const typeDefs = gql`
     previewAudioUrl: String
     platformUrl: String
     visibility: String
+    accessTier: String
     playbackStatus: String
     dropDate: String
     unlockDate: String
@@ -523,6 +554,7 @@ const typeDefs = gql`
     previewAudioUrl: String
     platformUrl: String
     visibility: String
+    accessTier: String
     playbackStatus: String
     dropDate: String
     unlockDate: String
@@ -662,6 +694,7 @@ const typeDefs = gql`
     getMyFeaturedSignal: ReleaseTrack
     getPublicFeaturedSignal: ReleaseTrack
     getReleaseTrack(id: ID!): ReleaseTrack
+    myMusicCollections(includeInactive: Boolean): [MusicCollection!]!
 
     getReleaseAssets(releaseWorldId: ID!): [ReleaseAsset!]!
     getReleaseAsset(id: ID!): ReleaseAsset

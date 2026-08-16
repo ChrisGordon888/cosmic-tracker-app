@@ -10,6 +10,14 @@ const ReleaseTrackSchema = new mongoose.Schema(
     role: { type: String, enum: ["intro","lead-single","second-single","focus-track","deep-cut","interlude","outro","bonus","unknown"], default: "unknown" },
     status: { type: String, enum: ["idea","writing","demo","recording","mixing","mastered","released","archived"], default: "idea", index: true },
     visibility: { type: String, enum: ["private","listed","public"], default: "private", index: true },
+    // Listener access is independent from release/Nexus publication.
+    accessTier: { type: String, enum: ["public","signup","premium"], default: "public", index: true },
+    legacyRegistryId: { type: String, default: "", trim: true, index: true, sparse: true },
+    legacyReleaseBatch: { type: String, default: "" },
+    legacyEnergy: { type: String, enum: ["","low","medium","high"], default: "" },
+    legacyVibe: { type: [String], default: [] },
+    legacyBestUse: { type: [String], default: [] },
+    legacyImportedAt: { type: Date, default: null },
     playbackStatus: { type: String, enum: ["locked","preview","playable","coming-soon"], default: "locked", index: true },
     dropDate: { type: Date, default: null },
     unlockDate: { type: Date, default: null },
@@ -90,6 +98,7 @@ const ReleaseTrackSchema = new mongoose.Schema(
 
 ReleaseTrackSchema.index({ ownerId: 1, releaseWorldId: 1, trackNumber: 1 });
 ReleaseTrackSchema.index({ ownerId: 1, releaseWorldId: 1, slug: 1 }, { unique: true });
+ReleaseTrackSchema.index({ ownerId: 1, legacyRegistryId: 1 }, { unique: true, partialFilterExpression: { legacyRegistryId: { $type: "string", $ne: "" } } });
 ReleaseTrackSchema.index({ releaseWorldId: 1, status: 1 });
 ReleaseTrackSchema.index({ releaseWorldId: 1, visibility: 1, playbackStatus: 1 });
 ReleaseTrackSchema.index({ showInNexus: 1, realmId: 1, visibility: 1, playbackStatus: 1, nexusSortOrder: 1 });
