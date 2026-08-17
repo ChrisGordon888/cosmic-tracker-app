@@ -1,0 +1,454 @@
+{
+  "version": "v5l9c-legacy-music-import-v2",
+  "mode": "DRY_RUN",
+  "ownerId": "6a07c846d22cce3a5b753a8d",
+  "generatedAt": "2026-08-17T18:47:35.783Z",
+  "source": {
+    "tracks": 40,
+    "collections": 10,
+    "featuredReleases": 1
+  },
+  "database": {
+    "existingTracks": 43,
+    "existingCollections": 7,
+    "releaseWorlds": [
+      {
+        "id": "6a374e55d57265c6788eb357",
+        "title": "SIRENS in Neverland",
+        "slug": "sirens-in-neverland",
+        "releaseType": "ep"
+      },
+      {
+        "id": "6a3783d84602823335e40947",
+        "title": "Test Moon EP",
+        "slug": "themoontape",
+        "releaseType": "ep"
+      }
+    ]
+  },
+  "tracks": [
+    {
+      "legacyId": "sin-do-over",
+      "title": "Do Over",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a3e941a1dd57fdd0197c3a3",
+      "changes": []
+    },
+    {
+      "legacyId": "sin-running-from-the-plug",
+      "title": "Running From The Plug",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a3e99e077c5fa4246035080",
+      "changes": []
+    },
+    {
+      "legacyId": "realm-303-not-enough",
+      "title": "Not Enough",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e19bf1fd9c09c19167c",
+      "changes": []
+    },
+    {
+      "legacyId": "realm-303-war-ready",
+      "title": "War Ready",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e19bf1fd9c09c191681",
+      "changes": []
+    },
+    {
+      "legacyId": "realm-303-space-king",
+      "title": "Space King",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e19bf1fd9c09c191686",
+      "changes": []
+    },
+    {
+      "legacyId": "303-hardcoded",
+      "title": "hardcoded",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e19bf1fd9c09c19168b",
+      "changes": []
+    },
+    {
+      "legacyId": "303-losing-my-mind",
+      "title": "losing my mind",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e19bf1fd9c09c19168e",
+      "changes": []
+    },
+    {
+      "legacyId": "303-hardway",
+      "title": "HardWay",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e19bf1fd9c09c191692",
+      "changes": []
+    },
+    {
+      "legacyId": "303-outcome",
+      "title": "outcome",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e1abf1fd9c09c191696",
+      "changes": []
+    },
+    {
+      "legacyId": "303-in-the-deep",
+      "title": "In The Deep",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a3ed590d84bc0637c420278",
+      "changes": []
+    },
+    {
+      "legacyId": "realm-202-night-light",
+      "title": "Night Light",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e1abf1fd9c09c19169a",
+      "changes": []
+    },
+    {
+      "legacyId": "realm-202-what-it-take",
+      "title": "What it Take",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e1abf1fd9c09c19169d",
+      "changes": []
+    },
+    {
+      "legacyId": "realm-202-jus-because",
+      "title": "Jus Because",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e1abf1fd9c09c1916a0",
+      "changes": []
+    },
+    {
+      "legacyId": "realm-202-blame-on-me",
+      "title": "Blame On Me",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e1abf1fd9c09c1916a2",
+      "changes": []
+    },
+    {
+      "legacyId": "202-siren",
+      "title": "Siren",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a3eb4ce9f7358347d6be401",
+      "changes": []
+    },
+    {
+      "legacyId": "202-her-fantasy",
+      "title": "Her Fantasy",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a3eb4299f7358347d6be33b",
+      "changes": []
+    },
+    {
+      "legacyId": "202-voices",
+      "title": "voices",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e1abf1fd9c09c1916a8",
+      "changes": []
+    },
+    {
+      "legacyId": "202-personal",
+      "title": "Personal",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e1abf1fd9c09c1916ab",
+      "changes": []
+    },
+    {
+      "legacyId": "202-airplane-mode",
+      "title": "airplane mode",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e1abf1fd9c09c1916ae",
+      "changes": []
+    },
+    {
+      "legacyId": "realm-101-mysterious-way",
+      "title": "Mysterious Way",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e1abf1fd9c09c1916b1",
+      "changes": []
+    },
+    {
+      "legacyId": "realm-101-hopscotch",
+      "title": "Hopscotch",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e1abf1fd9c09c1916b4",
+      "changes": []
+    },
+    {
+      "legacyId": "realm-101-so-far-off",
+      "title": "So Far Off",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e1bbf1fd9c09c1916b6",
+      "changes": []
+    },
+    {
+      "legacyId": "101-hold-my-hand",
+      "title": "Hold My Hand",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a3eb2e59f7358347d6be1af",
+      "changes": []
+    },
+    {
+      "legacyId": "101-little-further",
+      "title": "little further",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e1bbf1fd9c09c1916bb",
+      "changes": []
+    },
+    {
+      "legacyId": "101-freefall",
+      "title": "freeFall",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e1bbf1fd9c09c1916bd",
+      "changes": []
+    },
+    {
+      "legacyId": "101-through-da-forest",
+      "title": "through da forest",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e1bbf1fd9c09c1916c0",
+      "changes": []
+    },
+    {
+      "legacyId": "101-paranoid",
+      "title": "paranoid",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e1bbf1fd9c09c1916c2",
+      "changes": []
+    },
+    {
+      "legacyId": "101-wondering",
+      "title": "wondering",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e1bbf1fd9c09c1916c5",
+      "changes": []
+    },
+    {
+      "legacyId": "101-felt-it",
+      "title": "felt it",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e1bbf1fd9c09c1916c7",
+      "changes": []
+    },
+    {
+      "legacyId": "realm-55-mula",
+      "title": "Mula",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e1bbf1fd9c09c1916c9",
+      "changes": []
+    },
+    {
+      "legacyId": "realm-55-bank",
+      "title": "Bank",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e1bbf1fd9c09c1916cb",
+      "changes": []
+    },
+    {
+      "legacyId": "realm-55-stacked",
+      "title": "Stacked",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e1bbf1fd9c09c1916cd",
+      "changes": []
+    },
+    {
+      "legacyId": "55-glory-n-power",
+      "title": "Glory n Power",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e1bbf1fd9c09c1916cf",
+      "changes": []
+    },
+    {
+      "legacyId": "realm-44-dog-watch",
+      "title": "Dog Watch",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e1bbf1fd9c09c1916d1",
+      "changes": []
+    },
+    {
+      "legacyId": "realm-44-golden-tickets",
+      "title": "Golden Tickets",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e1bbf1fd9c09c1916d3",
+      "changes": []
+    },
+    {
+      "legacyId": "44-13933",
+      "title": "13933",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e1cbf1fd9c09c1916d5",
+      "changes": []
+    },
+    {
+      "legacyId": "44-new-jazz",
+      "title": "new jazz",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e1cbf1fd9c09c1916d7",
+      "changes": []
+    },
+    {
+      "legacyId": "realm-0-walking-forward",
+      "title": "Walking Forward",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e1cbf1fd9c09c1916d9",
+      "changes": []
+    },
+    {
+      "legacyId": "realm-0-feel-blessed",
+      "title": "Feel Blessed",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e1cbf1fd9c09c1916db",
+      "changes": []
+    },
+    {
+      "legacyId": "0-same-person",
+      "title": "same person",
+      "action": "MATCH",
+      "matchMethod": "legacy-id",
+      "trackId": "6a834e1cbf1fd9c09c1916dd",
+      "changes": []
+    }
+  ],
+  "collections": [
+    {
+      "legacyId": "realm-303-break-the-code",
+      "title": "Break the Code",
+      "action": "MATCH",
+      "collectionId": "6a834e1cbf1fd9c09c1916df",
+      "changes": []
+    },
+    {
+      "legacyId": "realm-202-dont-follow-the-siren",
+      "title": "Don’t Follow the Siren",
+      "action": "MATCH",
+      "collectionId": "6a834e1cbf1fd9c09c1916e1",
+      "changes": []
+    },
+    {
+      "legacyId": "realm-101-hold-on-while-you-drift",
+      "title": "Hold On While You Drift",
+      "action": "MATCH",
+      "collectionId": "6a834e1cbf1fd9c09c1916e3",
+      "changes": []
+    },
+    {
+      "legacyId": "realm-55-glory-and-command",
+      "title": "Glory & Command",
+      "action": "MATCH",
+      "collectionId": "6a834e1cbf1fd9c09c1916e5",
+      "changes": []
+    },
+    {
+      "legacyId": "realm-44-price-of-focus",
+      "title": "The Price of Focus",
+      "action": "MATCH",
+      "collectionId": "6a834e1cbf1fd9c09c1916e7",
+      "changes": []
+    },
+    {
+      "legacyId": "realm-0-same-self-higher-form",
+      "title": "Same Self, Higher Form",
+      "action": "MATCH",
+      "collectionId": "6a834e1cbf1fd9c09c1916e9",
+      "changes": []
+    },
+    {
+      "legacyId": "april-may-vault",
+      "title": "April–May Vault",
+      "action": "MATCH",
+      "collectionId": "6a834e1cbf1fd9c09c1916eb",
+      "changes": []
+    }
+  ],
+  "editorialCandidates": [
+    {
+      "legacyId": "sin-sirens-in-neverland",
+      "title": "SIRENS in Neverland",
+      "legacyType": "release-project",
+      "destination": "RELEASE_WORLD",
+      "trackIds": [
+        "sin-do-over",
+        "101-hold-my-hand",
+        "303-in-the-deep",
+        "202-her-fantasy",
+        "sin-running-from-the-plug",
+        "202-siren"
+      ],
+      "note": "Map to existing ReleaseWorld; do not duplicate as a collection."
+    },
+    {
+      "legacyId": "cosmic-featured-signal",
+      "title": "Featured Signal",
+      "legacyType": "flagship",
+      "destination": "NEXUS_FEATURED_SIGNAL",
+      "trackIds": [
+        "202-siren"
+      ],
+      "note": "Apply through NexusEditorialConfig only after referenced Signals are published."
+    },
+    {
+      "legacyId": "cosmic-realm-anchors",
+      "title": "Realm Anchors",
+      "legacyType": "realm-anchor-set",
+      "destination": "NEXUS_REALM_ANCHORS",
+      "trackIds": [
+        "303-hardcoded",
+        "202-her-fantasy",
+        "101-hold-my-hand",
+        "55-glory-n-power",
+        "44-13933",
+        "0-same-person"
+      ],
+      "note": "Apply through NexusEditorialConfig only after referenced Signals are published."
+    }
+  ],
+  "summary": {
+    "trackActions": {
+      "MATCH": 40
+    },
+    "collectionActions": {
+      "MATCH": 7
+    },
+    "editorialCandidates": 3,
+    "writesPerformed": false
+  }
+}

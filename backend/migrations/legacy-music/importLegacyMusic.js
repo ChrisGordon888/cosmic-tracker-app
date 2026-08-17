@@ -183,7 +183,6 @@ async function main() {
       legacyEnergy: legacy.energy || "",
       legacyVibe: Array.isArray(legacy.vibe) ? legacy.vibe : [],
       legacyBestUse: Array.isArray(legacy.bestUse) ? legacy.bestUse : [],
-      legacyImportedAt: new Date(),
     };
 
     if (existing) {
@@ -195,6 +194,7 @@ async function main() {
           : String(current ?? "") === String(value ?? "");
         if (!same) changes[key] = value;
       }
+      if (!existing.legacyImportedAt) changes.legacyImportedAt = new Date();
       if (!existing.audioUrl && legacy.trackUrl) changes.audioUrl = legacy.trackUrl;
       if (!existing.keySignature && legacy.key) changes.keySignature = legacy.key;
       if ((existing.bpm === null || existing.bpm === undefined) && legacy.bpm) changes.bpm = legacy.bpm;
@@ -330,28 +330,44 @@ async function main() {
     const existing = existingCollectionByLegacy.get(legacyCollection.id);
     const resolvedIds = legacyCollection.trackIds.map((id) => resolvedTrackIds.get(id));
     if (existing) {
+      const desired = {
+        title: legacyCollection.title,
+        type: legacyCollection.type,
+        realmId: legacyCollection.realmId ?? null,
+        description: legacyCollection.description || "",
+        story: legacyCollection.story || "",
+        artworkUrl: legacyCollection.artworkUrl || "",
+        trackIds: resolvedIds,
+        accessTier: legacyCollection.type === "premium" ? "premium" : legacyCollection.type === "vault" ? "signup" : "public",
+        isActive: legacyCollection.isActive !== false,
+        sortOrder: legacyCollection.sortOrder ?? 999,
+      };
+
+      const changes = {};
+      for (const [key, value] of Object.entries(desired)) {
+        const current = existing[key];
+        let same;
+        if (key === "trackIds") {
+          same = JSON.stringify((current || []).map(String)) === JSON.stringify((value || []).map(String));
+        } else {
+          same = String(current ?? "") === String(value ?? "");
+        }
+        if (!same) changes[key] = value;
+      }
+      if (!existing.legacyImportedAt) changes.legacyImportedAt = new Date();
+
+      const action = Object.keys(changes).length ? "UPDATE" : "MATCH";
       report.collections.push({
         legacyId: legacyCollection.id,
         title: legacyCollection.title,
-        action: "UPDATE",
+        action,
         collectionId: String(existing._id),
+        changes: Object.keys(changes),
       });
-      if (apply) {
+      if (apply && action === "UPDATE") {
         await MusicCollection.updateOne(
           { _id: existing._id, ownerId },
-          { $set: {
-            title: legacyCollection.title,
-            type: legacyCollection.type,
-            realmId: legacyCollection.realmId ?? null,
-            description: legacyCollection.description || "",
-            story: legacyCollection.story || "",
-            artworkUrl: legacyCollection.artworkUrl || "",
-            trackIds: resolvedIds,
-            accessTier: legacyCollection.type === "premium" ? "premium" : legacyCollection.type === "vault" ? "signup" : "public",
-            isActive: legacyCollection.isActive !== false,
-            sortOrder: legacyCollection.sortOrder ?? 999,
-            legacyImportedAt: new Date(),
-          } }
+          { $set: changes }
         );
       }
     } else {
