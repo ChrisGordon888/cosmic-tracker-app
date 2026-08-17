@@ -1717,7 +1717,13 @@ module.exports = {
         myReleaseTracks: async (_, __, { user }) => {
             requireCreator(user);
 
-            return await ReleaseTrack.find({ ownerId: user.id }).sort({
+            // Release tracks are the catalog subset currently attached to a
+            // ReleaseWorld. Catalog-only drafts/vault tracks intentionally
+            // remain available through myCatalogTracks instead.
+            return await ReleaseTrack.find({
+                ownerId: user.id,
+                releaseWorldId: { $exists: true, $ne: null },
+            }).sort({
                 updatedAt: -1,
                 trackNumber: 1,
                 createdAt: 1,
