@@ -2,6 +2,49 @@
 
 import { gql } from "@apollo/client";
 
+export const BEGIN_CREATOR_ONBOARDING = gql`
+    mutation BeginCreatorOnboarding {
+        beginCreatorOnboarding {
+            id
+            email
+            name
+            image
+            role
+            creatorStatus
+        }
+    }
+`;
+
+export const ACTIVATE_MY_CREATOR_ACCOUNT = gql`
+    mutation ActivateMyCreatorAccount {
+        activateMyCreatorAccount {
+            id
+            email
+            name
+            image
+            role
+            creatorStatus
+        }
+    }
+`;
+
+export type CreatorLifecycleUser = {
+    id: string;
+    email: string;
+    name?: string | null;
+    image?: string | null;
+    role: string;
+    creatorStatus: string;
+};
+
+export type BeginCreatorOnboardingData = {
+    beginCreatorOnboarding: CreatorLifecycleUser;
+};
+
+export type ActivateMyCreatorAccountData = {
+    activateMyCreatorAccount: CreatorLifecycleUser;
+};
+
 export const GET_CREATOR_ONBOARDING_PROFILE = gql`
     query GetCreatorOnboardingProfile {
         getCreatorOnboardingProfile {
@@ -188,6 +231,7 @@ export const GET_CREATOR_ONBOARDING_REVIEW = gql`
             completedCount
             totalSteps
             isReadyForActivation
+            canSelfActivate
             nextStepId
             nextStepLabel
             nextStepHref
@@ -255,6 +299,7 @@ export const GET_CREATOR_ONBOARDING_PROGRESS = gql`
             completedCount
             totalSteps
             isReadyForActivation
+            canSelfActivate
             nextStepId
             nextStepLabel
             nextStepHref
@@ -278,6 +323,7 @@ export type CreatorOnboardingProgress = {
     completedCount: number;
     totalSteps: number;
     isReadyForActivation: boolean;
+    canSelfActivate: boolean;
     nextStepId?: string | null;
     nextStepLabel?: string | null;
     nextStepHref?: string | null;

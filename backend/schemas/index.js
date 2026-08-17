@@ -153,6 +153,7 @@ const typeDefs = gql`
     completedCount: Int!
     totalSteps: Int!
     isReadyForActivation: Boolean!
+    canSelfActivate: Boolean!
     nextStepId: String
     nextStepLabel: String
     nextStepHref: String
@@ -784,6 +785,9 @@ const typeDefs = gql`
     ): ReleaseWorld!
 
     # Creator Onboarding
+    beginCreatorOnboarding: PlatformUser!
+    activateMyCreatorAccount: PlatformUser!
+
     saveCreatorOnboardingProfile(
       input: CreatorOnboardingProfileInput!
     ): CreativeProfile!

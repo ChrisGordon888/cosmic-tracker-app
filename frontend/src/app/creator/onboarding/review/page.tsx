@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useQuery } from "@apollo/client";
+import { useRouter } from "next/navigation";
+import { useMutation, useQuery } from "@apollo/client";
 import {
+    ACTIVATE_MY_CREATOR_ACCOUNT,
+    type ActivateMyCreatorAccountData,
     CreatorOnboardingReviewData,
     GET_CREATOR_ONBOARDING_REVIEW,
 } from "@/graphql/onboarding";
@@ -40,10 +43,12 @@ function formatValue(value?: string | number | null) {
 }
 
 export default function CreatorOnboardingReviewPage() {
+    const router = useRouter();
     const {
         role,
         creatorStatus,
         canAccessCreatorOS,
+        refetch: refetchPlatformAccess,
     } = usePlatformAccess();
 
     const {
@@ -57,6 +62,19 @@ export default function CreatorOnboardingReviewPage() {
             fetchPolicy: "cache-and-network",
         }
     );
+
+    const [activateMyCreatorAccount, { loading: isActivating, error: activationError }] =
+        useMutation<ActivateMyCreatorAccountData>(ACTIVATE_MY_CREATOR_ACCOUNT);
+
+    const handleActivateCreatorOS = async () => {
+        try {
+            await activateMyCreatorAccount();
+            await Promise.all([refetchPlatformAccess(), refetch()]);
+            router.push("/creator");
+        } catch {
+            // Apollo exposes the mutation error beside the activation action.
+        }
+    };
 
     const progress = data?.getCreatorOnboardingProgress;
     const profile = data?.getCreatorOnboardingProfile;
@@ -319,7 +337,9 @@ export default function CreatorOnboardingReviewPage() {
                                     {canAccessCreatorOS
                                         ? "Creator OS is unlocked."
                                         : isInvitedCreator && isComplete
-                                          ? "Your account is ready for activation."
+                                          ? progress?.canSelfActivate
+                                              ? "Your account is ready for activation."
+                                              : "Your creator setup is ready for approval."
                                           : "Complete the remaining onboarding steps."}
                                 </h2>
 
@@ -327,7 +347,9 @@ export default function CreatorOnboardingReviewPage() {
                                     {canAccessCreatorOS
                                         ? "Your current role already has full creator access. You can continue refining this work inside Creator OS."
                                         : isInvitedCreator && isComplete
-                                          ? "An administrator or owner can now activate your creator account from the Authority Console. Your saved profile, release, track, and artwork will remain intact."
+                                          ? progress?.canSelfActivate
+                                              ? "Your setup is complete. Activate Creator OS to unlock your creator workspace. Your saved profile, release, track, and artwork will remain intact."
+                                              : "Your setup is complete. This invited creator account still requires administrator or owner activation from the Authority Console."
                                           : "Return to the incomplete step cards above. Readiness is calculated from the real work saved in the database."}
                                 </p>
 
@@ -339,6 +361,26 @@ export default function CreatorOnboardingReviewPage() {
                             </div>
 
                             <div className="flex shrink-0 flex-col gap-3 sm:flex-row lg:flex-col">
+                                {isInvitedCreator &&
+                                isComplete &&
+                                progress?.canSelfActivate ? (
+                                    <>
+                                        <button
+                                            type="button"
+                                            onClick={() => void handleActivateCreatorOS()}
+                                            disabled={isActivating}
+                                            className="inline-flex justify-center rounded-full border border-emerald-300/25 bg-emerald-300/10 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-emerald-100 transition hover:bg-emerald-300/15 disabled:cursor-not-allowed disabled:opacity-50"
+                                        >
+                                            {isActivating ? "Activating…" : "Activate Creator OS"}
+                                        </button>
+                                        {activationError ? (
+                                            <p className="max-w-xs text-sm text-rose-200">
+                                                {activationError.message}
+                                            </p>
+                                        ) : null}
+                                    </>
+                                ) : null}
+
                                 {canAccessCreatorOS ? (
                                     <Link
                                         href="/creator"

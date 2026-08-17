@@ -1,9 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { useMutation } from "@apollo/client";
 import { signIn } from "next-auth/react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { usePlatformAccess } from "@/context/PlatformAccessProvider";
+import {
+    BEGIN_CREATOR_ONBOARDING,
+    type BeginCreatorOnboardingData,
+} from "@/graphql/onboarding";
 
 export default function CreatorAccessGate({
     children,
@@ -11,6 +16,7 @@ export default function CreatorAccessGate({
     children: React.ReactNode;
 }) {
     const pathname = usePathname();
+    const router = useRouter();
 
     const {
         isAuthenticated,
@@ -22,6 +28,19 @@ export default function CreatorAccessGate({
         creatorStatus,
         refetch,
     } = usePlatformAccess();
+
+    const [beginCreatorOnboarding, { loading: isStartingCreator, error: startCreatorError }] =
+        useMutation<BeginCreatorOnboardingData>(BEGIN_CREATOR_ONBOARDING);
+
+    const handleStartCreating = async () => {
+        try {
+            await beginCreatorOnboarding();
+            await refetch();
+            router.push("/creator/onboarding");
+        } catch {
+            // Apollo exposes the mutation error below the action button.
+        }
+    };
 
     const isOnboardingRoute =
         pathname === "/creator/onboarding" ||
@@ -104,6 +123,8 @@ export default function CreatorAccessGate({
         const isInvitedCreator =
             role === "creator" &&
             creatorStatus === "invited";
+        const canStartCreating =
+            role === "listener" && creatorStatus === "none";
 
         return (
             <main className="grid min-h-[65vh] place-items-center px-6">
@@ -135,6 +156,28 @@ export default function CreatorAccessGate({
                             >
                                 Begin onboarding
                             </Link>
+                        </>
+                    ) : null}
+
+                    {canStartCreating ? (
+                        <>
+                            <p className="mt-3 text-sm leading-6 text-white/55">
+                                Start a creator workspace and build your first
+                                artist identity, release, track, and visual anchor.
+                            </p>
+                            <button
+                                type="button"
+                                onClick={() => void handleStartCreating()}
+                                disabled={isStartingCreator}
+                                className="mt-6 inline-flex rounded-full border border-[#DCBA5C]/35 bg-[#DCBA5C]/10 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.16em] text-[#F4D982] transition hover:bg-[#DCBA5C]/20 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                {isStartingCreator ? "Starting…" : "Start Creating"}
+                            </button>
+                            {startCreatorError ? (
+                                <p className="mt-3 text-sm text-rose-200">
+                                    {startCreatorError.message}
+                                </p>
+                            ) : null}
                         </>
                     ) : null}
                 </section>

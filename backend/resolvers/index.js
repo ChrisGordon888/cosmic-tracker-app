@@ -964,6 +964,115 @@ async function getPrimaryCreativeProfile(userId) {
     return profiles.find((profile) => profile.isFeatured) || profiles[0] || null;
 }
 
+async function getCreatorOnboardingState(user) {
+    const accountState = await User.findById(user.id).select(
+        "role creatorStatus creatorActivationPolicy"
+    );
+
+    if (!accountState) {
+        throw new Error("User not found.");
+    }
+
+    const profile = await getPrimaryCreativeProfile(user.id);
+
+    const releaseWorld = profile
+        ? await ReleaseWorld.findOne({
+            ownerId: user.id,
+            creativeProfileId: profile._id,
+            status: { $ne: "archived" },
+        }).sort({
+            lastOpenedAt: -1,
+            updatedAt: -1,
+            createdAt: -1,
+        })
+        : null;
+
+    const track = releaseWorld
+        ? await ReleaseTrack.findOne({
+            ownerId: user.id,
+            releaseWorldId: releaseWorld._id,
+            status: { $ne: "archived" },
+        }).sort({
+            trackNumber: 1,
+            createdAt: 1,
+        })
+        : null;
+
+    const hasArtwork = Boolean(
+        releaseWorld?.coverAssetId ||
+        String(releaseWorld?.coverArtUrl || "").trim()
+    );
+
+    const steps = [
+        {
+            id: "artist-profile",
+            label: "Create artist identity",
+            complete: Boolean(profile),
+            href: "/creator/onboarding/profile",
+        },
+        {
+            id: "first-release",
+            label: "Create first release world",
+            complete: Boolean(releaseWorld),
+            href: "/creator/onboarding/release",
+        },
+        {
+            id: "first-track",
+            label: "Add first track",
+            complete: Boolean(track),
+            href: "/creator/onboarding/track",
+        },
+        {
+            id: "release-artwork",
+            label: "Add release artwork",
+            complete: hasArtwork,
+            href: "/creator/onboarding/artwork",
+        },
+    ];
+
+    const completedSteps = steps
+        .filter((step) => step.complete)
+        .map((step) => step.id);
+
+    const nextStep = steps.find((step) => !step.complete) || null;
+    const isReadyForActivation = steps.every((step) => step.complete);
+
+    let status = "not-started";
+
+    if (completedSteps.length > 0) {
+        status = "in-progress";
+    }
+
+    if (isReadyForActivation) {
+        status =
+            accountState.role === "owner" ||
+            accountState.role === "admin" ||
+            (accountState.role === "creator" &&
+                accountState.creatorStatus === "active")
+                ? "complete"
+                : "ready";
+    }
+
+    return {
+        status,
+        completedSteps,
+        completedCount: completedSteps.length,
+        totalSteps: steps.length,
+        isReadyForActivation,
+        canSelfActivate:
+            accountState.role === "creator" &&
+            accountState.creatorStatus === "invited" &&
+            accountState.creatorActivationPolicy === "self-service",
+        nextStepId: nextStep?.id || null,
+        nextStepLabel: nextStep?.label || null,
+        nextStepHref: nextStep?.href || null,
+        profileId: profile?._id || null,
+        releaseWorldId: releaseWorld?._id || null,
+        releaseWorldSlug: releaseWorld?.slug || null,
+        trackId: track?._id || null,
+    };
+}
+
 async function getFeaturedReleaseWorldForUser(userId) {
     const primaryProfile = await getPrimaryCreativeProfile(userId);
 
@@ -1593,104 +1702,7 @@ module.exports = {
 
         getCreatorOnboardingProgress: async (_, __, { user }) => {
             requireCreatorOnboarding(user);
-
-            const profile = await getPrimaryCreativeProfile(user.id);
-
-            const releaseWorld = profile
-                ? await ReleaseWorld.findOne({
-                    ownerId: user.id,
-                    creativeProfileId: profile._id,
-                    status: { $ne: "archived" },
-                }).sort({
-                    lastOpenedAt: -1,
-                    updatedAt: -1,
-                    createdAt: -1,
-                })
-                : null;
-
-            const track = releaseWorld
-                ? await ReleaseTrack.findOne({
-                    ownerId: user.id,
-                    releaseWorldId: releaseWorld._id,
-                    status: { $ne: "archived" },
-                }).sort({
-                    trackNumber: 1,
-                    createdAt: 1,
-                })
-                : null;
-
-            const hasArtwork = Boolean(
-                releaseWorld?.coverAssetId ||
-                String(releaseWorld?.coverArtUrl || "").trim()
-            );
-
-            const steps = [
-                {
-                    id: "artist-profile",
-                    label: "Create artist identity",
-                    complete: Boolean(profile),
-                    href: "/creator/onboarding/profile",
-                },
-                {
-                    id: "first-release",
-                    label: "Create first release world",
-                    complete: Boolean(releaseWorld),
-                    href: "/creator/onboarding/release",
-                },
-                {
-                    id: "first-track",
-                    label: "Add first track",
-                    complete: Boolean(track),
-                    href: "/creator/onboarding/track",
-                },
-                {
-                    id: "release-artwork",
-                    label: "Add release artwork",
-                    complete: hasArtwork,
-                    href: "/creator/onboarding/artwork",
-                },
-            ];
-
-            const completedSteps = steps
-                .filter((step) => step.complete)
-                .map((step) => step.id);
-
-            const nextStep =
-                steps.find((step) => !step.complete) || null;
-
-            const isReadyForActivation =
-                steps.every((step) => step.complete);
-
-            let status = "not-started";
-
-            if (completedSteps.length > 0) {
-                status = "in-progress";
-            }
-
-            if (isReadyForActivation) {
-                status =
-                    user.role === "owner" ||
-                        user.role === "admin" ||
-                        (user.role === "creator" &&
-                            user.creatorStatus === "active")
-                        ? "complete"
-                        : "ready";
-            }
-
-            return {
-                status,
-                completedSteps,
-                completedCount: completedSteps.length,
-                totalSteps: steps.length,
-                isReadyForActivation,
-                nextStepId: nextStep?.id || null,
-                nextStepLabel: nextStep?.label || null,
-                nextStepHref: nextStep?.href || null,
-                profileId: profile?._id || null,
-                releaseWorldId: releaseWorld?._id || null,
-                releaseWorldSlug: releaseWorld?.slug || null,
-                trackId: track?._id || null,
-            };
+            return getCreatorOnboardingState(user);
         },
 
         // ========================================
@@ -3148,6 +3160,111 @@ module.exports = {
         },
 
         // ========================================
+        // 🚀 SELF-SERVICE CREATOR LIFECYCLE
+        // ========================================
+
+        beginCreatorOnboarding: async (_, __, { user }) => {
+            requireUser(user);
+
+            const currentUser = await User.findById(user.id);
+
+            if (!currentUser) {
+                throw new Error("User not found.");
+            }
+
+            if (currentUser.role === "admin" || currentUser.role === "owner") {
+                throw new Error(
+                    "Administrator and owner accounts already have creator access."
+                );
+            }
+
+            if (
+                currentUser.role === "creator" &&
+                currentUser.creatorStatus === "suspended"
+            ) {
+                throw new Error(
+                    "Suspended creator accounts cannot restart onboarding."
+                );
+            }
+
+            if (
+                currentUser.role === "creator" &&
+                ["invited", "active"].includes(currentUser.creatorStatus)
+            ) {
+                return currentUser;
+            }
+
+            if (
+                currentUser.role !== "listener" ||
+                currentUser.creatorStatus !== "none"
+            ) {
+                throw new Error(
+                    "This account cannot enter creator onboarding from its current state."
+                );
+            }
+
+            currentUser.role = "creator";
+            currentUser.creatorStatus = "invited";
+            currentUser.creatorActivationPolicy = "self-service";
+            await currentUser.save();
+
+            return currentUser;
+        },
+
+        activateMyCreatorAccount: async (_, __, { user }) => {
+            requireUser(user);
+
+            const currentUser = await User.findById(user.id);
+
+            if (!currentUser) {
+                throw new Error("User not found.");
+            }
+
+            if (currentUser.role !== "creator") {
+                throw new Error("Only creator accounts can activate Creator OS.");
+            }
+
+            if (currentUser.creatorStatus === "suspended") {
+                throw new Error(
+                    "Suspended creator accounts cannot self-activate."
+                );
+            }
+
+            if (currentUser.creatorStatus === "active") {
+                return currentUser;
+            }
+
+            if (currentUser.creatorStatus !== "invited") {
+                throw new Error(
+                    "Creator onboarding must be started before activation."
+                );
+            }
+
+            if (currentUser.creatorActivationPolicy !== "self-service") {
+                throw new Error(
+                    "This creator account requires administrator activation."
+                );
+            }
+
+            const onboarding = await getCreatorOnboardingState({
+                id: currentUser._id.toString(),
+                role: currentUser.role,
+                creatorStatus: currentUser.creatorStatus,
+            });
+
+            if (!onboarding.isReadyForActivation) {
+                throw new Error(
+                    "Complete creator onboarding before activating Creator OS."
+                );
+            }
+
+            currentUser.creatorStatus = "active";
+            await currentUser.save();
+
+            return currentUser;
+        },
+
+        // ========================================
         // 🛡️ PLATFORM ADMINISTRATION MUTATIONS
         // ========================================
 
@@ -3178,6 +3295,7 @@ module.exports = {
 
             targetUser.role = "creator";
             targetUser.creatorStatus = "invited";
+            targetUser.creatorActivationPolicy = "admin";
             await targetUser.save();
 
             return targetUser;
@@ -3332,10 +3450,12 @@ module.exports = {
 
             if (nextRole === "creator" && targetUser.creatorStatus === "none") {
                 targetUser.creatorStatus = "invited";
+                targetUser.creatorActivationPolicy = "admin";
             }
 
             if (nextRole === "listener") {
                 targetUser.creatorStatus = "none";
+                targetUser.creatorActivationPolicy = "admin";
             }
 
             await targetUser.save();

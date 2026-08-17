@@ -42,6 +42,14 @@ const UserSchema = new mongoose.Schema({
         index: true
     },
 
+    // Controls whether an invited creator may self-activate after completing
+    // onboarding. Existing/admin-invited accounts remain admin-gated by default.
+    creatorActivationPolicy: {
+        type: String,
+        enum: ['admin', 'self-service'],
+        default: 'admin'
+    },
+
     // Fine-grained elevation for trusted admins. Owners implicitly have all
     // platform permissions and do not need entries here.
     platformPermissions: {

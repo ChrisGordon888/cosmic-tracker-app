@@ -90,7 +90,7 @@ export default function CreatorOnboardingPage() {
                             Build your first world.
                         </h1>
                         <p className="mt-4 max-w-2xl text-sm leading-7 text-white/55 sm:text-base">
-                            Cosmic will guide you from invitation to a usable
+                            Cosmic will guide you from first setup to a usable
                             artist identity, first release, first track, and
                             visual anchor. Each completed step is measured from
                             the work actually saved in your Creator OS.
