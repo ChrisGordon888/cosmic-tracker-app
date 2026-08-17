@@ -186,32 +186,34 @@ async function main() {
     }
 
     const releaseWorldId = resolveReleaseWorldId(legacy, releaseMap);
-    if (!releaseWorldId) {
-      report.tracks.push({
-        legacyId: legacy.id,
-        title: legacy.trackTitle,
-        action: "CONFLICT",
-        reason: legacy.releaseProjectId ? "release-project-unmapped" : "release-world-unmapped",
-        releaseProjectId: legacy.releaseProjectId || null,
-      });
-      continue;
-    }
+    let releaseWorld = null;
 
-    const releaseWorld = releaseWorlds.find((r) => String(r._id) === String(releaseWorldId));
-    if (!releaseWorld) {
+    if (releaseWorldId) {
+      releaseWorld = releaseWorlds.find((r) => String(r._id) === String(releaseWorldId));
+      if (!releaseWorld) {
+        report.tracks.push({
+          legacyId: legacy.id,
+          title: legacy.trackTitle,
+          action: "CONFLICT",
+          reason: "release-world-id-not-found-for-owner",
+          releaseWorldId,
+        });
+        continue;
+      }
+    } else if (legacy.releaseProjectId) {
       report.tracks.push({
         legacyId: legacy.id,
         title: legacy.trackTitle,
         action: "CONFLICT",
-        reason: "release-world-id-not-found-for-owner",
-        releaseWorldId,
+        reason: "release-project-unmapped",
+        releaseProjectId: legacy.releaseProjectId,
       });
       continue;
     }
 
     const createPayload = {
       ownerId,
-      releaseWorldId: releaseWorld._id,
+      releaseWorldId: releaseWorld?._id || null,
       title: legacy.trackTitle,
       slug: slugify(legacy.trackTitle),
       trackNumber: legacy.releasePriority || legacy.sortOrder || 1,
@@ -242,9 +244,12 @@ async function main() {
       legacyId: legacy.id,
       title: legacy.trackTitle,
       action: "CREATE",
-      releaseWorldId: String(releaseWorld._id),
-      releaseWorldTitle: releaseWorld.title,
-      safety: "created as Nexus draft; showInNexus=false",
+      releaseWorldId: releaseWorld ? String(releaseWorld._id) : null,
+      releaseWorldTitle: releaseWorld?.title || null,
+      catalogOnly: !releaseWorld,
+      safety: releaseWorld
+        ? "created as Nexus draft; showInNexus=false"
+        : "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false",
     });
 
     if (apply) {

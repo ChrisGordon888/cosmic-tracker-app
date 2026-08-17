@@ -1,0 +1,509 @@
+{
+  "version": "v5l9-legacy-music-import-v1",
+  "mode": "DRY_RUN",
+  "ownerId": "6a07c846d22cce3a5b753a8d",
+  "generatedAt": "2026-08-17T17:49:23.628Z",
+  "source": {
+    "tracks": 40,
+    "collections": 10,
+    "featuredReleases": 1
+  },
+  "database": {
+    "existingTracks": 9,
+    "existingCollections": 0,
+    "releaseWorlds": [
+      {
+        "id": "6a374e55d57265c6788eb357",
+        "title": "SIRENS in Neverland",
+        "slug": "sirens-in-neverland",
+        "releaseType": "ep"
+      },
+      {
+        "id": "6a3783d84602823335e40947",
+        "title": "Test Moon EP",
+        "slug": "themoontape",
+        "releaseType": "ep"
+      }
+    ]
+  },
+  "tracks": [
+    {
+      "legacyId": "sin-do-over",
+      "title": "Do Over",
+      "action": "CREATE",
+      "releaseWorldId": "6a374e55d57265c6788eb357",
+      "releaseWorldTitle": "SIRENS in Neverland",
+      "catalogOnly": false,
+      "safety": "created as Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "sin-running-from-the-plug",
+      "title": "Running From The Plug",
+      "action": "UPDATE",
+      "matchMethod": "title+realm",
+      "trackId": "6a3e99e077c5fa4246035080",
+      "changes": [
+        "legacyRegistryId",
+        "accessTier",
+        "legacyReleaseBatch",
+        "legacyEnergy",
+        "legacyVibe",
+        "legacyBestUse",
+        "legacyImportedAt"
+      ]
+    },
+    {
+      "legacyId": "realm-303-not-enough",
+      "title": "Not Enough",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "realm-303-war-ready",
+      "title": "War Ready",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "realm-303-space-king",
+      "title": "Space King",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "303-hardcoded",
+      "title": "hardcoded",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "303-losing-my-mind",
+      "title": "losing my mind",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "303-hardway",
+      "title": "HardWay",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "303-outcome",
+      "title": "outcome",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "303-in-the-deep",
+      "title": "In The Deep",
+      "action": "CREATE",
+      "releaseWorldId": "6a374e55d57265c6788eb357",
+      "releaseWorldTitle": "SIRENS in Neverland",
+      "catalogOnly": false,
+      "safety": "created as Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "realm-202-night-light",
+      "title": "Night Light",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "realm-202-what-it-take",
+      "title": "What it Take",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "realm-202-jus-because",
+      "title": "Jus Because",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "realm-202-blame-on-me",
+      "title": "Blame On Me",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "202-siren",
+      "title": "Siren",
+      "action": "UPDATE",
+      "matchMethod": "title+realm",
+      "trackId": "6a3eb4ce9f7358347d6be401",
+      "changes": [
+        "legacyRegistryId",
+        "accessTier",
+        "legacyReleaseBatch",
+        "legacyEnergy",
+        "legacyVibe",
+        "legacyBestUse",
+        "legacyImportedAt"
+      ]
+    },
+    {
+      "legacyId": "202-her-fantasy",
+      "title": "Her Fantasy",
+      "action": "CREATE",
+      "releaseWorldId": "6a374e55d57265c6788eb357",
+      "releaseWorldTitle": "SIRENS in Neverland",
+      "catalogOnly": false,
+      "safety": "created as Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "202-voices",
+      "title": "voices",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "202-personal",
+      "title": "Personal",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "202-airplane-mode",
+      "title": "airplane mode",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "realm-101-mysterious-way",
+      "title": "Mysterious Way",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "realm-101-hopscotch",
+      "title": "Hopscotch",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "realm-101-so-far-off",
+      "title": "So Far Off",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "101-hold-my-hand",
+      "title": "Hold My Hand",
+      "action": "UPDATE",
+      "matchMethod": "title+realm",
+      "trackId": "6a3eb2e59f7358347d6be1af",
+      "changes": [
+        "legacyRegistryId",
+        "accessTier",
+        "legacyReleaseBatch",
+        "legacyEnergy",
+        "legacyVibe",
+        "legacyBestUse",
+        "legacyImportedAt"
+      ]
+    },
+    {
+      "legacyId": "101-little-further",
+      "title": "little further",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "101-freefall",
+      "title": "freeFall",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "101-through-da-forest",
+      "title": "through da forest",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "101-paranoid",
+      "title": "paranoid",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "101-wondering",
+      "title": "wondering",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "101-felt-it",
+      "title": "felt it",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "realm-55-mula",
+      "title": "Mula",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "realm-55-bank",
+      "title": "Bank",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "realm-55-stacked",
+      "title": "Stacked",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "55-glory-n-power",
+      "title": "Glory n Power",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "realm-44-dog-watch",
+      "title": "Dog Watch",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "realm-44-golden-tickets",
+      "title": "Golden Tickets",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "44-13933",
+      "title": "13933",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "44-new-jazz",
+      "title": "new jazz",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "realm-0-walking-forward",
+      "title": "Walking Forward",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "realm-0-feel-blessed",
+      "title": "Feel Blessed",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    },
+    {
+      "legacyId": "0-same-person",
+      "title": "same person",
+      "action": "CREATE",
+      "releaseWorldId": null,
+      "releaseWorldTitle": null,
+      "catalogOnly": true,
+      "safety": "created as standalone catalog track; no Release World; Nexus draft; showInNexus=false"
+    }
+  ],
+  "collections": [
+    {
+      "legacyId": "realm-303-break-the-code",
+      "title": "Break the Code",
+      "action": "CREATE",
+      "type": "public-three-piece"
+    },
+    {
+      "legacyId": "realm-202-dont-follow-the-siren",
+      "title": "Don’t Follow the Siren",
+      "action": "CREATE",
+      "type": "public-three-piece"
+    },
+    {
+      "legacyId": "realm-101-hold-on-while-you-drift",
+      "title": "Hold On While You Drift",
+      "action": "CREATE",
+      "type": "public-three-piece"
+    },
+    {
+      "legacyId": "realm-55-glory-and-command",
+      "title": "Glory & Command",
+      "action": "CREATE",
+      "type": "public-three-piece"
+    },
+    {
+      "legacyId": "realm-44-price-of-focus",
+      "title": "The Price of Focus",
+      "action": "CREATE",
+      "type": "public-three-piece"
+    },
+    {
+      "legacyId": "realm-0-same-self-higher-form",
+      "title": "Same Self, Higher Form",
+      "action": "CREATE",
+      "type": "public-three-piece"
+    },
+    {
+      "legacyId": "april-may-vault",
+      "title": "April–May Vault",
+      "action": "CREATE",
+      "type": "vault"
+    }
+  ],
+  "editorialCandidates": [
+    {
+      "legacyId": "sin-sirens-in-neverland",
+      "title": "SIRENS in Neverland",
+      "legacyType": "release-project",
+      "destination": "RELEASE_WORLD",
+      "trackIds": [
+        "sin-do-over",
+        "101-hold-my-hand",
+        "303-in-the-deep",
+        "202-her-fantasy",
+        "sin-running-from-the-plug",
+        "202-siren"
+      ],
+      "note": "Map to existing ReleaseWorld; do not duplicate as a collection."
+    },
+    {
+      "legacyId": "cosmic-featured-signal",
+      "title": "Featured Signal",
+      "legacyType": "flagship",
+      "destination": "NEXUS_FEATURED_SIGNAL",
+      "trackIds": [
+        "202-siren"
+      ],
+      "note": "Apply through NexusEditorialConfig only after referenced Signals are published."
+    },
+    {
+      "legacyId": "cosmic-realm-anchors",
+      "title": "Realm Anchors",
+      "legacyType": "realm-anchor-set",
+      "destination": "NEXUS_REALM_ANCHORS",
+      "trackIds": [
+        "303-hardcoded",
+        "202-her-fantasy",
+        "101-hold-my-hand",
+        "55-glory-n-power",
+        "44-13933",
+        "0-same-person"
+      ],
+      "note": "Apply through NexusEditorialConfig only after referenced Signals are published."
+    }
+  ],
+  "summary": {
+    "trackActions": {
+      "CREATE": 37,
+      "UPDATE": 3
+    },
+    "collectionActions": {
+      "CREATE": 7
+    },
+    "editorialCandidates": 3,
+    "writesPerformed": false
+  }
+}

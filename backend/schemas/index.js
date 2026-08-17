@@ -280,7 +280,7 @@ const typeDefs = gql`
   type ReleaseTrack {
     id: ID!
     ownerId: String!
-    releaseWorldId: ID!
+    releaseWorldId: ID
     title: String!
     slug: String!
     trackNumber: Int!
@@ -499,7 +499,7 @@ const typeDefs = gql`
   }
 
   input ReleaseTrackInput {
-    releaseWorldId: ID!
+    releaseWorldId: ID
     title: String!
     slug: String
     trackNumber: Int
@@ -676,6 +676,7 @@ const typeDefs = gql`
     myCreativeProfiles: [CreativeProfile!]!
     myReleaseWorlds: [ReleaseWorld!]!
     myReleaseTracks: [ReleaseTrack!]!
+    myCatalogTracks: [ReleaseTrack!]!
     getReleasePublishingReadiness(
       releaseWorldId: ID!
     ): ReleasePublishingReadiness!

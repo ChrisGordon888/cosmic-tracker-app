@@ -1039,7 +1039,7 @@ async function getFeaturedSignalTrack(query = {}) {
 }
 
 async function getTrackArtworkAsset(track, user) {
-    if (!track?._id) return null;
+    if (!track?._id || !track?.releaseWorldId) return null;
 
     const query = {
         trackId: track._id,
@@ -1057,7 +1057,7 @@ async function getTrackArtworkAsset(track, user) {
 }
 
 async function syncReleaseWorldFocusFromTrack(track, userId) {
-    if (!track) return;
+    if (!track || !track.releaseWorldId) return;
 
     const update = {
         lastOpenedAt: new Date(),
@@ -1721,6 +1721,15 @@ module.exports = {
                 updatedAt: -1,
                 trackNumber: 1,
                 createdAt: 1,
+            });
+        },
+
+        myCatalogTracks: async (_, __, { user }) => {
+            requireCreator(user);
+
+            return await ReleaseTrack.find({ ownerId: user.id }).sort({
+                updatedAt: -1,
+                createdAt: -1,
             });
         },
 
@@ -3547,15 +3556,17 @@ module.exports = {
         createReleaseTrack: async (_, { input }, { user }) => {
             requireCreator(user);
 
-            const releaseWorld = await getOwnedReleaseWorld(input.releaseWorldId, user.id);
+            const releaseWorld = input.releaseWorldId
+                ? await getOwnedReleaseWorld(input.releaseWorldId, user.id)
+                : null;
 
-            if (!releaseWorld) {
+            if (input.releaseWorldId && !releaseWorld) {
                 throw new Error("Release world not found.");
             }
 
             const existingTracksCount = await ReleaseTrack.countDocuments({
                 ownerId: user.id,
-                releaseWorldId: input.releaseWorldId,
+                releaseWorldId: releaseWorld?._id || null,
             });
 
             const trackNumber = input.trackNumber || existingTracksCount + 1;
@@ -3567,7 +3578,7 @@ module.exports = {
 
             const createPayload = {
                 ownerId: user.id,
-                releaseWorldId: releaseWorld._id,
+                releaseWorldId: releaseWorld?._id || null,
                 title: input.title,
                 slug,
                 trackNumber,
@@ -3619,14 +3630,20 @@ module.exports = {
                 lastOpenedAt: new Date(),
             };
 
-            validateNexusPublication(createPayload, releaseWorld);
+            if (releaseWorld) {
+                validateNexusPublication(createPayload, releaseWorld);
+            } else if (createPayload.showInNexus) {
+                throw new Error("Catalog tracks must be attached to a Release World before Nexus publication.");
+            }
 
             const track = await ReleaseTrack.create(createPayload);
 
             await syncReleaseWorldFocusFromTrack(track, user.id);
 
-            releaseWorld.lastOpenedAt = new Date();
-            await releaseWorld.save();
+            if (releaseWorld) {
+                releaseWorld.lastOpenedAt = new Date();
+                await releaseWorld.save();
+            }
 
             return track;
         },
@@ -3651,9 +3668,11 @@ module.exports = {
                 delete input.nexusRole;
             }
 
-            const releaseWorld = await getOwnedReleaseWorld(existingTrack.releaseWorldId, user.id);
+            const releaseWorld = existingTrack.releaseWorldId
+                ? await getOwnedReleaseWorld(existingTrack.releaseWorldId, user.id)
+                : null;
 
-            if (!releaseWorld) {
+            if (existingTrack.releaseWorldId && !releaseWorld) {
                 throw new Error("Release world not found.");
             }
 
@@ -3704,7 +3723,11 @@ module.exports = {
             }
 
             const publicationCandidate = getNexusPublicationCandidate(existingTrack, update);
-            validateNexusPublication(publicationCandidate, releaseWorld);
+            if (releaseWorld) {
+                validateNexusPublication(publicationCandidate, releaseWorld);
+            } else if (publicationCandidate.showInNexus) {
+                throw new Error("Catalog tracks must be attached to a Release World before Nexus publication.");
+            }
 
             const updatedTrack = await ReleaseTrack.findOneAndUpdate(
                 {
@@ -3721,8 +3744,10 @@ module.exports = {
 
             await syncReleaseWorldFocusFromTrack(updatedTrack, user.id);
 
-            releaseWorld.lastOpenedAt = new Date();
-            await releaseWorld.save();
+            if (releaseWorld) {
+                releaseWorld.lastOpenedAt = new Date();
+                await releaseWorld.save();
+            }
 
             return updatedTrack;
         },
@@ -3733,6 +3758,10 @@ module.exports = {
 
             const track = await getOwnedReleaseTrack(trackId, user.id);
             if (!track) throw new Error("Track not found.");
+
+            if (!track.releaseWorldId) {
+                throw new Error("Attach this catalog track to a Release World before submitting it to Nexus.");
+            }
 
             const releaseWorld = await getOwnedReleaseWorld(track.releaseWorldId, user.id);
             if (!releaseWorld) throw new Error("Release world not found.");

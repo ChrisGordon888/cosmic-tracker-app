@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const ReleaseTrackSchema = new mongoose.Schema(
   {
     ownerId: { type: String, required: true, index: true },
-    releaseWorldId: { type: mongoose.Schema.Types.ObjectId, ref: "ReleaseWorld", required: true, index: true },
+    releaseWorldId: { type: mongoose.Schema.Types.ObjectId, ref: "ReleaseWorld", default: null, index: true },
     title: { type: String, required: true, trim: true },
     slug: { type: String, required: true, lowercase: true, trim: true },
     trackNumber: { type: Number, default: 1, min: 1, index: true },
@@ -97,7 +97,14 @@ const ReleaseTrackSchema = new mongoose.Schema(
 );
 
 ReleaseTrackSchema.index({ ownerId: 1, releaseWorldId: 1, trackNumber: 1 });
-ReleaseTrackSchema.index({ ownerId: 1, releaseWorldId: 1, slug: 1 }, { unique: true });
+ReleaseTrackSchema.index(
+  { ownerId: 1, releaseWorldId: 1, slug: 1 },
+  { unique: true, partialFilterExpression: { releaseWorldId: { $type: "objectId" } } }
+);
+ReleaseTrackSchema.index(
+  { ownerId: 1, slug: 1 },
+  { unique: true, partialFilterExpression: { releaseWorldId: null } }
+);
 ReleaseTrackSchema.index({ ownerId: 1, legacyRegistryId: 1 }, { unique: true, partialFilterExpression: { legacyRegistryId: { $type: "string", $ne: "" } } });
 ReleaseTrackSchema.index({ releaseWorldId: 1, status: 1 });
 ReleaseTrackSchema.index({ releaseWorldId: 1, visibility: 1, playbackStatus: 1 });
