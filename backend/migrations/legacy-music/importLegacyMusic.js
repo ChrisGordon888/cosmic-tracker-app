@@ -94,15 +94,24 @@ async function main() {
 
   const byLegacyId = new Map(existingTracks.filter((t) => t.legacyRegistryId).map((t) => [t.legacyRegistryId, t]));
   const byTitleRealm = new Map();
+  const byReleaseSlug = new Map();
   for (const track of existingTracks) {
     const key = `${normalizeTitle(track.title)}::${track.realmId ?? "none"}`;
     const list = byTitleRealm.get(key) || [];
     list.push(track);
     byTitleRealm.set(key, list);
+
+    // Mirror the database unique key: ownerId + releaseWorldId + slug.
+    // `ownerId` is already scoped by the query above, so only releaseWorldId + slug
+    // are needed inside this in-memory map. Null releaseWorldId represents Catalog-only.
+    const releaseKey = `${track.releaseWorldId ? String(track.releaseWorldId) : "catalog"}::${track.slug || slugify(track.title)}`;
+    const releaseList = byReleaseSlug.get(releaseKey) || [];
+    releaseList.push(track);
+    byReleaseSlug.set(releaseKey, releaseList);
   }
 
   const report = {
-    version: "v5l9-legacy-music-import-v1",
+    version: "v5l9c-legacy-music-import-v2",
     mode: apply ? "APPLY" : "DRY_RUN",
     ownerId,
     generatedAt: new Date().toISOString(),
@@ -139,6 +148,28 @@ async function main() {
           title: legacy.trackTitle,
           action: "CONFLICT",
           reason: "multiple-title-realm-matches",
+          candidateIds: candidates.map((c) => String(c._id)),
+        });
+        continue;
+      }
+    }
+
+    // If title+realm did not match, fall back to the exact identity enforced by
+    // Mongo's unique index: ownerId + releaseWorldId + slug. This prevents the
+    // dry run from proposing a CREATE that Mongo would reject during --apply.
+    if (!existing) {
+      const plannedReleaseWorldId = resolveReleaseWorldId(legacy, releaseMap);
+      const releaseKey = `${plannedReleaseWorldId ? String(plannedReleaseWorldId) : "catalog"}::${slugify(legacy.trackTitle)}`;
+      const candidates = byReleaseSlug.get(releaseKey) || [];
+      if (candidates.length === 1) {
+        existing = candidates[0];
+        matchMethod = "release+slug";
+      } else if (candidates.length > 1) {
+        report.tracks.push({
+          legacyId: legacy.id,
+          title: legacy.trackTitle,
+          action: "CONFLICT",
+          reason: "multiple-release-slug-matches",
           candidateIds: candidates.map((c) => String(c._id)),
         });
         continue;
