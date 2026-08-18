@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useMutation } from "@apollo/client";
-import { signIn } from "next-auth/react";
 import { usePathname, useRouter } from "next/navigation";
 import { usePlatformAccess } from "@/context/PlatformAccessProvider";
 import {
@@ -75,13 +74,12 @@ export default function CreatorAccessGate({
                         Sign in with the account connected to your creator
                         workspace.
                     </p>
-                    <button
-                        type="button"
-                        onClick={() => signIn("github")}
-                        className="mt-6 rounded-full bg-[#DCBA5C] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.16em] text-[#080A10]"
+                    <Link
+                        href="/auth?callbackUrl=/creator"
+                        className="mt-6 inline-flex rounded-full bg-[#DCBA5C] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.16em] text-[#080A10]"
                     >
-                        Sign in with GitHub
-                    </button>
+                        Sign in to Cosmic
+                    </Link>
                 </section>
             </main>
         );

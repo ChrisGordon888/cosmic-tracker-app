@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { gql, useMutation, useQuery } from '@apollo/client';
-import { signIn, useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import '@/styles/creator.css';
 
 const CREATOR_HOME_QUERY = gql`
@@ -372,11 +372,11 @@ export default function CreatorDashboardPage() {
               </p>
             </div>
 
-            <button type="button" className="creator-console-status" onClick={() => signIn('github')}>
+            <Link href="/auth?callbackUrl=/creator" className="creator-console-status">
               <span>Auth</span>
-              <strong>Sign in with GitHub</strong>
-              <em>Required for Mongo-backed creator data</em>
-            </button>
+              <strong>Sign in to Cosmic</strong>
+              <em>Continue with Google or GitHub</em>
+            </Link>
           </header>
         </section>
       </main>

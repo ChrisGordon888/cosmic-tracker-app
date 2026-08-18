@@ -1,6 +1,7 @@
 "use client";
 
-import { useSession, signIn, signOut } from "next-auth/react";
+import Link from "next/link";
+import { useSession, signOut } from "next-auth/react";
 
 export default function AuthButton() {
   const { data: session, status } = useSession();
@@ -24,11 +25,11 @@ export default function AuthButton() {
   }
 
   return (
-    <button
-      onClick={() => signIn()}
+    <Link
+      href="/auth"
       className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-1 rounded transition"
     >
       Sign In
-    </button>
+    </Link>
   );
 }

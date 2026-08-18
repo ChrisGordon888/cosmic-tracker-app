@@ -2,7 +2,7 @@
 
 import "@/styles/landingPage.css";
 import Link from "next/link";
-import { signIn, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 
 const REALMS = [
     { id: "303", mark: "∴", name: "Fractured Frontier", state: "Pressure into motion" },
@@ -74,14 +74,13 @@ export default function LandingPage() {
                                 <Link href="/practice">Practice</Link>
                             </div>
                         ) : (
-                            <button
-                                type="button"
-                                onClick={() => signIn("github", { callbackUrl: "/nexus" })}
+                            <Link
+                                href="/auth?callbackUrl=/nexus"
                                 className="landing-button-secondary-subtle landing-gateway-v3-secondary"
-                                disabled={status === "loading"}
+                                aria-disabled={status === "loading"}
                             >
                                 {status === "loading" ? "Checking session..." : "Sign in to save progress"}
-                            </button>
+                            </Link>
                         )}
                     </div>
 
