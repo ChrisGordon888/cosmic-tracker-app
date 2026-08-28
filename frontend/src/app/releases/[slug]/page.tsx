@@ -51,6 +51,7 @@ const RELEASE_TRACK_FIELDS = gql`
     artworkUrl
     releaseCoverArtUrl
     visibility
+    accessTier
     playbackStatus
     dropDate
     unlockDate
@@ -162,6 +163,7 @@ type ReleaseTrack = {
     artworkUrl?: string | null;
     releaseCoverArtUrl?: string | null;
     visibility?: string | null;
+    accessTier?: string | null;
     playbackStatus?: string | null;
     dropDate?: string | null;
     unlockDate?: string | null;
@@ -440,7 +442,7 @@ export default function DynamicReleasePage() {
     const { isCreatorView: selectedCreatorView } = useCreatorView();
     const { isAuthenticated, canAccessCreatorOS } = usePlatformAccess();
     const isCreatorView = canAccessCreatorOS && selectedCreatorView;
-    const isSignedInForMusic = isCreatorView && isAuthenticated;
+    const isSignedInForMusic = isAuthenticated;
 
     const rawSlug = params?.slug;
     const slug = Array.isArray(rawSlug) ? rawSlug[0] ?? '' : rawSlug ?? '';
@@ -577,7 +579,8 @@ export default function DynamicReleasePage() {
             realmId: 0,
             realmName: 'INTERSIDDHI',
             realmColor: '#DCBA5C',
-            visibility: track.visibility === 'public' || track.isPublic ? 'public' : 'premium',
+            visibility: track.visibility ?? (track.isPublic ? 'public' : 'private'),
+            accessTier: track.accessTier ?? 'public',
             trackUrl: availability.href,
             audioUrl: track.audioUrl ?? null,
             fullAudioUrl: track.audioUrl ?? null,

@@ -14,6 +14,7 @@ export interface AvailabilityTrack {
   fullAudioUrl?: string | null;
   previewAudioUrl?: string | null;
   visibility?: string | null;
+  accessTier?: string | null;
   playbackStatus?: string | null;
   unlockDate?: string | null;
   dropDate?: string | null;
@@ -63,6 +64,7 @@ export function getMusicAvailability(
 ): MusicAvailability {
   const now = options.now ?? new Date();
   const visibility = track.visibility ?? 'public';
+  const accessTier = track.accessTier ?? 'public';
   const playbackStatus = track.playbackStatus ?? 'playable';
   const fullAudio = clean(track.fullAudioUrl) ?? clean(track.audioUrl) ?? clean(track.trackUrl);
   const previewAudio = clean(track.previewAudioUrl);
@@ -104,7 +106,7 @@ export function getMusicAvailability(
     };
   }
 
-  if (visibility === 'premium') {
+  if (accessTier === 'premium') {
     return {
       state: 'locked',
       isVisible: true,
@@ -115,7 +117,7 @@ export function getMusicAvailability(
     };
   }
 
-  if (visibility === 'signup' && !options.isSignedIn) {
+  if (accessTier === 'signup' && !options.isSignedIn) {
     return {
       state: 'locked',
       isVisible: true,
