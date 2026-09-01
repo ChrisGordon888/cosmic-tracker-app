@@ -484,7 +484,7 @@ export default function CreatorLibraryPage() {
       .filter((candidate) => Boolean(candidate.trackUrl));
 
     void playOrToggleTrack(playerTrack, queue, {
-      source: "creator-library",
+      source: "catalog",
       label: releaseFilter === "unsorted" ? "Unsorted Library" : "Creator Library",
     });
   }
