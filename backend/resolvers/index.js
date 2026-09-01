@@ -939,6 +939,111 @@ async function getOwnedReleaseTrack(trackId, userId, releaseWorldId) {
     return await ReleaseTrack.findOne(query);
 }
 
+
+async function getNextReleaseTrackNumber(userId, releaseWorldId) {
+    const lastTrack = await ReleaseTrack.findOne({
+        ownerId: userId,
+        releaseWorldId,
+    })
+        .sort({
+            trackNumber: -1,
+            createdAt: -1,
+        })
+        .select("trackNumber");
+
+    return Math.max(Number(lastTrack?.trackNumber || 0), 0) + 1;
+}
+
+async function attachOwnedCatalogTrackToReleaseWorld(
+    trackId,
+    releaseWorldId,
+    userId
+) {
+    const [track, releaseWorld] = await Promise.all([
+        ReleaseTrack.findOne({
+            _id: trackId,
+            ownerId: userId,
+        }),
+        getOwnedReleaseWorld(releaseWorldId, userId),
+    ]);
+
+    if (!track) {
+        throw new Error("Catalog track not found.");
+    }
+
+    if (!releaseWorld) {
+        throw new Error("Release world not found.");
+    }
+
+    if (releaseWorld.status === "archived") {
+        throw new Error(
+            "Restore this Release World before adding music to it."
+        );
+    }
+
+    if (track.releaseWorldId) {
+        if (String(track.releaseWorldId) === String(releaseWorld._id)) {
+            return track;
+        }
+
+        throw new Error(
+            "This track already belongs to another Release World. Moving project tracks will use a separate workflow."
+        );
+    }
+
+    if (
+        track.showInNexus ||
+        ["in-review", "approved", "published"].includes(
+            String(track.nexusReviewStatus || "draft")
+        )
+    ) {
+        throw new Error(
+            "This catalog track has active Nexus state and cannot be organized until that state is cleared."
+        );
+    }
+
+    const existingTrackCount = await ReleaseTrack.countDocuments({
+        ownerId: userId,
+        releaseWorldId: releaseWorld._id,
+    });
+
+    track.releaseWorldId = releaseWorld._id;
+    track.trackNumber = await getNextReleaseTrackNumber(
+        userId,
+        releaseWorld._id
+    );
+    track.lastOpenedAt = new Date();
+
+    if (existingTrackCount === 0) {
+        track.isFocusTrack = true;
+        track.isSecondFocus = false;
+        releaseWorld.currentFocus = track.title;
+    }
+
+    releaseWorld.lastOpenedAt = new Date();
+
+    await track.save();
+    await releaseWorld.save();
+
+    return track;
+}
+
+async function createUniqueReleaseWorldSlug(title) {
+    const base =
+        slugifyTitle(title) ||
+        `single-${Date.now().toString(36)}`;
+
+    let candidate = base;
+    let suffix = 2;
+
+    while (await ReleaseWorld.exists({ slug: candidate })) {
+        candidate = `${base}-${suffix}`;
+        suffix += 1;
+    }
+
+    return candidate;
+}
+
 async function getOwnedBoardArtifact(boardArtifactId, userId, releaseWorldId) {
     if (!boardArtifactId) return null;
 
@@ -1046,9 +1151,9 @@ async function getCreatorOnboardingState(user) {
     if (isReadyForActivation) {
         status =
             accountState.role === "owner" ||
-            accountState.role === "admin" ||
-            (accountState.role === "creator" &&
-                accountState.creatorStatus === "active")
+                accountState.role === "admin" ||
+                (accountState.role === "creator" &&
+                    accountState.creatorStatus === "active")
                 ? "complete"
                 : "ready";
     }
@@ -3876,6 +3981,178 @@ module.exports = {
             }
 
             return updatedTrack;
+        },
+
+
+
+        deleteCatalogTrack: async (_, { trackId }, { user }) => {
+            requireCreator(user);
+
+            const track = await ReleaseTrack.findOne({
+                _id: trackId,
+                ownerId: user.id,
+            });
+
+            if (!track) {
+                throw new Error("Catalog track not found.");
+            }
+
+            if (track.releaseWorldId) {
+                throw new Error(
+                    "Only Unsorted catalog tracks can be removed from the Library. Manage project tracks from their Signal Board."
+                );
+            }
+
+            if (
+                track.showInNexus ||
+                ["in-review", "approved", "published"].includes(
+                    String(track.nexusReviewStatus || "draft")
+                )
+            ) {
+                throw new Error(
+                    "This track has active Nexus state and cannot be removed from the Library."
+                );
+            }
+
+            const deletedTrack = await ReleaseTrack.findOneAndDelete({
+                _id: track._id,
+                ownerId: user.id,
+                $or: [
+                    { releaseWorldId: null },
+                    { releaseWorldId: { $exists: false } },
+                ],
+            });
+
+            if (!deletedTrack) {
+                throw new Error("Catalog track could not be removed.");
+            }
+
+            const blobUrls = [
+                deletedTrack.audioUrl,
+                deletedTrack.previewAudioUrl,
+            ]
+                .map((value) => String(value || "").trim())
+                .filter(Boolean);
+
+            for (const url of [...new Set(blobUrls)]) {
+                await tryDeleteBlobForAsset({
+                    _id: deletedTrack._id,
+                    url,
+                });
+            }
+
+            return deletedTrack;
+        },
+
+        attachTrackToReleaseWorld: async (
+            _,
+            { trackId, releaseWorldId },
+            { user }
+        ) => {
+            requireCreator(user);
+
+            return await attachOwnedCatalogTrackToReleaseWorld(
+                trackId,
+                releaseWorldId,
+                user.id
+            );
+        },
+
+        createSingleFromTrack: async (_, { trackId }, { user }) => {
+            requireCreator(user);
+
+            const track = await ReleaseTrack.findOne({
+                _id: trackId,
+                ownerId: user.id,
+            });
+
+            if (!track) {
+                throw new Error("Catalog track not found.");
+            }
+
+            if (track.releaseWorldId) {
+                throw new Error(
+                    "This track already belongs to a Release World."
+                );
+            }
+
+            if (
+                track.showInNexus ||
+                ["in-review", "approved", "published"].includes(
+                    String(track.nexusReviewStatus || "draft")
+                )
+            ) {
+                throw new Error(
+                    "This catalog track has active Nexus state and cannot become a new Single until that state is cleared."
+                );
+            }
+
+            const profile = await getPrimaryCreativeProfile(user.id);
+
+            if (!profile) {
+                throw new Error(
+                    "Create a Creative Profile before turning this track into a Single."
+                );
+            }
+
+            const title = String(track.title || "").trim();
+
+            if (!title) {
+                throw new Error(
+                    "Give this track a title before turning it into a Single."
+                );
+            }
+
+            const slug = await createUniqueReleaseWorldSlug(title);
+
+            let releaseWorld = null;
+
+            try {
+                releaseWorld = await ReleaseWorld.create({
+                    ownerId: user.id,
+                    creativeProfileId: profile._id,
+                    title,
+                    slug,
+                    releaseType: "single",
+                    status: "draft",
+                    visibility: "private",
+                    isFeatured: false,
+                    oneLineSummary: "",
+                    story: "",
+                    currentFocus: "",
+                    secondFocus: "",
+                    fullDropDate: null,
+                    coverArtUrl: "",
+                    coverAssetId: null,
+                    lastOpenedAt: new Date(),
+                });
+
+                const attachedTrack =
+                    await attachOwnedCatalogTrackToReleaseWorld(
+                        track._id,
+                        releaseWorld._id,
+                        user.id
+                    );
+
+                if (
+                    !attachedTrack.role ||
+                    attachedTrack.role === "unknown"
+                ) {
+                    attachedTrack.role = "single";
+                    await attachedTrack.save();
+                }
+
+                return releaseWorld;
+            } catch (error) {
+                if (releaseWorld?._id) {
+                    await ReleaseWorld.deleteOne({
+                        _id: releaseWorld._id,
+                        ownerId: user.id,
+                    });
+                }
+
+                throw error;
+            }
         },
 
         // Creator submission path: validates readiness but does not publish to Nexus.

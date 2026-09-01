@@ -821,6 +821,9 @@ const typeDefs = gql`
 
     createReleaseTrack(input: ReleaseTrackInput!): ReleaseTrack!
     updateReleaseTrack(id: ID!, input: UpdateReleaseTrackInput!): ReleaseTrack!
+    deleteCatalogTrack(trackId: ID!): ReleaseTrack!
+    attachTrackToReleaseWorld(trackId: ID!, releaseWorldId: ID!): ReleaseTrack!
+    createSingleFromTrack(trackId: ID!): ReleaseWorld!
     deleteReleaseTrack(id: ID!): ReleaseTrack
     submitTrackForNexusReview(trackId: ID!): ReleaseTrack!
     reviewNexusSubmission(

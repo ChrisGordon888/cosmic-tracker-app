@@ -700,6 +700,26 @@ export default function CosmicNexusHub() {
             : publicFeaturedReleaseTracksLoading;
 
     const featuredReleaseTrackCount = featuredReleaseTracks?.length ?? 0;
+    const featuredReleasePrimaryTrack = useMemo(() => {
+        const playableTracks = [...(featuredReleaseTracks ?? [])]
+            .filter((track) => Boolean(getFeaturedTrackPlaybackUrl(track, isCreatorView)))
+            .sort((a, b) => (a.trackNumber || 0) - (b.trackNumber || 0));
+
+        return (
+            playableTracks.find((track) => track.isFocusTrack) ??
+            playableTracks[0] ??
+            null
+        );
+    }, [featuredReleaseTracks, isCreatorView]);
+
+    const featuredReleasePrimaryPlayerId = featuredReleasePrimaryTrack
+        ? `release-${featuredReleasePrimaryTrack.id}`
+        : null;
+    const isFeaturedReleasePrimaryPlaying =
+        Boolean(featuredReleasePrimaryPlayerId) &&
+        currentTrack?.id === featuredReleasePrimaryPlayerId &&
+        isPlaying;
+
     const playFeaturedReleaseTrack = (track: NexusFeaturedReleaseTrack) => {
         const selectedTrackUrl = getFeaturedTrackPlaybackUrl(track, isCreatorView);
         if (!selectedTrackUrl) return;
@@ -1089,29 +1109,53 @@ export default function CosmicNexusHub() {
                                     {getFeaturedReleaseSummary(creatorFeaturedRelease)}
                                 </p>
 
-                                <div className="flex flex-wrap justify-center gap-2.5 mb-5">
-                                    <Link
-                                        href={creatorFeaturedPortalHref}
+                                <div className="flex flex-wrap justify-center gap-2.5 mb-3">
+                                    <button
+                                        type="button"
                                         className="btn-primary"
+                                        onClick={() => {
+                                            if (featuredReleasePrimaryTrack) {
+                                                playFeaturedReleaseTrack(featuredReleasePrimaryTrack);
+                                            }
+                                        }}
+                                        disabled={!featuredReleasePrimaryTrack || isFeaturedReleaseTracksLoading}
                                         style={{
                                             borderRadius: '999px',
                                             boxShadow: '0 14px 28px rgba(0,0,0,0.2)',
+                                            opacity: featuredReleasePrimaryTrack ? 1 : 0.62,
+                                            cursor: featuredReleasePrimaryTrack ? 'pointer' : 'not-allowed',
                                         }}
                                     >
-                                        Enter Release Portal
-                                    </Link>
+                                        {isFeaturedReleaseTracksLoading
+                                            ? 'Loading Music…'
+                                            : isFeaturedReleasePrimaryPlaying
+                                                ? 'Pause'
+                                                : featuredReleasePrimaryTrack
+                                                    ? '▶ Play'
+                                                    : 'Coming Soon'}
+                                    </button>
 
-                                    <button
+                                    <Link
+                                        href={creatorFeaturedPortalHref}
                                         className="btn-secondary"
-                                        onClick={() => setShowReleaseDetails((prev) => !prev)}
                                         style={{
                                             borderRadius: '999px',
                                             backdropFilter: 'blur(10px)',
                                         }}
                                     >
-                                        {showReleaseDetails ? 'Close Tracklist' : 'Preview Tracklist'}
-                                    </button>
+                                        Enter Release
+                                    </Link>
                                 </div>
+
+                                <button
+                                    type="button"
+                                    className="nexus-micro-link nexus-micro-link-button"
+                                    onClick={() => setShowReleaseDetails((prev) => !prev)}
+                                    aria-expanded={showReleaseDetails}
+                                >
+                                    {showReleaseDetails ? 'Close tracklist' : 'Preview tracklist'}
+                                    <span aria-hidden="true">{showReleaseDetails ? ' ↑' : ' ↓'}</span>
+                                </button>
                             </div>
 
                             {showReleaseDetails && (
@@ -1283,9 +1327,9 @@ export default function CosmicNexusHub() {
                                 <p className="text-xs uppercase tracking-[0.18em] text-muted mb-2">
                                     Nexus Library
                                 </p>
-                                <h2 className="text-2xl font-display mb-2">Begin with the music</h2>
+                                <h2 className="text-2xl font-display mb-2">Go deeper in the Nexus</h2>
                                 <p className="text-sm text-secondary mb-4 leading-relaxed">
-                                    The Nexus holds {nexusVisibleTracks.length} cataloged tracks across {groupedTracks.length} realms. Play what is open now, preview what is coming, and join to unlock the deeper path.
+                                    Public music is open to listen. The Nexus holds {nexusVisibleTracks.length} cataloged tracks across {groupedTracks.length} realms; sign in when you want to save progress and unlock the deeper traveler path.
                                 </p>
 
                                 <div className="grid grid-cols-2 gap-2 mb-4">
@@ -1334,10 +1378,10 @@ export default function CosmicNexusHub() {
 
                                 <button
                                     onClick={() => signIn('github')}
-                                    className="btn-primary w-full"
+                                    className="btn-secondary w-full"
                                     style={{ borderRadius: '999px' }}
                                 >
-                                    Sign In to Begin
+                                    Sign In to Save Progress
                                 </button>
                             </div>
                         )}
