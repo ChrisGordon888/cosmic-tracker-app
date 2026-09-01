@@ -775,7 +775,7 @@
 @media (max-width: 720px) {
   .landing-gateway-v3-shell {
     padding-inline: 1rem;
-    padding-block: 4.5rem 2.25rem;
+    padding-block: 4.5rem calc(7.5rem + env(safe-area-inset-bottom));
   }
 
   .landing-gateway-v3-hero-card {
