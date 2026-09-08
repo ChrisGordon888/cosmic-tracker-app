@@ -676,30 +676,30 @@ export default function CreatorProjectsPage() {
 
               return (
                 <article
-                  className={`creator-projects-card creator-project-card creator-project-card-v2${featuredClassName}`}
+                  className={`creator-projects-card creator-projects-release-card creator-projects-release-card-v2${featuredClassName}`}
                   key={world.id}
                 >
-                  <div className="creator-project-card-topline">
+                  <div className="creator-projects-release-card-topline">
                     <span>{getProjectTypeCopy(world)}</span>
                     {world.isFeatured && <span>Nexus Featured</span>}
                   </div>
 
-                  <div className="creator-project-card-mainline">
+                  <div className="creator-projects-release-card-mainline">
                     {world.coverArtUrl?.trim() ? (
-                      <div className="creator-project-card-cover" aria-label={`${world.title} cover art`}>
+                      <div className="creator-projects-release-card-cover" aria-label={`${world.title} cover art`}>
                         <img src={world.coverArtUrl} alt={`${world.title} cover art`} />
                       </div>
                     ) : (
-                      <div className="creator-project-card-cover creator-project-card-cover-empty" aria-hidden="true">
+                      <div className="creator-projects-release-card-cover creator-projects-release-card-cover-empty" aria-hidden="true">
                         <span>{formatLabel(world.releaseType).slice(0, 2)}</span>
                       </div>
                     )}
 
                     <div>
                       <h2>{world.title}</h2>
-                      <p className="creator-project-card-slug">/{world.slug}</p>
+                      <p className="creator-projects-release-card-slug">/{world.slug}</p>
 
-                      <p className="creator-project-card-summary">
+                      <p className="creator-projects-release-card-summary">
                         {world.oneLineSummary?.trim() ||
                           world.story?.trim() ||
                           "No public summary yet. Add a one-line signal or story from the Signal Board."}
@@ -736,7 +736,7 @@ export default function CreatorProjectsPage() {
                     </div>
                   </div>
 
-                  <div className="creator-project-card-meta creator-project-card-meta-v2">
+                  <div className="creator-projects-release-card-meta creator-projects-release-card-meta-v2">
                     <div>
                       <span>World opens</span>
                       <strong>{formatDate(world.fullDropDate)}</strong>
@@ -755,7 +755,7 @@ export default function CreatorProjectsPage() {
                     </div>
                   </div>
 
-                  <div className="creator-project-card-actions creator-project-card-actions-v2">
+                  <div className="creator-projects-release-card-actions creator-projects-release-card-actions-v2">
                     {world.status === "active" && world.visibility === "public" ? (
                       <>
                         <Link
