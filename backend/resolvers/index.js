@@ -2873,7 +2873,7 @@ module.exports = {
                 trackNumber: existingTrack
                     ? existingTrack.trackNumber
                     : 1,
-                role: String(input.role || "single").trim(),
+                role: String(input.role || "lead-single").trim(),
                 bpm: parsedBpm,
                 keySignature: String(
                     input.keySignature || ""
@@ -2883,7 +2883,7 @@ module.exports = {
                 notes: String(input.notes || "").trim(),
                 status: existingTrack
                     ? existingTrack.status
-                    : "draft",
+                    : "idea",
                 visibility: existingTrack
                     ? existingTrack.visibility
                     : "private",

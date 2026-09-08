@@ -13,7 +13,7 @@ import {
 } from "@/graphql/onboarding";
 
 const TRACK_ROLES = [
-    { value: "single", label: "Single / Focus Track" },
+    { value: "lead-single", label: "Single / Focus Track" },
     { value: "intro", label: "Intro" },
     { value: "interlude", label: "Interlude" },
     { value: "outro", label: "Outro" },
@@ -43,7 +43,7 @@ export default function CreatorOnboardingTrackPage() {
 
     const [title, setTitle] = useState("");
     const [slug, setSlug] = useState("");
-    const [role, setRole] = useState("single");
+    const [role, setRole] = useState("lead-single");
     const [bpm, setBpm] = useState("");
     const [keySignature, setKeySignature] = useState("");
     const [mood, setMood] = useState("");
@@ -62,7 +62,7 @@ export default function CreatorOnboardingTrackPage() {
 
         setTitle(track.title || "");
         setSlug(track.slug || "");
-        setRole(track.role || "single");
+        setRole(track.role || "lead-single");
         setBpm(
             track.bpm === null || track.bpm === undefined
                 ? ""
