@@ -1,8 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import {
+    DragEvent,
+    FormEvent,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
 import { useMutation, useQuery } from "@apollo/client";
+import { upload } from "@vercel/blob/client";
 import {
     CreatorOnboardingArtworkData,
     GET_CREATOR_ONBOARDING_ARTWORK,
@@ -12,12 +20,19 @@ import {
     SaveCreatorOnboardingArtworkVariables,
 } from "@/graphql/onboarding";
 
+const ACCEPTED_IMAGE_TYPES = [
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/gif",
+];
+
 function looksLikeImage(value: string) {
     if (!value.trim()) return false;
 
     try {
         const url = new URL(value);
-        return ["http:", "https:"].includes(url.protocol);
+        return ["http:", "https:", "blob:"].includes(url.protocol);
     } catch {
         return value.startsWith("/");
     }
@@ -25,8 +40,7 @@ function looksLikeImage(value: string) {
 
 function inferFileName(value: string) {
     try {
-        const pathname = new URL(value, "https://cosmic.local")
-            .pathname;
+        const pathname = new URL(value, "https://cosmic.local").pathname;
         return pathname.split("/").filter(Boolean).pop() || "";
     } catch {
         return "";
@@ -34,10 +48,7 @@ function inferFileName(value: string) {
 }
 
 function inferMimeType(fileName: string) {
-    const extension = fileName
-        .split(".")
-        .pop()
-        ?.toLowerCase();
+    const extension = fileName.split(".").pop()?.toLowerCase();
 
     const mimeTypes: Record<string, string> = {
         jpg: "image/jpeg",
@@ -45,11 +56,20 @@ function inferMimeType(fileName: string) {
         png: "image/png",
         webp: "image/webp",
         gif: "image/gif",
-        avif: "image/avif",
-        svg: "image/svg+xml",
     };
 
     return extension ? mimeTypes[extension] || "" : "";
+}
+
+function safeFileName(value: string) {
+    return (
+        value
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9._-]+/g, "-")
+            .replace(/-+/g, "-")
+            .replace(/^-+|-+$/g, "") || "cover"
+    );
 }
 
 export default function CreatorOnboardingArtworkPage() {
@@ -64,9 +84,15 @@ export default function CreatorOnboardingArtworkPage() {
         SaveCreatorOnboardingArtworkVariables
     >(SAVE_CREATOR_ONBOARDING_ARTWORK);
 
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
+
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [url, setUrl] = useState("");
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [localPreviewUrl, setLocalPreviewUrl] = useState("");
+    const [isDragging, setIsDragging] = useState(false);
+    const [uploading, setUploading] = useState(false);
     const [feedback, setFeedback] = useState<{
         type: "success" | "error";
         message: string;
@@ -82,19 +108,70 @@ export default function CreatorOnboardingArtworkPage() {
         setUrl(artwork.url || "");
     }, [artwork]);
 
+    useEffect(() => {
+        if (!selectedFile) {
+            setLocalPreviewUrl("");
+            return;
+        }
+
+        const objectUrl = URL.createObjectURL(selectedFile);
+        setLocalPreviewUrl(objectUrl);
+
+        return () => URL.revokeObjectURL(objectUrl);
+    }, [selectedFile]);
+
     const fileName = useMemo(
-        () => inferFileName(url),
-        [url]
-    );
-    const mimeType = useMemo(
-        () => inferMimeType(fileName),
-        [fileName]
+        () => selectedFile?.name || inferFileName(url),
+        [selectedFile, url]
     );
 
+    const mimeType = useMemo(
+        () => selectedFile?.type || inferMimeType(fileName),
+        [selectedFile, fileName]
+    );
+
+    const previewUrl = localPreviewUrl || url;
+    const busy = uploading || saving;
+
     const canSubmit =
-        looksLikeImage(url) &&
+        (Boolean(selectedFile) || looksLikeImage(url)) &&
         title.trim().length > 0 &&
-        !saving;
+        !busy;
+
+    function chooseFile(file: File | null) {
+        setFeedback(null);
+
+        if (!file) {
+            setSelectedFile(null);
+            return;
+        }
+
+        if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+            setSelectedFile(null);
+            setFeedback({
+                type: "error",
+                message: "Choose a JPG, PNG, WebP, or GIF image.",
+            });
+            return;
+        }
+
+        setSelectedFile(file);
+
+        if (!title.trim()) {
+            setTitle(
+                file.name
+                    .replace(/\.[^.]+$/, "")
+                    .replace(/[-_]+/g, " ")
+                    .trim() || "Release cover"
+            );
+        }
+    }
+
+    function handleDrop(event: DragEvent<HTMLDivElement>) {
+        event.preventDefault();
+        setIsDragging(false);
+        chooseFile(event.dataTransfer.files?.[0] || null);
+    }
 
     async function handleSubmit(
         event: FormEvent<HTMLFormElement>
@@ -103,14 +180,45 @@ export default function CreatorOnboardingArtworkPage() {
         setFeedback(null);
 
         try {
+            let finalUrl = url.trim();
+            let finalFileName = fileName;
+            let finalMimeType = mimeType;
+
+            if (selectedFile) {
+                setUploading(true);
+
+                const pathname =
+                    `release-covers/onboarding/${Date.now()}-${safeFileName(
+                        selectedFile.name
+                    )}`;
+
+                const uploadResult = await upload(pathname, selectedFile, {
+                    access: "public",
+                    handleUploadUrl: "/api/upload",
+                    clientPayload: JSON.stringify({
+                        kind: "cover",
+                        usage: "cover",
+                        source: "creator-onboarding",
+                        originalFileName: selectedFile.name,
+                    }),
+                });
+
+                finalUrl = uploadResult.url;
+                finalFileName = selectedFile.name;
+                finalMimeType = selectedFile.type;
+
+                setUrl(uploadResult.url);
+                setSelectedFile(null);
+            }
+
             await saveArtwork({
                 variables: {
                     input: {
                         title: title.trim(),
                         description: description.trim(),
-                        url: url.trim(),
-                        fileName,
-                        mimeType,
+                        url: finalUrl,
+                        fileName: finalFileName,
+                        mimeType: finalMimeType,
                     },
                 },
                 refetchQueries: [
@@ -123,7 +231,7 @@ export default function CreatorOnboardingArtworkPage() {
             setFeedback({
                 type: "success",
                 message:
-                    "Release artwork saved and connected to the release world.",
+                    "Release artwork uploaded, saved, and connected to your release world.",
             });
         } catch (mutationError) {
             setFeedback({
@@ -133,6 +241,8 @@ export default function CreatorOnboardingArtworkPage() {
                         ? mutationError.message
                         : "Artwork could not be saved.",
             });
+        } finally {
+            setUploading(false);
         }
     }
 
@@ -154,9 +264,8 @@ export default function CreatorOnboardingArtworkPage() {
                         Give the release a visual anchor.
                     </h1>
                     <p className="mt-4 max-w-2xl text-sm leading-7 text-white/55 sm:text-base">
-                        Artwork completes the first release world. This step
-                        uses the same cover asset and release synchronization
-                        already used throughout Creator OS.
+                        Drop in your cover artwork. COSMIC uploads it, previews it,
+                        and connects it to this release automatically.
                     </p>
                 </section>
 
@@ -179,13 +288,10 @@ export default function CreatorOnboardingArtworkPage() {
                         </p>
 
                         <div className="mt-4 aspect-square overflow-hidden rounded-3xl border border-white/10 bg-black/25">
-                            {looksLikeImage(url) ? (
-                                // The source may be a Vercel Blob URL or a
-                                // local public asset, so a standard img keeps
-                                // onboarding independent of Next image-host config.
+                            {looksLikeImage(previewUrl) ? (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img
-                                    src={url}
+                                    src={previewUrl}
                                     alt={title || "Release cover preview"}
                                     className="h-full w-full object-cover"
                                 />
@@ -196,21 +302,20 @@ export default function CreatorOnboardingArtworkPage() {
                                             ✦
                                         </div>
                                         <p className="mt-4 text-sm text-white/45">
-                                            Enter an artwork URL to preview
-                                            the cover.
+                                            Your cover preview will appear here.
                                         </p>
                                     </div>
                                 </div>
                             )}
                         </div>
 
-                        {artwork ? (
+                        {artwork && !selectedFile ? (
                             <div className="mt-4 rounded-2xl border border-emerald-300/15 bg-emerald-300/[0.045] p-4">
                                 <p className="text-xs font-medium uppercase tracking-[0.14em] text-emerald-100">
                                     Existing cover connected
                                 </p>
-                                <p className="mt-2 break-all text-xs leading-5 text-white/45">
-                                    {artwork.url}
+                                <p className="mt-2 text-sm leading-6 text-white/45">
+                                    Choose another image anytime to replace it.
                                 </p>
                             </div>
                         ) : null}
@@ -220,15 +325,88 @@ export default function CreatorOnboardingArtworkPage() {
                         onSubmit={handleSubmit}
                         className="space-y-5 rounded-[2rem] border border-white/10 bg-white/[0.03] p-6 sm:p-8"
                     >
+                        <div>
+                            <p className="text-sm font-medium text-white">
+                                Release artwork
+                            </p>
+                            <p className="mt-1 text-xs leading-5 text-white/40">
+                                Recommended: square JPG, PNG, or WebP.
+                            </p>
+
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp,image/gif"
+                                className="hidden"
+                                onChange={(event) =>
+                                    chooseFile(event.target.files?.[0] || null)
+                                }
+                            />
+
+                            <div
+                                role="button"
+                                tabIndex={0}
+                                onClick={() => fileInputRef.current?.click()}
+                                onKeyDown={(event) => {
+                                    if (event.key === "Enter" || event.key === " ") {
+                                        event.preventDefault();
+                                        fileInputRef.current?.click();
+                                    }
+                                }}
+                                onDragEnter={(event) => {
+                                    event.preventDefault();
+                                    setIsDragging(true);
+                                }}
+                                onDragOver={(event) => {
+                                    event.preventDefault();
+                                    setIsDragging(true);
+                                }}
+                                onDragLeave={() => setIsDragging(false)}
+                                onDrop={handleDrop}
+                                className={`mt-3 cursor-pointer rounded-3xl border border-dashed p-8 text-center transition ${
+                                    isDragging
+                                        ? "border-[#DCBA5C]/60 bg-[#DCBA5C]/10"
+                                        : "border-white/15 bg-black/15 hover:border-[#DCBA5C]/35 hover:bg-[#DCBA5C]/[0.05]"
+                                }`}
+                            >
+                                <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl border border-white/10 bg-white/5 text-xl">
+                                    ↑
+                                </div>
+                                <p className="mt-4 text-sm font-medium text-white">
+                                    {selectedFile
+                                        ? selectedFile.name
+                                        : artwork
+                                          ? "Drop a new cover to replace it"
+                                          : "Drop cover artwork here"}
+                                </p>
+                                <p className="mt-2 text-xs text-white/40">
+                                    or click to choose an image
+                                </p>
+                            </div>
+
+                            {selectedFile ? (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setSelectedFile(null);
+                                        if (fileInputRef.current) {
+                                            fileInputRef.current.value = "";
+                                        }
+                                    }}
+                                    className="mt-3 text-xs text-white/45 transition hover:text-white/75"
+                                >
+                                    Remove selected file
+                                </button>
+                            ) : null}
+                        </div>
+
                         <Field
                             label="Artwork title"
-                            help="A clear internal title for this cover asset."
+                            help="An internal title for this cover asset."
                         >
                             <input
                                 value={title}
-                                onChange={(event) =>
-                                    setTitle(event.target.value)
-                                }
+                                onChange={(event) => setTitle(event.target.value)}
                                 maxLength={160}
                                 placeholder="Release cover"
                                 className="form-input"
@@ -237,56 +415,41 @@ export default function CreatorOnboardingArtworkPage() {
                         </Field>
 
                         <Field
-                            label="Artwork URL"
-                            help="Use the URL produced by your existing Creator OS upload flow, Vercel Blob, or a public image asset."
-                        >
-                            <input
-                                value={url}
-                                onChange={(event) =>
-                                    setUrl(event.target.value)
-                                }
-                                placeholder="https://…/cover.webp"
-                                className="form-input"
-                                required
-                            />
-                        </Field>
-
-                        <Field
                             label="Description"
-                            help="Optional context about the artwork or visual direction."
+                            help="Optional context about the visual direction."
                         >
                             <textarea
                                 value={description}
                                 onChange={(event) =>
                                     setDescription(event.target.value)
                                 }
-                                rows={5}
+                                rows={4}
                                 maxLength={1200}
                                 placeholder="Describe the visual world…"
                                 className="form-input resize-y"
                             />
                         </Field>
 
-                        <div className="grid gap-3 rounded-2xl border border-white/10 bg-black/15 p-4 sm:grid-cols-2">
-                            <AssetDetail
-                                label="File name"
-                                value={fileName || "Not detected"}
-                            />
-                            <AssetDetail
-                                label="Media type"
-                                value={mimeType || "Detected by URL"}
-                            />
-                        </div>
+                        {(selectedFile || artwork) ? (
+                            <div className="grid gap-3 rounded-2xl border border-white/10 bg-black/15 p-4 sm:grid-cols-2">
+                                <AssetDetail
+                                    label="File name"
+                                    value={fileName || "Not detected"}
+                                />
+                                <AssetDetail
+                                    label="Media type"
+                                    value={mimeType || "Image"}
+                                />
+                            </div>
+                        ) : null}
 
                         <div className="rounded-2xl border border-[#7ED3FF]/15 bg-[#7ED3FF]/[0.04] p-4">
                             <p className="text-xs font-medium uppercase tracking-[0.16em] text-[#A8E2FF]">
-                                Existing artwork is preserved
+                                Existing artwork is protected
                             </p>
                             <p className="mt-2 text-sm leading-6 text-white/50">
-                                Reopening this page edits the release&apos;s
-                                current cover asset. Existing public/private
-                                asset state is retained. A new onboarding cover
-                                begins private.
+                                Reopening this step keeps the current cover until
+                                you deliberately replace it.
                             </p>
                         </div>
 
@@ -304,8 +467,11 @@ export default function CreatorOnboardingArtworkPage() {
 
                         <div className="flex flex-col gap-3 border-t border-white/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
                             <p className="text-xs leading-5 text-white/35">
-                                Saving connects this asset to the release
-                                world&apos;s cover fields automatically.
+                                {uploading
+                                    ? "Uploading cover…"
+                                    : saving
+                                      ? "Connecting artwork…"
+                                      : "Upload and save when the cover feels right."}
                             </p>
 
                             <div className="flex gap-3">
@@ -323,11 +489,15 @@ export default function CreatorOnboardingArtworkPage() {
                                     disabled={!canSubmit}
                                     className="rounded-full border border-[#DCBA5C]/30 bg-[#DCBA5C]/10 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#F4D982] transition hover:bg-[#DCBA5C]/20 disabled:cursor-not-allowed disabled:opacity-35"
                                 >
-                                    {saving
-                                        ? "Saving…"
-                                        : artwork
-                                          ? "Save changes"
-                                          : "Save artwork"}
+                                    {uploading
+                                        ? "Uploading…"
+                                        : saving
+                                          ? "Saving…"
+                                          : artwork
+                                            ? selectedFile
+                                                ? "Replace artwork"
+                                                : "Save changes"
+                                            : "Upload artwork"}
                                 </button>
                             </div>
                         </div>
