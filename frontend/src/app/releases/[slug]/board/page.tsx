@@ -1778,12 +1778,8 @@ export default function DynamicReleaseSignalBoardPage() {
     const [trackMessage, setTrackMessage] = useState(
         "Tracks shape the public listening path. Set visibility, playback, dates, and audio before previewing the Release Page.",
     );
-    const [selectedTrackArtworkFile, setSelectedTrackArtworkFile] = useState<File | null>(null);
-    const [trackArtworkPreviewUrl, setTrackArtworkPreviewUrl] = useState("");
-    const [trackArtworkMessage, setTrackArtworkMessage] = useState(
-        "Save a track, then add artwork directly here.",
-    );
     const [isUploadingTrackArtwork, setIsUploadingTrackArtwork] = useState(false);
+    const [trackArtworkMessage, setTrackArtworkMessage] = useState("");
 
     const [isRealmFinderOpen, setIsRealmFinderOpen] = useState(false);
     const [realmFinderStep, setRealmFinderStep] = useState(0);
@@ -2023,20 +2019,6 @@ export default function DynamicReleaseSignalBoardPage() {
             URL.revokeObjectURL(previewUrl);
         };
     }, [selectedAssetFile]);
-
-    useEffect(() => {
-        if (!selectedTrackArtworkFile || !selectedTrackArtworkFile.type.startsWith("image/")) {
-            setTrackArtworkPreviewUrl("");
-            return;
-        }
-
-        const previewUrl = URL.createObjectURL(selectedTrackArtworkFile);
-        setTrackArtworkPreviewUrl(previewUrl);
-
-        return () => {
-            URL.revokeObjectURL(previewUrl);
-        };
-    }, [selectedTrackArtworkFile]);
 
     useEffect(() => {
         if (
@@ -2375,56 +2357,21 @@ export default function DynamicReleaseSignalBoardPage() {
         await saveTrackForm(trackForm);
     }
 
-    function handleTrackArtworkFile(file: File | null) {
-        if (!file) {
-            setSelectedTrackArtworkFile(null);
-            setTrackArtworkMessage(
-                selectedTrackArtworkAsset
-                    ? "Current artwork stays connected until you choose a replacement."
-                    : "Choose a JPG, PNG, WebP, or GIF image.",
-            );
+    async function handleTrackArtworkFile(file: File | null) {
+        if (!file) return;
+
+        if (!releaseWorldId) {
+            setTrackArtworkMessage("Release world could not be found.");
+            return;
+        }
+
+        if (!selectedTrackId || isCreatingNewTrack) {
+            setTrackArtworkMessage("Save this track first, then drop in artwork.");
             return;
         }
 
         if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type)) {
-            setSelectedTrackArtworkFile(null);
-            setTrackArtworkMessage("Artwork must be a JPG, PNG, WebP, or GIF image.");
-            return;
-        }
-
-        if (!selectedTrackId || isCreatingNewTrack) {
-            setSelectedTrackArtworkFile(null);
-            setTrackArtworkMessage("Save this track first, then add its artwork.");
-            return;
-        }
-
-        setSelectedTrackArtworkFile(file);
-        setTrackArtworkMessage(`${file.name} is ready to upload and attach.`);
-    }
-
-    function handleTrackArtworkDrop(event: DragEvent<HTMLDivElement>) {
-        event.preventDefault();
-        handleTrackArtworkFile(event.dataTransfer.files?.[0] ?? null);
-    }
-
-    async function handleUploadTrackArtwork() {
-        if (!releaseWorldId) {
-            setTrackArtworkMessage("Artwork upload failed: release world could not be found.");
-            return;
-        }
-
-        if (!selectedTrackId || isCreatingNewTrack) {
-            setTrackArtworkMessage("Save this track first, then add its artwork.");
-            return;
-        }
-
-        if (!selectedTrackArtworkFile) {
-            setTrackArtworkMessage("Choose artwork before uploading.");
-            return;
-        }
-
-        if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(selectedTrackArtworkFile.type)) {
-            setTrackArtworkMessage("Artwork must be a JPG, PNG, WebP, or GIF image.");
+            setTrackArtworkMessage("Choose a JPG, PNG, WebP, or GIF image.");
             return;
         }
 
@@ -2433,7 +2380,7 @@ export default function DynamicReleaseSignalBoardPage() {
             setTrackArtworkMessage("Uploading artwork...");
 
             const safeFileName =
-                selectedTrackArtworkFile.name
+                file.name
                     .trim()
                     .toLowerCase()
                     .replace(/[^a-z0-9._-]+/g, "-")
@@ -2450,7 +2397,7 @@ export default function DynamicReleaseSignalBoardPage() {
 
             const pathname = `release-images/${releaseSegment}/${Date.now()}-${safeFileName}`;
 
-            const uploadResult = await upload(pathname, selectedTrackArtworkFile, {
+            const uploadResult = await upload(pathname, file, {
                 access: "public",
                 handleUploadUrl: "/api/upload",
                 clientPayload: JSON.stringify({
@@ -2461,30 +2408,25 @@ export default function DynamicReleaseSignalBoardPage() {
                 }),
             });
 
-            setTrackArtworkMessage("Artwork uploaded. Attaching it to this track...");
-
-            const input = {
-                ...getAssetInputFromForm(
-                    {
-                        title:
-                            `${selectedTrack?.title || trackForm.title || "Track"} artwork`,
-                        usage: "track-artwork",
-                        kind: "image",
-                        url: uploadResult.url,
-                        fileName: selectedTrackArtworkFile.name,
-                        mimeType: selectedTrackArtworkFile.type,
-                        trackId: selectedTrackId,
-                        description: "",
-                        isPublic: Boolean(selectedTrack?.isPublic),
-                    },
-                    releaseWorldId,
-                ),
-                size: selectedTrackArtworkFile.size,
-            };
-
             const result = await createReleaseAsset({
                 variables: {
-                    input,
+                    input: {
+                        ...getAssetInputFromForm(
+                            {
+                                title: `${selectedTrack?.title || trackForm.title || "Track"} artwork`,
+                                usage: "track-artwork",
+                                kind: "image",
+                                url: uploadResult.url,
+                                fileName: file.name,
+                                mimeType: file.type,
+                                trackId: selectedTrackId,
+                                description: "",
+                                isPublic: Boolean(selectedTrack?.isPublic),
+                            },
+                            releaseWorldId,
+                        ),
+                        size: file.size,
+                    },
                 },
             });
 
@@ -2494,14 +2436,11 @@ export default function DynamicReleaseSignalBoardPage() {
             await refetchReleaseWorld();
             await refetchReleaseTracks();
 
-            if (savedAsset) {
-                setSelectedTrackArtworkFile(null);
-                setTrackArtworkMessage(
-                    `Artwork attached to ${selectedTrack?.title || trackForm.title || "this track"}.`,
-                );
-            } else {
-                setTrackArtworkMessage("Artwork uploaded and saved, but no asset was returned.");
-            }
+            setTrackArtworkMessage(
+                savedAsset
+                    ? "Artwork attached."
+                    : "Artwork saved, but no asset was returned.",
+            );
         } catch (uploadError) {
             const message =
                 uploadError instanceof Error
@@ -2511,6 +2450,11 @@ export default function DynamicReleaseSignalBoardPage() {
         } finally {
             setIsUploadingTrackArtwork(false);
         }
+    }
+
+    function handleTrackArtworkDrop(event: DragEvent<HTMLLabelElement>) {
+        event.preventDefault();
+        void handleTrackArtworkFile(event.dataTransfer.files?.[0] ?? null);
     }
 
     async function handleSubmitForNexusReview() {
@@ -3554,76 +3498,6 @@ export default function DynamicReleaseSignalBoardPage() {
                                             <div><p className="signal-board-panel-kicker">Song</p><h3>Shape the record</h3></div>
                                             <span>Identity, creative context, and production notes.</span>
                                         </div>
-
-                                        <div className="signal-board-upload-card" aria-label="Track artwork">
-                                            <div className="signal-board-upload-copy">
-                                                <p className="signal-board-panel-kicker">Track Artwork</p>
-                                                <h3>
-                                                    {selectedTrackArtworkAsset
-                                                        ? "Artwork connected"
-                                                        : "Give this signal a visual"}
-                                                </h3>
-                                                <span>
-                                                    Drop or choose an image here. COSMIC uploads it through the existing asset system and attaches it to this track.
-                                                </span>
-                                            </div>
-
-                                            {(trackArtworkPreviewUrl || selectedTrackArtworkAsset?.url) && (
-                                                <div className="signal-board-upload-preview">
-                                                    <img
-                                                        src={trackArtworkPreviewUrl || selectedTrackArtworkAsset?.url || ""}
-                                                        alt={`${selectedTrack?.title || trackForm.title || "Track"} artwork preview`}
-                                                    />
-                                                </div>
-                                            )}
-
-                                            <div
-                                                className="signal-board-file-drop"
-                                                onDragOver={(event) => event.preventDefault()}
-                                                onDrop={handleTrackArtworkDrop}
-                                            >
-                                                <input
-                                                    type="file"
-                                                    accept="image/jpeg,image/png,image/webp,image/gif"
-                                                    disabled={!selectedTrackId || isCreatingNewTrack || isUploadingTrackArtwork}
-                                                    onChange={(event) =>
-                                                        handleTrackArtworkFile(event.currentTarget.files?.[0] ?? null)
-                                                    }
-                                                />
-                                                <strong>
-                                                    {selectedTrackArtworkFile
-                                                        ? selectedTrackArtworkFile.name
-                                                        : selectedTrackArtworkAsset
-                                                            ? "Choose replacement artwork"
-                                                            : selectedTrackId && !isCreatingNewTrack
-                                                                ? "Drop artwork or choose image"
-                                                                : "Save track first"}
-                                                </strong>
-                                                <span>JPG, PNG, WebP, or GIF</span>
-                                            </div>
-
-                                            <p className="signal-board-panel-message">{trackArtworkMessage}</p>
-
-                                            <button
-                                                type="button"
-                                                onClick={() => void handleUploadTrackArtwork()}
-                                                disabled={
-                                                    isUploadingTrackArtwork ||
-                                                    isCreatingAsset ||
-                                                    !releaseWorldId ||
-                                                    !selectedTrackId ||
-                                                    isCreatingNewTrack ||
-                                                    !selectedTrackArtworkFile
-                                                }
-                                            >
-                                                {isUploadingTrackArtwork
-                                                    ? "Uploading..."
-                                                    : selectedTrackArtworkAsset
-                                                        ? "Upload + Replace Artwork"
-                                                        : "Upload + Attach Artwork"}
-                                            </button>
-                                        </div>
-
                                         <div className="signal-board-track-form-grid signal-board-track-form-grid-compact">
                                         <label className="signal-board-wide-field">
                                             Title
@@ -3634,6 +3508,71 @@ export default function DynamicReleaseSignalBoardPage() {
                                                 }
                                                 placeholder="Track title"
                                             />
+                                        </label>
+
+                                        <label
+                                            className="signal-board-wide-field"
+                                            onDragOver={(event) => event.preventDefault()}
+                                            onDrop={handleTrackArtworkDrop}
+                                        >
+                                            Artwork
+                                            <span
+                                                style={{
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    gap: "10px",
+                                                    padding: "8px",
+                                                    border: "1px dashed rgba(247, 239, 228, 0.18)",
+                                                    borderRadius: "12px",
+                                                    background: "rgba(255,255,255,0.025)",
+                                                }}
+                                            >
+                                                {selectedTrackArtworkAsset?.url ? (
+                                                    <img
+                                                        src={selectedTrackArtworkAsset.url}
+                                                        alt=""
+                                                        style={{
+                                                            width: "38px",
+                                                            height: "38px",
+                                                            borderRadius: "9px",
+                                                            objectFit: "cover",
+                                                            flex: "0 0 38px",
+                                                        }}
+                                                    />
+                                                ) : null}
+
+                                                <span style={{ minWidth: 0, flex: 1 }}>
+                                                    <strong style={{ display: "block" }}>
+                                                        {isUploadingTrackArtwork
+                                                            ? "Uploading..."
+                                                            : selectedTrackArtworkAsset
+                                                                ? "Drop or choose to replace"
+                                                                : selectedTrackId && !isCreatingNewTrack
+                                                                    ? "Drop or choose artwork"
+                                                                    : "Save track first"}
+                                                    </strong>
+                                                    <span className="signal-board-field-note">
+                                                        {trackArtworkMessage || "JPG, PNG, WebP, or GIF"}
+                                                    </span>
+                                                </span>
+
+                                                <input
+                                                    type="file"
+                                                    accept="image/jpeg,image/png,image/webp,image/gif"
+                                                    disabled={
+                                                        isUploadingTrackArtwork ||
+                                                        !selectedTrackId ||
+                                                        isCreatingNewTrack
+                                                    }
+                                                    onChange={(event) => {
+                                                        void handleTrackArtworkFile(
+                                                            event.currentTarget.files?.[0] ?? null,
+                                                        );
+                                                        event.currentTarget.value = "";
+                                                    }}
+                                                    style={{ maxWidth: "180px" }}
+                                                />
+                                            </span>
                                         </label>
                                         <label>
                                             #
