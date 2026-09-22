@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { gql, useMutation, useQuery } from '@apollo/client';
 import { useSession } from 'next-auth/react';
 import '@/styles/creator.css';
+import OpportunitySection from '@/components/creator/OpportunitySection';
 
 const CREATOR_HOME_QUERY = gql`
   query CreatorHome {
@@ -512,6 +513,8 @@ export default function CreatorDashboardPage() {
                         </div>
                     </aside>
                 </header>
+
+                <OpportunitySection releases={projects} />
 
                 <section className="creator-console-topline" aria-label="Creator stats">
                     <article>

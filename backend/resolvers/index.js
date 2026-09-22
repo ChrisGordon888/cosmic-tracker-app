@@ -1,3 +1,4 @@
+const Opportunity = require("../models/Opportunity");
 const User = require("../models/User");
 const SacredYes = require("../models/SacredYes");
 const MoodEntry = require("../models/MoodEntry");
@@ -1518,6 +1519,66 @@ function getTrackAccessGate(track, user) {
         : "signup-required";
 }
 
+// Opportunity state is private and never uses administrative content grants.
+function opportunityText(value, label, max, required = true) {
+    const text = String(value || "").trim();
+    if ((required && !text) || text.length > max) {
+        throw new Error(`${label} ${required ? "is required and " : ""}must be at most ${max} characters.`);
+    }
+    return text;
+}
+
+function opportunityDate(value) {
+    if (!value) return null;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) throw new Error("Use a valid follow-up date (YYYY-MM-DD).");
+    const date = new Date(`${value}T00:00:00.000Z`);
+    if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== value) {
+        throw new Error("Use a valid follow-up date (YYYY-MM-DD).");
+    }
+    return value;
+}
+
+async function opportunityInput(input, user) {
+    if (!["exploring", "interest-expressed", "next-step-agreed"].includes(input.traction)) {
+        throw new Error("Choose a valid level of interest.");
+    }
+    const releaseWorldId = input.releaseWorldId || null;
+    if (releaseWorldId && !await getOwnedReleaseWorld(releaseWorldId, user.id)) {
+        throw new Error("Release world not found.");
+    }
+    return {
+        title: opportunityText(input.title, "Opportunity", 160),
+        desiredOutcome: opportunityText(input.desiredOutcome, "Desired outcome", 500),
+        context: opportunityText(input.context, "Context", 5000, false),
+        traction: input.traction,
+        releaseWorldId,
+        nextAction: opportunityText(input.nextAction, "Next action", 500),
+        followUpOn: opportunityDate(input.followUpOn),
+    };
+}
+
+async function currentOpportunity(id, expectedUpdatedAt, user) {
+    const record = await Opportunity.findOne({ _id: id, ownerId: user.id });
+    if (!record) throw new Error("Opportunity not found.");
+    if (record.updatedAt.toISOString() !== expectedUpdatedAt) {
+        throw new Error("This opportunity changed. Reload opportunities before saving again.");
+    }
+    if (record.status !== "open") throw new Error("This opportunity is already closed.");
+    return record;
+}
+
+async function saveOpportunityChange(record, user, update) {
+    // Monotonic timestamps make rapid/retried writes distinguishable, even in one millisecond.
+    const updatedAt = new Date(Math.max(Date.now(), record.updatedAt.getTime() + 1));
+    const saved = await Opportunity.findOneAndUpdate(
+        { _id: record._id, ownerId: user.id, status: "open", updatedAt: record.updatedAt },
+        { ...update, $set: { ...update.$set, updatedAt } },
+        { new: true, runValidators: true, timestamps: false }
+    );
+    if (!saved) throw new Error("This opportunity changed. Reload opportunities before saving again.");
+    return saved;
+}
+
 module.exports = {
     ReleaseTrack: {
         audioUrl: (track, _, { user }) => canAccessTrackAudio(track, user) ? (track.audioUrl || "") : null,
@@ -1539,7 +1600,18 @@ module.exports = {
             return releaseWorld?.coverArtUrl || null;
         },
     },
+    Opportunity: {
+        createdAt: (record) => record.createdAt.toISOString(),
+        updatedAt: (record) => record.updatedAt.toISOString(),
+    },
+    OpportunityResult: {
+        recordedAt: (result) => result.recordedAt.toISOString(),
+    },
     Query: {
+        myOpportunities: async (_, __, { user }) => {
+            requireCreator(user);
+            return Opportunity.find({ ownerId: user.id }).sort({ createdAt: -1 });
+        },
         hello: () => "Hello Cosmic Tracker 🌙",
         todayMoonPhase: () => {
             const phases = ["New Moon", "First Quarter", "Full Moon", "Last Quarter"];
@@ -2224,6 +2296,35 @@ module.exports = {
     },
 
     Mutation: {
+        createOpportunity: async (_, { input }, { user }) => {
+            requireCreator(user);
+            return Opportunity.create({ ...await opportunityInput(input, user), ownerId: user.id });
+        },
+        updateOpportunity: async (_, { id, input, expectedUpdatedAt }, { user }) => {
+            requireCreator(user);
+            const record = await currentOpportunity(id, expectedUpdatedAt, user);
+            return saveOpportunityChange(record, user, { $set: await opportunityInput(input, user) });
+        },
+        recordOpportunityResult: async (_, { id, input, expectedUpdatedAt }, { user }) => {
+            requireCreator(user);
+            const record = await currentOpportunity(id, expectedUpdatedAt, user);
+            const statuses = {
+                "action-completed": "open",
+                "outcome-achieved": "achieved",
+                "closed-without-outcome": "closed",
+            };
+            if (!Object.prototype.hasOwnProperty.call(statuses, input.classification)) {
+                throw new Error("Choose a valid result.");
+            }
+            const status = statuses[input.classification];
+            const note = opportunityText(input.note, "Result", 5000);
+            const nextAction = status === "open" ? opportunityText(input.nextAction, "Next action", 500) : "";
+            const followUpOn = status === "open" ? opportunityDate(input.followUpOn) : null;
+            return saveOpportunityChange(record, user, {
+                $set: { status, nextAction, followUpOn },
+                $push: { results: { action: record.nextAction, note, classification: input.classification, recordedAt: new Date() } },
+            });
+        },
         // 🌟 Sacred Yes
         addSacredYes: async (_, { text, date }, { user }) => {
             if (!user) throw new Error("Unauthorized: Please sign in.");

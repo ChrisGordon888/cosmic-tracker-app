@@ -1208,3 +1208,27 @@
         flex-basis: 100%;
     }
 }
+
+/* Private creator opportunity loop */
+.creator-opportunities { margin: 24px 0; }
+.creator-opportunity-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 16px; margin-top: 20px; }
+.creator-opportunity-card { min-width: 0; border: 1px solid rgba(126, 211, 255, .18); border-radius: 18px; background: rgba(126, 211, 255, .035); padding: 20px; overflow-wrap: anywhere; }
+.creator-opportunity-card h3, .creator-opportunity-form h3 { font-size: 18px; margin: 10px 0; }
+.creator-opportunity-card p { margin: 10px 0; line-height: 1.6; }
+.creator-opportunity-card small { color: rgba(238,243,250,.6); }
+.creator-opportunity-action { color: #f4d982; font-weight: 600; }
+.creator-opportunity-context, .creator-opportunity-history p { white-space: pre-wrap; }
+.creator-opportunity-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0; }
+.creator-opportunities button { border: 1px solid rgba(220,186,92,.35); border-radius: 24px; padding: 9px 16px; background: rgba(220,186,92,.08); color: #f4d982; }
+.creator-opportunities button:hover { background: rgba(220,186,92,.16); }
+.creator-opportunities :is(button, input, textarea, select, summary):focus-visible { outline: 2px solid #7ed3ff; outline-offset: 3px; }
+.creator-opportunities summary { cursor: pointer; padding: 10px 0; }
+.creator-opportunity-all { margin-top: 20px; }
+.creator-opportunity-form { border: 1px solid rgba(220,186,92,.3); border-radius: 18px; padding: 20px; margin-top: 20px; }
+.creator-opportunity-form fieldset { border: 0; padding: 0; min-width: 0; }
+.creator-opportunity-form label { display: grid; gap: 8px; margin: 16px 0; font-size: 14px; }
+.creator-opportunity-form input, .creator-opportunity-form textarea, .creator-opportunity-form select { width: 100%; min-width: 0; padding: 12px; border: 1px solid rgba(255,255,255,.18); border-radius: 10px; background: #0d1420; color: #eef3fa; font: inherit; color-scheme: dark; }
+.creator-opportunity-form textarea { min-height: 100px; resize: vertical; }
+.creator-opportunities [role="alert"] { color: #fda4af; }
+.creator-opportunity-history { padding-left: 20px; }
+.creator-opportunity-history li { margin-bottom: 16px; }

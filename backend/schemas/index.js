@@ -631,8 +631,50 @@ const typeDefs = gql`
     pageOrder: Int
   }
 
+  # Private creator opportunities; no public publication path.
+  type OpportunityResult {
+    id: ID!
+    action: String!
+    note: String!
+    classification: String!
+    recordedAt: String!
+  }
+
+  type Opportunity {
+    id: ID!
+    title: String!
+    desiredOutcome: String!
+    context: String!
+    traction: String!
+    status: String!
+    releaseWorldId: ID
+    nextAction: String!
+    followUpOn: String
+    results: [OpportunityResult!]!
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  input OpportunityInput {
+    title: String!
+    desiredOutcome: String!
+    context: String
+    traction: String!
+    releaseWorldId: ID
+    nextAction: String!
+    followUpOn: String
+  }
+
+  input OpportunityResultInput {
+    note: String!
+    classification: String!
+    nextAction: String
+    followUpOn: String
+  }
+
   # 📖 Queries
   type Query {
+    myOpportunities: [Opportunity!]!
     hello: String
     todayMoonPhase: String
 
@@ -707,6 +749,9 @@ const typeDefs = gql`
 
   # 🛠️ Mutations
   type Mutation {
+    createOpportunity(input: OpportunityInput!): Opportunity!
+    updateOpportunity(id: ID!, input: OpportunityInput!, expectedUpdatedAt: String!): Opportunity!
+    recordOpportunityResult(id: ID!, input: OpportunityResultInput!, expectedUpdatedAt: String!): Opportunity!
     # Sacred Yes
     addSacredYes(text: String!, date: String!): SacredYes
     updateSacredYes(id: ID!, text: String!): SacredYes
