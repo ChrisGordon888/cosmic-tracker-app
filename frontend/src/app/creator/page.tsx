@@ -5,6 +5,7 @@ import { gql, useMutation, useQuery } from '@apollo/client';
 import { useSession } from 'next-auth/react';
 import '@/styles/creator.css';
 import OpportunitySection from '@/components/creator/OpportunitySection';
+import BlockerAssist from '@/components/creator/BlockerAssist';
 
 const CREATOR_HOME_QUERY = gql`
   query CreatorHome {
@@ -514,6 +515,7 @@ export default function CreatorDashboardPage() {
                     </aside>
                 </header>
 
+                <BlockerAssist featuredSelection={activeProfile?.featuredReleaseWorldId ?? projects.find((project) => project.isFeatured)?.id ?? null} />
                 <OpportunitySection releases={projects} />
 
                 <section className="creator-console-topline" aria-label="Creator stats">

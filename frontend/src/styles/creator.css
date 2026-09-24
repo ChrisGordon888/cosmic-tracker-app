@@ -1232,3 +1232,14 @@
 .creator-opportunities [role="alert"] { color: #fda4af; }
 .creator-opportunity-history { padding-left: 20px; }
 .creator-opportunity-history li { margin-bottom: 16px; }
+
+/* A quiet observation beside the creator's work. */
+.creator-blocker-assist { margin: 24px 0; padding: 20px 24px; border-left: 1px solid rgba(126,211,255,.35); background: linear-gradient(90deg, rgba(126,211,255,.04), transparent); max-width: 760px; }
+.creator-blocker-assist-label { font-size: 11px; letter-spacing: .12em; color: rgba(126,211,255,.8); margin: 0 0 10px; }
+.creator-blocker-assist h2 { font-size: 18px; font-weight: 500; margin: 0 0 12px; }
+.creator-blocker-assist p { line-height: 1.6; overflow-wrap: anywhere; }
+.creator-blocker-assist-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 20px; margin: 14px 0; }
+.creator-blocker-assist a, .creator-blocker-assist button { font-size: 13px; text-decoration: underline; text-underline-offset: 4px; }
+.creator-blocker-assist button { border: 0; background: none; color: rgba(238,243,250,.6); padding: 6px 0; }
+.creator-blocker-assist-reason { color: rgba(238,243,250,.45); font-size: 12px; margin-bottom: 0; }
+.creator-blocker-assist :is(a, button):focus-visible { outline: 2px solid #7ed3ff; outline-offset: 4px; }
