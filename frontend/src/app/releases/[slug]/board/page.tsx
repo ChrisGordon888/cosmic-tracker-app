@@ -1,12 +1,17 @@
 "use client";
 
-import type { CSSProperties, DragEvent, PointerEvent } from "react";
+import type { DragEvent, PointerEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { gql, useMutation, useQuery } from "@apollo/client";
 import { upload } from "@vercel/blob/client";
 import "@/styles/signalBoard.css";
+
+import TrackWorkspace from "@/components/signal-board/TrackWorkspace";
+import ReleaseAssetsPanel from "@/components/signal-board/ReleaseAssetsPanel";
+import StudioBoardWorkspace from "@/components/signal-board/StudioBoardWorkspace";
+import type { ArtifactColor, ArtifactSize, ReleaseWorld, ReleaseTrack, TrackForm, ReleaseAsset, AssetForm, HookTargetOption, PortalSettings, BoardArtifact, StoredBoardState, MongoBoardArtifact, RealmFinderRealmId, RealmFinderQuestion, PublishSignalCheck } from "@/components/signal-board/types";
 
 const STORAGE_KEY_PREFIX = "cosmic:release-signal-board";
 
@@ -410,251 +415,6 @@ const DELETE_RELEASE_ASSET = gql`
   }
 `;
 
-type ArtifactKind =
-    | "center"
-    | "realm"
-    | "track"
-    | "moon"
-    | "visual"
-    | "hook"
-    | "action"
-    | "portal"
-    | "cover"
-    | "note"
-    | "image"
-    | "lyric"
-    | "asset";
-
-type ArtifactColor =
-    | "cream"
-    | "sky"
-    | "violet"
-    | "gold"
-    | "rose"
-    | "mint"
-    | "graphite";
-type ArtifactSize = "sm" | "md" | "lg" | "xl";
-
-interface ReleaseWorld {
-    id: string;
-    title: string;
-    slug: string;
-    releaseType: string;
-    status: string;
-    visibility: string;
-    isFeatured: boolean;
-    oneLineSummary?: string | null;
-    story?: string | null;
-    currentFocus?: string | null;
-    secondFocus?: string | null;
-    fullDropDate?: string | null;
-    coverArtUrl?: string | null;
-    coverAssetId?: string | null;
-    updatedAt?: string | null;
-    lastOpenedAt?: string | null;
-}
-
-interface ReleaseTrack {
-    id: string;
-    title: string;
-    slug: string;
-    trackNumber: number;
-    role: string;
-    status: string;
-    bpm?: number | null;
-    keySignature?: string | null;
-    mood?: string | null;
-    hook?: string | null;
-    notes?: string | null;
-    audioUrl?: string | null;
-    previewAudioUrl?: string | null;
-    platformUrl?: string | null;
-    visibility: string;
-    playbackStatus: string;
-    dropDate?: string | null;
-    unlockDate?: string | null;
-    isFocusTrack: boolean;
-    isSecondFocus: boolean;
-    isPublic: boolean;
-    realmId?: number | null;
-    showInNexus: boolean;
-    nexusRole: string;
-    isRealmAnchor: boolean;
-    isPublicPick: boolean;
-    nexusSortOrder: number;
-    nexusReviewStatus: string;
-    nexusSubmittedAt?: string | null;
-    nexusReviewedAt?: string | null;
-    nexusReviewNotes?: string | null;
-    realmFinderSuggestedRealmId?: number | null;
-    realmFinderSecondaryRealmId?: number | null;
-    realmFinderTraceRealmId?: number | null;
-    realmFinderAlignment?: number | null;
-    realmFinderSignals?: string[] | null;
-    realmFinderSummary?: string | null;
-    realmFinderDominantSignal?: string | null;
-    realmFinderExplanation?: string | null;
-    realmFinderScores?: RealmFinderScores | null;
-    realmFinderVersion?: string | null;
-    createdAt?: string | null;
-    updatedAt?: string | null;
-    lastOpenedAt?: string | null;
-}
-
-
-interface RealmFinderScores {
-    realm303: number;
-    realm202: number;
-    realm101: number;
-    realm55: number;
-    realm44: number;
-    realm0: number;
-}
-
-interface TrackForm {
-    title: string;
-    trackNumber: string;
-    role: string;
-    status: string;
-    bpm: string;
-    keySignature: string;
-    mood: string;
-    hook: string;
-    notes: string;
-    audioUrl: string;
-    previewAudioUrl: string;
-    platformUrl: string;
-    visibility: string;
-    playbackStatus: string;
-    dropDate: string;
-    unlockDate: string;
-    isFocusTrack: boolean;
-    isSecondFocus: boolean;
-    isPublic: boolean;
-    realmId: string;
-    showInNexus: boolean;
-    nexusRole: string;
-    isRealmAnchor: boolean;
-    isPublicPick: boolean;
-    nexusSortOrder: string;
-    realmFinderSuggestedRealmId: string;
-    realmFinderSecondaryRealmId: string;
-    realmFinderTraceRealmId: string;
-    realmFinderAlignment: string;
-    realmFinderSignals: string[];
-    realmFinderSummary: string;
-    realmFinderDominantSignal: string;
-    realmFinderExplanation: string;
-    realmFinderScores: RealmFinderScores | null;
-    realmFinderVersion: string;
-}
-
-interface ReleaseAsset {
-    id: string;
-    ownerId: string;
-    releaseWorldId: string;
-    trackId?: string | null;
-    boardArtifactId?: string | null;
-    kind: string;
-    usage: string;
-    title: string;
-    description?: string | null;
-    url: string;
-    fileName?: string | null;
-    mimeType?: string | null;
-    size?: number | null;
-    isPublic: boolean;
-    createdAt?: string | null;
-    updatedAt?: string | null;
-    lastOpenedAt?: string | null;
-}
-
-interface AssetForm {
-    title: string;
-    usage: string;
-    kind: string;
-    url: string;
-    fileName: string;
-    mimeType: string;
-    trackId: string;
-    description: string;
-    isPublic: boolean;
-}
-
-interface HookTargetOption {
-    slug: string;
-    title: string;
-    meta: string;
-    kind: "project" | "track" | "visual" | "rollout" | "portal";
-}
-
-interface PortalSettings {
-    title: string;
-    releaseType: string;
-    status: string;
-    visibility: string;
-    oneLineSummary: string;
-    story: string;
-    currentFocus: string;
-    secondFocus: string;
-    fullDropDate: string;
-    coverArtUrl: string;
-    coverAssetId: string;
-}
-
-interface BoardArtifact {
-    id: string;
-    kind: ArtifactKind;
-    eyebrow: string;
-    title: string;
-    body: string;
-    meta?: string;
-    href?: string;
-    connectedTrackSlug?: string;
-    x: number;
-    y: number;
-    rotate?: number;
-    color?: ArtifactColor;
-    size?: ArtifactSize;
-    layer?: number;
-    isGenerated?: boolean;
-    isUserCreated?: boolean;
-    isPublic?: boolean;
-    pageSection?: string;
-    pageOrder?: number;
-}
-
-interface StoredBoardState {
-    boardColor: ArtifactColor;
-    artifacts: BoardArtifact[];
-}
-
-interface MongoBoardArtifact {
-    id: string;
-    kind: ArtifactKind;
-    eyebrow?: string | null;
-    title: string;
-    body?: string | null;
-    meta?: string | null;
-    href?: string | null;
-    connectedTrackSlug?: string | null;
-    position: {
-        x: number;
-        y: number;
-        rotate: number;
-    };
-    style: {
-        color: ArtifactColor;
-        size: ArtifactSize;
-        layer: number;
-    };
-    isGenerated: boolean;
-    isUserCreated: boolean;
-    isPublic: boolean;
-    pageSection?: string | null;
-    pageOrder?: number | null;
-}
-
 const colorOptions: Array<{ value: ArtifactColor; label: string }> = [
     { value: "cream", label: "Cream" },
     { value: "sky", label: "Sky" },
@@ -728,23 +488,6 @@ const realmPublishingOptions = [
     { value: "44", label: "44 — Astral Bazaar" },
     { value: "0", label: "0 — InterSiddhi" },
 ];
-
-
-type RealmFinderRealmId = 303 | 202 | 101 | 55 | 44 | 0;
-
-interface RealmFinderOption {
-    id: string;
-    label: string;
-    detail: string;
-    realms: RealmFinderRealmId[];
-}
-
-interface RealmFinderQuestion {
-    id: string;
-    prompt: string;
-    eyebrow: string;
-    options: RealmFinderOption[];
-}
 
 const realmFinderRealms: Record<
     RealmFinderRealmId,
@@ -1126,13 +869,6 @@ function getTrackInputFromForm(form: TrackForm) {
         realmFinderScores: form.realmFinderScores,
         realmFinderVersion: form.realmFinderVersion.trim(),
     };
-}
-
-interface PublishSignalCheck {
-    key: string;
-    label: string;
-    ready: boolean;
-    detail: string;
 }
 
 function getPublishSignalReadiness(
@@ -1608,130 +1344,6 @@ function getStoredBoardState(
     };
 }
 
-function BoardArtifactCard({
-    artifact,
-    isSelected,
-    onPointerDown,
-    onDelete,
-    onLayerNudge,
-}: {
-    artifact: BoardArtifact;
-    isSelected: boolean;
-    onPointerDown: (event: PointerEvent<HTMLElement>, id: string) => void;
-    onDelete: (id: string) => void;
-    onLayerNudge: (id: string, direction: -1 | 1) => void;
-}) {
-    const style = {
-        "--pin-x": `${artifact.x}%`,
-        "--pin-y": `${artifact.y}%`,
-        "--pin-rotate": `${artifact.rotate ?? 0}deg`,
-        "--pin-layer": artifact.layer ?? 4,
-    } as CSSProperties;
-
-    const className = [
-        "signal-board-pin",
-        `signal-board-pin-${artifact.kind}`,
-        `signal-board-pin-color-${artifact.color ?? "cream"}`,
-        `signal-board-pin-size-${artifact.size ?? "md"}`,
-        artifact.isUserCreated ? "signal-board-pin-user" : "",
-        artifact.isPublic ? "is-public-artifact" : "",
-        isSelected ? "is-selected" : "",
-    ]
-        .filter(Boolean)
-        .join(" ");
-
-    return (
-        <article
-            className={className}
-            style={style}
-            onPointerDown={(event) => onPointerDown(event, artifact.id)}
-        >
-            <div className="signal-board-pin-cap" />
-            {artifact.isPublic && <span className="signal-board-page-badge">Page</span>}
-
-            {artifact.isUserCreated && (
-                <button
-                    type="button"
-                    className="signal-board-delete"
-                    aria-label={`Delete ${artifact.title}`}
-                    onPointerDown={(event) => event.stopPropagation()}
-                    onClick={(event) => {
-                        event.stopPropagation();
-                        onDelete(artifact.id);
-                    }}
-                >
-                    ×
-                </button>
-            )}
-
-            {artifact.kind === "cover" && (
-                <div className="signal-board-cover-stack">
-                    <span>EP</span>
-                    <span>01</span>
-                    <span>02</span>
-                </div>
-            )}
-
-            {artifact.kind === "hook" && (
-                <div className="signal-board-hook-mark">“</div>
-            )}
-
-            <div className="signal-board-pin-content">
-                <div className="signal-board-pin-topline">
-                    <p className="signal-board-pin-eyebrow">{artifact.eyebrow}</p>
-                    <span className="signal-board-layer-badge">
-                        L{artifact.layer ?? 4}
-                    </span>
-                </div>
-                <h2>{artifact.title}</h2>
-                <p className="signal-board-pin-body">{artifact.body}</p>
-            </div>
-
-            <div className="signal-board-pin-footer">
-                {artifact.meta && (
-                    <span className="signal-board-pin-pill">{artifact.meta}</span>
-                )}
-
-                <div className="signal-board-pin-tools">
-                    <button
-                        type="button"
-                        aria-label={`Move ${artifact.title} down one layer`}
-                        onPointerDown={(event) => event.stopPropagation()}
-                        onClick={(event) => {
-                            event.stopPropagation();
-                            onLayerNudge(artifact.id, -1);
-                        }}
-                    >
-                        −
-                    </button>
-                    <button
-                        type="button"
-                        aria-label={`Move ${artifact.title} up one layer`}
-                        onPointerDown={(event) => event.stopPropagation()}
-                        onClick={(event) => {
-                            event.stopPropagation();
-                            onLayerNudge(artifact.id, 1);
-                        }}
-                    >
-                        +
-                    </button>
-                </div>
-
-                {artifact.href && (
-                    <Link
-                        href={artifact.href}
-                        className="signal-board-pin-link"
-                        onPointerDown={(event) => event.stopPropagation()}
-                        onClick={(event) => event.stopPropagation()}
-                    >
-                        Open
-                    </Link>
-                )}
-            </div>
-        </article>
-    );
-}
-
 export default function DynamicReleaseSignalBoardPage() {
     const params = useParams<{ slug?: string | string[] }>();
     const rawSlug = params?.slug;
@@ -1776,7 +1388,7 @@ export default function DynamicReleaseSignalBoardPage() {
         getEmptyTrackForm(1),
     );
     const [trackMessage, setTrackMessage] = useState(
-        "Tracks shape the public listening path. Set visibility, playback, dates, and audio before previewing the Release Page.",
+        "Shape the track, capture its hook and notes, and choose its place in the release.",
     );
     const [isUploadingTrackArtwork, setIsUploadingTrackArtwork] = useState(false);
     const [trackArtworkMessage, setTrackArtworkMessage] = useState("");
@@ -3103,6 +2715,14 @@ export default function DynamicReleaseSignalBoardPage() {
                             ? "Project board ready"
                             : "Release world not found";
 
+    function handleManageTrackAudio() {
+        if (!selectedTrackId || isCreatingNewTrack) return;
+        setAssetForm((current) => ({ ...current, usage: "track-audio", kind: "audio", trackId: selectedTrackId }));
+        setSelectedAssetFile(null);
+        setAssetUploadPreviewUrl("");
+        setActivePanel("assets");
+    }
+
     const cloudMessage =
         releaseError?.message || boardError?.message || saveMessage;
 
@@ -3114,7 +2734,7 @@ export default function DynamicReleaseSignalBoardPage() {
             >
                 <div className="signal-board-command-left">
                     <Link href="/creator/projects">All Projects</Link>
-                    <Link href={`/releases/${slug}`}>Release Page</Link>
+                    <Link href={`/releases/${slug}`}>Preview Release</Link>
                 </div>
 
                 <div className="signal-board-command-title">
@@ -3125,243 +2745,19 @@ export default function DynamicReleaseSignalBoardPage() {
                             : "Release Signal Board"}
                     </h1>
                     <span>
-                        {artifacts.length} artifacts • {releaseTracks.length} tracks • {releaseAssets.length} assets •{" "}
-                        {cloudStatus}
+                        {releaseTracks.length} tracks • {releaseAssets.length} assets
                     </span>
                 </div>
 
                 <div className="signal-board-command-actions">
-                    <button type="button" onClick={handleReloadCloudBoard}>
-                        Reload
-                    </button>
-                    <button
-                        type="button"
-                        onClick={handleSaveToCloud}
-                        disabled={isSaving || !releaseWorldId}
-                    >
-                        {isSaving ? "Saving..." : "Save Board"}
-                    </button>
+                    <Link className="signal-board-prepare-release" href={`/creator/releases/${slug}/publish`}>Prepare Release →</Link>
                 </div>
             </header>
 
             <section
-                className="signal-board-workspace signal-board-workspace-board-first"
-                aria-label="Board-first signal board workspace"
+                className="signal-board-workspace signal-board-workspace-tracks-first"
+                aria-label="Creative release workspace"
             >
-                <div
-                    className="signal-board-workspace-header signal-board-board-header"
-                    aria-label="Workspace header"
-                >
-                    <div className="signal-board-workspace-title">
-                        <p className="signal-board-panel-kicker">Studio Wall</p>
-                        <h2>{releaseTitle}</h2>
-                    </div>
-
-                    <div className="signal-board-board-meta" aria-label="Board status">
-                        <span>{artifacts.length} artifacts</span>
-                        <span>{releaseTracks.length} tracks</span>
-                        <span>{releaseAssets.length} assets</span>
-                        <span>{cloudStatus}</span>
-                    </div>
-                </div>
-
-                <aside className="signal-board-release-output" aria-label="Release page output summary">
-                    <div className="signal-board-release-output-copy">
-                        <p className="signal-board-panel-kicker">Release Page Output</p>
-                        <h3>What the public portal is pulling from this board.</h3>
-                        <span>Portal settings, visible tracks, uploaded assets, and published artifacts become the fan-facing Release Page.</span>
-                    </div>
-
-                    <div className="signal-board-release-output-grid">
-                        {releasePageOutputStats.map((item) => (
-                            <div key={item.label}>
-                                <span>{item.label}</span>
-                                <strong>{item.value}</strong>
-                            </div>
-                        ))}
-                    </div>
-
-                    <Link href={`/releases/${slug}`}>Preview Portal</Link>
-                </aside>
-
-                <aside className="signal-board-coverage" aria-label="Signal map and board coverage">
-                    <div className="signal-board-coverage-copy">
-                        <p className="signal-board-panel-kicker">Board Overview</p>
-                        <h3>Signal map</h3>
-                        <span>See where the world is developed and where the board still feels thin.</span>
-                    </div>
-                    <div className="signal-board-coverage-stats">
-                        <div><span>Cards</span><strong>{artifacts.length}</strong></div>
-                        <div><span>Public</span><strong>{artifacts.filter((artifact) => artifact.isPublic).length}</strong></div>
-                        <div><span>Tracks</span><strong>{releaseTracks.length}</strong></div>
-                        <div><span>Nexus live</span><strong>{releaseTracks.filter((track) => track.showInNexus).length}</strong></div>
-                    </div>
-                    <div className="signal-board-theme-map signal-board-coverage-map">
-                        {hookCounts.map((target) => (
-                            <div key={target.slug}>
-                                <span>{target.title}</span>
-                                <strong>{target.count}</strong>
-                            </div>
-                        ))}
-                    </div>
-                </aside>
-
-                <section
-                    className="signal-board-canvas-zone"
-                    aria-label="Main interactive board stage"
-                >
-                    <div
-                        className="signal-board-frame-scroll"
-                        aria-label="Scrollable board area"
-                    >
-                        <section
-                            ref={boardRef}
-                            className="signal-board-frame signal-board-frame-compact"
-                            aria-label={`${releaseTitle} signal board`}
-                        >
-                            <div className="signal-board-frame-glow" />
-                            <div className="signal-board-texture" />
-                            <div className="signal-board-thread signal-board-thread-a" />
-                            <div className="signal-board-thread signal-board-thread-b" />
-                            <div className="signal-board-thread signal-board-thread-c" />
-                            <div className="signal-board-thread signal-board-thread-d" />
-                            <div className="signal-board-thread signal-board-thread-e" />
-
-                            {artifacts.map((artifact) => (
-                                <BoardArtifactCard
-                                    key={artifact.id}
-                                    artifact={artifact}
-                                    isSelected={artifact.id === selectedArtifactId}
-                                    onPointerDown={handleArtifactPointerDown}
-                                    onDelete={deleteArtifact}
-                                    onLayerNudge={nudgeLayer}
-                                />
-                            ))}
-                        </section>
-                    </div>
-
-                    {selectedArtifact && (
-                        <div
-                            className="signal-board-inspector-bar"
-                            aria-label="Selected artifact inspector"
-                        >
-                            <div>
-                                <p className="signal-board-panel-kicker">Selected Artifact</p>
-                                <strong>{selectedArtifact.title}</strong>
-                                <span>{selectedArtifact.eyebrow || selectedArtifact.kind}</span>
-                            </div>
-
-                            <label>
-                                Color
-                                <select
-                                    value={selectedArtifact.color ?? "cream"}
-                                    onChange={(event) =>
-                                        updateArtifact(selectedArtifact.id, {
-                                            color: event.target.value as ArtifactColor,
-                                        })
-                                    }
-                                >
-                                    {colorOptions.map((option) => (
-                                        <option key={option.value} value={option.value}>
-                                            {option.label}
-                                        </option>
-                                    ))}
-                                </select>
-                            </label>
-
-                            <label>
-                                Size
-                                <select
-                                    value={selectedArtifact.size ?? "md"}
-                                    onChange={(event) =>
-                                        updateArtifact(selectedArtifact.id, {
-                                            size: event.target.value as ArtifactSize,
-                                        })
-                                    }
-                                >
-                                    {sizeOptions.map((option) => (
-                                        <option key={option.value} value={option.value}>
-                                            {option.label}
-                                        </option>
-                                    ))}
-                                </select>
-                            </label>
-
-                            <label>
-                                Layer
-                                <select
-                                    value={selectedArtifact.layer ?? 4}
-                                    onChange={(event) =>
-                                        updateArtifact(selectedArtifact.id, {
-                                            layer: Number(event.target.value),
-                                        })
-                                    }
-                                >
-                                    {layerOptions.map((layer) => (
-                                        <option key={layer} value={layer}>
-                                            {layer}
-                                        </option>
-                                    ))}
-                                </select>
-                            </label>
-
-                            <label className="signal-board-public-toggle">
-                                Publish to Portal
-                                <button
-                                    type="button"
-                                    className={selectedArtifact.isPublic ? "is-active" : ""}
-                                    onClick={() =>
-                                        updateArtifact(selectedArtifact.id, {
-                                            isPublic: !selectedArtifact.isPublic,
-                                        })
-                                    }
-                                >
-                                    {selectedArtifact.isPublic ? "Showing" : "Hidden"}
-                                </button>
-                                <span className="signal-board-field-note">
-                                    Showing publishes this card as a World Fragment on the Release Page.
-                                </span>
-                            </label>
-
-                            <label>
-                                Section
-                                <select
-                                    value={selectedArtifact.pageSection ?? "story"}
-                                    onChange={(event) =>
-                                        updateArtifact(selectedArtifact.id, {
-                                            pageSection: event.target.value,
-                                        })
-                                    }
-                                >
-                                    {pageSectionOptions.map((option) => (
-                                        <option key={option.value} value={option.value}>
-                                            {option.label}
-                                        </option>
-                                    ))}
-                                </select>
-                            </label>
-
-                            <label>
-                                Order
-                                <select
-                                    value={selectedArtifact.pageOrder ?? 1}
-                                    onChange={(event) =>
-                                        updateArtifact(selectedArtifact.id, {
-                                            pageOrder: Number(event.target.value),
-                                        })
-                                    }
-                                >
-                                    {Array.from({ length: 12 }, (_, index) => index + 1).map((order) => (
-                                        <option key={order} value={order}>
-                                            {order}
-                                        </option>
-                                    ))}
-                                </select>
-                            </label>
-                        </div>
-                    )}
-                </section>
-
                 <section
                     ref={controlsRef}
                     className="signal-board-tool-dock"
@@ -3372,12 +2768,12 @@ export default function DynamicReleaseSignalBoardPage() {
                             <p className="signal-board-panel-kicker">Active Tool</p>
                             <h2>
                                 {activePanel === "tracks"
-                                    ? "Track Manager"
+                                    ? "Tracks"
                                     : activePanel === "assets"
-                                        ? "Asset Manager"
+                                        ? "Assets"
                                         : activePanel === "signals"
-                                            ? "Create + Style"
-                                            : "Portal Final Pass"}
+                                            ? "Studio Board"
+                                            : "Release details"}
                             </h2>
                         </div>
 
@@ -3387,6 +2783,7 @@ export default function DynamicReleaseSignalBoardPage() {
                         >
                             <button
                                 type="button"
+                                aria-pressed={activePanel === "tracks"}
                                 className={activePanel === "tracks" ? "is-active" : ""}
                                 onClick={() => setActivePanel("tracks")}
                             >
@@ -3395,6 +2792,7 @@ export default function DynamicReleaseSignalBoardPage() {
                             </button>
                             <button
                                 type="button"
+                                aria-pressed={activePanel === "assets"}
                                 className={activePanel === "assets" ? "is-active" : ""}
                                 onClick={() => setActivePanel("assets")}
                             >
@@ -3403,23 +2801,25 @@ export default function DynamicReleaseSignalBoardPage() {
                             </button>
                             <button
                                 type="button"
+                                aria-pressed={activePanel === "signals"}
                                 className={activePanel === "signals" ? "is-active" : ""}
                                 onClick={() => setActivePanel("signals")}
                             >
                                 <span>✦</span>
-                                Create
+                                Studio Board
                             </button>
                             <button
                                 type="button"
+                                aria-pressed={activePanel === "portal"}
                                 className={activePanel === "portal" ? "is-active" : ""}
                                 onClick={() => setActivePanel("portal")}
                             >
                                 <span>◎</span>
-                                Portal
+                                Release details
                             </button>
                         </nav>
 
-                        <p className="signal-board-workspace-status">{cloudMessage}</p>
+
                     </div>
 
                     <div
@@ -3427,1012 +2827,144 @@ export default function DynamicReleaseSignalBoardPage() {
                         aria-label="Active tool panel"
                     >
                         {activePanel === "tracks" && (
-                            <section className="signal-board-panel-section">
-                                <div className="signal-board-panel-heading">
-                                    <div>
-                                        <p className="signal-board-panel-kicker">Track Manager</p>
-                                        <h2>
-                                            {isCreatingNewTrack
-                                                ? "New track"
-                                                : selectedTrack
-                                                    ? "Edit track"
-                                                    : "Tracks"}
-                                        </h2>
-                                    </div>
-                                    <button type="button" onClick={handleNewTrack}>
-                                        Start New
-                                    </button>
-                                </div>
-
-                                <p className="signal-board-panel-message">
-                                    {tracksError?.message || trackMessage}
-                                </p>
-
-                                <details className="signal-board-help-disclosure">
-                                    <summary>How release controls work</summary>
-                                    <div className="signal-board-help-grid">
-                                        <span><strong>Visibility</strong> — Listed/Public appears on the Release Page.</span>
-                                        <span><strong>Playback</strong> — Locked, preview, or full playable audio.</span>
-                                        <span><strong>Dates</strong> — Drop and unlock timing shape listener access.</span>
-                                    </div>
-                                </details>
-
-                                <div
-                                    className="signal-board-track-strip"
-                                    aria-label="Release tracks"
-                                >
-                                    {tracksLoading && (
-                                        <p className="signal-board-empty-note">Loading tracks...</p>
-                                    )}
-                                    {!tracksLoading && releaseTracks.length === 0 && (
-                                        <p className="signal-board-empty-note">
-                                            No tracks yet. Start New to add the first song.
-                                        </p>
-                                    )}
-                                    {releaseTracks.map((track) => (
-                                        <button
-                                            key={track.id}
-                                            type="button"
-                                            className={
-                                                selectedTrackId === track.id && !isCreatingNewTrack
-                                                    ? "is-active"
-                                                    : ""
-                                            }
-                                            onClick={() => handleSelectTrack(track)}
-                                        >
-                                            <span>{String(track.trackNumber).padStart(2, "0")}</span>
-                                            <strong>{track.title}</strong>
-                                            <em>
-                                                {track.role}
-                                                {track.isFocusTrack ? " • Focus" : ""}
-                                                {track.isSecondFocus ? " • Second" : ""}
-                                                {track.showInNexus ? ` • Nexus${track.realmId === 0 || track.realmId ? ` / ${track.realmId}` : ""}` : ""}
-                                            </em>
-                                        </button>
-                                    ))}
-                                </div>
-
-                                <div className="signal-board-track-workflow">
-                                    <section className="signal-board-track-section-card">
-                                        <div className="signal-board-track-section-heading">
-                                            <div><p className="signal-board-panel-kicker">Song</p><h3>Shape the record</h3></div>
-                                            <span>Identity, creative context, and production notes.</span>
-                                        </div>
-                                        <div className="signal-board-track-form-grid signal-board-track-form-grid-compact">
-                                        <label className="signal-board-wide-field">
-                                            Title
-                                            <input
-                                                value={trackForm.title}
-                                                onChange={(event) =>
-                                                    updateTrackForm("title", event.target.value)
-                                                }
-                                                placeholder="Track title"
-                                            />
-                                        </label>
-
-                                        <label
-                                            className="signal-board-wide-field"
-                                            onDragOver={(event) => event.preventDefault()}
-                                            onDrop={handleTrackArtworkDrop}
-                                        >
-                                            Artwork
-                                            <span
-                                                style={{
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    gap: "10px",
-                                                    padding: "8px",
-                                                    border: "1px dashed rgba(247, 239, 228, 0.18)",
-                                                    borderRadius: "12px",
-                                                    background: "rgba(255,255,255,0.025)",
-                                                }}
-                                            >
-                                                {selectedTrackArtworkAsset?.url ? (
-                                                    <img
-                                                        src={selectedTrackArtworkAsset.url}
-                                                        alt=""
-                                                        style={{
-                                                            width: "38px",
-                                                            height: "38px",
-                                                            borderRadius: "9px",
-                                                            objectFit: "cover",
-                                                            flex: "0 0 38px",
-                                                        }}
-                                                    />
-                                                ) : null}
-
-                                                <span style={{ minWidth: 0, flex: 1 }}>
-                                                    <strong style={{ display: "block" }}>
-                                                        {isUploadingTrackArtwork
-                                                            ? "Uploading..."
-                                                            : selectedTrackArtworkAsset
-                                                                ? "Drop or choose to replace"
-                                                                : selectedTrackId && !isCreatingNewTrack
-                                                                    ? "Drop or choose artwork"
-                                                                    : "Save track first"}
-                                                    </strong>
-                                                    <span className="signal-board-field-note">
-                                                        {trackArtworkMessage || "JPG, PNG, WebP, or GIF"}
-                                                    </span>
-                                                </span>
-
-                                                <input
-                                                    type="file"
-                                                    accept="image/jpeg,image/png,image/webp,image/gif"
-                                                    disabled={
-                                                        isUploadingTrackArtwork ||
-                                                        !selectedTrackId ||
-                                                        isCreatingNewTrack
-                                                    }
-                                                    onChange={(event) => {
-                                                        void handleTrackArtworkFile(
-                                                            event.currentTarget.files?.[0] ?? null,
-                                                        );
-                                                        event.currentTarget.value = "";
-                                                    }}
-                                                    style={{ maxWidth: "180px" }}
-                                                />
-                                            </span>
-                                        </label>
-                                        <label>
-                                            #
-                                            <input
-                                                type="number"
-                                                min="1"
-                                                value={trackForm.trackNumber}
-                                                onChange={(event) =>
-                                                    updateTrackForm("trackNumber", event.target.value)
-                                                }
-                                            />
-                                        </label>
-                                        <label>
-                                            Role
-                                            <select
-                                                value={trackForm.role}
-                                                onChange={(event) =>
-                                                    updateTrackForm("role", event.target.value)
-                                                }
-                                            >
-                                                {trackRoleOptions.map((option) => (
-                                                    <option key={option.value} value={option.value}>
-                                                        {option.label}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </label>
-                                        <label>
-                                            Status
-                                            <select
-                                                value={trackForm.status}
-                                                onChange={(event) =>
-                                                    updateTrackForm("status", event.target.value)
-                                                }
-                                            >
-                                                {trackStatusOptions.map((option) => (
-                                                    <option key={option.value} value={option.value}>
-                                                        {option.label}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </label>
-                                        <label>
-                                            BPM
-                                            <input
-                                                type="number"
-                                                min="1"
-                                                value={trackForm.bpm}
-                                                onChange={(event) =>
-                                                    updateTrackForm("bpm", event.target.value)
-                                                }
-                                                placeholder="140"
-                                            />
-                                        </label>
-                                        <label>
-                                            Key
-                                            <input
-                                                value={trackForm.keySignature}
-                                                onChange={(event) =>
-                                                    updateTrackForm("keySignature", event.target.value)
-                                                }
-                                                placeholder="F minor"
-                                            />
-                                        </label>
-                                        <label className="signal-board-wide-field">
-                                            Mood
-                                            <input
-                                                value={trackForm.mood}
-                                                onChange={(event) =>
-                                                    updateTrackForm("mood", event.target.value)
-                                                }
-                                                placeholder="blue chrome night drive"
-                                            />
-                                        </label>
-                                        <label className="signal-board-wide-field">
-                                            Hook
-                                            <textarea
-                                                value={trackForm.hook}
-                                                onChange={(event) =>
-                                                    updateTrackForm("hook", event.target.value)
-                                                }
-                                                rows={3}
-                                                placeholder="Main hook or signal line"
-                                            />
-                                        </label>
-                                        <label className="signal-board-wide-field">
-                                            Notes
-                                            <textarea
-                                                value={trackForm.notes}
-                                                onChange={(event) =>
-                                                    updateTrackForm("notes", event.target.value)
-                                                }
-                                                rows={3}
-                                                placeholder="Production notes, story notes, rollout notes..."
-                                            />
-                                        </label>
-                                        </div>
-                                        <div className="signal-board-campaign-control">
-                                            <span className="signal-board-control-label">Release focus</span>
-                                            <div className="signal-board-campaign-toggles">
-                                                <label className={trackForm.isFocusTrack ? "is-active" : ""}><input type="checkbox" checked={trackForm.isFocusTrack} onChange={(event) => updateTrackForm("isFocusTrack", event.target.checked)} /> Primary focus</label>
-                                                <label className={trackForm.isSecondFocus ? "is-active" : ""}><input type="checkbox" checked={trackForm.isSecondFocus} onChange={(event) => updateTrackForm("isSecondFocus", event.target.checked)} /> Secondary focus</label>
-                                            </div>
-                                        </div>
-                                    </section>
-
-                                    <section className="signal-board-track-section-card">
-                                        <div className="signal-board-track-section-heading">
-                                            <div><p className="signal-board-panel-kicker">Release</p><h3>Control the listener path</h3></div>
-                                            <span>Visibility, playback, dates, audio, and destination links.</span>
-                                        </div>
-                                        <div className="signal-board-track-form-grid signal-board-track-form-grid-compact">
-                                        <label>
-                                            Visibility
-                                            <select
-                                                value={trackForm.visibility}
-                                                onChange={(event) => {
-                                                    const value = event.target.value;
-                                                    updateTrackForm("visibility", value);
-                                                    updateTrackForm("isPublic", value === "public" || value === "listed");
-                                                }}
-                                            >
-                                                {trackVisibilityOptions.map((option) => (
-                                                    <option key={option.value} value={option.value}>
-                                                        {option.label}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            <span className="signal-board-field-note">
-                                                Private stays hidden. Listed appears inside this release. Public can appear on broader surfaces later.
-                                            </span>
-                                        </label>
-                                        <label>
-                                            Playback
-                                            <select
-                                                value={trackForm.playbackStatus}
-                                                onChange={(event) =>
-                                                    updateTrackForm("playbackStatus", event.target.value)
-                                                }
-                                            >
-                                                {playbackStatusOptions.map((option) => (
-                                                    <option key={option.value} value={option.value}>
-                                                        {option.label}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            <span className="signal-board-field-note">
-                                                Locked shows the track without audio. Preview needs Preview Audio URL. Playable uses full Audio URL.
-                                            </span>
-                                        </label>
-                                        <label>
-                                            Drop Date
-                                            <input
-                                                type="date"
-                                                value={trackForm.dropDate}
-                                                onChange={(event) =>
-                                                    updateTrackForm("dropDate", event.target.value)
-                                                }
-                                            />
-                                        </label>
-                                        <label>
-                                            Unlock Date
-                                            <input
-                                                type="date"
-                                                value={trackForm.unlockDate}
-                                                onChange={(event) =>
-                                                    updateTrackForm("unlockDate", event.target.value)
-                                                }
-                                            />
-                                        </label>
-                                        <label className="signal-board-wide-field">
-                                            Audio URL
-                                            <input
-                                                value={trackForm.audioUrl}
-                                                onChange={(event) =>
-                                                    updateTrackForm("audioUrl", event.target.value)
-                                                }
-                                                placeholder="/audio/song.mp3 or external URL"
-                                            />
-                                        </label>
-                                        <label className="signal-board-wide-field">
-                                            Preview Audio URL
-                                            <input
-                                                value={trackForm.previewAudioUrl}
-                                                onChange={(event) =>
-                                                    updateTrackForm("previewAudioUrl", event.target.value)
-                                                }
-                                                placeholder="15–30 second teaser audio URL"
-                                            />
-                                            <span className="signal-board-field-note">
-                                                Public preview uses this URL only. It will not fall back to the full track.
-                                            </span>
-                                        </label>
-                                        <label className="signal-board-wide-field">
-                                            Platform URL
-                                            <input
-                                                value={trackForm.platformUrl}
-                                                onChange={(event) =>
-                                                    updateTrackForm("platformUrl", event.target.value)
-                                                }
-                                                placeholder="Spotify, SoundCloud, YouTube, or pre-save link"
-                                            />
-                                        </label>
-                                        </div>
-                                    </section>
-
-                                    <section className="signal-board-track-section-card signal-board-track-section-nexus">
-                                        <div className="signal-board-track-section-heading">
-                                            <div><p className="signal-board-panel-kicker">Nexus + Realm</p><h3>Prepare the signal</h3></div>
-                                            <span>Choose the Realm that feels right, then submit the signal for Cosmic review when it is ready.</span>
-                                        </div>
-
-                                        <div className="signal-board-track-form-grid signal-board-track-form-grid-compact signal-board-nexus-grid">
-                                            <label>
-                                                Suggested Realm
-                                                <select
-                                                    value={trackForm.realmId}
-                                                    onChange={(event) => updateTrackForm("realmId", event.target.value)}
-                                                >
-                                                    {realmPublishingOptions.map((option) => (
-                                                        <option key={option.value || "none"} value={option.value}>
-                                                            {option.label}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                                <span className="signal-board-field-note">
-                                                    Choose the Realm you feel best matches the signal. Cosmic review can approve or adjust the final placement.
-                                                </span>
-                                            </label>
-
-                                            {trackForm.realmFinderSuggestedRealmId && (
-                                                <div className="signal-board-realm-finder-saved">
-                                                    <span>Realm Profile snapshot</span>
-                                                    <strong>
-                                                        Home suggestion · {trackForm.realmFinderSuggestedRealmId} — {realmFinderRealms[Number(trackForm.realmFinderSuggestedRealmId) as RealmFinderRealmId]?.name}
-                                                    </strong>
-                                                    <small>
-                                                        {trackForm.realmFinderSecondaryRealmId ? `Secondary ${trackForm.realmFinderSecondaryRealmId}` : ""}
-                                                        {trackForm.realmFinderTraceRealmId ? ` · Trace ${trackForm.realmFinderTraceRealmId}` : ""}
-                                                    </small>
-                                                    {trackForm.realmFinderDominantSignal && <em>{trackForm.realmFinderDominantSignal}</em>}
-                                                </div>
-                                            )}
-
-                                            <div className="signal-board-nexus-status">
-                                                <span>Nexus review</span>
-                                                <strong>{publishSignalState}</strong>
-                                                <small>{trackForm.showInNexus ? "Live in Nexus" : "Creator submission workflow"}</small>
-                                            </div>
-                                        </div>
-
-                                        <section className={`signal-board-realm-finder${isRealmFinderOpen ? " is-open" : ""}`}>
-                                            <button
-                                                type="button"
-                                                className="signal-board-realm-finder-toggle"
-                                                onClick={() => setIsRealmFinderOpen((current) => !current)}
-                                                aria-expanded={isRealmFinderOpen}
-                                            >
-                                                <span>
-                                                    <small>Realm Finder</small>
-                                                    <strong>Need help choosing a Realm?</strong>
-                                                </span>
-                                                <em>{isRealmFinderOpen ? "Close" : "Find My Realm"}</em>
-                                            </button>
-
-                                            {isRealmFinderOpen && (
-                                                <div className="signal-board-realm-finder-body">
-                                                    {!realmFinderIsComplete ? (
-                                                        <>
-                                                            <div className="signal-board-realm-finder-progress">
-                                                                <span>
-                                                                    {realmFinderQuestion.eyebrow}
-                                                                </span>
-                                                                <strong>
-                                                                    {realmFinderStep + 1} / {realmFinderQuestions.length}
-                                                                </strong>
-                                                            </div>
-
-                                                            <div className="signal-board-realm-finder-question">
-                                                                <h4>{realmFinderQuestion.prompt}</h4>
-                                                                <p>Choose what feels closest. There is no permanent answer here.</p>
-                                                            </div>
-
-                                                            <div className="signal-board-realm-finder-options">
-                                                                {realmFinderQuestion.options.map((option) => {
-                                                                    const isSelected =
-                                                                        realmFinderAnswers[realmFinderQuestion.id] === option.id;
-
-                                                                    return (
-                                                                        <button
-                                                                            key={option.id}
-                                                                            type="button"
-                                                                            className={isSelected ? "is-selected" : ""}
-                                                                            onClick={() =>
-                                                                                handleRealmFinderAnswer(
-                                                                                    realmFinderQuestion.id,
-                                                                                    option.id,
-                                                                                )
-                                                                            }
-                                                                        >
-                                                                            <strong>{option.label}</strong>
-                                                                            <span>{option.detail}</span>
-                                                                        </button>
-                                                                    );
-                                                                })}
-                                                            </div>
-
-                                                            <div className="signal-board-realm-finder-nav">
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() =>
-                                                                        setRealmFinderStep((current) =>
-                                                                            Math.max(0, current - 1)
-                                                                        )
-                                                                    }
-                                                                    disabled={realmFinderStep === 0}
-                                                                >
-                                                                    Back
-                                                                </button>
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={handleRealmFinderReset}
-                                                                    disabled={Object.keys(realmFinderAnswers).length === 0}
-                                                                >
-                                                                    Start over
-                                                                </button>
-                                                            </div>
-                                                        </>
-                                                    ) : (
-                                                        <div className="signal-board-realm-finder-result">
-                                                            <div className="signal-board-realm-finder-result-topline">
-                                                                <span>Realm Profile</span>
-                                                                <small>{realmFinderResult.dominantSignal}</small>
-                                                            </div>
-
-                                                            <div className="signal-board-realm-profile-top-three">
-                                                                <article className="is-home">
-                                                                    <span>Home suggestion</span>
-                                                                    <strong>{realmFinderResult.realmId} — {realmFinderResult.meta.name}</strong>
-                                                                </article>
-                                                                <article>
-                                                                    <span>Secondary resonance</span>
-                                                                    <strong>{realmFinderResult.runnerUp.realmId} — {realmFinderResult.runnerUpMeta.name}</strong>
-                                                                </article>
-                                                                <article>
-                                                                    <span>Trace resonance</span>
-                                                                    <strong>{realmFinderResult.trace.realmId} — {realmFinderResult.traceMeta.name}</strong>
-                                                                </article>
-                                                            </div>
-
-                                                            <p>{realmFinderResult.explanation}</p>
-
-                                                            <details className="signal-board-realm-profile-details">
-                                                                <summary>View full Realm resonance</summary>
-                                                                <div className="signal-board-realm-profile-bars">
-                                                                    {([303, 202, 101, 55, 44, 0] as RealmFinderRealmId[])
-                                                                        .sort((a, b) => realmFinderResult.resonanceScores[b] - realmFinderResult.resonanceScores[a])
-                                                                        .map((realmId) => (
-                                                                            <div key={realmId} className="signal-board-realm-profile-bar">
-                                                                                <div>
-                                                                                    <span>{realmId} — {realmFinderRealms[realmId].name}</span>
-                                                                                    <strong>{realmFinderResult.resonanceScores[realmId]}</strong>
-                                                                                </div>
-                                                                                <i><b style={{ width: `${realmFinderResult.resonanceScores[realmId]}%` }} /></i>
-                                                                            </div>
-                                                                        ))}
-                                                                </div>
-                                                            </details>
-
-                                                            <div className="signal-board-realm-finder-signals">
-                                                                {realmFinderResult.meta.signals.map((signal) => (
-                                                                    <span key={signal}>{signal}</span>
-                                                                ))}
-                                                            </div>
-
-                                                            <div className="signal-board-realm-finder-result-actions">
-                                                                <button
-                                                                    type="button"
-                                                                    className="is-primary"
-                                                                    onClick={handleUseRealmFinderResult}
-                                                                >
-                                                                    Use Home Suggestion
-                                                                </button>
-                                                                <button type="button" onClick={handleRealmFinderReset}>
-                                                                    Try Again
-                                                                </button>
-                                                            </div>
-
-                                                            <small className="signal-board-realm-finder-disclaimer">
-                                                                This is a creative sorting aid. You can still choose another Realm, and Cosmic review can adjust final Nexus placement.
-                                                            </small>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
-                                        </section>
-
-                                        <div className="signal-board-publish-guide signal-board-nexus-readiness" aria-label="Nexus review readiness">
-                                            <article>
-                                                <span>Nexus Review</span>
-                                                <strong>{publishSignalState}</strong>
-                                                <p>Submitting sends this track and your suggested Realm to Cosmic staff. Submission does not publish the track into Nexus.</p>
-                                            </article>
-                                            {publishSignalReadiness.checks.map((check) => (
-                                                <article key={check.key}>
-                                                    <span>{check.ready ? "Ready" : "Required"}</span>
-                                                    <strong>{check.ready ? "✓ " : "• "}{check.label}</strong>
-                                                    <p>{check.detail}</p>
-                                                </article>
-                                            ))}
-                                        </div>
-
-                                        {selectedTrack?.nexusReviewNotes && (
-                                            <div className="signal-board-review-note">
-                                                <span>Review note</span>
-                                                <p>{selectedTrack.nexusReviewNotes}</p>
-                                            </div>
-                                        )}
-
-                                        <div className="signal-board-panel-actions signal-board-publish-actions">
-                                            <button
-                                                type="button"
-                                                onClick={() => void handleSubmitForNexusReview()}
-                                                disabled={
-                                                    isSubmittingNexusReview ||
-                                                    isCreatingTrack ||
-                                                    isUpdatingTrack ||
-                                                    !selectedTrackId ||
-                                                    isCreatingNewTrack ||
-                                                    !publishSignalReadiness.ready ||
-                                                    nexusReviewStatus === "in-review" ||
-                                                    trackForm.showInNexus
-                                                }
-                                            >
-                                                {isSubmittingNexusReview
-                                                    ? "Submitting..."
-                                                    : trackForm.showInNexus
-                                                        ? "Published to Nexus"
-                                                        : nexusReviewStatus === "in-review"
-                                                            ? "Submitted for Review"
-                                                            : nexusReviewStatus === "approved"
-                                                                ? "Approved — Awaiting Publish"
-                                                                : "Submit for Nexus Review"}
-                                            </button>
-                                        </div>
-                                    </section>
-                                </div>
-
-                                <footer className="signal-board-track-footer">
-                                    <div className="signal-board-track-save-copy">
-                                        <span>{isCreatingNewTrack || !selectedTrackId ? "New track" : "Track changes"}</span>
-                                        <strong>{isCreatingNewTrack || !selectedTrackId ? "Create this track when it is ready." : "Save the edits made to this track."}</strong>
-                                    </div>
-
-                                    <div className="signal-board-panel-actions signal-board-track-save-actions">
-                                        <button type="button" onClick={() => void handleSaveTrack()} disabled={isCreatingTrack || isUpdatingTrack || !releaseWorldId}>
-                                            {isCreatingTrack || isUpdatingTrack ? "Saving..." : isCreatingNewTrack || !selectedTrackId ? "Create Track" : "Update Track"}
-                                        </button>
-                                    </div>
-
-                                    {selectedTrackId && !isCreatingNewTrack && (
-                                        <div className="signal-board-track-danger-zone">
-                                            <div>
-                                                <span>Danger zone</span>
-                                                <strong>Delete this track from the release workspace.</strong>
-                                            </div>
-                                            <button
-                                                type="button"
-                                                className="signal-board-danger-mini"
-                                                onClick={handleDeleteTrack}
-                                                disabled={isDeletingTrack}
-                                            >
-                                                {isDeletingTrack ? "Deleting..." : "Delete Track"}
-                                            </button>
-                                        </div>
-                                    )}
-                                </footer>
-                            </section>
+                            <TrackWorkspace
+                                isCreatingNewTrack={isCreatingNewTrack}
+                                selectedTrack={selectedTrack}
+                                handleNewTrack={handleNewTrack}
+                                tracksError={tracksError}
+                                trackMessage={trackMessage}
+                                tracksLoading={tracksLoading}
+                                releaseTracks={releaseTracks}
+                                selectedTrackId={selectedTrackId}
+                                handleSelectTrack={handleSelectTrack}
+                                trackForm={trackForm}
+                                updateTrackForm={updateTrackForm}
+                                handleTrackArtworkDrop={handleTrackArtworkDrop}
+                                selectedTrackArtworkAsset={selectedTrackArtworkAsset}
+                                isUploadingTrackArtwork={isUploadingTrackArtwork}
+                                trackArtworkMessage={trackArtworkMessage}
+                                handleTrackArtworkFile={handleTrackArtworkFile}
+                                trackRoleOptions={trackRoleOptions}
+                                trackStatusOptions={trackStatusOptions}
+                                handleManageTrackAudio={handleManageTrackAudio}
+                                trackVisibilityOptions={trackVisibilityOptions}
+                                playbackStatusOptions={playbackStatusOptions}
+                                realmPublishingOptions={realmPublishingOptions}
+                                realmFinderRealms={realmFinderRealms}
+                                publishSignalState={publishSignalState}
+                                isRealmFinderOpen={isRealmFinderOpen}
+                                setIsRealmFinderOpen={setIsRealmFinderOpen}
+                                realmFinderIsComplete={realmFinderIsComplete}
+                                realmFinderQuestion={realmFinderQuestion}
+                                realmFinderStep={realmFinderStep}
+                                realmFinderQuestions={realmFinderQuestions}
+                                realmFinderAnswers={realmFinderAnswers}
+                                handleRealmFinderAnswer={handleRealmFinderAnswer}
+                                setRealmFinderStep={setRealmFinderStep}
+                                handleRealmFinderReset={handleRealmFinderReset}
+                                realmFinderResult={realmFinderResult}
+                                handleUseRealmFinderResult={handleUseRealmFinderResult}
+                                publishSignalReadiness={publishSignalReadiness}
+                                handleSubmitForNexusReview={handleSubmitForNexusReview}
+                                isSubmittingNexusReview={isSubmittingNexusReview}
+                                isCreatingTrack={isCreatingTrack}
+                                isUpdatingTrack={isUpdatingTrack}
+                                nexusReviewStatus={nexusReviewStatus}
+                                handleSaveTrack={handleSaveTrack}
+                                releaseWorldId={releaseWorldId}
+                                handleDeleteTrack={handleDeleteTrack}
+                                isDeletingTrack={isDeletingTrack}
+                            />
                         )}
                         {activePanel === "assets" && (
-                            <section className="signal-board-panel-section signal-board-assets-panel">
-                                <div className="signal-board-panel-heading">
-                                    <div>
-                                        <p className="signal-board-panel-kicker">Asset Manager</p>
-                                        <h2>Cover, audio, and references</h2>
-                                    </div>
-                                    <Link href={`/releases/${slug}`}>View Page</Link>
-                                </div>
-
-                                <p className="signal-board-panel-message">
-                                    {assetsError?.message || assetMessage}
-                                </p>
-
-                                <details className="signal-board-help-disclosure signal-board-asset-help">
-                                    <summary>How assets flow through the release</summary>
-                                    <div className="signal-board-help-grid">
-                                        <span><strong>Cover art</strong> updates the release hero across public surfaces.</span>
-                                        <span><strong>Track audio</strong> attaches playback directly to a song.</span>
-                                        <span><strong>References</strong> can stay private or become public creative material later.</span>
-                                    </div>
-                                </details>
-
-                                <div className="signal-board-asset-overview">
-                                    <article className="signal-board-toolbox-card signal-board-toolbox-card-flat">
-                                        <p className="signal-board-panel-kicker">Current Cover</p>
-                                        <h2>{releaseWorld?.coverArtUrl ? "Cover synced" : "No cover yet"}</h2>
-                                        {releaseWorld?.coverArtUrl ? (
-                                            <div className="signal-board-cover-preview">
-                                                <img
-                                                    src={releaseWorld.coverArtUrl}
-                                                    alt={`${releaseTitle} cover preview`}
-                                                />
-                                                <span>{releaseWorld.coverArtUrl}</span>
-                                            </div>
-                                        ) : (
-                                            <p className="signal-board-empty-note">
-                                                Register a cover asset to update the release page hero.
-                                            </p>
-                                        )}
-                                    </article>
-
-                                    <article className="signal-board-toolbox-card signal-board-toolbox-card-flat">
-                                        <p className="signal-board-panel-kicker">Asset Totals</p>
-                                        <h2>{releaseAssets.length} registered</h2>
-                                        <div className="signal-board-theme-map">
-                                            <div>
-                                                <span>Cover</span>
-                                                <strong>{coverAssets.length}</strong>
-                                            </div>
-                                            <div>
-                                                <span>Audio</span>
-                                                <strong>{trackAudioAssets.length}</strong>
-                                            </div>
-                                            <div>
-                                                <span>Tracks</span>
-                                                <strong>{releaseTracks.length}</strong>
-                                            </div>
-                                        </div>
-                                    </article>
-                                </div>
-
-                                <div className="signal-board-upload-card" aria-label="Upload asset to Vercel Blob">
-                                    <div className="signal-board-upload-copy">
-                                        <p className="signal-board-panel-kicker">Cloud Upload</p>
-                                        <h3>Upload a file from your computer</h3>
-                                        <span>Uploads to Vercel Blob, then registers the returned URL as a ReleaseAsset.</span>
-                                    </div>
-
-                                    <label className="signal-board-file-drop">
-                                        <input
-                                            type="file"
-                                            accept={
-                                                assetForm.usage === "track-audio"
-                                                    ? "audio/*"
-                                                    : assetForm.usage === "track-artwork"
-                                                        ? "image/*"
-                                                    : assetForm.kind === "video"
-                                                        ? "video/*"
-                                                        : assetForm.kind === "document"
-                                                            ? ".pdf,.txt,.doc,.docx"
-                                                            : "image/*,audio/*,video/*,.pdf"
-                                            }
-                                            onChange={(event) =>
-                                                handleAssetFileChange(event.currentTarget.files)
-                                            }
-                                        />
-                                        <strong>{selectedAssetFile ? selectedAssetFile.name : "Choose file"}</strong>
-                                        <span>Cover art, audio bounce, promo visual, or reference file</span>
-                                    </label>
-
-                                    {assetUploadPreviewUrl && (
-                                        <div className="signal-board-upload-preview">
-                                            <img src={assetUploadPreviewUrl} alt="Selected asset preview" />
-                                        </div>
-                                    )}
-
-                                    <button
-                                        type="button"
-                                        onClick={handleUploadAndCreateAsset}
-                                        disabled={isUploadingAsset || isCreatingAsset || !releaseWorldId || !selectedAssetFile}
-                                    >
-                                        {isUploadingAsset ? "Uploading..." : "Upload + Register Asset"}
-                                    </button>
-                                </div>
-
-                                <div className="signal-board-track-form-grid signal-board-track-form-grid-compact">
-                                    <label className="signal-board-wide-field">
-                                        Asset title
-                                        <input
-                                            value={assetForm.title}
-                                            onChange={(event) =>
-                                                updateAssetForm("title", event.target.value)
-                                            }
-                                            placeholder="Cover art, demo bounce, visual reference..."
-                                        />
-                                    </label>
-
-                                    <label>
-                                        Usage
-                                        <select
-                                            value={assetForm.usage}
-                                            onChange={(event) =>
-                                                updateAssetForm("usage", event.target.value)
-                                            }
-                                        >
-                                            {assetUsageOptions.map((option) => (
-                                                <option key={option.value} value={option.value}>
-                                                    {option.label}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </label>
-
-                                    <label>
-                                        Kind
-                                        <select
-                                            value={assetForm.kind}
-                                            onChange={(event) =>
-                                                updateAssetForm("kind", event.target.value)
-                                            }
-                                        >
-                                            {assetKindOptions.map((option) => (
-                                                <option key={option.value} value={option.value}>
-                                                    {option.label}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </label>
-
-                                    {["track-audio", "track-artwork"].includes(assetForm.usage) && (
-                                        <label className="signal-board-wide-field">
-                                            Attach to track
-                                            <select
-                                                value={assetForm.trackId}
-                                                onChange={(event) =>
-                                                    updateAssetForm("trackId", event.target.value)
-                                                }
-                                            >
-                                                <option value="">Choose track</option>
-                                                {releaseTracks.map((track) => (
-                                                    <option key={track.id} value={track.id}>
-                                                        {String(track.trackNumber).padStart(2, "0")} — {track.title}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </label>
-                                    )}
-
-                                    <label className="signal-board-wide-field">
-                                        Asset URL
-                                        <input
-                                            value={assetForm.url}
-                                            onChange={(event) =>
-                                                updateAssetForm("url", event.target.value)
-                                            }
-                                            placeholder="/cover.jpg, /music/demo.mp3, or external URL"
-                                        />
-                                    </label>
-
-                                    <label>
-                                        File name
-                                        <input
-                                            value={assetForm.fileName}
-                                            onChange={(event) =>
-                                                updateAssetForm("fileName", event.target.value)
-                                            }
-                                            placeholder="cover.jpg"
-                                        />
-                                    </label>
-
-                                    <label>
-                                        MIME type
-                                        <input
-                                            value={assetForm.mimeType}
-                                            onChange={(event) =>
-                                                updateAssetForm("mimeType", event.target.value)
-                                            }
-                                            placeholder="image/jpeg or audio/mpeg"
-                                        />
-                                    </label>
-
-                                    <label className="signal-board-wide-field">
-                                        Description
-                                        <textarea
-                                            value={assetForm.description}
-                                            onChange={(event) =>
-                                                updateAssetForm("description", event.target.value)
-                                            }
-                                            rows={3}
-                                            placeholder="What is this asset for?"
-                                        />
-                                    </label>
-                                </div>
-
-                                <div className="signal-board-asset-visibility">
-                                    <div>
-                                        <span className="signal-board-control-label">Visibility</span>
-                                        <small>{assetForm.isPublic ? "Available to public release surfaces" : "Private to the creator workspace"}</small>
-                                    </div>
-                                    <label className={assetForm.isPublic ? "is-active" : ""}>
-                                        <input
-                                            type="checkbox"
-                                            checked={assetForm.isPublic}
-                                            onChange={(event) =>
-                                                updateAssetForm("isPublic", event.target.checked)
-                                            }
-                                        />
-                                        Public asset
-                                    </label>
-                                </div>
-
-                                <div className="signal-board-panel-actions">
-                                    <button
-                                        type="button"
-                                        onClick={handleCreateAsset}
-                                        disabled={isCreatingAsset || !releaseWorldId}
-                                    >
-                                        {isCreatingAsset ? "Registering..." : "Register Asset"}
-                                    </button>
-                                </div>
-
-                                <div className="signal-board-asset-list" aria-label="Registered assets">
-                                    {assetsLoading && (
-                                        <p className="signal-board-empty-note">Loading assets...</p>
-                                    )}
-                                    {!assetsLoading && releaseAssets.length === 0 && (
-                                        <p className="signal-board-empty-note">
-                                            No assets yet. Register a cover URL or track audio URL to start.
-                                        </p>
-                                    )}
-                                    {releaseAssets.map((asset) => {
-                                        const attachedTrack = releaseTracks.find(
-                                            (track) => track.id === asset.trackId,
-                                        );
-
-                                        return (
-                                            <article key={asset.id} className="signal-board-asset-card">
-                                                <div className="signal-board-asset-card-copy">
-                                                    <p className="signal-board-panel-kicker">
-                                                        {getAssetUsageLabel(asset.usage)} / {formatLabel(asset.kind)}
-                                                    </p>
-                                                    <h3>{asset.title}</h3>
-                                                    {asset.description && <p>{asset.description}</p>}
-                                                    {attachedTrack && <span>Attached to {attachedTrack.title}</span>}
-                                                    <span>{asset.fileName || asset.url}</span>
-                                                </div>
-
-                                                <div className="signal-board-asset-card-actions">
-                                                    <a href={asset.url} target="_blank" rel="noreferrer">
-                                                        Open
-                                                    </a>
-                                                    <button
-                                                        type="button"
-                                                        className="signal-board-danger-mini signal-board-asset-delete"
-                                                        disabled={isDeletingAsset}
-                                                        onClick={() => handleDeleteAsset(asset)}
-                                                    >
-                                                        Delete
-                                                    </button>
-                                                </div>
-                                            </article>
-                                        );
-                                    })}
-                                </div>
-                            </section>
+                            <ReleaseAssetsPanel
+                                slug={slug}
+                                assetsError={assetsError}
+                                assetMessage={assetMessage}
+                                releaseWorld={releaseWorld}
+                                releaseTitle={releaseTitle}
+                                releaseAssets={releaseAssets}
+                                coverAssets={coverAssets}
+                                trackAudioAssets={trackAudioAssets}
+                                releaseTracks={releaseTracks}
+                                assetForm={assetForm}
+                                handleAssetFileChange={handleAssetFileChange}
+                                selectedAssetFile={selectedAssetFile}
+                                assetUploadPreviewUrl={assetUploadPreviewUrl}
+                                handleUploadAndCreateAsset={handleUploadAndCreateAsset}
+                                isUploadingAsset={isUploadingAsset}
+                                isCreatingAsset={isCreatingAsset}
+                                releaseWorldId={releaseWorldId}
+                                updateAssetForm={updateAssetForm}
+                                assetUsageOptions={assetUsageOptions}
+                                assetKindOptions={assetKindOptions}
+                                handleCreateAsset={handleCreateAsset}
+                                assetsLoading={assetsLoading}
+                                getAssetUsageLabel={getAssetUsageLabel}
+                                formatLabel={formatLabel}
+                                isDeletingAsset={isDeletingAsset}
+                                handleDeleteAsset={handleDeleteAsset}
+                            />
                         )}
 
-                        {activePanel === "signals" && (
-                            <section className="signal-board-panel-section signal-board-create-panel">
-                                <div className="signal-board-panel-heading">
-                                    <div>
-                                        <p className="signal-board-panel-kicker">Create + Style</p>
-                                        <h2>Build a signal card</h2>
-                                        <p>Write the idea, choose how it should feel, then add exactly that card to the board.</p>
-                                    </div>
-                                    <button type="button" onClick={resetBoard}>Reset Starter Board</button>
-                                </div>
-
-                                <div className="signal-board-create-layout">
-                                    <div className="signal-board-create-compose">
-                                        <div className="signal-board-create-mode" role="tablist" aria-label="Signal card type">
-                                            <button type="button" className={createMode === "hook" ? "is-active" : ""} onClick={() => setCreateMode("hook")}>Hook</button>
-                                            <button type="button" className={createMode === "note" ? "is-active" : ""} onClick={() => setCreateMode("note")}>Note</button>
-                                        </div>
-
-                                        {createMode === "hook" ? (
-                                            <div className="signal-board-toolbox-card signal-board-toolbox-card-flat signal-board-create-form">
-                                                <p className="signal-board-panel-kicker">Hook Lab</p>
-                                                <h2>Add hook artifact</h2>
-                                                <label>Attach to
-                                                    <select value={selectedTrackSlug} onChange={(event) => setSelectedTrackSlug(event.target.value)}>
-                                                        {hookTargetOptions.map((target) => (<option key={target.slug} value={target.slug}>{target.title}</option>))}
-                                                    </select>
-                                                </label>
-                                                <label>Title<input value={hookTitle} onChange={(event) => setHookTitle(event.target.value)} placeholder="Short hook title" /></label>
-                                                <label>Signal<textarea value={hookDescription} onChange={(event) => setHookDescription(event.target.value)} placeholder="Hook, phrase, theme, or lyric..." rows={3} /></label>
-                                                <button type="button" onClick={addHook}>Add Hook</button>
-                                            </div>
-                                        ) : (
-                                            <div className="signal-board-toolbox-card signal-board-toolbox-card-flat signal-board-create-form">
-                                                <p className="signal-board-panel-kicker">Artifact Drop</p>
-                                                <h2>Add custom note</h2>
-                                                <label>Tag<input value={noteTag} onChange={(event) => setNoteTag(event.target.value)} placeholder="Visual idea, symbol, rollout..." /></label>
-                                                <label>Title<input value={noteTitle} onChange={(event) => setNoteTitle(event.target.value)} placeholder="Short artifact title" /></label>
-                                                <label>Note<textarea value={noteBody} onChange={(event) => setNoteBody(event.target.value)} placeholder="Idea, symbol, clip thought, or reminder..." rows={3} /></label>
-                                                <button type="button" onClick={addNoteArtifact}>Add Note</button>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <aside className="signal-board-create-style">
-                                        <div className={`signal-board-card-preview signal-board-pin-color-${selectedColor} signal-board-card-preview-${selectedSize}`}>
-                                            <span>{createMode === "hook" ? "Hook" : noteTag || "Note"}</span>
-                                            <strong>{createMode === "hook" ? hookTitle || "Your next hook" : noteTitle || "Your next note"}</strong>
-                                            <p>{createMode === "hook" ? hookDescription || `Attached to ${getHookTargetTitle(selectedTrackSlug, hookTargetOptions)}` : noteBody || "Add the idea, visual, or reminder."}</p>
-                                            <em>{sizeOptions.find((option) => option.value === selectedSize)?.label} • Layer {selectedLayer}</em>
-                                        </div>
-
-                                        <div className="signal-board-toolbox-card signal-board-toolbox-card-flat">
-                                            <p className="signal-board-panel-kicker">Card Appearance</p>
-                                            <h2>Style before you drop</h2>
-                                            <div className="signal-board-style-row" aria-label="New card color">
-                                                {colorOptions.map((option) => (
-                                                    <button key={option.value} type="button" className={`signal-board-swatch signal-board-swatch-${option.value} ${selectedColor === option.value ? "is-active" : ""}`} onClick={() => setSelectedColor(option.value)}>{option.label}</button>
-                                                ))}
-                                            </div>
-                                            <div className="signal-board-size-row" aria-label="New card size">
-                                                {sizeOptions.map((option) => (
-                                                    <button key={option.value} type="button" className={selectedSize === option.value ? "is-active" : ""} onClick={() => setSelectedSize(option.value)}>{option.label}</button>
-                                                ))}
-                                            </div>
-                                            <label>Layer priority
-                                                <select value={selectedLayer} onChange={(event) => setSelectedLayer(Number(event.target.value))}>
-                                                    {layerOptions.map((layer) => (<option key={layer} value={layer}>Layer {layer}</option>))}
-                                                </select>
-                                            </label>
-                                        </div>
-
-                                        <details className="signal-board-style-disclosure">
-                                            <summary>Starter board theme</summary>
-                                            <div className="signal-board-style-disclosure-body">
-                                                <div className="signal-board-style-row" aria-label="Starter board color">
-                                                    {colorOptions.map((option) => (
-                                                        <button key={option.value} type="button" className={`signal-board-swatch signal-board-swatch-${option.value} ${boardColor === option.value ? "is-active" : ""}`} onClick={() => applyStarterBoardColor(option.value)}>{option.label}</button>
-                                                    ))}
-                                                </div>
-                                                <p className="signal-board-tool-note">Generated starter cards only.</p>
-                                            </div>
-                                        </details>
-                                    </aside>
-                                </div>
-                            </section>
-                        )}
+                        <StudioBoardWorkspace
+                            activePanel={activePanel}
+                            cloudStatus={cloudStatus}
+                            handleReloadCloudBoard={handleReloadCloudBoard}
+                            handleSaveToCloud={handleSaveToCloud}
+                            isSaving={isSaving}
+                            releaseWorldId={releaseWorldId}
+                            cloudMessage={cloudMessage}
+                            artifacts={artifacts}
+                            releaseTracks={releaseTracks}
+                            hookCounts={hookCounts}
+                            boardRef={boardRef}
+                            releaseTitle={releaseTitle}
+                            selectedArtifactId={selectedArtifactId}
+                            handleArtifactPointerDown={handleArtifactPointerDown}
+                            deleteArtifact={deleteArtifact}
+                            nudgeLayer={nudgeLayer}
+                            selectedArtifact={selectedArtifact}
+                            updateArtifact={updateArtifact}
+                            colorOptions={colorOptions}
+                            sizeOptions={sizeOptions}
+                            layerOptions={layerOptions}
+                            pageSectionOptions={pageSectionOptions}
+                            resetBoard={resetBoard}
+                            createMode={createMode}
+                            setCreateMode={setCreateMode}
+                            selectedTrackSlug={selectedTrackSlug}
+                            setSelectedTrackSlug={setSelectedTrackSlug}
+                            hookTargetOptions={hookTargetOptions}
+                            hookTitle={hookTitle}
+                            setHookTitle={setHookTitle}
+                            hookDescription={hookDescription}
+                            setHookDescription={setHookDescription}
+                            addHook={addHook}
+                            noteTag={noteTag}
+                            setNoteTag={setNoteTag}
+                            noteTitle={noteTitle}
+                            setNoteTitle={setNoteTitle}
+                            noteBody={noteBody}
+                            setNoteBody={setNoteBody}
+                            addNoteArtifact={addNoteArtifact}
+                            selectedColor={selectedColor}
+                            selectedSize={selectedSize}
+                            getHookTargetTitle={getHookTargetTitle}
+                            selectedLayer={selectedLayer}
+                            setSelectedColor={setSelectedColor}
+                            setSelectedSize={setSelectedSize}
+                            setSelectedLayer={setSelectedLayer}
+                            boardColor={boardColor}
+                            applyStarterBoardColor={applyStarterBoardColor}
+                        />
 
                         {activePanel === "portal" && (
                             <section className="signal-board-panel-section signal-board-portal-panel">
                                 <div className="signal-board-panel-heading">
                                     <div>
                                         <p className="signal-board-panel-kicker">
-                                            Portal Final Pass
+                                            Release details
                                         </p>
                                         <h2>Release page copy</h2>
                                     </div>
@@ -4441,18 +2973,28 @@ export default function DynamicReleaseSignalBoardPage() {
 
                                 <p className="signal-board-panel-message">{portalMessage}</p>
 
-                                <div className="signal-board-portal-output-card" aria-label="Portal output preview">
-                                    <div>
-                                        <p className="signal-board-panel-kicker">Public Portal Source</p>
-                                        <h3>{portalSettings.title || releaseTitle}</h3>
-                                        <span>These fields feed the Release Page hero, story block, cover art, and opening date.</span>
-                                    </div>
-                                    <div className="signal-board-portal-output-stats">
-                                        <span>{visibleReleaseTracks.length} visible track{visibleReleaseTracks.length === 1 ? "" : "s"}</span>
-                                        <span>{publishedArtifacts.length} fragment{publishedArtifacts.length === 1 ? "" : "s"}</span>
-                                        <span>{releaseWorld?.coverArtUrl ? "Cover added" : "Cover needed"}</span>
-                                    </div>
-                                </div>
+                                <details className="signal-board-workspace-disclosure">
+                                    <summary>Release page output</summary>
+                                    <aside className="signal-board-release-output" aria-label="Release page output summary">
+                                        <div className="signal-board-release-output-copy">
+                                            <p className="signal-board-panel-kicker">Release Page Output</p>
+                                            <h3>What the public portal is pulling from this board.</h3>
+                                            <span>Portal settings, visible tracks, uploaded assets, and published artifacts become the fan-facing Release Page.</span>
+                                        </div>
+
+                                        <div className="signal-board-release-output-grid">
+                                            {releasePageOutputStats.map((item) => (
+                                                <div key={item.label}>
+                                                    <span>{item.label}</span>
+                                                    <strong>{item.value}</strong>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <Link href={`/releases/${slug}`}>Preview Portal</Link>
+                                    </aside>
+
+                                </details>
 
                                 <div className="signal-board-portal-grid signal-board-portal-grid-compact">
                                     <label>
@@ -4481,80 +3023,6 @@ export default function DynamicReleaseSignalBoardPage() {
                                         </select>
                                     </label>
 
-                                    <label>
-                                        Status
-                                        <select
-                                            value={portalSettings.status}
-                                            onChange={(event) =>
-                                                updatePortalSetting("status", event.target.value)
-                                            }
-                                        >
-                                            <option value="draft">Draft</option>
-                                            <option value="active">Active</option>
-                                            <option value="released">Released</option>
-                                            <option value="archived">Archived</option>
-                                        </select>
-                                    </label>
-
-                                    <label>
-                                        Visibility
-                                        <select
-                                            value={portalSettings.visibility}
-                                            onChange={(event) =>
-                                                updatePortalSetting("visibility", event.target.value)
-                                            }
-                                        >
-                                            <option value="private">Private</option>
-                                            <option value="unlisted">Unlisted</option>
-                                            <option value="public">Public</option>
-                                        </select>
-                                    </label>
-
-                                    <label>
-                                        Current focus
-                                        <input
-                                            value={portalSettings.currentFocus}
-                                            onChange={(event) =>
-                                                updatePortalSetting("currentFocus", event.target.value)
-                                            }
-                                            placeholder="Lead single / front door"
-                                        />
-                                    </label>
-
-                                    <label>
-                                        Second focus
-                                        <input
-                                            value={portalSettings.secondFocus}
-                                            onChange={(event) =>
-                                                updatePortalSetting("secondFocus", event.target.value)
-                                            }
-                                            placeholder="Contrast signal"
-                                        />
-                                    </label>
-
-                                    <label>
-                                        Drop date
-                                        <input
-                                            type="date"
-                                            value={portalSettings.fullDropDate}
-                                            onChange={(event) =>
-                                                updatePortalSetting("fullDropDate", event.target.value)
-                                            }
-                                        />
-                                    </label>
-
-
-                                    <label className="signal-board-portal-wide">
-                                        Cover Art URL
-                                        <input
-                                            value={portalSettings.coverArtUrl}
-                                            onChange={(event) =>
-                                                updatePortalSetting("coverArtUrl", event.target.value)
-                                            }
-                                            placeholder="/cover.jpg or external image URL"
-                                        />
-                                    </label>
-
                                     <label className="signal-board-portal-wide">
                                         One-line summary
                                         <input
@@ -4581,6 +3049,87 @@ export default function DynamicReleaseSignalBoardPage() {
                                         />
                                     </label>
                                 </div>
+
+                                <details className="signal-board-workspace-disclosure">
+                                    <summary>Advanced release settings</summary>
+                                    <p className="signal-board-field-note">Release-level focus, visibility, dates, and cover URL. Use Tracks for track focus and Assets for cover uploads. Prepare Release checks publication readiness.</p>
+                                    <div className="signal-board-portal-grid signal-board-portal-grid-compact">
+                                        <label>
+                                            Status
+                                            <select
+                                                value={portalSettings.status}
+                                                onChange={(event) =>
+                                                    updatePortalSetting("status", event.target.value)
+                                                }
+                                            >
+                                                <option value="draft">Draft</option>
+                                                <option value="active">Active</option>
+                                                <option value="released">Released</option>
+                                                <option value="archived">Archived</option>
+                                            </select>
+                                        </label>
+
+                                        <label>
+                                            Visibility
+                                            <select
+                                                value={portalSettings.visibility}
+                                                onChange={(event) =>
+                                                    updatePortalSetting("visibility", event.target.value)
+                                                }
+                                            >
+                                                <option value="private">Private</option>
+                                                <option value="unlisted">Unlisted</option>
+                                                <option value="public">Public</option>
+                                            </select>
+                                        </label>
+
+                                        <label>
+                                            Current focus
+                                            <input
+                                                value={portalSettings.currentFocus}
+                                                onChange={(event) =>
+                                                    updatePortalSetting("currentFocus", event.target.value)
+                                                }
+                                                placeholder="Lead single / front door"
+                                            />
+                                        </label>
+
+                                        <label>
+                                            Second focus
+                                            <input
+                                                value={portalSettings.secondFocus}
+                                                onChange={(event) =>
+                                                    updatePortalSetting("secondFocus", event.target.value)
+                                                }
+                                                placeholder="Contrast signal"
+                                            />
+                                        </label>
+
+                                        <label>
+                                            Drop date
+                                            <input
+                                                type="date"
+                                                value={portalSettings.fullDropDate}
+                                                onChange={(event) =>
+                                                    updatePortalSetting("fullDropDate", event.target.value)
+                                                }
+                                            />
+                                        </label>
+
+
+                                        <label className="signal-board-portal-wide">
+                                            Cover Art URL
+                                            <input
+                                                value={portalSettings.coverArtUrl}
+                                                onChange={(event) =>
+                                                    updatePortalSetting("coverArtUrl", event.target.value)
+                                                }
+                                                placeholder="/cover.jpg or external image URL"
+                                            />
+                                        </label>
+
+                                    </div>
+                                </details>
 
                                 <div className="signal-board-portal-save-bar" role="region" aria-label="Portal save controls">
                                     <div>
