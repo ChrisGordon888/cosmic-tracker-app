@@ -33,6 +33,9 @@ const GET_RELEASE = gql`
             status
             visibility
             fullDropDate
+            coverArtUrl
+            oneLineSummary
+            story
         }
     }
 `;
@@ -45,8 +48,25 @@ type ReleaseData = {
         status: string;
         visibility: string;
         fullDropDate?: string | null;
+        coverArtUrl?: string | null;
+        oneLineSummary?: string | null;
+        story?: string | null;
     } | null;
 };
+
+const PREPARE_TRACKS = gql`
+    query PrepareReleaseTracks($releaseWorldId: ID!) {
+        getReleaseTracks(releaseWorldId: $releaseWorldId) {
+            id title status visibility isPublic playbackStatus audioUrl previewAudioUrl realmId accessTier
+        }
+    }
+`;
+const MAKE_TRACK_PUBLIC = gql`
+    mutation MakeIncludedTrackPublic($id: ID!, $input: UpdateReleaseTrackInput!) {
+        updateReleaseTrack(id: $id, input: $input) { id visibility isPublic playbackStatus }
+    }
+`;
+type PrepareTrack = {id:string; title:string; status:string; visibility:string; isPublic:boolean; playbackStatus:string; audioUrl?:string; previewAudioUrl?:string; realmId?:number|null; accessTier?:string};
 
 export default function PublishingReadinessPage() {
     const params = useParams<{ slug: string }>();
@@ -68,6 +88,21 @@ export default function PublishingReadinessPage() {
         skip: !release?.id,
         fetchPolicy: "cache-and-network",
     });
+
+    const tracksQuery = useQuery<{getReleaseTracks:PrepareTrack[]}>(PREPARE_TRACKS, {
+        variables:{releaseWorldId:release?.id || ""}, skip:!release?.id, fetchPolicy:"cache-and-network",
+    });
+    const tracks = (tracksQuery.data?.getReleaseTracks ?? []).filter(track => track.status !== "archived");
+    const [makeTrackPublic, makePublicState] = useMutation(MAKE_TRACK_PUBLIC);
+    const [listenerMessage, setListenerMessage] = useState("");
+    async function exposeTrack(track: PrepareTrack) {
+        if (!window.confirm(`Make ${track.title} public with this release? Its existing playback and access settings will remain unchanged. This does not submit it to Nexus.`)) return;
+        try {
+            await makeTrackPublic({variables:{id:track.id,input:{visibility:"public"}}});
+            await Promise.all([tracksQuery.refetch(),readinessQuery.refetch()]);
+            setListenerMessage(`${track.title}: public visibility saved.`);
+        } catch (e) { setListenerMessage(e instanceof Error ? e.message : "Could not save listener settings."); }
+    }
 
     const readiness =
         readinessQuery.data?.getReleasePublishingReadiness;
@@ -120,6 +155,7 @@ export default function PublishingReadinessPage() {
     }, [release?.fullDropDate]);
 
     const mutating =
+        makePublicState.loading ||
         publishState.loading ||
         unpublishState.loading ||
         archiveState.loading ||
@@ -301,6 +337,27 @@ export default function PublishingReadinessPage() {
                         {activeError.message}
                     </section>
                 ) : null}
+
+                {release && <section className="mt-6 rounded-3xl border border-white/10 p-6">
+                    <h2 className="text-xl font-semibold">Prepare your release</h2>
+                    <p className="mt-2 text-sm text-white/60">Save your changes in the workspace, then review them here. Publishing and Nexus submission are separate.</p>
+                    <ul className="mt-4 space-y-3">
+                        <li>Artwork — {readiness?.completedChecks.includes("RELEASE_ARTWORK") ? "Added" : "Needs artwork"} · <Link href={`/releases/${slug}/board#assets`}>Artwork / Assets</Link></li>
+                        <li>Audio — {tracks.length} included track(s) · <Link href={`/releases/${slug}/board#tracks`}>Review audio and playback</Link></li>
+                        <li>Realm — {tracks.length && tracks.every(t=>t.realmId != null) ? "Assigned" : "Optional for release; choose before Nexus submission"} · <Link href={`/releases/${slug}/board#tracks`}>Review Realm</Link></li>
+                        <li>One-line promise / story — {release.oneLineSummary?.trim() && release.story?.trim() ? "Added" : "Add your context"} · <Link href={`/releases/${slug}/board#portal`}>Edit release identity</Link></li>
+                        <li>Release visibility — {release.visibility}. Use the publishing controls below when ready.</li>
+                    </ul>
+                    <h3 className="mt-5 font-semibold">Listener access</h3>
+                    {tracksQuery.loading && <p>Checking saved track settings…</p>}
+                    {tracksQuery.error && <p role="alert">{tracksQuery.error.message}</p>}
+                    {tracks.map(track=><div key={track.id} className="mt-3">
+                        <p>{track.title} · {track.visibility} · {track.playbackStatus} · {track.accessTier || "public"} access{!track.audioUrl && !track.previewAudioUrl ? " · Audio missing" : ""}</p>
+                        {track.visibility === "private" && <button className="mt-2 rounded border border-white/30 px-3 py-2" disabled={mutating} onClick={()=>void exposeTrack(track)}>Make track public with release</button>}
+                    </div>)}
+                    <p role="status" className="mt-3">{listenerMessage}</p>
+                    <Link href={`/releases/${slug}/board#tracks`}>Advanced listener settings in Tracks</Link>
+                </section>}
 
                 {readiness ? (
                     <>

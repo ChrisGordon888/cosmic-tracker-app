@@ -1,0 +1,22 @@
+.low-tide-scene { --tide-energy:0; --tide-texture:0; width:100%; color:#e5e2d3; }
+.tide-picture { position:relative; overflow:hidden; border-radius:3px 3px 40px 3px; box-shadow:0 24px 60px #0005; }
+.tide-picture svg { display:block; width:100%; height:auto; }
+.tide-camera { transform-origin:0 0; transition:transform 1.2s cubic-bezier(.2,.7,.2,1); }
+.tide-light { opacity:calc(.2 + var(--tide-energy) * .8); transform:scale(calc(1 + var(--tide-energy) * .12)); transform-origin:300px 225px; transition:opacity .22s linear,transform .22s linear; }
+.tide-water { transform:translateY(calc(var(--tide-energy) * -13px)); transition:transform .22s linear; }
+.tide-curtain { transform:skewX(calc(var(--tide-texture) * 6deg)); transform-origin:240px 161px; transition:transform .22s linear; }
+.tide-reflection { opacity:calc(.08 + var(--tide-energy) * .3); transition:opacity .22s linear; }
+.can-move .tide-paper { animation:tide-paper 9s ease-in-out infinite alternate; transform-origin:280px 270px; }
+@keyframes tide-paper { to { transform:rotate(-2deg) translateY(-1px); } }
+.low-tide-scene button { min-height:44px; border:1px solid #d8d6bf80; border-radius:24px; padding:.6rem .9rem; cursor:pointer; color:#f1eadb; background:#182b31; font-size:.75rem; }
+.tide-enter { position:absolute; bottom:1rem; left:50%; transform:translateX(-50%); white-space:nowrap; box-shadow:0 3px 20px #0004; }
+.tide-discovery { padding:1.3rem 0 .2rem; }
+.tide-discovery h3 { font:italic 1.5rem/1.2 Georgia,serif; margin:.7rem 0; }
+.tide-discovery > p:not(.world-eyebrow) { font-size:.8rem; line-height:1.7; color:#c5cfc9; margin:.7rem 0; }
+.tide-discovery .tide-pencil { font-style:italic; }
+.quiet * { animation:none !important; transition:none !important; }
+.demo-world-page .world-art-position { padding:0; }
+.demo-world-page .world-scene { grid-template-columns:minmax(0,1.4fr) minmax(0,.8fr); align-items:start; }
+.demo-world-page .world-contours { display:none; }
+@media(max-width:700px) { .demo-world-page .world-scene { grid-template-columns:minmax(0,1fr); padding:1rem; } .demo-world-page .world-art-position { max-width:none; } }
+@media(prefers-reduced-motion:reduce) { .low-tide-scene * { animation:none !important; transition:none !important; } }

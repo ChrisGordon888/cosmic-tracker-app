@@ -1507,3 +1507,12 @@ moon silver, ice blue, champagne gold, smoked glass.
         transition: none;
     }
 }
+.nexus-public-invitation { display:flex; flex-wrap:wrap; gap:1.5rem; align-items:center; justify-content:space-between; padding:2.5rem 0; margin-bottom:2rem; border-block:1px solid var(--cosmic-border); }
+.nexus-public-invitation h2 { font-size:clamp(1.5rem,3vw,2.2rem); margin-top:.6rem; }
+
+.nexus-shell.public-surface { background:transparent; padding-top:3rem; }
+
+/* Keep the music entrance legible against the final Nexus artwork. */
+.nexus-shell .atmosphere-nexus .public-atmosphere-shade { background:linear-gradient(180deg,#0008,#0006 50%,#0009); }
+.nexus-listen-entry { justify-content:center; margin-top:1.5rem; }
+.nexus-hero { text-shadow:0 2px 12px #000; }

@@ -1,3 +1,4 @@
+const { validateAudioIdentity, archiveBlockReason } = require("../lib/catalogHygiene");
 const Opportunity = require("../models/Opportunity");
 const User = require("../models/User");
 const SacredYes = require("../models/SacredYes");
@@ -503,7 +504,7 @@ async function evaluateReleasePublishingReadiness(releaseWorld, userId) {
                 "The release needs a title.",
                 "blocking",
                 "title",
-                "/creator/onboarding/release"
+                `/releases/${releaseWorld.slug}/board#portal`
             )
         );
     }
@@ -517,7 +518,7 @@ async function evaluateReleasePublishingReadiness(releaseWorld, userId) {
                 "The release needs a URL slug.",
                 "blocking",
                 "slug",
-                "/creator/onboarding/release"
+                `/releases/${releaseWorld.slug}/board#portal`
             )
         );
     }
@@ -531,7 +532,7 @@ async function evaluateReleasePublishingReadiness(releaseWorld, userId) {
                 "Add cover artwork before publishing.",
                 "blocking",
                 "coverAssetId",
-                "/creator/onboarding/artwork"
+                `/releases/${releaseWorld.slug}/board#assets`
             )
         );
     }
@@ -545,7 +546,7 @@ async function evaluateReleasePublishingReadiness(releaseWorld, userId) {
                 "The connected cover asset is private.",
                 "warning",
                 "isPublic",
-                "/creator/onboarding/artwork"
+                `/releases/${releaseWorld.slug}/board#assets`
             )
         );
     }
@@ -559,7 +560,7 @@ async function evaluateReleasePublishingReadiness(releaseWorld, userId) {
                 "Add at least one track before publishing.",
                 "blocking",
                 "tracks",
-                "/creator/onboarding/track"
+                `/releases/${releaseWorld.slug}/board#tracks`
             )
         );
     }
@@ -583,7 +584,7 @@ async function evaluateReleasePublishingReadiness(releaseWorld, userId) {
                     "Every track needs a title.",
                     "blocking",
                     "title",
-                    "/creator/onboarding/track"
+                    `/releases/${releaseWorld.slug}/board#tracks`
                 )
             );
         }
@@ -597,7 +598,7 @@ async function evaluateReleasePublishingReadiness(releaseWorld, userId) {
                     `${label} needs a URL slug.`,
                     "blocking",
                     "slug",
-                    "/creator/onboarding/track"
+                    `/releases/${releaseWorld.slug}/board#tracks`
                 )
             );
         }
@@ -609,7 +610,7 @@ async function evaluateReleasePublishingReadiness(releaseWorld, userId) {
                     `${label} is playable but has no full audio file.`,
                     "blocking",
                     "audioUrl",
-                    `/creator/releases/${releaseWorld.slug}`
+                    `/releases/${releaseWorld.slug}/board#tracks`
                 )
             );
         } else if (playback === "playable") {
@@ -623,7 +624,7 @@ async function evaluateReleasePublishingReadiness(releaseWorld, userId) {
                     `${label} is set to preview but has no preview or full audio.`,
                     "blocking",
                     "previewAudioUrl",
-                    `/creator/releases/${releaseWorld.slug}`
+                    `/releases/${releaseWorld.slug}/board#tracks`
                 )
             );
         } else if (playback === "preview") {
@@ -637,7 +638,7 @@ async function evaluateReleasePublishingReadiness(releaseWorld, userId) {
                     `${label} is coming soon but has no drop or unlock date.`,
                     "blocking",
                     "unlockDate",
-                    `/creator/releases/${releaseWorld.slug}`
+                    `/releases/${releaseWorld.slug}/board#tracks`
                 )
             );
         } else if (playback === "coming-soon") {
@@ -651,12 +652,12 @@ async function evaluateReleasePublishingReadiness(releaseWorld, userId) {
                     `${label} is still locked.`,
                     "warning",
                     "playbackStatus",
-                    `/creator/releases/${releaseWorld.slug}`
+                    `/releases/${releaseWorld.slug}/board#tracks`
                 )
             );
         }
 
-        if (["public", "listed"].includes(visibility) || track.isPublic) {
+        if (["public", "listed"].includes(visibility)) {
             completedChecks.push(`TRACK_VISIBLE:${track._id}`);
         } else {
             warnings.push(
@@ -665,7 +666,7 @@ async function evaluateReleasePublishingReadiness(releaseWorld, userId) {
                     `${label} is private and will not appear publicly.`,
                     "warning",
                     "visibility",
-                    `/creator/releases/${releaseWorld.slug}`
+                    `/releases/${releaseWorld.slug}/board#tracks`
                 )
             );
         }
@@ -700,7 +701,7 @@ async function evaluateReleasePublishingReadiness(releaseWorld, userId) {
                         `${label}: ${reason}`,
                         "blocking",
                         "showInNexus",
-                        `/creator/releases/${releaseWorld.slug}`
+                        `/releases/${releaseWorld.slug}/board#tracks`
                     )
                 );
             }
@@ -716,7 +717,7 @@ async function evaluateReleasePublishingReadiness(releaseWorld, userId) {
                 "No target release date is set.",
                 "warning",
                 "fullDropDate",
-                "/creator/onboarding/release"
+                `/releases/${releaseWorld.slug}/board#portal`
             )
         );
     }
@@ -808,30 +809,7 @@ async function applyDroppedReleaseState(releaseWorld, userId) {
         );
     }
 
-    await ReleaseWorld.updateMany(
-        {
-            ownerId: userId,
-            _id: { $ne: publishedReleaseWorld._id },
-        },
-        { isFeatured: false }
-    );
-
-    await CreativeProfile.updateMany(
-        {
-            ownerId: userId,
-            _id: { $ne: profile._id },
-        },
-        { isFeatured: false }
-    );
-
-    publishedReleaseWorld.isFeatured = true;
-    publishedReleaseWorld.lastOpenedAt = new Date();
-    await publishedReleaseWorld.save();
-
-    profile.isPublic = true;
-    profile.isFeatured = true;
-    profile.featuredReleaseWorldId = publishedReleaseWorld._id;
-    await profile.save();
+    // Publishing does not select a featured project or change Nexus editorial state.
 
     const releaseTracks = await ReleaseTrack.find({
         ownerId: userId,
@@ -1349,6 +1327,7 @@ async function syncReleaseAssetTargets(asset, userId) {
             },
             {
                 audioUrl: asset.url || "",
+                audioContentHash: null, sourceFileName: null, sourceFileSize: null,
                 lastOpenedAt: new Date(),
             },
             { new: true }
@@ -1391,6 +1370,7 @@ async function clearReleaseAssetTargets(asset, userId) {
             },
             {
                 audioUrl: "",
+                audioContentHash: null, sourceFileName: null, sourceFileSize: null,
                 lastOpenedAt: new Date(),
             },
             { new: true }
@@ -1581,6 +1561,9 @@ async function saveOpportunityChange(record, user, update) {
 
 module.exports = {
     ReleaseTrack: {
+        audioContentHash: (track, _, { user }) => user?.id && String(user.id) === String(track.ownerId) ? track.audioContentHash : null,
+        sourceFileName: (track, _, { user }) => user?.id && String(user.id) === String(track.ownerId) ? track.sourceFileName : null,
+        sourceFileSize: (track, _, { user }) => user?.id && String(user.id) === String(track.ownerId) ? track.sourceFileSize : null,
         audioUrl: (track, _, { user }) => canAccessTrackAudio(track, user) ? (track.audioUrl || "") : null,
         previewAudioUrl: (track, _, { user }) => canAccessTrackAudio(track, user) ? (track.previewAudioUrl || "") : null,
         canAccessAudio: (track, _, { user }) => canAccessTrackAudio(track, user),
@@ -2127,7 +2110,7 @@ module.exports = {
                 status: { $ne: "archived" },
                 $or: [
                     { visibility: { $in: ["public", "listed"] } },
-                    { isPublic: true },
+                    { visibility: { $exists: false }, isPublic: true },
                 ],
             }).sort({
                 trackNumber: 1,
@@ -3832,6 +3815,26 @@ module.exports = {
                 throw new Error("Release world not found.");
             }
 
+            const releaseTracks = await ReleaseTrack.find({ releaseWorldId: releaseWorld._id, ownerId: user.id });
+            const trackIds = releaseTracks.map(track => track._id);
+            const [profileReference, editorialReference, collectionReference] = await Promise.all([
+                CreativeProfile.exists({ featuredReleaseWorldId: releaseWorld._id }),
+                NexusEditorialConfig.exists({ $or: [
+                    { featuredTrackId: { $in: trackIds } },
+                    { "realmAnchors.trackId": { $in: trackIds } },
+                    { "realmOrders.trackIds": { $in: trackIds } },
+                ] }),
+                MusicCollection.exists({ isActive: true, $or: [
+                    { releaseWorldId: releaseWorld._id }, { trackIds: { $in: trackIds } },
+                ] }),
+            ]);
+            const blocked = archiveBlockReason(releaseWorld, {
+                profileReference: Boolean(profileReference), editorialReference: Boolean(editorialReference),
+                collectionReference: Boolean(collectionReference),
+                trackPublication: releaseTracks.some(track => track.showInNexus || ["in-review", "approved", "published"].includes(track.nexusReviewStatus)),
+            });
+            if (blocked) throw new Error(blocked);
+
             releaseWorld.status = "archived";
             releaseWorld.visibility = "private";
             releaseWorld.lastOpenedAt = new Date();
@@ -3887,6 +3890,7 @@ module.exports = {
 
         createReleaseTrack: async (_, { input }, { user }) => {
             requireCreator(user);
+            validateAudioIdentity(input);
 
             const releaseWorld = input.releaseWorldId
                 ? await getOwnedReleaseWorld(input.releaseWorldId, user.id)
@@ -3910,6 +3914,10 @@ module.exports = {
 
             const createPayload = {
                 ownerId: user.id,
+                workingCoverStyle: input.workingCoverStyle ?? undefined,
+                audioContentHash: input.audioContentHash ?? null,
+                sourceFileName: input.sourceFileName ?? null,
+                sourceFileSize: input.sourceFileSize ?? null,
                 releaseWorldId: releaseWorld?._id || null,
                 title: input.title,
                 slug,
@@ -4013,8 +4021,15 @@ module.exports = {
                 lastOpenedAt: new Date(),
             };
 
-            if (input.visibility !== undefined && input.isPublic === undefined) {
-                update.isPublic = input.visibility === "public";
+            // Identity belongs to the uploaded bytes, never to a replacement URL.
+            if (input.audioUrl !== undefined && input.audioUrl !== existingTrack.audioUrl) {
+                update.audioContentHash = null;
+                update.sourceFileName = null;
+                update.sourceFileSize = null;
+            }
+
+            if (input.visibility !== undefined) {
+                update.isPublic = ["public", "listed"].includes(input.visibility);
             }
 
             if (input.isPublic !== undefined && input.visibility === undefined) {
@@ -4159,6 +4174,23 @@ module.exports = {
             );
         },
 
+        repairCatalogTrackProjectLink: async (_, { trackId }, { user }) => {
+            requireCreator(user);
+            const track = await getOwnedReleaseTrack(trackId, user.id);
+            if (!track) throw new Error("Catalog track not found.");
+            if (!track.releaseWorldId) return track;
+            if (await getOwnedReleaseWorld(track.releaseWorldId, user.id)) {
+                throw new Error("This track belongs to a valid Release World. Repair cannot detach it.");
+            }
+            const repaired = await ReleaseTrack.findOneAndUpdate(
+                { _id: track._id, ownerId: user.id, releaseWorldId: track.releaseWorldId },
+                { $set: { releaseWorldId: null } },
+                { new: true, runValidators: true, timestamps: false }
+            );
+            if (!repaired) throw new Error("Project link changed. Reload the Library before repairing.");
+            return repaired;
+        },
+
         createSingleFromTrack: async (_, { trackId }, { user }) => {
             requireCreator(user);
 
@@ -4239,13 +4271,14 @@ module.exports = {
                     !attachedTrack.role ||
                     attachedTrack.role === "unknown"
                 ) {
-                    attachedTrack.role = "single";
+                    attachedTrack.role = "lead-single";
                     await attachedTrack.save();
                 }
 
                 return releaseWorld;
             } catch (error) {
-                if (releaseWorld?._id) {
+                // A later save can fail after attachment. Never delete a parent still in use.
+                if (releaseWorld?._id && !await ReleaseTrack.exists({ releaseWorldId: releaseWorld._id })) {
                     await ReleaseWorld.deleteOne({
                         _id: releaseWorld._id,
                         ownerId: user.id,

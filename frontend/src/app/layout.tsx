@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "@/styles/publicPrimitives.css";
 import ApolloWrapper from "@/components/ApolloWrapper";
 import CosmicTopNav from "@/components/CosmicTopNav";
 import SessionWrapper from "@/components/SessionWrapper";
@@ -15,8 +16,8 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-    title: "Cosmic Multiverse",
-    description: "A music-based emotional navigation system. Six realms. Six soundtracks. One cosmic journey.",
+    title: "COSMIC — Music & Artistic Direction",
+    description: "Start with the music. Discover release worlds, develop a song with Christopher, or build your own with COSMIC.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

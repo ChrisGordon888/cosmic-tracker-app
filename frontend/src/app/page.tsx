@@ -1,118 +1,339 @@
-"use client";
+import type { CSSProperties } from 'react';
 
-import "@/styles/landingPage.css";
-import Link from "next/link";
-import { useSession } from "next-auth/react";
+import PublicAtmosphere from '@/components/public/PublicAtmosphere';
+import Link from 'next/link';
+
+import '@/styles/landingPage.css';
+
+const COSMIC_CASCADE = [
+  { letter: 'C', word: 'CREATE' },
+  { letter: 'O', word: 'OBSERVE' },
+  { letter: 'S', word: 'SENSE' },
+  { letter: 'M', word: 'MOVE' },
+  { letter: 'I', word: 'INTEGRATE' },
+  { letter: 'C', word: 'CONNECT' },
+];
 
 const REALMS = [
-    { id: "303", mark: "∴", name: "Fractured Frontier", state: "Pressure into motion" },
-    { id: "202", mark: "◐", name: "The Veil", state: "Desire, mystery, signal" },
-    { id: "101", mark: "☾", name: "Moonlit Roads", state: "Memory and return" },
-    { id: "55", mark: "△", name: "Skybound City", state: "Ambition with direction" },
-    { id: "44", mark: "◇", name: "Astral Bazaar", state: "Worth, focus, exchange" },
-    { id: "0", mark: "∞", name: "InterSiddhi", state: "Center and source" },
+  {
+    sigil: '∴',
+    name: 'Fractured Frontier',
+    note: 'Pressure into motion',
+  },
+  {
+    sigil: '◐',
+    name: 'The Veil',
+    note: 'Desire, mystery, signal',
+  },
+  {
+    sigil: '☾',
+    name: 'Moonlit Roads',
+    note: 'Memory and return',
+  },
+  {
+    sigil: '△',
+    name: 'Skybound City',
+    note: 'Ambition with direction',
+  },
+  {
+    sigil: '◇',
+    name: 'Astral Bazaar',
+    note: 'Worth, focus, exchange',
+  },
+  {
+    sigil: '∞',
+    name: 'InterSiddhi',
+    note: 'Center and source',
+  },
 ];
 
 export default function LandingPage() {
-    const { data: session, status } = useSession();
-    const isAuthenticated = Boolean(session?.user);
+  return (
+    <main className="landing-page public-surface">
+      <PublicAtmosphere
+        source="/cosmic/home/cosmic-sanctuary-ambient-loop-6s.mp4"
+        poster="/cosmic/home/finalHomeCOSMIC.png"
+        tone="home"
+      />
 
-    return (
-        <main className="landing-page landing-gateway-page landing-gateway-v3-page min-h-screen relative overflow-hidden isolate">
-            <div className="fixed inset-0 z-0 h-full w-full overflow-hidden" aria-hidden="true">
-                <video autoPlay loop muted playsInline className="absolute inset-0 h-full w-full object-cover">
-                    <source src="/cosmic-landing-intro.mp4" type="video/mp4" />
-                </video>
-                <div className="landing-video-overlay landing-gateway-v3-overlay" />
-                <div className="landing-gateway-orb landing-gateway-orb-a" />
-                <div className="landing-gateway-orb landing-gateway-orb-b" />
-                <div className="landing-gateway-v3-starfield" />
-            </div>
+      {/* ======================================================
+          HERO
+          ====================================================== */}
+      <header className="landing-intro public-width">
+        <p className="public-label">
+          Christopher Gordon · artist / songwriter
+        </p>
 
-            <section className="landing-shell landing-gateway-shell landing-gateway-v3-shell relative z-10">
-                <div className="landing-hero-card landing-gateway-hero-card landing-gateway-v3-hero-card">
-                    <div className="landing-system-badge landing-gateway-badge landing-gateway-v3-badge">
-                        <span className="landing-system-dot" />
-                        <span>Cosmic Nexus</span>
-                    </div>
+        <div className="landing-wordmark-stage">
+          <h1
+            className="landing-wordmark"
+            aria-label="COSMIC"
+          >
+            {COSMIC_CASCADE.map((item, columnIndex) => (
+              <span
+                key={`${item.letter}-${item.word}`}
+                className="landing-wordmark-column"
+              >
+                <span
+                  className="landing-letter"
+                  aria-hidden="true"
+                >
+                  {item.letter}
+                </span>
 
-                    <p className="landing-gateway-eyebrow landing-gateway-v3-eyebrow">
-                        Music multiverse / Mood-based signals / Creative transformation
-                    </p>
-
-                    <h1 className="landing-title landing-gateway-title landing-gateway-v3-title">
-                        COSMIC
-                        <span>NEXUS</span>
-                    </h1>
-
-                    <p className="landing-subtitle landing-gateway-subtitle landing-gateway-v3-subtitle">
-                        A music multiverse for mood, energy, and creative transformation.
-                    </p>
-
-                    <p className="landing-description landing-gateway-description landing-gateway-v3-description">
-                        Explore songs, realms, and reflections that meet where you are — and move with where
-                        you&apos;re becoming.
-                    </p>
-
-                    <div className="landing-actions landing-actions-stacked landing-gateway-actions landing-gateway-v3-actions">
-                        <Link href="/nexus" className="landing-button-primary landing-gateway-v3-primary">
-                            Enter the Nexus
-                        </Link>
-
-                        <div className="landing-gateway-public-paths" aria-label="Explore Cosmic">
-                            <Link href="/find-your-realm">Find Your Realm</Link>
-                            <Link href="/services">Explore Services</Link>
-                        </div>
-
-                        {isAuthenticated ? (
-                            <div
-                                className="landing-gateway-creator-actions landing-gateway-v3-creator-actions"
-                                aria-label="Creator shortcuts"
-                            >
-                                <Link href="/creator">Creator OS</Link>
-                                <Link href="/creator/library">Creator Library</Link>
-                                <Link href="/practice">Practice</Link>
-                            </div>
-                        ) : (
-                            <Link
-                                href="/auth?callbackUrl=/nexus"
-                                className="landing-button-secondary-subtle landing-gateway-v3-secondary"
-                                aria-disabled={status === "loading"}
-                            >
-                                {status === "loading" ? "Checking session..." : "Sign in to save progress"}
-                            </Link>
-                        )}
-                    </div>
-
-                    <div className="landing-system-line landing-gateway-system-line landing-gateway-v3-system-line">
-                        <span>Listen</span>
-                        <span>Reflect</span>
-                        <span>Become</span>
-                    </div>
-
-                    <div
-                        className="landing-realm-grid landing-gateway-realm-grid landing-gateway-v3-realm-grid"
-                        aria-label="Cosmic realms"
+                <span
+                  className="landing-cascade-column"
+                  aria-hidden="true"
+                >
+                  {item.word.split('').map((character, characterIndex) => (
+                    <span
+                      key={`${item.word}-${characterIndex}`}
+                      className="landing-cascade-character"
+                      style={
+                        {
+                          '--cascade-column-index': columnIndex,
+                          '--cascade-character-index': characterIndex,
+                        } as CSSProperties
+                      }
                     >
-                        {REALMS.map((realm) => (
-                            <Link
-                                key={realm.id}
-                                href={isAuthenticated ? `/realms/${realm.id}` : "/find-your-realm"}
-                                className="landing-realm-glyph landing-gateway-realm-glyph landing-gateway-v3-realm-glyph"
-                                title={`${realm.name} — ${realm.state}`}
-                            >
-                                <span className="landing-realm-number">{realm.id}</span>
-                                <span className="landing-realm-icon">{realm.mark}</span>
-                                <span className="landing-realm-name">{realm.name}</span>
-                            </Link>
-                        ))}
-                    </div>
-                </div>
+                      {character}
+                    </span>
+                  ))}
+                </span>
+              </span>
+            ))}
+          </h1>
+        </div>
 
-                <p className="landing-gateway-v3-footnote">
-                    Six realms. Mood, sound, and story as portals inward.
-                </p>
-            </section>
-        </main>
-    );
+        <p className="landing-cover-line">
+          Music, release worlds, and creative tools for artists and producers.
+        </p>
+      </header>
+
+      {/* ======================================================
+          PRIMARY ENTRANCES
+          ====================================================== */}
+      <nav
+        className="landing-doors public-width"
+        aria-label="Find your way into COSMIC"
+      >
+        <Link
+          href="/nexus"
+          className="landing-door landing-door-listen"
+        >
+          <span className="public-label">
+            Listen / discover
+          </span>
+
+          <strong>
+            Nexus <span aria-hidden="true">↗</span>
+          </strong>
+
+          <p>
+            Listen to COSMIC. Explore the songs and their worlds.
+          </p>
+        </Link>
+
+        <Link
+          href="/find-your-realm"
+          className="landing-door landing-door-realm"
+        >
+          <span className="public-label">
+            Not sure where to begin?
+          </span>
+
+          <strong>
+            Find Your Realm <span aria-hidden="true">↗</span>
+          </strong>
+
+          <p>
+            Find music that meets you where you are.
+          </p>
+        </Link>
+
+        <Link
+          href="/creator"
+          className="landing-door landing-door-quiet"
+        >
+          <strong>
+            Creator <span aria-hidden="true">↗</span>
+          </strong>
+
+          <p>
+            Build and develop your work.
+          </p>
+        </Link>
+
+        <Link
+          href="/services"
+          className="landing-door landing-door-quiet"
+        >
+          <strong>
+            Services <span aria-hidden="true">↗</span>
+          </strong>
+
+          <p>
+            Work with Christopher. Music, production and creative development.
+          </p>
+        </Link>
+      </nav>
+
+      {/* ======================================================
+          REAL ARTIST PROOF
+          ====================================================== */}
+      <section
+        id="artist-proof"
+        className="landing-proof public-width"
+        aria-labelledby="sirens-title"
+      >
+        <Link
+          href="/releases/sirens-in-neverland"
+          className="landing-artwork"
+          aria-label="Enter SIRENS in Neverland"
+        >
+          <img
+            src="/sirensInNeverland.jpg"
+            alt="SIRENS in Neverland — original release artwork"
+            width="220"
+            height="220"
+            loading="lazy"
+          />
+        </Link>
+
+        <div className="landing-proof-copy">
+          <p className="public-label">
+            Current release world
+          </p>
+
+          <h2 id="sirens-title">
+            SIRENS in Neverland
+          </h2>
+
+          <p>
+            Six songs inside one world. An oceanic scrapbook of longing,
+            repetition, fantasy and fate.
+          </p>
+
+          <Link
+            href="/releases/sirens-in-neverland"
+            className="public-link"
+          >
+            Enter SIRENS →
+          </Link>
+        </div>
+      </section>
+
+      {/* ======================================================
+          REALM MAP
+
+          The six Realms establish the architecture.
+
+          They do NOT all pretend to be six different links while
+          sending users to the same quiz.
+
+          Nexus = explore intentionally.
+          Find Your Realm = help me choose.
+          ====================================================== */}
+      <section
+        className="landing-realm-map public-width"
+        aria-labelledby="landing-realms-title"
+      >
+        <div className="landing-section-heading">
+          <p className="public-label">
+            The COSMIC map
+          </p>
+
+          <h2 id="landing-realms-title">
+            Six realms. One universe.
+          </h2>
+
+          <p>
+            Distinct territories for mood, sound, story and creative direction.
+          </p>
+        </div>
+
+        <div
+          className="landing-realms"
+          role="list"
+          aria-label="The six realms of COSMIC"
+        >
+          {REALMS.map((realm) => (
+            <article
+              key={realm.name}
+              className="landing-realm"
+              role="listitem"
+              aria-label={`${realm.name} — ${realm.note}`}
+            >
+              <span
+                className="landing-realm-sigil"
+                aria-hidden="true"
+              >
+                {realm.sigil}
+              </span>
+
+              <div className="landing-realm-copy">
+                <strong>
+                  {realm.name}
+                </strong>
+
+                <small>
+                  {realm.note}
+                </small>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <div className="landing-realm-actions">
+          <Link
+            href="/nexus"
+            className="public-link"
+          >
+            Explore the Realms in Nexus →
+          </Link>
+
+          <Link
+            href="/find-your-realm"
+            className="public-link"
+          >
+            Find Your Realm →
+          </Link>
+        </div>
+      </section>
+
+      {/* ======================================================
+          SECONDARY / QUIET PATHS
+          ====================================================== */}
+      <section
+        className="landing-explore public-width"
+        aria-label="Other ways into COSMIC"
+      >
+        <p className="public-label">
+          Other ways in
+        </p>
+
+        <nav aria-label="More to explore">
+          <Link href="/practice">
+            <strong>
+              Practice ↗
+            </strong>
+
+            <span>
+              Make room for a creative rhythm.
+            </span>
+          </Link>
+
+          <Link href="/scroll">
+            <strong>
+              Scroll ↗
+            </strong>
+
+            <span>
+              Follow a thought. Find a reflection.
+            </span>
+          </Link>
+        </nav>
+      </section>
+    </main>
+  );
 }

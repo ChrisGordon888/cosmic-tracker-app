@@ -714,6 +714,7 @@ export default function TrackWorkspace({
             </div>
 
             <footer className="signal-board-track-footer">
+                <p role="status">{tracksError?.message || trackMessage}</p>
                 <div className="signal-board-track-save-copy">
                     <span>{isCreatingNewTrack || !selectedTrackId ? "New track" : "Track changes"}</span>
                     <strong>{isCreatingNewTrack || !selectedTrackId ? "Create this track when it is ready." : "Save the edits made to this track."}</strong>

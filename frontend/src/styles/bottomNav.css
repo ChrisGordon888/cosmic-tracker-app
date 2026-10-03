@@ -107,3 +107,4 @@ nav.bottom-nav a.nav-icon.active {
     transform: none;
   }
 }
+nav.bottom-nav-public { grid-template-columns:repeat(4,minmax(0,1fr)); }

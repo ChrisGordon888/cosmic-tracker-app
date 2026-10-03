@@ -1,12 +1,25 @@
 "use client";
 
 import Link from "next/link";
+import LibraryCleanupPanel from "@/components/creator/LibraryCleanupPanel";
+import SmartSortPanel from "@/components/creator/SmartSortPanel";
+import CatalogIntakePreflight from "@/components/creator/CatalogIntakePreflight";
+import { fileIdentity, intakeSignature, type IntakeApproval } from "@/lib/catalogIntake";
+import { catalogProjectLabel, type CatalogTrack } from "@/lib/catalogSorting";
+import WorkingCover from "@/components/creator/WorkingCover";
+import { isOrganized, matchesCleanup, parseFilename, type CleanupTrack, type WorkingCoverStyle } from "@/lib/libraryCleanup";
 import { gql, useMutation, useQuery } from "@apollo/client";
 import { upload } from "@vercel/blob/client";
 import { useSession } from "next-auth/react";
 import { useMemo, useRef, useState } from "react";
 import { useMusicPlayer } from "@/hooks/useMusicPlayer";
 import "@/styles/creatorLibrary.css";
+
+const REPAIR_PROJECT_LINK = gql`
+  mutation RepairCatalogTrackProjectLink($trackId: ID!) {
+    repairCatalogTrackProjectLink(trackId: $trackId) { id releaseWorldId }
+  }
+`;
 
 const CREATOR_LIBRARY_QUERY = gql`
   query CreatorLibrary {
@@ -35,6 +48,15 @@ const CREATOR_LIBRARY_QUERY = gql`
       mood
       audioUrl
       previewAudioUrl
+      workingCoverStyle
+      nexusReviewStatus
+      audioContentHash
+      sourceFileName
+      sourceFileSize
+      realmFinderScores { realm303 realm202 realm101 realm55 realm44 realm0 }
+      realmFinderSignals
+      realmFinderSuggestedRealmId
+      realmFinderSecondaryRealmId
       artworkUrl
       releaseCoverArtUrl
       visibility
@@ -70,6 +92,15 @@ const CREATE_CATALOG_TRACK = gql`
       mood
       audioUrl
       previewAudioUrl
+      workingCoverStyle
+      nexusReviewStatus
+      audioContentHash
+      sourceFileName
+      sourceFileSize
+      realmFinderScores { realm303 realm202 realm101 realm55 realm44 realm0 }
+      realmFinderSignals
+      realmFinderSuggestedRealmId
+      realmFinderSecondaryRealmId
       artworkUrl
       releaseCoverArtUrl
       visibility
@@ -141,6 +172,12 @@ const CREATE_SINGLE_FROM_TRACK = gql`
   }
 `;
 
+const ARCHIVE_LIBRARY_RELEASE = gql`
+  mutation ArchiveLibraryRelease($id: ID!) {
+    archiveReleaseWorld(id: $id) { id status visibility }
+  }
+`;
+
 type LibraryView = "tracks" | "releases" | "realms" | "publishing";
 
 type ReleaseWorld = {
@@ -162,7 +199,12 @@ type OrganizeResult = {
   boardHref: string;
 } | null;
 
-type ReleaseTrack = {
+type ReleaseTrack = CatalogTrack & {
+  audioContentHash?: string | null;
+  sourceFileName?: string | null;
+  sourceFileSize?: number | null;
+  workingCoverStyle?: WorkingCoverStyle | null;
+  nexusReviewStatus?: string | null;
   id: string;
   releaseWorldId?: string | null;
   title: string;
@@ -218,9 +260,11 @@ function hasAudio(track: ReleaseTrack) {
 }
 
 function getPublishingState(track: ReleaseTrack, release?: ReleaseWorld | null) {
-  if (!track.releaseWorldId) return "unsorted";
+  if (track.releaseWorldId && !release) return "project-link-needs-repair";
+
   if (track.showInNexus) return "published";
   if (track.status === "archived") return "archived";
+  if (!track.releaseWorldId) return track.visibility === "private" ? "needs-access" : "needs-release";
   if (track.realmId === null || track.realmId === undefined) return "needs-realm";
   if (!hasAudio(track) && track.playbackStatus !== "coming-soon") return "needs-audio";
   if (track.visibility === "private") return "needs-access";
@@ -232,29 +276,16 @@ function getPublishingState(track: ReleaseTrack, release?: ReleaseWorld | null) 
 function getPublishingLabel(state: string) {
   const labels: Record<string, string> = {
     published: "Published",
-    unsorted: "Unsorted",
-    ready: "Ready to publish",
+    ready: "Review readiness",
     "needs-realm": "Needs realm",
     "needs-audio": "Needs audio",
-    "needs-access": "Needs public access",
-    "needs-release": "Release not public",
+    "needs-access": "Private",
+    "needs-release": "Release required / not public",
     archived: "Archived",
     draft: "Draft",
   };
   return labels[state] ?? formatLabel(state);
 }
-
-function formatDate(value?: string | null) {
-  if (!value) return "Not edited yet";
-  const date = new Date(Number.isFinite(Number(value)) ? Number(value) : value);
-  if (Number.isNaN(date.getTime())) return "Recently edited";
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(date);
-}
-
 
 function getUploadTitle(fileName: string) {
   return fileName
@@ -286,7 +317,16 @@ function isSupportedAudioFile(file: File) {
 export default function CreatorLibraryPage() {
   const { status } = useSession();
   const { playOrToggleTrack, currentTrack, isPlaying } = useMusicPlayer();
+  const [smartQueue, setSmartQueue] = useState<CatalogTrack[]>([]);
+  const [smartIndex, setSmartIndex] = useState(0);
+  const [intakeApproval, setIntakeApproval] = useState<IntakeApproval | null>(null);
+  const [archiveRelease, { loading: archiving }] = useMutation(ARCHIVE_LIBRARY_RELEASE);
   const [view, setView] = useState<LibraryView>("tracks");
+  const [cleanupFilter, setCleanupFilter] = useState("all");
+  const [cleanupQueue, setCleanupQueue] = useState<CleanupTrack[]>([]);
+  const [cleanupIndex, setCleanupIndex] = useState(0);
+  const [intakeMetadata, setIntakeMetadata] = useState<Record<string, {title:string; bpm:number; keySignature:string}>>({});
+  const [dismissedSuggestions, setDismissedSuggestions] = useState<string[]>([]);
   const [search, setSearch] = useState("");
   const [releaseFilter, setReleaseFilter] = useState("all");
   const [realmFilter, setRealmFilter] = useState("all");
@@ -304,6 +344,7 @@ export default function CreatorLibraryPage() {
   const [busyTrackId, setBusyTrackId] = useState<string | null>(null);
   const audioInputRef = useRef<HTMLInputElement | null>(null);
 
+  const [repairProjectLink] = useMutation(REPAIR_PROJECT_LINK);
   const [createCatalogTrack] = useMutation(CREATE_CATALOG_TRACK);
   const [renameLibraryTrack] = useMutation(RENAME_LIBRARY_TRACK);
   const [deleteCatalogTrack] = useMutation(DELETE_CATALOG_TRACK);
@@ -315,8 +356,10 @@ export default function CreatorLibraryPage() {
     fetchPolicy: "cache-and-network",
   });
 
-  const releases: ReleaseWorld[] = data?.myReleaseWorlds ?? [];
-  const tracks: ReleaseTrack[] = data?.myCatalogTracks ?? [];
+  const releases = useMemo<ReleaseWorld[]>(() => data?.myReleaseWorlds ?? [], [data?.myReleaseWorlds]);
+  const tracks = useMemo<ReleaseTrack[]>(() => data?.myCatalogTracks ?? [], [data?.myCatalogTracks]);
+
+  const intakeCatalog = useMemo(()=>tracks.map(t=>({id:t.id,title:t.title,fileName:t.sourceFileName,audioContentHash:t.audioContentHash,audioUrl:t.audioUrl || t.previewAudioUrl})),[tracks]);
 
   const releaseMap = useMemo(
     () => new Map(releases.map((release) => [release.id, release])),
@@ -365,22 +408,24 @@ export default function CreatorLibraryPage() {
         .toLowerCase();
 
       return (
+        matchesCleanup(track, cleanupFilter) &&
         (!query || searchTarget.includes(query)) &&
         (releaseFilter === "all" ||
-          (releaseFilter === "unsorted" ? !track.releaseWorldId : track.releaseWorldId === releaseFilter)) &&
+          (releaseFilter === "standalone" ? !track.releaseWorldId : track.releaseWorldId === releaseFilter)) &&
         (realmFilter === "all" || String(track.realmId) === realmFilter) &&
         (statusFilter === "all" || track.status === statusFilter) &&
         (publishingFilter === "all" || track.publishingState === publishingFilter)
       );
     });
-  }, [enrichedTracks, search, releaseFilter, realmFilter, statusFilter, publishingFilter]);
+  }, [enrichedTracks, search, releaseFilter, realmFilter, statusFilter, publishingFilter, cleanupFilter]);
 
   const summary = useMemo(() => {
     return {
       total: tracks.length,
-      unsorted: enrichedTracks.filter((track) => !track.releaseWorldId).length,
+      organized: enrichedTracks.filter(isOrganized).length,
+      standalone: enrichedTracks.filter((track) => !track.releaseWorldId).length,
       published: enrichedTracks.filter((track) => track.showInNexus).length,
-      needsRealm: enrichedTracks.filter((track) => track.releaseWorldId && track.publishingState === "needs-realm").length,
+      needsRealm: enrichedTracks.filter((track) => matchesCleanup(track, "realm")).length,
       needsAudio: enrichedTracks.filter((track) => track.releaseWorldId && track.publishingState === "needs-audio").length,
       ready: enrichedTracks.filter((track) => track.publishingState === "ready").length,
     };
@@ -429,7 +474,7 @@ export default function CreatorLibraryPage() {
       const next = current.filter((_, index) => index !== indexToRemove);
       setUploadMessage(
         next.length
-          ? `${next.length} song${next.length === 1 ? "" : "s"} ready for Unsorted.`
+          ? `${next.length} song${next.length === 1 ? "" : "s"} ready for Standalone Catalog.`
           : "Queue cleared. Add songs whenever you are ready.",
       );
       return next;
@@ -438,6 +483,8 @@ export default function CreatorLibraryPage() {
 
   function clearSelectedAudioFiles() {
     setSelectedAudioFiles([]);
+    setIntakeMetadata({});
+    setDismissedSuggestions([]);
     setUploadMessage("Queue cleared. Add songs whenever you are ready.");
     if (audioInputRef.current) audioInputRef.current.value = "";
   }
@@ -485,18 +532,20 @@ export default function CreatorLibraryPage() {
 
     void playOrToggleTrack(playerTrack, queue, {
       source: "catalog",
-      label: releaseFilter === "unsorted" ? "Unsorted Library" : "Creator Library",
+      label: releaseFilter === "standalone" ? "Standalone Catalog" : "Creator Library",
     });
   }
 
   async function handleUploadSongs() {
-    if (selectedAudioFiles.length === 0 || isUploadingSongs) return;
+    if (selectedAudioFiles.length === 0 || isUploadingSongs || loading || Boolean(error) || !intakeApproval?.ready || intakeApproval.signature !== intakeSignature(selectedAudioFiles)) return;
+    const approvedFiles = selectedAudioFiles.filter(file=>!intakeApproval.excluded.includes(fileIdentity(file)));
+    if (!approvedFiles.length) { setUploadMessage("No files selected after preflight review."); return; }
 
     setIsUploadingSongs(true);
     let createdCount = 0;
 
     try {
-      for (const [index, file] of selectedAudioFiles.entries()) {
+      for (const [index, file] of approvedFiles.entries()) {
         setUploadMessage(
           `Uploading ${index + 1} of ${selectedAudioFiles.length}: ${file.name}`,
         );
@@ -517,7 +566,11 @@ export default function CreatorLibraryPage() {
         await createCatalogTrack({
           variables: {
             input: {
-              title: getUploadTitle(file.name),
+              ...(intakeMetadata[`${file.name}:${file.size}:${file.lastModified}`] ?? { title: getUploadTitle(file.name) }),
+              releaseWorldId: null,
+              audioContentHash: intakeApproval.hashes[fileIdentity(file)] ?? null,
+              sourceFileName: file.name,
+              sourceFileSize: file.size,
               status: "demo",
               audioUrl: uploadResult.url,
               visibility: "private",
@@ -535,11 +588,13 @@ export default function CreatorLibraryPage() {
 
       await refetch();
       setSelectedAudioFiles([]);
+      setIntakeMetadata({});
+      setDismissedSuggestions([]);
       if (audioInputRef.current) audioInputRef.current.value = "";
-      setReleaseFilter("unsorted");
+      setReleaseFilter("standalone");
       setView("tracks");
       setUploadMessage(
-        `${createdCount} song${createdCount === 1 ? "" : "s"} added to Unsorted. Nothing was published or assigned to a project.`,
+        `${createdCount} song${createdCount === 1 ? "" : "s"} added to Standalone Catalog. Nothing was published or assigned to a project.`,
       );
     } catch (uploadError) {
       const message =
@@ -555,7 +610,7 @@ export default function CreatorLibraryPage() {
 
 
 
-  async function handleRenameUnsortedTrack(track: ReleaseTrack) {
+  async function handleRenameStandaloneTrack(track: ReleaseTrack) {
     if (track.releaseWorldId || busyTrackId) return;
 
     const nextTitle = window.prompt("Rename this Library track", track.title);
@@ -571,7 +626,7 @@ export default function CreatorLibraryPage() {
       await renameLibraryTrack({
         variables: {
           id: track.id,
-          input: { title },
+          input: { title, slug: track.slug },
         },
       });
 
@@ -588,11 +643,11 @@ export default function CreatorLibraryPage() {
     }
   }
 
-  async function handleRemoveUnsortedTrack(track: ReleaseTrack) {
+  async function handleRemoveStandaloneTrack(track: ReleaseTrack) {
     if (track.releaseWorldId || busyTrackId) return;
 
     const confirmed = window.confirm(
-      `Remove "${track.title}" from your Library?\n\nThis permanently deletes the Unsorted track record and attempts to remove its uploaded audio from COSMIC storage. This cannot be undone.`,
+      `Remove "${track.title}" from your Library?\n\nThis permanently deletes the Standalone Catalog track record and attempts to remove its uploaded audio from COSMIC storage. This cannot be undone.`,
     );
 
     if (!confirmed) return;
@@ -611,7 +666,7 @@ export default function CreatorLibraryPage() {
       });
 
       await refetch();
-      setLibraryActionMessage(`${track.title} was removed from Unsorted.`);
+      setLibraryActionMessage(`${track.title} was removed from Standalone Catalog.`);
     } catch (deleteError) {
       setLibraryActionMessage(
         deleteError instanceof Error
@@ -654,7 +709,7 @@ export default function CreatorLibraryPage() {
       await refetch();
       setOrganizeMessage("");
       setOrganizeResult({
-        title: `${organizingTrack.title} is organized.`,
+        title: `${organizingTrack.title} has been placed.`,
         message: `Added to ${release.title}. It is now part of that Release World and will appear on its Signal Board.`,
         boardHref: `/releases/${release.slug}/board`,
       });
@@ -741,6 +796,8 @@ export default function CreatorLibraryPage() {
             <p>Capture songs first, organize them when the direction becomes clear, then develop the ones that belong to a Single, EP, Album, or other Release World.</p>
           </div>
           <div className="creator-library-hero-actions">
+            <button type="button" disabled={!filteredTracks.length} onClick={()=>{setCleanupQueue(filteredTracks.map(t=>({...t})));setCleanupIndex(0);}}>Clean up Library</button>
+            <button type="button" disabled={!filteredTracks.some(t=>matchesCleanup(t,"realm"))} onClick={()=>{setSmartQueue(filteredTracks.filter(t=>matchesCleanup(t,"realm")).map(t=>({...t})));setSmartIndex(0);}}>Smart Sort tracks needing Realm ({filteredTracks.filter(t=>matchesCleanup(t,"realm")).length})</button>
             <button type="button" onClick={scrollToIntake}>+ Add Music</button>
             <Link href="/creator/projects">Release Worlds</Link>
             <Link href="/nexus">View Nexus</Link>
@@ -818,6 +875,19 @@ export default function CreatorLibraryPage() {
                     <div>
                       <strong>{getUploadTitle(file.name)}</strong>
                       <small>{file.name}</small>
+                      {(() => {
+                        const key=`${file.name}:${file.size}:${file.lastModified}`;
+                        const suggestion=parseFilename(file.name);
+                        if(!suggestion || dismissedSuggestions.includes(key)) return null;
+                        return <div className="cleanup-suggestion"><strong>COSMIC noticed</strong><p>Title: {suggestion.title} · Key: {suggestion.keySignature} · BPM: {suggestion.bpm}</p><button type="button" disabled={isUploadingSongs} onClick={()=>{setIntakeMetadata(m=>({...m,[key]:suggestion}));setDismissedSuggestions(d=>[...d,key]);}}>Accept</button><button type="button" disabled={isUploadingSongs} onClick={()=>{
+                          const title=window.prompt('Title',suggestion.title); if(title===null)return;
+                          const bpm=window.prompt('BPM (20–300)',String(suggestion.bpm));if(bpm===null)return;
+                          const keySignature=window.prompt('Key',suggestion.keySignature);if(keySignature===null)return;
+                          if(!title.trim()||!Number.isInteger(Number(bpm))||Number(bpm)<20||Number(bpm)>300){setUploadMessage('Use a title and a whole BPM between 20 and 300.');return;}
+                          setIntakeMetadata(m=>({...m,[key]:{title:title.trim(),bpm:Number(bpm),keySignature}}));setDismissedSuggestions(d=>[...d,key]);
+                        }}>Edit</button><button type="button" disabled={isUploadingSongs} onClick={()=>setDismissedSuggestions(d=>[...d,key])}>Skip</button></div>;
+                      })()}
+                      {intakeMetadata[`${file.name}:${file.size}:${file.lastModified}`] && <p>Confirmed: {intakeMetadata[`${file.name}:${file.size}:${file.lastModified}`].title} · {intakeMetadata[`${file.name}:${file.size}:${file.lastModified}`].bpm} BPM · {intakeMetadata[`${file.name}:${file.size}:${file.lastModified}`].keySignature}</p>}
                     </div>
                     <button
                       type="button"
@@ -831,16 +901,17 @@ export default function CreatorLibraryPage() {
                 ))}
               </div>
 
+              <CatalogIntakePreflight files={selectedAudioFiles} catalog={intakeCatalog} disabled={isUploadingSongs} onChange={setIntakeApproval}/>
               <div className="creator-library-upload-queue-actions">
                 <button
                   type="button"
                   className="is-primary"
                   onClick={() => void handleUploadSongs()}
-                  disabled={isUploadingSongs}
+                  disabled={isUploadingSongs || loading || Boolean(error) || !intakeApproval?.ready || intakeApproval.signature !== intakeSignature(selectedAudioFiles) || intakeApproval.excluded.length === selectedAudioFiles.length}
                 >
                   {isUploadingSongs
                     ? "Uploading..."
-                    : `Add ${selectedAudioFiles.length} to Unsorted`}
+                    : `Add ${selectedAudioFiles.length} to Standalone Catalog`}
                 </button>
                 <button
                   type="button"
@@ -877,11 +948,13 @@ export default function CreatorLibraryPage() {
         <section className="creator-library-summary" aria-label="Catalog summary">
           {[
             ["Total tracks", summary.total],
-            ["Unsorted", summary.unsorted],
+            ["Organized", summary.organized],
+            ["Needs cleanup", summary.total-summary.organized],
+            ["Standalone Catalog", summary.standalone],
             ["Published", summary.published],
-            ["Needs realm", summary.needsRealm],
+            ["Realm undecided", summary.needsRealm],
             ["Needs audio", summary.needsAudio],
-            ["Ready", summary.ready],
+            ["Review readiness", summary.ready],
           ].map(([label, value]) => (
             <article key={String(label)}>
               <span>{label}</span>
@@ -899,12 +972,13 @@ export default function CreatorLibraryPage() {
                 className={view === item ? "is-active" : ""}
                 onClick={() => setView(item)}
               >
-                {item === "publishing" ? "Readiness" : formatLabel(item)}
+                {item === "publishing" ? "Access / publishing" : formatLabel(item)}
               </button>
             ))}
           </div>
 
           <div className="creator-library-filter-grid">
+            <label><span>Organization / queue</span><select value={cleanupFilter} onChange={e=>setCleanupFilter(e.target.value)}>{[['all','All tracks'],['cleanup','Needs cleanup'],['realm','Realm undecided'],['standalone','Categorized standalone'],['release','Release tracks'],['ideas','Ideas / demos']].map(([id,label])=><option key={id} value={id}>{label}</option>)}</select></label>
             <label className="creator-library-search">
               <span>Search</span>
               <input
@@ -918,7 +992,7 @@ export default function CreatorLibraryPage() {
               <span>Release</span>
               <select value={releaseFilter} onChange={(event) => setReleaseFilter(event.target.value)}>
                 <option value="all">All projects</option>
-                <option value="unsorted">Unsorted / No project</option>
+                <option value="standalone">Standalone Catalog / No project</option>
                 {releases.map((release) => (
                   <option key={release.id} value={release.id}>{release.title}</option>
                 ))}
@@ -946,10 +1020,10 @@ export default function CreatorLibraryPage() {
             </label>
 
             <label>
-              <span>Readiness</span>
+              <span>Access / publishing</span>
               <select value={publishingFilter} onChange={(event) => setPublishingFilter(event.target.value)}>
                 <option value="all">All readiness states</option>
-                {["unsorted", "published", "ready", "needs-realm", "needs-audio", "needs-access", "needs-release", "draft", "archived"].map((item) => (
+                {["published", "ready", "needs-realm", "needs-audio", "needs-access", "needs-release", "draft", "archived"].map((item) => (
                   <option key={item} value={item}>{getPublishingLabel(item)}</option>
                 ))}
               </select>
@@ -982,31 +1056,25 @@ export default function CreatorLibraryPage() {
                 <article className="creator-library-track-row" key={track.id}>
                   <div className="creator-library-track-title">
                     <div className="creator-library-track-art">
-                      {(track.artworkUrl || track.releaseCoverArtUrl || release?.coverArtUrl) ? (
-                        <img
-                          src={track.artworkUrl || track.releaseCoverArtUrl || release?.coverArtUrl || ""}
-                          alt=""
-                        />
-                      ) : (
-                        <span>{String(track.trackNumber ?? 1).padStart(2, "0")}</span>
-                      )}
+                      <WorkingCover track={track} releaseArtwork={release?.coverArtUrl}/>
                     </div>
                     <div>
                       <strong>{track.title}</strong>
                       <p>{track.bpm ? `${track.bpm} BPM` : "BPM TBD"} · {track.keySignature || "Key TBD"}</p>
                       <small className={track.artworkUrl ? "has-track-art" : "uses-release-art"}>
-                        {track.artworkUrl ? "Track artwork" : release?.coverArtUrl ? "Release artwork" : "Catalog track"}
+                        {track.artworkUrl ? "Track artwork" : (track.releaseCoverArtUrl || release?.coverArtUrl) ? "Release artwork" : track.workingCoverStyle === "none" ? "No artwork" : "Working cover"}
                       </small>
                     </div>
                   </div>
                   <div>
-                    <strong className={!release ? "creator-library-location-unsorted" : undefined}>
-                      {release?.title ?? "Unsorted"}
+                    <strong className={!release ? "creator-library-location-standalone" : undefined}>
+                      {release?.title ?? catalogProjectLabel(track, releaseMap)}
                     </strong>
-                    <p style={{ color: realm?.color }}>{realm ? `${realm.id} — ${realm.name}` : "Realm unassigned"}</p>
+                    <p style={{ color: realm?.color }}>{realm ? `${realm.id} — ${realm.name}` : "Realm undecided"}</p>
                   </div>
                   <div>
                     <strong>{formatLabel(track.status)}</strong>
+                    <p>{isOrganized(track) ? "Organized" : "Needs cleanup"}</p>
                     <p>{formatLabel(track.playbackStatus)} · {formatLabel(track.visibility)}</p>
                   </div>
                   <div>
@@ -1016,8 +1084,21 @@ export default function CreatorLibraryPage() {
                     <p>{track.nexusSortOrder === 999 ? "Auto sort" : `Sort ${track.nexusSortOrder}`}</p>
                   </div>
                   <div className="creator-library-row-actions">
+                    <button type="button" onClick={()=>{setSmartQueue([{...track}]);setSmartIndex(0);}}>Suggest placement</button>
                     {release ? (
                       <Link className="is-primary" href={`/releases/${release.slug}/board`}>Open Board</Link>
+                    ) : track.releaseWorldId ? (
+                      <button type="button" disabled={loading || !!error || busyTrackId === track.id} onClick={async () => {
+                        if (!window.confirm('Repair this broken project link as standalone? The server will verify that no owned Release World exists. Only the invalid project reference will be cleared.')) return;
+                        setBusyTrackId(track.id);
+                        try {
+                          await repairProjectLink({variables:{trackId:track.id}});
+                          await refetch();
+                          setLibraryActionMessage('Project link repaired. This track is now standalone.');
+                        } catch (e) {
+                          setLibraryActionMessage(e instanceof Error ? e.message : 'Could not repair project link.');
+                        } finally { setBusyTrackId(null); }
+                      }}>Repair as standalone</button>
                     ) : (
                       <>
                         <button
@@ -1026,11 +1107,11 @@ export default function CreatorLibraryPage() {
                           onClick={() => openOrganizer(track)}
                           disabled={busyTrackId === track.id}
                         >
-                          Organize
+                          Project placement
                         </button>
                         <button
                           type="button"
-                          onClick={() => void handleRenameUnsortedTrack(track)}
+                          onClick={() => void handleRenameStandaloneTrack(track)}
                           disabled={busyTrackId === track.id}
                         >
                           Rename
@@ -1038,7 +1119,7 @@ export default function CreatorLibraryPage() {
                         <button
                           type="button"
                           className="is-destructive"
-                          onClick={() => void handleRemoveUnsortedTrack(track)}
+                          onClick={() => void handleRemoveStandaloneTrack(track)}
                           disabled={busyTrackId === track.id}
                         >
                           Remove
@@ -1088,6 +1169,11 @@ export default function CreatorLibraryPage() {
                     {releaseTracks.length === 0 && <span>No matching tracks</span>}
                   </div>
                   <div className="creator-library-card-actions">
+                    <button type="button" title="Archive preserves all music and assets. Public, featured and Nexus-linked releases must be cleared through their existing workflows first." disabled={archiving || release.status === 'archived' || release.status === 'released' || release.visibility !== 'private' || release.isFeatured || tracks.some(t=>t.releaseWorldId===release.id && (t.showInNexus || ['in-review','approved','published'].includes(t.nexusReviewStatus??'')))} onClick={async()=>{
+                      const count=tracks.filter(t=>t.releaseWorldId===release.id).length;
+                      if(!window.confirm(`Archive "${release.title}"? ${count} tracks, assets and board content will remain attached and preserved. Nothing is deleted.`))return;
+                      try{await archiveRelease({variables:{id:release.id}});await refetch();setLibraryActionMessage(`Archived ${release.title}. Music and assets preserved.`);}catch(e){setLibraryActionMessage(e instanceof Error?e.message:'Could not archive.');}
+                    }}>Archive project</button>
                     <Link href={`/releases/${release.slug}/board`}>Signal Board</Link>
                     <Link href={`/releases/${release.slug}`}>Portal</Link>
                   </div>
@@ -1121,22 +1207,14 @@ export default function CreatorLibraryPage() {
                 <p className="creator-library-kicker">Release Readiness</p>
                 <h2>See where the music is — not where it has to go.</h2>
                 <p>
-                  Unsorted songs can stay private as long as you want. Readiness only matters once a track
+                  Standalone Catalog songs can stay private as long as you want. Readiness only matters once a track
                   becomes part of a Release World and you decide to move it toward listeners or Nexus.
                 </p>
-              </div>
-              <div className="creator-library-readiness-flow" aria-label="Release readiness path">
-                {["Unsorted", "In Project", "Developing", "Ready", "Nexus"].map((step, index) => (
-                  <span key={step}>
-                    <em>{String(index + 1).padStart(2, "0")}</em>
-                    {step}
-                  </span>
-                ))}
               </div>
             </section>
 
             <section className="creator-library-publishing-columns">
-            {["unsorted", "ready", "needs-realm", "needs-audio", "needs-release", "published"].map((state) => {
+            {["ready", "needs-realm", "needs-audio", "needs-access", "needs-release", "draft", "archived", "published"].map((state) => {
               const stateTracks = filteredTracks.filter((track) => track.publishingState === state);
               return (
                 <article key={state}>
@@ -1145,7 +1223,7 @@ export default function CreatorLibraryPage() {
                     {stateTracks.map((track) => (
                       <Link key={track.id} href={track.release ? `/releases/${track.release.slug}/board` : "/creator/projects"}>
                         <strong>{track.title}</strong>
-                        <small>{track.release?.title ?? "Unsorted"}</small>
+                        <small>{track.release?.title ?? catalogProjectLabel(track, releaseMap)}</small>
                       </Link>
                     ))}
                     {stateTracks.length === 0 && <p>No tracks here.</p>}
@@ -1159,6 +1237,8 @@ export default function CreatorLibraryPage() {
 
 
 
+        {smartQueue[smartIndex] && <SmartSortPanel releases={releaseMap} key={smartQueue[smartIndex].id} track={smartQueue[smartIndex]} catalog={tracks} position={smartIndex+1} total={smartQueue.length} onClose={()=>setSmartQueue([])} onNext={()=>setSmartIndex(i=>i+1)} onSave={async realmId=>{await renameLibraryTrack({variables:{id:smartQueue[smartIndex].id,input:{realmId}}});await refetch();}}/>}
+        {cleanupQueue[cleanupIndex] && <LibraryCleanupPanel catalog={tracks} key={cleanupQueue[cleanupIndex].id} track={cleanupQueue[cleanupIndex]} position={cleanupIndex+1} total={cleanupQueue.length} location={releaseMap.get(cleanupQueue[cleanupIndex].releaseWorldId ?? '')?.title ?? catalogProjectLabel(cleanupQueue[cleanupIndex], releaseMap)} releaseArtwork={releaseMap.get(cleanupQueue[cleanupIndex].releaseWorldId ?? '')?.coverArtUrl} onClose={()=>setCleanupQueue([])} onNext={()=>setCleanupIndex(i=>i+1)} onSave={async changes=>{if(Object.keys(changes).length){await renameLibraryTrack({variables:{id:cleanupQueue[cleanupIndex].id,input:changes}});await refetch();}}}/>}
         {organizingTrack && (
           <div
             className="creator-library-organize-backdrop"
@@ -1175,10 +1255,10 @@ export default function CreatorLibraryPage() {
             >
               <div className="creator-library-organize-heading">
                 <div>
-                  <p className="creator-library-kicker">Organize</p>
+                  <p className="creator-library-kicker">Project placement</p>
                   <h2 id="creator-library-organize-title">{organizingTrack.title}</h2>
                   <p>
-                    Keep it Unsorted, place it in an existing Release World, or turn it directly into a private draft Single.
+                    Keep it standalone, place it in an existing Release World, or turn it directly into a private draft Single.
                   </p>
                 </div>
                 <button type="button" onClick={closeOrganizer} disabled={isOrganizing} aria-label="Close organizer">
@@ -1249,14 +1329,14 @@ export default function CreatorLibraryPage() {
                     {availableReleaseWorlds.length === 0 && (
                       <div className="creator-library-organize-empty">
                         <strong>No active Release Worlds yet.</strong>
-                        <p>Create a Single from this song, or keep it Unsorted for now.</p>
+                        <p>Create a Single from this song, or keep it standalone for now.</p>
                       </div>
                     )}
                   </div>
 
                   <div className="creator-library-organize-footer">
                     <button type="button" onClick={closeOrganizer} disabled={isOrganizing}>
-                      Keep Unsorted
+                      Keep standalone
                     </button>
                     {organizeMessage && <p role="status">{organizeMessage}</p>}
                   </div>

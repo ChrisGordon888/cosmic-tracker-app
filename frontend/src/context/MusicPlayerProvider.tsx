@@ -639,7 +639,8 @@ export function MusicPlayerProvider({
     }, [volumeState]);
 
     useEffect(() => {
-        if (!currentTrack || !isPlaying || currentTime < 1) return;
+        // Listen history requires an account; fictional demo audio never writes it.
+        if (!isAuthenticated || !currentTrack || currentTrack.source === 'demo' || !isPlaying || currentTime < 1) return;
 
         const listenProgress = duration > 0 ? currentTime / duration : 0;
         const hasMetListenThreshold = currentTime >= 30 || listenProgress >= 0.8;
@@ -673,7 +674,7 @@ export function MusicPlayerProvider({
                 loggedListenIdsRef.current.delete(listenKey);
                 console.error('Failed to log music listen:', error);
             });
-    }, [currentTrack, isPlaying, currentTime, duration, logMusicListen]);
+    }, [currentTrack, isPlaying, currentTime, duration, logMusicListen, isAuthenticated]);
 
     useEffect(() => {
         const current = currentTrackRef.current;

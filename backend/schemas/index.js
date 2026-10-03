@@ -278,7 +278,13 @@ const typeDefs = gql`
     realm0: Int
   }
 
+  enum WorkingCoverStyle { minimal atmospheric signal artifact none }
+
   type ReleaseTrack {
+    audioContentHash: String
+    sourceFileName: String
+    sourceFileSize: Float
+    workingCoverStyle: WorkingCoverStyle
     id: ID!
     ownerId: String!
     releaseWorldId: ID
@@ -500,6 +506,10 @@ const typeDefs = gql`
   }
 
   input ReleaseTrackInput {
+    audioContentHash: String
+    sourceFileName: String
+    sourceFileSize: Float
+    workingCoverStyle: WorkingCoverStyle
     releaseWorldId: ID
     title: String!
     slug: String
@@ -541,6 +551,7 @@ const typeDefs = gql`
   }
 
   input UpdateReleaseTrackInput {
+    workingCoverStyle: WorkingCoverStyle
     title: String
     slug: String
     trackNumber: Int
@@ -868,6 +879,7 @@ const typeDefs = gql`
     updateReleaseTrack(id: ID!, input: UpdateReleaseTrackInput!): ReleaseTrack!
     deleteCatalogTrack(trackId: ID!): ReleaseTrack!
     attachTrackToReleaseWorld(trackId: ID!, releaseWorldId: ID!): ReleaseTrack!
+    repairCatalogTrackProjectLink(trackId: ID!): ReleaseTrack!
     createSingleFromTrack(trackId: ID!): ReleaseWorld!
     deleteReleaseTrack(id: ID!): ReleaseTrack
     submitTrackForNexusReview(trackId: ID!): ReleaseTrack!

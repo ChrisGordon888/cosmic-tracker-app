@@ -5,15 +5,11 @@ import { usePathname } from "next/navigation";
 import { usePlatformAccess } from "@/context/PlatformAccessProvider";
 import "@/styles/bottomNav.css";
 
+import { publicDestinations, isPublicJourney, isPublicWorld } from "@/lib/publicJourney";
+
 type BottomNavItem = { href: string; icon: string; label: string };
 
-const publicItems: BottomNavItem[] = [
-    { href: "/", icon: "🌌", label: "Home" },
-    { href: "/nexus", icon: "🎵", label: "Nexus" },
-    { href: "/find-your-realm", icon: "◐", label: "Align" },
-    { href: "/scroll", icon: "🌀", label: "Scroll" },
-    { href: "/services", icon: "◇", label: "Services" },
-];
+const publicItems: BottomNavItem[] = publicDestinations;
 
 const memberItems: BottomNavItem[] = [
     { href: "/nexus", icon: "🎵", label: "Nexus" },
@@ -54,7 +50,8 @@ export default function BottomNav() {
         loading,
     } = usePlatformAccess();
 
-    const navItems = !loading && canAccessAdmin
+    const publicSurface = isPublicJourney(pathname);
+    const navItems = publicSurface ? publicItems : !loading && canAccessAdmin
         ? adminItems
         : !loading && canAccessCreatorOS
             ? creatorItems
@@ -62,8 +59,10 @@ export default function BottomNav() {
             ? memberItems
             : publicItems;
 
+    if (isPublicWorld(pathname)) return null;
+
     return (
-        <nav className="bottom-nav" aria-label="Primary mobile navigation">
+        <nav className={`bottom-nav ${navItems === publicItems ? "bottom-nav-public" : ""}`} aria-label="Primary mobile navigation">
             {navItems.map(({ href, icon, label }) => {
                 const isActive = isRouteActive(pathname, href);
                 return (

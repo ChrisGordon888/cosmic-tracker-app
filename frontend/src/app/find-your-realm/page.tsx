@@ -190,6 +190,7 @@ export default function FindYourRealmPage() {
                 videoSrc="/nexus-cockpit.mp4"
                 realmName="Find Your Realm"
                 overlayOpacity={0.35}
+                motionControls
             />
 
             <div className="min-h-screen pb-32">

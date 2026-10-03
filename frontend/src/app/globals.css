@@ -518,3 +518,29 @@ body {
     font-size: 0.78rem;
     line-height: 1.55;
 }
+
+/* On narrow public worlds, reserve real space for both player states.
+   The world scrolls above the player instead of beneath essential controls. */
+@media (max-width: 899px) {
+    body:has(> .is-world-player) {
+        height: 100dvh;
+        min-height: 0;
+        overflow: hidden;
+        padding-bottom: 0;
+    }
+    body:has(> .is-world-player) > main {
+        min-height: 0;
+        overflow-y: auto;
+        flex: 1 1 0%;
+    }
+    body > .cosmic-mini-player.is-world-player {
+        position: relative;
+        flex-shrink: 0;
+        align-self: flex-end;
+        inset: auto;
+        margin: .5rem .75rem calc(.5rem + env(safe-area-inset-bottom));
+        max-height: 45dvh;
+        overflow-y: auto;
+        max-width: calc(100% - 1.5rem);
+    }
+}

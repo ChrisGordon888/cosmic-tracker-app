@@ -95,7 +95,7 @@ export function getMusicAvailability(
     };
   }
 
-  if (visibility === 'private' || track.isPublic === false) {
+  if (visibility === 'private' || (track.visibility == null && track.isPublic === false)) {
     return {
       state: 'private',
       isVisible: false,

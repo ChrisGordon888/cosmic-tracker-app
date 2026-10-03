@@ -218,7 +218,6 @@ function getFeaturedProject(
     return (
         projects.find((project) => profileFeaturedId && project.id === profileFeaturedId) ??
         projects.find((project) => project.isFeatured) ??
-        projects[0] ??
         null
     );
 }
@@ -477,7 +476,7 @@ export default function CreatorDashboardPage() {
 
                     <aside className="creator-feature-card">
                         <div className="creator-feature-topline">
-                            <span>{activeProject?.isFeatured ? 'Featured Release' : 'Active Release'}</span>
+                            <span>{featuredProject ? 'Your featured project' : 'Recent project'}</span>
                             <em>{activeProject ? formatRelativeSignal(activeProject.lastOpenedAt) : 'Ready'}</em>
                         </div>
 
@@ -548,15 +547,15 @@ export default function CreatorDashboardPage() {
                     <article className="creator-console-panel creator-console-panel-featured">
                         <div className="creator-panel-title-row">
                             <div>
-                                <p className="creator-console-kicker">Featured Release</p>
-                                <h2>Broadcast to Nexus</h2>
+                                <p className="creator-console-kicker">Your featured project</p>
+                                <h2>Your creative focus</h2>
                             </div>
                             <Link href="/nexus">View Nexus</Link>
                         </div>
 
                         <p className="creator-console-note">
                             A featured Release World can be a Single, EP, Album, or another intentional project.
-                            The Library comes first; Nexus only receives the signals you choose to develop and publish.
+                            This is your account’s featured project. Global Nexus features are selected separately by COSMIC editorial.
                         </p>
 
                         <div className="creator-feature-flow">
@@ -572,8 +571,8 @@ export default function CreatorDashboardPage() {
                             </div>
                             <div>
                                 <span>03</span>
-                                <strong>Broadcast</strong>
-                                <p>Its portal, artwork, and focus tracks move into the Nexus.</p>
+                                <strong>Publish</strong>
+                                <p>Publish its Release World. Submit tracks to Nexus separately when ready.</p>
                             </div>
                         </div>
                     </article>
@@ -624,7 +623,7 @@ export default function CreatorDashboardPage() {
                                 projects.slice(0, 6).map((project) => (
                                     <article
                                         key={project.id}
-                                        className={`creator-project-card ${project.id === activeProject?.id ? 'is-featured' : ''}`}
+                                        className={`creator-project-card ${project.id === featuredProject?.id ? 'is-featured' : ''}`}
                                     >
                                         <ProjectCover project={project} />
 
@@ -643,10 +642,10 @@ export default function CreatorDashboardPage() {
                                                 <Link href={`/releases/${project.slug}/board`}>Signal Board</Link>
                                                 <button
                                                     type="button"
-                                                    disabled={isSettingFeatured || project.id === activeProject?.id}
+                                                    disabled={isSettingFeatured || project.id === featuredProject?.id}
                                                     onClick={() => handleSetFeatured(project)}
                                                 >
-                                                    {project.id === activeProject?.id ? 'Featured' : 'Set Featured'}
+                                                    {project.id === featuredProject?.id ? 'Featured' : 'Set Featured'}
                                                 </button>
                                             </div>
                                         </div>
@@ -685,7 +684,7 @@ export default function CreatorDashboardPage() {
                                 'Creator library',
                                 'Release worlds',
                                 'Signal boards',
-                                'Nexus feature',
+                                'Your featured project',
                                 'Public portals',
                             ].map((item) => (
                                 <span key={item}>{item}</span>

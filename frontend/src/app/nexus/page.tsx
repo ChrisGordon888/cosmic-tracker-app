@@ -1,11 +1,12 @@
 'use client';
 
+import PublicAtmosphere from '@/components/public/PublicAtmosphere';
+
 import { useSession, signIn } from 'next-auth/react';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { gql, useQuery, useMutation } from '@apollo/client';
 import { getTodayMoonPhase, getRealmMoonAlignment } from '@/lib/moonPhases';
-import RealmBackground from '@/components/realm/RealmBackground';
 import { GET_ME, GET_PUBLIC_NEXUS_TRACKS, LOG_DAILY_LOGIN } from '@/graphql/realms';
 import { GET_MY_NEXUS_TRACKS } from '@/graphql/musicAccess';
 import { useMusicPlayer } from '@/hooks/useMusicPlayer';
@@ -126,15 +127,6 @@ const GET_PUBLIC_FEATURED_RELEASE_TRACKS = gql`
     ${FEATURED_RELEASE_TRACK_FIELDS}
     query GetPublicFeaturedReleaseTracks($releaseWorldId: ID!) {
         getPublicReleaseTracks(releaseWorldId: $releaseWorldId) {
-            ...FeaturedReleaseTrackFields
-        }
-    }
-`;
-
-const GET_MY_FEATURED_SIGNAL = gql`
-    ${FEATURED_RELEASE_TRACK_FIELDS}
-    query GetMyFeaturedSignal {
-        getMyFeaturedSignal {
             ...FeaturedReleaseTrackFields
         }
     }
@@ -656,13 +648,7 @@ export default function CosmicNexusHub() {
         return meta?.name ?? 'None';
     })();
 
-    const { data: myFeaturedSignalData } = useQuery(GET_MY_FEATURED_SIGNAL, {
-        skip: !isCreatorView,
-        fetchPolicy: 'cache-and-network',
-    });
-
     const { data: publicFeaturedSignalData } = useQuery(GET_PUBLIC_FEATURED_SIGNAL, {
-        skip: isCreatorView,
         fetchPolicy: 'cache-and-network',
     });
 
@@ -682,12 +668,6 @@ export default function CosmicNexusHub() {
         : null;
 
     const creatorFeaturedArtworkUrl = creatorFeaturedRelease?.coverArtUrl?.trim() || null;
-    const isCreatorPreviewRelease = Boolean(
-        isCreatorView &&
-        creatorFeaturedRelease &&
-        creatorFeaturedRelease.visibility !== 'public'
-    );
-
     const featuredReleaseTracks = (
         isCreatorView
             ? myFeaturedReleaseTracksData?.getReleaseTracks
@@ -903,16 +883,11 @@ export default function CosmicNexusHub() {
         tryPlayTrack(fullTrack);
     };
 
-    const featuredSignalRecord = (
-        isCreatorView
-            ? myFeaturedSignalData?.getMyFeaturedSignal
-            : publicFeaturedSignalData?.getPublicFeaturedSignal
-    ) as NexusFeaturedReleaseTrack | null | undefined;
-
-    const dynamicFlagshipTrack =
-        runtimeMusicCatalog.find(
-            (track) => track.source === 'creator' && track.role === 'flagship'
-        ) ?? null;
+    // Global editorial selection is independent of the signed-in creator's project preview.
+    const featuredSignalRecord = publicFeaturedSignalData?.getPublicFeaturedSignal as NexusFeaturedReleaseTrack | null | undefined;
+    const dynamicFlagshipTrack = mapReleaseTracksToMusicTracks(
+        featuredSignalRecord ? [featuredSignalRecord as PublicNexusReleaseTrack] : []
+    )[0] ?? null;
     const flagshipTrack = dynamicFlagshipTrack ?? FLAGSHIP_TRACKS[0] ?? null;
     const flagshipTrackLocked = flagshipTrack ? isTrackLocked(flagshipTrack) : false;
     const flagshipUnlockLabel = flagshipTrack ? getTrackUnlockLabel(flagshipTrack) : null;
@@ -929,7 +904,6 @@ export default function CosmicNexusHub() {
     const featuredSignalArtwork =
         featuredSignalRecord?.artworkUrl?.trim() ||
         featuredSignalRecord?.releaseCoverArtUrl?.trim() ||
-        creatorFeaturedArtworkUrl ||
         releaseArtworkUrl ||
         null;
     const getCuratedCollectionArtwork = (collection: any) => {
@@ -942,19 +916,19 @@ export default function CosmicNexusHub() {
 
     const panelStyle = {
         borderRadius: '28px',
-        background: 'linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.026))',
+        background: 'linear-gradient(180deg, rgba(8,12,20,0.68), rgba(8,12,20,0.54))',
         boxShadow: '0 18px 50px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.05)',
     };
 
     const sectionStyle = {
         borderRadius: '30px',
-        background: 'linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.022))',
+        background: 'linear-gradient(180deg, rgba(8,12,20,0.46), rgba(8,12,20,0.30))',
         boxShadow: '0 18px 56px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.05)',
     };
 
     if (status === 'loading' || (session && userLoading)) {
         return (
-            <div className="min-h-screen grid place-items-center p-6 nexus-shell">
+            <div className="min-h-screen grid place-items-center p-6 nexus-shell public-surface">
                 <div
                     className="glass-card nexus-panel max-w-md text-center"
                     style={{
@@ -991,13 +965,8 @@ export default function CosmicNexusHub() {
 
     return (
         <>
-            <RealmBackground
-                videoSrc="/nexus-cockpit.mp4"
-                realmName="The Cosmic Nexus"
-                overlayOpacity={0.3}
-            />
-
-            <div className="min-h-screen pb-32 nexus-shell">
+            <div className="min-h-screen pb-32 nexus-shell public-surface">
+      <PublicAtmosphere source="/cosmic/nexus/cosmic-landscape-seamless-loop-6s.mp4" poster="/cosmic/nexus/finalNexusCOSMIC.png" tone="nexus" />
                 <div className="container mx-auto px-4 py-6 md:py-8 max-w-5xl nexus-container">
                     <header
                         className="text-center mb-7 md:mb-8 fade-in nexus-hero"
@@ -1009,7 +978,7 @@ export default function CosmicNexusHub() {
                             className="text-xs uppercase tracking-[0.24em] text-muted mb-3"
                             style={{ letterSpacing: '0.24em' }}
                         >
-                            Music Multiverse
+                            COSMIC · Christopher Gordon
                         </p>
 
                         <h1
@@ -1019,12 +988,20 @@ export default function CosmicNexusHub() {
                                 textShadow: '0 10px 36px rgba(0,0,0,0.28)',
                             }}
                         >
-                            COSMIC NEXUS
+                            Nexus
                         </h1>
 
                         <p className="text-lg text-secondary max-w-3xl mx-auto">
-                            Explore the world through music — play what is open now, preview what is coming, and follow the catalog pieces as they evolve into releases, EPs, artwork, and deeper stories.
+                            Songs, vocals and worlds by Christopher Gordon. Start with the music.
                         </p>
+                        <div className="public-actions nexus-listen-entry">
+                            {flagshipTrack && !flagshipTrackLocked && (
+                                <button type="button" className="public-action public-action-primary" onClick={() => tryPlayTrack(flagshipTrack)}>
+                                    {flagshipIsCurrent && isPlaying ? 'Pause' : 'Play'} {flagshipTrack.trackTitle}
+                                </button>
+                            )}
+                            <a href="#realm-soundtracks" className="public-link">Explore the catalog →</a>
+                        </div>
                     </header>
 
                     {creatorFeaturedRelease && creatorFeaturedPortalHref && (
@@ -1078,7 +1055,7 @@ export default function CosmicNexusHub() {
                                         className="px-3 py-1.5 rounded-full text-[11px] uppercase tracking-[0.14em] bg-[#7c5cff22] border border-[#7c5cff44] text-[#cdb7ff]"
                                         style={{ backdropFilter: 'blur(10px)' }}
                                     >
-                                        {isCreatorPreviewRelease ? 'Creator Preview' : 'Featured Portal'}
+                                        {isCreatorView ? 'Your project preview · not a Nexus feature' : 'Featured Portal'}
                                     </span>
 
                                     <span
@@ -1660,77 +1637,7 @@ export default function CosmicNexusHub() {
                         </div>
                     </div>
 
-                    <section
-                        id="build-with-cosmic"
-                        className="glass-card nexus-panel p-5 md:p-6 mb-5 fade-in"
-                        style={{
-                            ...sectionStyle,
-                            animationDelay: '0.20s',
-                            borderRadius: '30px',
-                        }}
-                    >
-                        <div className="grid grid-cols-1 md:grid-cols-[1.15fr_0.85fr] gap-4 items-center">
-                            <div>
-                                <p className="text-xs uppercase tracking-[0.18em] text-muted mb-2">
-                                    Build With Cosmic
-                                </p>
 
-                                <h2
-                                    className="text-3xl md:text-4xl font-display mb-2 text-glow"
-                                    style={{
-                                        letterSpacing: '-0.03em',
-                                        lineHeight: 1,
-                                    }}
-                                >
-                                    Building your own world?
-                                </h2>
-
-                                <p className="text-secondary text-sm md:text-base leading-relaxed max-w-2xl">
-                                    If the Nexus sparks ideas for your music, rollout, workflow, or creative system,
-                                    you can work directly with Cosmic on direction, audits, lessons, release portals,
-                                    and custom builds.
-                                </p>
-                            </div>
-
-                            <div
-                                className="rounded-3xl border border-white/10 p-4"
-                                style={{
-                                    background:
-                                        'radial-gradient(circle at 12% 0%, rgba(220,186,92,0.12), transparent 42%), rgba(255,255,255,0.04)',
-                                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
-                                }}
-                            >
-                                <p className="text-[10px] uppercase tracking-[0.16em] text-muted mb-2">
-                                    Best first step
-                                </p>
-
-                                <h3 className="text-2xl font-display mb-1">Creative Direction Session</h3>
-
-                                <p className="text-sm text-secondary mb-4 leading-relaxed">
-                                    A focused 60-minute session for shaping a song, release, artist world,
-                                    workflow, or next creative move.
-                                </p>
-
-                                <div className="flex flex-wrap gap-2">
-                                    <Link
-                                        href="/services"
-                                        className="btn-primary inline-flex"
-                                        style={{ borderRadius: '999px' }}
-                                    >
-                                        Explore Services
-                                    </Link>
-
-                                    <Link
-                                        href="/services/inquire?offer=creative-direction-session&intent=book"
-                                        className="btn-secondary inline-flex"
-                                        style={{ borderRadius: '999px' }}
-                                    >
-                                        Book Session
-                                    </Link>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
 
                     <section
                         className="glass-card nexus-panel nexus-latest-signal fade-in mb-5 overflow-hidden"
@@ -2351,6 +2258,11 @@ export default function CosmicNexusHub() {
                                 </div>
                             </div>
                         )}
+                    </section>
+
+                    <section id="build-with-cosmic" className="nexus-public-invitation">
+                        <div><p className="public-label">Have a song in progress?</p><h2 className="public-title">Find its next direction.</h2></div>
+                        <div className="public-actions"><Link href="/services" className="public-link">Work with Christopher →</Link><Link href="/creator" className="public-link">Build my own →</Link></div>
                     </section>
 
                 </div>

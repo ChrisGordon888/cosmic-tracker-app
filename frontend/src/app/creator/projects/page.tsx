@@ -681,7 +681,7 @@ export default function CreatorProjectsPage() {
                 >
                   <div className="creator-projects-release-card-topline">
                     <span>{getProjectTypeCopy(world)}</span>
-                    {world.isFeatured && <span>Nexus Featured</span>}
+                    {world.isFeatured && <span>Your featured project</span>}
                   </div>
 
                   <div className="creator-projects-release-card-mainline">

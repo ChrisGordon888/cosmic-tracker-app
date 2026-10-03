@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" role="img" aria-labelledby="title desc">
+<title id="title">Low Tide — Threshold</title><desc id="desc">An amber window above quiet blue terraces. Two small notches mark the frame.</desc>
+<defs>
+ <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#a7b4b3"/><stop offset="1" stop-color="#d8cdb5"/></linearGradient>
+ <linearGradient id="room" x2=".8" y2="1"><stop stop-color="#293e47"/><stop offset="1" stop-color="#112730"/></linearGradient>
+ <linearGradient id="light" x2="0" y2="1"><stop stop-color="#e5bc78"/><stop offset="1" stop-color="#c89350"/></linearGradient>
+</defs>
+<path fill="url(#sky)" d="M0 0h800v800H0z"/>
+<circle cx="622" cy="162" r="80" fill="#e9dfc6"/>
+<path d="M0 375 220 303 800 442v358H0Z" fill="#7c9697"/>
+<path d="m0 449 243-79 557 125v305H0Z" fill="#526f79"/>
+<path d="m0 537 246-91 554 124v230H0Z" fill="#324f60"/>
+<path d="M0 654 253 534 800 646v154H0Z" fill="#223b4d"/>
+<g fill="none" stroke="#d1d2bc" stroke-opacity=".28"><path d="m0 480 244-78 556 123"/><path d="m0 571 248-88 552 119"/><path d="m0 690 255-117 545 110"/></g>
+<path d="m239 214 254-39 74 47v307l-249 57-79-52Z" fill="#172e39"/>
+<path d="m239 214 254-39v306l-254 53Z" fill="url(#room)"/>
+<path d="m271 244 190-32v242l-190 41Z" fill="#c2a274"/>
+<path d="m281 254 168-28v212l-168 37Z" fill="url(#light)"/>
+<path d="m449 226 12-14v242l-190 41 10-20 168-37Z" fill="#f6db9f"/>
+<path d="m281 475 168-37 239 125-192 59Z" fill="#e1bf79" opacity=".55"/>
+<path d="m378 236 1 218" stroke="#725d42" stroke-width="7"/>
+<path d="m281 362 168-32" stroke="#725d42" stroke-width="7"/>
+<path d="m323 485 1 10m11-13 3 10" stroke="#2e4046" stroke-width="2"/>
+<path d="m313 514 115-25" stroke="#819494" stroke-width="1"/>
+<text x="48" y="69" font-family="sans-serif" font-size="15" letter-spacing="6" fill="#273e46">LOW TIDE</text>
+<text x="49" y="735" font-family="sans-serif" font-size="11" letter-spacing="3" fill="#d5d6c8">01 / THRESHOLD</text>
+<path d="M709 710v31m-15-15h31" stroke="#d5d6c8" stroke-width="1"/>
+</svg>

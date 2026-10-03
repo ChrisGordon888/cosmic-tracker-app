@@ -9,6 +9,7 @@ import { useMusicPlayer } from '@/hooks/useMusicPlayer';
 import { useCreatorView } from '@/context/CreatorViewProvider';
 import { usePlatformAccess } from '@/context/PlatformAccessProvider';
 import { getMusicAvailability } from '@/lib/musicAvailability';
+import WorldSurface from '@/components/world/WorldSurface';
 import '@/styles/releaseWorld.css';
 
 const RELEASE_WORLD_FIELDS = gql`
@@ -289,32 +290,6 @@ function formatDate(value?: string | null) {
     }).format(localCalendarDate);
 }
 
-function getTitleParts(title?: string | null) {
-    const cleanTitle = title?.trim() || 'Untitled Release';
-
-    if (cleanTitle.toLowerCase().includes(' in ')) {
-        const [first, ...rest] = cleanTitle.split(/\s+in\s+/i);
-        return {
-            primary: first,
-            secondary: `in ${rest.join(' in ')}`,
-        };
-    }
-
-    const words = cleanTitle.split(' ');
-
-    if (words.length >= 3) {
-        return {
-            primary: words.slice(0, -1).join(' '),
-            secondary: words.slice(-1).join(' '),
-        };
-    }
-
-    return {
-        primary: cleanTitle,
-        secondary: 'Release World',
-    };
-}
-
 function getTrackAvailability(
     track: ReleaseTrack,
     isCreatorView: boolean,
@@ -383,56 +358,6 @@ function getSectionArtifacts(
     return artifacts
         .filter((artifact) => (artifact.pageSection ?? 'story') === sectionKey)
         .sort((a, b) => (a.pageOrder ?? 1) - (b.pageOrder ?? 1));
-}
-
-function ReleaseArtwork({ world, isCreatorView }: { world: ReleaseWorld; isCreatorView: boolean }) {
-    const titleParts = getTitleParts(world.title);
-    const coverArtUrl = world.coverArtUrl?.trim();
-
-    if (coverArtUrl) {
-        return (
-            <figure
-                className="release-world-artwork release-world-artwork-has-cover"
-                aria-label={`${world.title} cover artwork`}
-            >
-                <div className="release-world-artwork-orbit release-world-artwork-orbit-a" />
-                <div className="release-world-artwork-orbit release-world-artwork-orbit-b" />
-                <div className="release-world-artwork-glow" />
-
-                <img
-                    src={coverArtUrl}
-                    alt={`${world.title} cover artwork`}
-                    className="release-world-cover-image"
-                />
-
-                <div className="release-world-cover-sheen" />
-
-                <figcaption>
-                    <span>{formatLabel(world.status)}</span>
-                    <strong>{isCreatorView ? formatLabel(world.visibility) : 'Release Portal'}</strong>
-                </figcaption>
-            </figure>
-        );
-    }
-
-    return (
-        <figure className="release-world-artwork" aria-label={`${world.title} artwork placeholder`}>
-            <div className="release-world-artwork-orbit release-world-artwork-orbit-a" />
-            <div className="release-world-artwork-orbit release-world-artwork-b" />
-            <div className="release-world-artwork-glow" />
-
-            <div className="release-world-artwork-title">
-                <span>{formatLabel(world.releaseType)}</span>
-                <strong>{titleParts.primary}</strong>
-                <em>{titleParts.secondary}</em>
-            </div>
-
-            <figcaption>
-                <span>{formatLabel(world.status)}</span>
-                <strong>{isCreatorView ? formatLabel(world.visibility) : 'Release Portal'}</strong>
-            </figcaption>
-        </figure>
-    );
 }
 
 export default function DynamicReleasePage() {
@@ -554,20 +479,10 @@ export default function DynamicReleasePage() {
         );
     }
 
-    const titleParts = getTitleParts(world.title);
     const heroHook =
         world.oneLineSummary?.trim() ||
         world.story?.trim() ||
         'Step inside the sound, story, and atmosphere of this release.';
-
-    const firstPlayableTrack = releaseTracks.find((track) => {
-        const availability = getTrackAvailability(track, isCreatorView, isSignedInForMusic);
-        return availability.isPlayable && availability.href;
-    });
-
-    const firstPlayableAction = firstPlayableTrack
-        ? getTrackAvailability(firstPlayableTrack, isCreatorView, isSignedInForMusic)
-        : null;
 
     const toPlayerTrack = (track: ReleaseTrack) => {
         const availability = getTrackAvailability(track, isCreatorView, isSignedInForMusic);
@@ -613,87 +528,45 @@ export default function DynamicReleasePage() {
 
     return (
         <main className="release-world-page">
-            <section className="release-world-hero">
-                <div className="release-world-hero-grid">
-                    <div className="release-world-hero-copy">
-                        <p className="release-world-label">
-                            {formatLabel(world.releaseType)} / Listener Portal
-                        </p>
+            <WorldSurface
+                key={world.id}
+                title={world.title}
+                summary={heroHook}
+                coverArtUrl={world.coverArtUrl}
+                label={`${formatLabel(world.releaseType)} / Release World`}
+                tracks={releaseTracks.map((track) => {
+                    const availability = getTrackAvailability(track, isCreatorView, isSignedInForMusic);
+                    return {
+                        id: track.id, slug: track.slug, title: track.title,
+                        artworkUrl: getPlayerArtworkUrl(track, world), hook: track.hook, mood: track.mood,
+                        playable: availability.isPlayable && Boolean(availability.href), actionLabel: availability.label,
+                    };
+                })}
+                fragments={publicArtifacts}
+                playingTrackId={releaseTracks.find((track) => `release-${track.id}` === currentTrack?.id)?.id ?? null}
+                isPlaying={isPlaying}
+                onPlay={(id) => {
+                    const track = releaseTracks.find((candidate) => candidate.id === id);
+                    if (track) playReleaseTrack(track);
+                }}
+                navigation={<>
+                    <Link href="/nexus">Explore Nexus</Link>
+                    {isCreatorView && <>
+                        <Link href={`/releases/${world.slug}/board`}>Open Signal Board</Link>
+                        <Link href={`/creator/releases/${world.slug}/publish`}>Prepare Release →</Link>
+                        <Link href="/creator/projects">All Projects</Link>
+                    </>}
+                </>}
+            />
 
-                        <h1>
-                            <span>{titleParts.primary}</span>
-                            <em>{titleParts.secondary}</em>
-                        </h1>
-
-                        <p className="release-world-hero-summary">{heroHook}</p>
-
-                        <div className="release-world-hero-actions">
-                            {firstPlayableTrack && firstPlayableAction?.href ? (
-                                <button
-                                    type="button"
-                                    className="release-world-hero-play-button"
-                                    onClick={() => playReleaseTrack(firstPlayableTrack)}
-                                >
-                                    {currentTrack?.id === `release-${firstPlayableTrack.id}` && isPlaying
-                                        ? 'Pause'
-                                        : firstPlayableAction.label}
-                                </button>
-                            ) : (
-                                <span className="release-world-hero-play-button release-world-hero-play-button-disabled">
-                                    Listen soon
-                                </span>
-                            )}
-
-                            <Link href="/nexus">Return to Nexus</Link>
-
-                            {isCreatorView && (
-                                <>
-                                    <Link href={`/releases/${world.slug}/board`}>Open Signal Board</Link>
-                                    <Link href="/creator/projects">All Projects</Link>
-                                </>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="release-world-hero-art">
-                        <ReleaseArtwork world={world} isCreatorView={isCreatorView} />
-                    </div>
-                </div>
-
-                <div className="release-world-meta-strip" aria-label="Release metadata">
-                    <div>
-                        <span>Release</span>
-                        <strong>{world.title}</strong>
-                    </div>
-                    <div>
-                        <span>First Signal</span>
-                        <strong>{world.currentFocus || 'TBD'}</strong>
-                    </div>
-                    <div>
-                        <span>Second Signal</span>
-                        <strong>{world.secondFocus || 'TBD'}</strong>
-                    </div>
-                    <div>
-                        <span>Opens</span>
-                        <strong>{formatDate(world.fullDropDate)}</strong>
-                    </div>
-                </div>
-            </section>
-
-            <section className="release-world-hook-band" aria-label="Main release summary">
-                <p>{heroHook}</p>
-            </section>
-
-            <section className="release-world-story-section">
+            {world.story?.trim() && <section className="release-world-story-section">
                 <div className="release-world-section-heading">
                     <p className="release-world-label">Inside the Release</p>
-                    <h2>Enter the feeling.</h2>
+                    <h2>The story behind the sound.</h2>
                 </div>
-                <p>
-                    {world.story?.trim() ||
-                        'A world of sound, desire, memory, and return. Listen closely — every song opens another room.'}
-                </p>
-            </section>
+                <p>{world.story}</p>
+                {world.fullDropDate && <p>Release date · {formatDate(world.fullDropDate)}</p>}
+            </section>}
 
             <section className="release-world-track-section">
                 <div className="release-world-section-heading release-world-section-heading-split">

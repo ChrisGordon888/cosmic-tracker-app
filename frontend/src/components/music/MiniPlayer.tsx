@@ -1,5 +1,7 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
+import { isPublicWorld } from '@/lib/publicJourney';
 import { useMusicPlayer } from '@/hooks/useMusicPlayer';
 import { getRealmTheme } from '@/lib/realmTheme';
 
@@ -14,6 +16,7 @@ function formatQueueCount(queueLength: number) {
 }
 
 export default function MiniPlayer() {
+    const publicWorld = isPublicWorld(usePathname());
     const {
         currentTrack,
         isPlaying,
@@ -50,7 +53,7 @@ export default function MiniPlayer() {
 
     return (
         <div
-            className={`cosmic-mini-player ${isExpanded ? 'is-expanded' : 'is-collapsed'} fixed z-[9999] rounded-2xl border backdrop-blur-xl shadow-2xl right-4 w-[340px] max-w-[calc(100vw-2rem)] max-[640px]:w-auto max-[640px]:rounded-2xl`}
+            className={`cosmic-mini-player ${publicWorld ? 'is-world-player' : ''} ${isExpanded ? 'is-expanded' : 'is-collapsed'} fixed z-[9999] rounded-2xl border backdrop-blur-xl shadow-2xl right-4 w-[340px] max-w-[calc(100vw-2rem)] max-[640px]:w-auto max-[640px]:rounded-2xl`}
             style={{
                 background: `radial-gradient(circle at top left, ${realmSoft}, transparent 42%), rgba(8, 10, 20, 0.9)`,
                 borderColor: realmBorder,
