@@ -86,7 +86,7 @@ export default function WorkspaceTour({ ready, activePanel, onSelectPanel }: {
       onCancel={(event) => { event.preventDefault(); close(); }}>
       <p className="workspace-tour-count">{stop ? `${(step ?? 0) + 1} / 4` : 'Your creative workbench'}</p>
       <h2 ref={heading} tabIndex={-1} id="workspace-tour-title">
-        {step === -1 ? 'Welcome to your Signal Board' : stop?.title ?? 'That’s it.'}
+        {step === -1 ? 'Welcome to your Workshop' : stop?.title ?? 'That’s it.'}
       </h2>
       <p id="workspace-tour-copy">{step === -1
         ? 'This is the workbench where a Release World takes shape.'

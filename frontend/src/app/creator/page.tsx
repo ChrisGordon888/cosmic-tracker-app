@@ -298,7 +298,7 @@ export default function CreatorDashboardPage() {
                 priority: 'secondary',
             },
             {
-                label: 'Signal Board',
+                label: 'Workshop',
                 href: `/releases/${activeProject.slug}/board`,
                 meta: 'Develop project',
                 priority: 'secondary',
@@ -484,7 +484,7 @@ export default function CreatorDashboardPage() {
                             <Link
                                 href={`/releases/${activeProject.slug}/board`}
                                 className="creator-feature-cover-link"
-                                aria-label={`Open ${activeProject.title} Signal Board`}
+                                aria-label={`Open ${activeProject.title} Workshop`}
                             >
                                 <ProjectCover project={activeProject} />
                             </Link>
@@ -562,7 +562,7 @@ export default function CreatorDashboardPage() {
                             <div>
                                 <span>01</span>
                                 <strong>Develop</strong>
-                                <p>Shape the chosen songs inside a Release World and Signal Board.</p>
+                                <p>Shape the chosen songs inside a Release World and its Workshop.</p>
                             </div>
                             <div>
                                 <span>02</span>
@@ -639,7 +639,7 @@ export default function CreatorDashboardPage() {
 
                                             <div className="creator-project-card-actions">
                                                 <Link href={`/releases/${project.slug}`}>Portal</Link>
-                                                <Link href={`/releases/${project.slug}/board`}>Signal Board</Link>
+                                                <Link href={`/releases/${project.slug}/board`}>Workshop</Link>
                                                 <button
                                                     type="button"
                                                     disabled={isSettingFeatured || project.id === featuredProject?.id}
@@ -735,7 +735,7 @@ export default function CreatorDashboardPage() {
                                 },
                                 {
                                     title: 'Develop',
-                                    body: 'Create a Single, EP, Album, or other Release World and deepen it in the Signal Board.',
+                                    body: 'Create a Single, EP, Album, or other Release World and deepen it in the Workshop.',
                                 },
                                 {
                                     title: 'Present',

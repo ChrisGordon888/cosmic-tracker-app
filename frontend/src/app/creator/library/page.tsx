@@ -710,7 +710,7 @@ export default function CreatorLibraryPage() {
       setOrganizeMessage("");
       setOrganizeResult({
         title: `${organizingTrack.title} has been placed.`,
-        message: `Added to ${release.title}. It is now part of that Release World and will appear on its Signal Board.`,
+        message: `Added to ${release.title}. It is now part of that Release World and will appear in its Workshop.`,
         boardHref: `/releases/${release.slug}/board`,
       });
     } catch (organizeError) {
@@ -741,7 +741,7 @@ export default function CreatorLibraryPage() {
       const single = result.data?.createSingleFromTrack;
 
       if (!single?.slug) {
-        throw new Error("The Single was created, but COSMIC could not resolve its Signal Board.");
+        throw new Error("The Single was created, but COSMIC could not resolve its Workshop.");
       }
 
       await refetch();
@@ -1086,7 +1086,7 @@ export default function CreatorLibraryPage() {
                   <div className="creator-library-row-actions">
                     <button type="button" onClick={()=>{setSmartQueue([{...track}]);setSmartIndex(0);}}>Suggest placement</button>
                     {release ? (
-                      <Link className="is-primary" href={`/releases/${release.slug}/board`}>Open Board</Link>
+                      <Link className="is-primary" href={`/releases/${release.slug}/board`}>Open Workshop</Link>
                     ) : track.releaseWorldId ? (
                       <button type="button" disabled={loading || !!error || busyTrackId === track.id} onClick={async () => {
                         if (!window.confirm('Repair this broken project link as standalone? The server will verify that no owned Release World exists. Only the invalid project reference will be cleared.')) return;
@@ -1174,7 +1174,7 @@ export default function CreatorLibraryPage() {
                       if(!window.confirm(`Archive "${release.title}"? ${count} tracks, assets and board content will remain attached and preserved. Nothing is deleted.`))return;
                       try{await archiveRelease({variables:{id:release.id}});await refetch();setLibraryActionMessage(`Archived ${release.title}. Music and assets preserved.`);}catch(e){setLibraryActionMessage(e instanceof Error?e.message:'Could not archive.');}
                     }}>Archive project</button>
-                    <Link href={`/releases/${release.slug}/board`}>Signal Board</Link>
+                    <Link href={`/releases/${release.slug}/board`}>Workshop</Link>
                     <Link href={`/releases/${release.slug}`}>Portal</Link>
                   </div>
                 </article>
@@ -1273,7 +1273,7 @@ export default function CreatorLibraryPage() {
                   <p>{organizeResult.message}</p>
                   <div>
                     <Link className="is-primary" href={organizeResult.boardHref}>
-                      Open Signal Board
+                      Open Workshop
                     </Link>
                     <button type="button" onClick={closeOrganizer}>
                       Back to Library

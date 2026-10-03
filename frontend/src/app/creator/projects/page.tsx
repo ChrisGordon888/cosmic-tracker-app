@@ -222,12 +222,12 @@ function getReadinessItems(world: ReleaseWorld): ReadinessItem[] {
     {
       label: "Portal public",
       isComplete: world.visibility === "public",
-      hint: world.visibility === "public" ? "Public release page can be shared." : "Set release visibility to Public in the Signal Board.",
+      hint: world.visibility === "public" ? "Public release page can be shared." : "Use Prepare Release to review and publish.",
     },
     {
       label: "Cover art",
       isComplete: Boolean(world.coverArtUrl?.trim()),
-      hint: world.coverArtUrl?.trim() ? "Artwork is attached." : "Add cover art in the Signal Board assets.",
+      hint: world.coverArtUrl?.trim() ? "Artwork is attached." : "Add cover art in the Workshop assets.",
     },
     {
       label: "Story",
@@ -502,7 +502,7 @@ export default function CreatorProjectsPage() {
                 <p className="creator-projects-kicker">New Release World</p>
                 <h2>Create a project</h2>
                 <p>
-                  Start a new single, EP, album, or campaign. The Signal Board becomes the private workbench; the Release Page becomes the public portal.
+                  Start a new single, EP, album, or campaign. The Workshop is the private workbench; the Release Page becomes the public portal.
                 </p>
               </div>
 
@@ -702,7 +702,7 @@ export default function CreatorProjectsPage() {
                       <p className="creator-projects-release-card-summary">
                         {world.oneLineSummary?.trim() ||
                           world.story?.trim() ||
-                          "No public summary yet. Add a one-line signal or story from the Signal Board."}
+                          "No public summary yet. Add a one-line signal or story from the Workshop."}
                       </p>
                     </div>
                   </div>
@@ -768,7 +768,7 @@ export default function CreatorProjectsPage() {
                           href={`/releases/${world.slug}/board`}
                           className="creator-projects-secondary-button"
                         >
-                          Open Signal Board
+                          Open Workshop
                         </Link>
                       </>
                     ) : (
@@ -777,7 +777,7 @@ export default function CreatorProjectsPage() {
                           href={`/releases/${world.slug}/board`}
                           className="creator-projects-primary-button"
                         >
-                          Open Signal Board
+                          Open Workshop
                         </Link>
                         <Link
                           href={`/releases/${world.slug}`}

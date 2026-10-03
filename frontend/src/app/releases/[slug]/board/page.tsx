@@ -2507,7 +2507,7 @@ export default function DynamicReleaseSignalBoardPage() {
         <main className="signal-board-shell signal-board-shell-compact">
             <header
                 className="signal-board-command-bar"
-                aria-label="Signal board command bar"
+                aria-label="Workshop command bar"
             >
                 <div className="signal-board-command-left">
                     <Link href="/creator/projects">All Projects</Link>
@@ -2515,14 +2515,14 @@ export default function DynamicReleaseSignalBoardPage() {
                 </div>
 
                 <div className="signal-board-command-title">
-                    <p className="signal-board-panel-kicker">Release World Board</p>
+                    <p className="signal-board-panel-kicker">Creator Workshop</p>
                     <h1>
                         {releaseWorld?.title
-                            ? `${releaseWorld.title} Signal Board`
-                            : "Release Signal Board"}
+                            ? `${releaseWorld.title} Workshop`
+                            : "Release Workshop"}
                     </h1>
                     <span>
-                        {releaseTracks.length} tracks • {releaseAssets.length} assets
+                        {releaseTracks.length} tracks • {releaseAssets.length} assets · Develop here, then Prepare Release.
                     </span>
                 </div>
 
@@ -2588,7 +2588,7 @@ export default function DynamicReleaseSignalBoardPage() {
                                 onClick={() => setActivePanel("signals")}
                             >
                                 <span>✦</span>
-                                Studio Board
+                                Studio Board (optional)
                             </button>
                             <button
                                 type="button"

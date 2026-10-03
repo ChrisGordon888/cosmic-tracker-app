@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import ReleaseShareButton from '@/components/public/ReleaseShareButton';
 import { useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { gql, useQuery } from '@apollo/client';
@@ -551,8 +552,9 @@ export default function DynamicReleasePage() {
                 }}
                 navigation={<>
                     <Link href="/nexus">Explore Nexus</Link>
+                    {world.visibility === 'public' && <ReleaseShareButton title={world.title} description={world.oneLineSummary?.trim() || undefined} slug={world.slug} />}
                     {isCreatorView && <>
-                        <Link href={`/releases/${world.slug}/board`}>Open Signal Board</Link>
+                        <Link href={`/releases/${world.slug}/board`}>Open Workshop</Link>
                         <Link href={`/creator/releases/${world.slug}/publish`}>Prepare Release →</Link>
                         <Link href="/creator/projects">All Projects</Link>
                     </>}
@@ -734,10 +736,10 @@ export default function DynamicReleasePage() {
                         <p className="release-world-label">Creator tools</p>
                         <h2>Keep shaping what the listener will feel.</h2>
                         <p>
-                            The public page is the doorway. The Signal Board remains the private studio wall where the story, sound, visuals, and fragments keep evolving.
+                            The public page is the doorway. Your Workshop is the private place to develop the music, artwork, and story. Its Studio Board is an optional canvas for deeper exploration.
                         </p>
                     </div>
-                    <Link href={`/releases/${world.slug}/board`}>Open Signal Board</Link>
+                    <Link href={`/releases/${world.slug}/board`}>Open Workshop</Link>
                 </section>
             )}
         </main>
