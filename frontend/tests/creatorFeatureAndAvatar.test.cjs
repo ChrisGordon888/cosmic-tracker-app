@@ -8,7 +8,8 @@ test('Two creator identities have explicit local selections, never a recent-proj
  const nexus=read('src/app/nexus/page.tsx');
  assert.match(nexus,/featuredSignalRecord = publicFeaturedSignalData\?\.getPublicFeaturedSignal/);
  assert.doesNotMatch(nexus,/myFeaturedSignalData/);
- assert.match(nexus,/Your project preview · not a Nexus feature/);
+ assert.match(nexus,/Nexus Spotlight/);
+ assert.doesNotMatch(nexus,/GET_MY_FEATURED_RELEASE_WORLD/);
  assert.doesNotMatch(read('src/app/creator/projects/page.tsx'),/<span>Nexus Featured<\/span>/);
 });
 test('Google HTTPS avatars match precise Next image configuration, local paths remain valid',()=>{

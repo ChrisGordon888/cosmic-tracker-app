@@ -1187,35 +1187,25 @@ async function getFeaturedReleaseWorldForUser(userId) {
     });
 }
 
+async function getPublicSpotlightTrack() {
+    // Read-only: an explicit empty/invalid selection must not promote another track.
+    const config = await NexusEditorialConfig.findOne({ key: "global" });
+    const selection = config
+        ? (config.featuredTrackId ? { _id: config.featuredTrackId } : null)
+        : { nexusRole: "flagship" };
+    if (!selection) return null;
+    const track = await ReleaseTrack.findOne({
+        ...selection, showInNexus: true, status: { $ne: "archived" },
+        $or: [{ visibility: { $in: ["public", "listed"] } }, { visibility: { $exists: false }, isPublic: true }],
+    });
+    if (!track) return null;
+    const world = await ReleaseWorld.findOne({ _id: track.releaseWorldId, ownerId: track.ownerId, visibility: "public", status: { $ne: "archived" } });
+    return world ? track : null;
+}
+
 async function getPublicFeaturedReleaseWorld() {
-    const featuredProfile = await CreativeProfile.findOne({
-        isFeatured: true,
-        isPublic: true,
-        featuredReleaseWorldId: { $ne: null },
-    }).sort({
-        updatedAt: -1,
-        createdAt: -1,
-    });
-
-    if (featuredProfile?.featuredReleaseWorldId) {
-        const profileFeaturedRelease = await ReleaseWorld.findOne({
-            _id: featuredProfile.featuredReleaseWorldId,
-            visibility: "public",
-            status: { $ne: "archived" },
-        });
-
-        if (profileFeaturedRelease) return profileFeaturedRelease;
-    }
-
-    return await ReleaseWorld.findOne({
-        isFeatured: true,
-        visibility: "public",
-        status: { $ne: "archived" },
-    }).sort({
-        lastOpenedAt: -1,
-        updatedAt: -1,
-        createdAt: -1,
-    });
+    const track = await getPublicSpotlightTrack();
+    return track ? await ReleaseWorld.findOne({ _id: track.releaseWorldId, ownerId: track.ownerId, visibility: "public", status: { $ne: "archived" } }) : null;
 }
 
 async function getFeaturedSignalTrack(query = {}) {
@@ -1477,23 +1467,21 @@ async function tryDeleteBlobForAsset(asset) {
 }
 
 function canAccessTrackAudio(track, user) {
+    if (user && String(user.id) === String(track?.ownerId)) return true;
+    if (track?.visibility === "private" || (track?.visibility == null && track?.isPublic === false) || track?.status === "archived") return false;
+    const opens = track?.unlockDate || track?.dropDate;
+    if (opens && new Date(opens).getTime() > Date.now()) return false;
+    if (["locked", "coming-soon"].includes(track?.playbackStatus)) return false;
     const tier = String(track?.accessTier || "public").toLowerCase();
     if (tier === "public") return true;
     if (tier === "signup") return Boolean(user);
-    if (tier === "premium") {
-        // Premium listener entitlements arrive in V5S. Until then, only the
-        // creator and platform editorial roles can access premium audio.
-        return Boolean(user) && (
-            String(user.id) === String(track?.ownerId) ||
-            user.role === "admin" ||
-            user.role === "owner"
-        );
-    }
+    if (tier === "premium") return Boolean(user && ["admin", "owner"].includes(user.role));
     return false;
 }
 
 function getTrackAccessGate(track, user) {
     if (canAccessTrackAudio(track, user)) return "open";
+    if (String(track?.accessTier || "public") === "public") return "unavailable";
     return String(track?.accessTier || "public") === "premium"
         ? "premium-required"
         : "signup-required";
@@ -1561,10 +1549,22 @@ async function saveOpportunityChange(record, user, update) {
 
 module.exports = {
     ReleaseTrack: {
+        releaseSlug: async (track) => {
+            if (!track.releaseWorldId) return null;
+            const world = await ReleaseWorld.findOne({ _id: track.releaseWorldId, ownerId: track.ownerId });
+            return world?.slug || null;
+        },
+        artistName: async (track) => {
+            if (!track.releaseWorldId) return null;
+            const world = await ReleaseWorld.findOne({ _id: track.releaseWorldId, ownerId: track.ownerId });
+            if (!world) return null;
+            const profile = await CreativeProfile.findOne({ _id: world.creativeProfileId, ownerId: track.ownerId });
+            return profile?.artistName || profile?.displayName || null;
+        },
         audioContentHash: (track, _, { user }) => user?.id && String(user.id) === String(track.ownerId) ? track.audioContentHash : null,
         sourceFileName: (track, _, { user }) => user?.id && String(user.id) === String(track.ownerId) ? track.sourceFileName : null,
         sourceFileSize: (track, _, { user }) => user?.id && String(user.id) === String(track.ownerId) ? track.sourceFileSize : null,
-        audioUrl: (track, _, { user }) => canAccessTrackAudio(track, user) ? (track.audioUrl || "") : null,
+        audioUrl: (track, _, { user }) => (canAccessTrackAudio(track, user) && (track.playbackStatus !== "preview" || (user && String(user.id) === String(track.ownerId)))) ? (track.audioUrl || "") : null,
         previewAudioUrl: (track, _, { user }) => canAccessTrackAudio(track, user) ? (track.previewAudioUrl || "") : null,
         canAccessAudio: (track, _, { user }) => canAccessTrackAudio(track, user),
         accessGate: (track, _, { user }) => getTrackAccessGate(track, user),
@@ -2138,7 +2138,7 @@ module.exports = {
                     {
                         $or: [
                             { visibility: { $in: ["public", "listed"] } },
-                            { isPublic: true },
+                            { visibility: { $exists: false }, isPublic: true },
                         ],
                     },
                     {
@@ -2170,21 +2170,7 @@ module.exports = {
 
         getPublicFeaturedSignal: async () => {
             await processDueScheduledReleaseWorlds();
-
-            const publicReleaseWorldIds = await ReleaseWorld.find({
-                visibility: "public",
-                status: { $ne: "archived" },
-            }).distinct("_id");
-
-            if (publicReleaseWorldIds.length === 0) return null;
-
-            return await getFeaturedSignalTrack({
-                releaseWorldId: { $in: publicReleaseWorldIds },
-                $or: [
-                    { visibility: { $in: ["public", "listed"] } },
-                    { isPublic: true },
-                ],
-            });
+            return await getPublicSpotlightTrack();
         },
 
         getReleaseTrack: async (_, { id }, { user }) => {

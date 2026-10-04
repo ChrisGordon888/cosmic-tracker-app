@@ -141,6 +141,10 @@ export const GET_PUBLIC_NEXUS_TRACKS = gql`
     getPublicNexusTracks(realmId: $realmId) {
       id
       ownerId
+      artistName
+      releaseSlug
+      accessTier
+      legacyRegistryId
       releaseWorldId
       title
       slug

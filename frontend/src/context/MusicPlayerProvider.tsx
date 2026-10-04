@@ -33,6 +33,9 @@ export interface MusicTrack {
     dropDate?: string | null;
     isPublic?: boolean | null;
     source?: string | null;
+    accessTier?: string | null;
+    ownerId?: string | null;
+    releaseSlug?: string | null;
 }
 
 export type MusicQueueSource =
@@ -173,9 +176,9 @@ export function MusicPlayerProvider({
 }) {
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const { isCreatorView: selectedCreatorView } = useCreatorView();
-    const { isAuthenticated, canAccessCreatorOS } = usePlatformAccess();
+    const { isAuthenticated, canAccessCreatorOS, user } = usePlatformAccess();
     const isCreatorView = canAccessCreatorOS && selectedCreatorView;
-    const isSignedInForMusic = isCreatorView && isAuthenticated;
+    const isSignedInForMusic = isAuthenticated;
 
     const [currentTrack, setCurrentTrack] = useState<MusicTrack | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
@@ -231,7 +234,7 @@ export function MusicPlayerProvider({
     const resolvePlayableTrack = useCallback(
         (track: MusicTrack): MusicTrack | null => {
             const availability = getMusicAvailability(track, {
-                isCreatorView,
+                isCreatorView: isCreatorView && track.ownerId === user?.id,
                 isSignedIn: isSignedInForMusic,
             });
 
@@ -244,7 +247,7 @@ export function MusicPlayerProvider({
                 trackUrl: availability.resolvedAudioUrl,
             };
         },
-        [isCreatorView, isSignedInForMusic]
+        [isCreatorView, isSignedInForMusic, user?.id]
     );
 
     const replaceQueue = useCallback(
@@ -439,7 +442,7 @@ export function MusicPlayerProvider({
     );
 
     const playNext = useCallback(async () => {
-        const nextQueue = getActiveQueue();
+        const nextQueue = getActiveQueue().map(resolvePlayableTrack).filter((track): track is MusicTrack => Boolean(track));
         if (nextQueue.length <= 1) return;
 
         const nextTrack = isShuffleEnabledRef.current
@@ -454,7 +457,7 @@ export function MusicPlayerProvider({
 
         pushCurrentTrackToHistory(nextTrack.id);
         await startTrack(nextTrack);
-    }, [getActiveQueue, pushCurrentTrackToHistory, startTrack]);
+    }, [getActiveQueue, pushCurrentTrackToHistory, startTrack, resolvePlayableTrack]);
 
     const playPrevious = useCallback(async () => {
         const audio = audioRef.current;
@@ -472,7 +475,7 @@ export function MusicPlayerProvider({
             return;
         }
 
-        const nextQueue = getActiveQueue();
+        const nextQueue = getActiveQueue().map(resolvePlayableTrack).filter((track): track is MusicTrack => Boolean(track));
         if (nextQueue.length <= 1) return;
 
         const previousTrack = getSequentialPreviousTrack(
@@ -483,7 +486,7 @@ export function MusicPlayerProvider({
         if (!previousTrack) return;
 
         await startTrack(previousTrack);
-    }, [getActiveQueue, popPreviousHistoryTrack, startTrack]);
+    }, [getActiveQueue, popPreviousHistoryTrack, startTrack, resolvePlayableTrack]);
 
     const playOrToggleTrack = useCallback(
         async (

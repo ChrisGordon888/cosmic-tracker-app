@@ -5,6 +5,10 @@ import { getRealmTheme } from '@/lib/realmTheme';
 export interface PublicNexusReleaseTrack {
     id: string;
     ownerId?: string | null;
+    artistName?: string | null;
+    releaseSlug?: string | null;
+    accessTier?: string | null;
+    legacyRegistryId?: string | null;
     releaseWorldId: string;
     title: string;
     slug?: string | null;
@@ -36,6 +40,10 @@ export interface PublicNexusReleaseTrack {
 
 export interface RuntimeMusicTrack extends MusicTrack {
     source?: 'registry' | 'creator';
+    accessTier?: string | null;
+    ownerId?: string | null;
+    releaseSlug?: string | null;
+    legacyRegistryId?: string | null;
     releaseWorldId?: string;
     releaseTrackId?: string;
     playbackStatus?: string;
@@ -101,7 +109,7 @@ function getPlaybackUrl(track: PublicNexusReleaseTrack) {
 export function mapReleaseTrackToMusicTrack(
     track: PublicNexusReleaseTrack
 ): RuntimeMusicTrack | null {
-    if (!track.showInNexus || !isRealmId(track.realmId)) return null;
+    if (track.visibility === "private" || (track.visibility == null && track.isPublic === false) || track.status === "archived" || !track.showInNexus || !isRealmId(track.realmId)) return null;
 
     const realm = REALM_STATE_MAP[track.realmId];
     const theme = getRealmTheme(track.realmId);
@@ -112,7 +120,11 @@ export function mapReleaseTrackToMusicTrack(
         realmId: track.realmId,
         realmName: realm.realmName,
         trackTitle: track.title,
-        artist: 'COSMIC',
+        artist: track.artistName?.trim() || 'Independent creator',
+        ownerId: track.ownerId,
+        releaseSlug: track.releaseSlug,
+        legacyRegistryId: track.legacyRegistryId,
+        accessTier: track.accessTier ?? 'public',
         trackUrl,
         realmColor: theme.accent,
         role: mapRole(track.nexusRole),
@@ -148,10 +160,6 @@ export function mapReleaseTracksToMusicTracks(
         .filter((track): track is RuntimeMusicTrack => Boolean(track));
 }
 
-function catalogIdentity(track: MusicTrack) {
-    return `${track.realmId}:${track.trackTitle.trim().toLowerCase()}`;
-}
-
 export function mergeMusicCatalogs(
     registryTracks: MusicTrack[],
     creatorTracks: RuntimeMusicTrack[]
@@ -159,15 +167,18 @@ export function mergeMusicCatalogs(
     const byIdentity = new Map<string, RuntimeMusicTrack>();
 
     registryTracks.forEach((track) => {
-        byIdentity.set(catalogIdentity(track), {
+        byIdentity.set(track.id, {
             ...track,
             source: 'registry',
+            releaseSlug: track.releaseProjectId,
         });
     });
 
-    // Creator tracks intentionally replace a static entry with the same realm/title.
+    // Only an explicit migration identity may replace a registry song.
+    // Two creators can legitimately share the same song title and Realm.
     creatorTracks.forEach((track) => {
-        byIdentity.set(catalogIdentity(track), track);
+        if (track.legacyRegistryId) byIdentity.delete(track.legacyRegistryId);
+        byIdentity.set(track.id, track);
     });
 
     return Array.from(byIdentity.values()).sort((a, b) => {
@@ -195,3 +206,13 @@ export function getRuntimeTracksForRealm(
         });
 }
 
+
+/** Realm prompts refer to the curated registry. Never match another artist by title alone. */
+export function findRealmRecommendation(catalog: RuntimeMusicTrack[], registry: MusicTrack[], realmId: number, title: string) {
+    const normalize = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const original = registry.find(track => track.realmId === realmId && normalize(track.trackTitle) === normalize(title));
+    if (!original) return null;
+    return catalog.find(track => track.legacyRegistryId === original.id)
+        ?? catalog.find(track => track.id === original.id)
+        ?? null;
+}

@@ -281,6 +281,8 @@ const typeDefs = gql`
   enum WorkingCoverStyle { minimal atmospheric signal artifact none }
 
   type ReleaseTrack {
+    artistName: String
+    releaseSlug: String
     audioContentHash: String
     sourceFileName: String
     sourceFileSize: Float

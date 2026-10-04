@@ -37,6 +37,9 @@ const RELEASE_WORLD_FIELDS = gql`
 const RELEASE_TRACK_FIELDS = gql`
   fragment ReleaseTrackFields on ReleaseTrack {
     id
+    ownerId
+    artistName
+    releaseSlug
     title
     slug
     trackNumber
@@ -148,6 +151,8 @@ type ReleaseWorld = {
 };
 
 type ReleaseTrack = {
+    artistName?: string | null;
+    ownerId?: string | null;
     id: string;
     title: string;
     slug: string;
@@ -367,7 +372,7 @@ export default function DynamicReleasePage() {
     const { playOrToggleTrack, currentTrack, isPlaying } = useMusicPlayer();
     const { isCreatorView: selectedCreatorView } = useCreatorView();
     const { isAuthenticated, canAccessCreatorOS } = usePlatformAccess();
-    const isCreatorView = canAccessCreatorOS && selectedCreatorView;
+    const wantsCreatorView = canAccessCreatorOS && selectedCreatorView;
     const isSignedInForMusic = isAuthenticated;
 
     const rawSlug = params?.slug;
@@ -379,9 +384,13 @@ export default function DynamicReleasePage() {
         error: creatorWorldError,
     } = useQuery(GET_MY_RELEASE_WORLD_BY_SLUG, {
         variables: { slug },
-        skip: !slug || !isCreatorView,
+        skip: !slug || !wantsCreatorView,
         fetchPolicy: 'cache-and-network',
     });
+
+    // Creator preview applies only when the owned-world query resolves this slug.
+    // A creator visiting another artist remains an ordinary public listener.
+    const isCreatorView = wantsCreatorView && Boolean(creatorWorldData?.getMyReleaseWorldBySlug);
 
     const {
         data: publicWorldData,
@@ -398,7 +407,7 @@ export default function DynamicReleasePage() {
             ? creatorWorldData?.getMyReleaseWorldBySlug
             : publicWorldData?.getPublicReleaseWorldBySlug) as ReleaseWorld | null | undefined;
 
-    const worldLoading = isCreatorView ? creatorWorldLoading : publicWorldLoading;
+    const worldLoading = (wantsCreatorView && creatorWorldLoading) || publicWorldLoading;
     const worldError = isCreatorView ? creatorWorldError : publicWorldError;
 
     const {
@@ -491,7 +500,9 @@ export default function DynamicReleasePage() {
         return {
             id: `release-${track.id}`,
             trackTitle: track.title,
-            artist: 'Cosmic',
+            artist: track.artistName || 'Independent creator',
+            ownerId: track.ownerId,
+            releaseSlug: world.slug,
             realmId: 0,
             realmName: 'INTERSIDDHI',
             realmColor: '#DCBA5C',

@@ -6,15 +6,14 @@ import { useMusicPlayer } from '@/hooks/useMusicPlayer';
 import { REALM_RESULT_CONTENT } from '@/lib/realmResultContent';
 import { MUSIC_REGISTRY } from '@/lib/musicRegistry';
 import { GET_PUBLIC_NEXUS_TRACKS } from '@/graphql/realms';
-import { GET_MY_NEXUS_TRACKS } from '@/graphql/musicAccess';
 import {
   mapReleaseTracksToMusicTracks,
+  findRealmRecommendation,
   mergeMusicCatalogs,
   getRuntimeTracksForRealm,
   type PublicNexusReleaseTrack,
 } from '@/lib/publicMusicCatalog';
 import { getMusicAvailability } from '@/lib/musicAvailability';
-import { useCreatorView } from '@/context/CreatorViewProvider';
 import { usePlatformAccess } from '@/context/PlatformAccessProvider';
 import {
   getStoredRealmGuidance,
@@ -28,14 +27,7 @@ interface RealmEntryGuidanceBannerProps {
   realmColor: string;
 }
 
-const RELEASE_UNLOCKS: Record<string, string> = {
-  'sin-do-over': '2026-06-29T00:00:00',
-  'sin-running-from-the-plug': '2026-07-14T00:00:00',
-  '101-hold-my-hand': '2026-07-29T00:00:00',
-  '303-in-the-deep': '2026-07-29T00:00:00',
-  '202-her-fantasy': '2026-07-29T00:00:00',
-  '202-siren': '2026-07-29T00:00:00',
-};
+
 
 function getModeLabel(mode: 'stay' | 'move-through' | 'shift') {
   if (mode === 'stay') return 'Stay with this state';
@@ -50,21 +42,14 @@ export default function RealmEntryGuidanceBanner({
 }: RealmEntryGuidanceBannerProps) {
   const [storedGuidance, setStoredGuidance] = useState<StoredRealmGuidance | null>(null);
   const { playOrToggleTrack, currentTrack, isPlaying } = useMusicPlayer();
-  const { isCreatorView: selectedCreatorView } = useCreatorView();
-  const { isAuthenticated, canAccessCreatorOS } = usePlatformAccess();
-  const isCreatorView = canAccessCreatorOS && selectedCreatorView;
-  const isSignedInForMusic = isCreatorView && isAuthenticated;
+  const { isAuthenticated } = usePlatformAccess();
+  const isSignedInForMusic = isAuthenticated;
 
   const { data: publicNexusTrackData } = useQuery(GET_PUBLIC_NEXUS_TRACKS, {
     variables: { realmId },
-    skip: isCreatorView,
     fetchPolicy: 'cache-and-network',
   });
 
-  const { data: creatorNexusTrackData } = useQuery(GET_MY_NEXUS_TRACKS, {
-    skip: !isCreatorView,
-    fetchPolicy: 'cache-and-network',
-  });
 
   useEffect(() => {
     const guidance = getStoredRealmGuidance();
@@ -81,17 +66,14 @@ export default function RealmEntryGuidanceBanner({
 
   const realmTracks = useMemo(() => {
     const releaseTracks = mapReleaseTracksToMusicTracks(
-      (isCreatorView
-        ? creatorNexusTrackData?.myReleaseTracks
-        : publicNexusTrackData?.getPublicNexusTracks) as PublicNexusReleaseTrack[] | undefined
+      publicNexusTrackData?.getPublicNexusTracks as PublicNexusReleaseTrack[] | undefined
     );
 
     return getRuntimeTracksForRealm(mergeMusicCatalogs(MUSIC_REGISTRY, releaseTracks), realmId)
       .map((track) => {
         const availability = getMusicAvailability(track, {
-          isCreatorView,
+          isCreatorView: false,
           isSignedIn: isSignedInForMusic,
-          fallbackUnlockDate: RELEASE_UNLOCKS[track.id] ?? null,
         });
         return {
           ...track,
@@ -100,15 +82,13 @@ export default function RealmEntryGuidanceBanner({
         };
       })
       .filter((track) => track.availability.isVisible);
-  }, [creatorNexusTrackData, publicNexusTrackData, realmId, isCreatorView, isSignedInForMusic]);
+  }, [publicNexusTrackData, realmId, isSignedInForMusic]);
 
   const suggestedTrack = useMemo(() => {
     if (!recommendedTrackTitle) return null;
-    const normalizedRecommended = recommendedTrackTitle.trim().toLowerCase();
-    return realmTracks.find(
-      (track) => track.trackTitle.trim().toLowerCase() === normalizedRecommended
-    ) ?? null;
-  }, [recommendedTrackTitle, realmTracks]);
+    const match = findRealmRecommendation(realmTracks, MUSIC_REGISTRY, realmId, recommendedTrackTitle);
+    return realmTracks.find(track => track.id === match?.id) ?? null;
+  }, [recommendedTrackTitle, realmTracks, realmId]);
 
   const playableRealmQueue = useMemo(
     () => realmTracks.filter((track) => track.availability.isPlayable && Boolean(track.trackUrl)),

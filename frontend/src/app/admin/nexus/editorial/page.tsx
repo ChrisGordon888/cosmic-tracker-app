@@ -115,7 +115,7 @@ export default function NexusEditorialPage() {
   }
 
   async function chooseFeatured(signal: Signal) {
-    await mutate(`${signal.track.title} is now the global Featured Signal.`, `featured:${signal.track.id}`, () =>
+    await mutate(`${signal.track.title} is now the Nexus Spotlight.`, `featured:${signal.track.id}`, () =>
       setFeatured({ variables: { trackId: signal.track.id } })
     );
   }
@@ -163,7 +163,7 @@ export default function NexusEditorialPage() {
               {signalArtwork(featured) ? <img src={signalArtwork(featured)} alt="Featured Signal artwork" className="h-full w-full object-cover" /> : <div className="flex h-full min-h-[220px] items-center justify-center text-xs uppercase tracking-[0.18em] text-white/25">No Featured Signal</div>}
             </div>
             <div className="p-5 sm:p-6">
-              <p className="text-[10px] uppercase tracking-[0.2em] text-[#F4D982]/70">Global Featured Signal</p>
+              <p className="text-[10px] uppercase tracking-[0.2em] text-[#F4D982]/70">Nexus Spotlight</p>
               {featured ? <>
                 <h3 className="mt-2 text-2xl font-semibold">{featured.track.title}</h3>
                 <p className="mt-1 text-sm text-white/50">{creatorName(featured)} · {featured.releaseWorld.title}</p>

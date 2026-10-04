@@ -1,3 +1,12 @@
+const LEGACY_UNLOCK_DATES: Record<string, string> = {
+    'sin-do-over': '2026-06-29T00:00:00',
+    'sin-running-from-the-plug': '2026-07-14T00:00:00',
+    '101-hold-my-hand': '2026-07-29T00:00:00',
+    '303-in-the-deep': '2026-07-29T00:00:00',
+    '202-her-fantasy': '2026-07-29T00:00:00',
+    '202-siren': '2026-07-29T00:00:00',
+};
+
 export type MusicAvailabilityState =
   | 'full'
   | 'preview'
@@ -46,7 +55,7 @@ function clean(value?: string | null) {
 
 function parseDate(value?: string | null) {
   if (!value) return null;
-  const parsed = new Date(value);
+  const parsed = new Date(/^\d{10,}$/.test(value) ? Number(value) : value);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
@@ -64,12 +73,12 @@ export function getMusicAvailability(
 ): MusicAvailability {
   const now = options.now ?? new Date();
   const visibility = track.visibility ?? 'public';
-  const accessTier = track.accessTier ?? 'public';
+  const accessTier = track.accessTier ?? (visibility === 'signup' || visibility === 'premium' ? visibility : 'public');
   const playbackStatus = track.playbackStatus ?? 'playable';
   const fullAudio = clean(track.fullAudioUrl) ?? clean(track.audioUrl) ?? clean(track.trackUrl);
   const previewAudio = clean(track.previewAudioUrl);
   const unlockDate = parseDate(
-    clean(track.unlockDate) ?? clean(track.dropDate) ?? clean(options.fallbackUnlockDate),
+    clean(track.unlockDate) ?? clean(track.dropDate) ?? clean(options.fallbackUnlockDate) ?? (track.id ? LEGACY_UNLOCK_DATES[track.id] : null),
   );
 
   if (options.isCreatorView) {
@@ -196,5 +205,19 @@ export function withResolvedMusicTrack<T extends AvailabilityTrack>(
     ...track,
     trackUrl: availability.resolvedAudioUrl,
     availability,
+  };
+}
+
+export function playableMusicTracks<T extends AvailabilityTrack>(tracks: T[], options: MusicAvailabilityOptions): T[] {
+  return tracks.filter(track => getMusicAvailability(track, options).isPlayable);
+}
+
+export function listenerCatalogCounts(tracks: AvailabilityTrack[], isSignedIn: boolean) {
+  const options = { isCreatorView: false, isSignedIn };
+  const visible = tracks.filter(t => getMusicAvailability(t, options).isVisible);
+  return {
+    catalogued: visible.length,
+    playable: playableMusicTracks(visible, options).length,
+    memberGated: visible.filter(t => (t.accessTier ?? t.visibility) === 'signup').length,
   };
 }

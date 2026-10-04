@@ -511,7 +511,7 @@ export default function TrackWorkspace({
 
                         <div className="signal-board-nexus-status">
                             <span>Nexus review</span>
-                            <strong>{publishSignalState}</strong>
+                            <strong>{trackForm.showInNexus ? "In Nexus" : nexusReviewStatus === "in-review" ? "Pending review" : nexusReviewStatus === "approved" ? "Approved — awaiting Nexus inclusion" : nexusReviewStatus === "needs-changes" ? "Needs changes" : `Not submitted · ${publishSignalState}`}</strong>
                             <small>{trackForm.showInNexus ? "Live in Nexus" : "Creator submission workflow"}</small>
                         </div>
                     </div>
@@ -665,8 +665,8 @@ export default function TrackWorkspace({
                     <div className="signal-board-publish-guide signal-board-nexus-readiness" aria-label="Nexus review readiness">
                         <article>
                             <span>Nexus Review</span>
-                            <strong>{publishSignalState}</strong>
-                            <p>Submitting sends this track and your suggested Realm to Cosmic staff. Submission does not publish the track into Nexus.</p>
+                            <strong>{trackForm.showInNexus ? "In Nexus" : nexusReviewStatus === "in-review" ? "Pending review" : nexusReviewStatus === "approved" ? "Approved — awaiting Nexus inclusion" : nexusReviewStatus === "needs-changes" ? "Needs changes" : `Not submitted · ${publishSignalState}`}</strong>
+                            <p>Submit this track from your published world for editorial review. Approval and Nexus inclusion are separate steps; publishing your world never selects Nexus Spotlight.</p>
                         </article>
                         {publishSignalReadiness.checks.map((check) => (
                             <article key={check.key}>
@@ -696,6 +696,7 @@ export default function TrackWorkspace({
                                 isCreatingNewTrack ||
                                 !publishSignalReadiness.ready ||
                                 nexusReviewStatus === "in-review" ||
+                                nexusReviewStatus === "approved" ||
                                 trackForm.showInNexus
                             }
                         >
@@ -704,9 +705,9 @@ export default function TrackWorkspace({
                                 : trackForm.showInNexus
                                     ? "Published to Nexus"
                                     : nexusReviewStatus === "in-review"
-                                        ? "Submitted for Review"
+                                        ? "Pending Review"
                                         : nexusReviewStatus === "approved"
-                                            ? "Approved — Awaiting Publish"
+                                            ? "Approved — Awaiting Nexus Inclusion"
                                             : "Submit for Nexus Review"}
                         </button>
                     </div>

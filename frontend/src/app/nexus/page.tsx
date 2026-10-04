@@ -8,26 +8,21 @@ import Link from 'next/link';
 import { gql, useQuery, useMutation } from '@apollo/client';
 import { getTodayMoonPhase, getRealmMoonAlignment } from '@/lib/moonPhases';
 import { GET_ME, GET_PUBLIC_NEXUS_TRACKS, LOG_DAILY_LOGIN } from '@/graphql/realms';
-import { GET_MY_NEXUS_TRACKS } from '@/graphql/musicAccess';
 import { useMusicPlayer } from '@/hooks/useMusicPlayer';
-import { useCreatorView } from '@/context/CreatorViewProvider';
 import { usePlatformAccess } from '@/context/PlatformAccessProvider';
-import { getMusicAvailability } from '@/lib/musicAvailability';
+import { getMusicAvailability, listenerCatalogCounts } from '@/lib/musicAvailability';
 import {
     CURRENT_FEATURED_RELEASE,
-    FLAGSHIP_TRACKS,
     MUSIC_REGISTRY,
     PUBLIC_THREE_PIECE_COLLECTIONS,
     REALM_NAMES,
-    getCurrentReleaseTracks,
-    getTrackById,
-    getTracksByCollection,
 } from '@/lib/musicRegistry';
 import { REALM_STATE_MAP, type ExperienceMode, type RealmId } from '@/lib/realmStateMap';
 import { REALM_RESULT_CONTENT } from '@/lib/realmResultContent';
 import { getRealmTheme } from '@/lib/realmTheme';
 import {
     mapReleaseTracksToMusicTracks,
+    findRealmRecommendation,
     mergeMusicCatalogs,
     type PublicNexusReleaseTrack,
 } from '@/lib/publicMusicCatalog';
@@ -64,15 +59,6 @@ const FEATURED_RELEASE_WORLD_FIELDS = gql`
     }
 `;
 
-const GET_MY_FEATURED_RELEASE_WORLD = gql`
-    ${FEATURED_RELEASE_WORLD_FIELDS}
-    query GetMyFeaturedReleaseWorld {
-        getMyFeaturedReleaseWorld {
-            ...FeaturedReleaseWorldFields
-        }
-    }
-`;
-
 const GET_PUBLIC_FEATURED_RELEASE_WORLD = gql`
     ${FEATURED_RELEASE_WORLD_FIELDS}
     query GetPublicFeaturedReleaseWorld {
@@ -86,6 +72,14 @@ const FEATURED_RELEASE_TRACK_FIELDS = gql`
     fragment FeaturedReleaseTrackFields on ReleaseTrack {
         id
         releaseWorldId
+        ownerId
+        artistName
+        releaseSlug
+        accessTier
+        realmId
+        showInNexus
+        nexusRole
+        legacyRegistryId
         title
         slug
         trackNumber
@@ -111,15 +105,6 @@ const FEATURED_RELEASE_TRACK_FIELDS = gql`
         createdAt
         updatedAt
         lastOpenedAt
-    }
-`;
-
-const GET_FEATURED_RELEASE_TRACKS = gql`
-    ${FEATURED_RELEASE_TRACK_FIELDS}
-    query GetFeaturedReleaseTracks($releaseWorldId: ID!) {
-        getReleaseTracks(releaseWorldId: $releaseWorldId) {
-            ...FeaturedReleaseTrackFields
-        }
     }
 `;
 
@@ -161,6 +146,10 @@ interface NexusFeaturedReleaseWorld {
 }
 
 interface NexusFeaturedReleaseTrack {
+    ownerId?: string;
+    artistName?: string;
+    releaseSlug?: string;
+    accessTier?: string;
     id: string;
     releaseWorldId: string;
     title: string;
@@ -241,14 +230,7 @@ const REALM_META = [
     },
 ];
 
-const RELEASE_UNLOCKS: Record<string, string> = {
-    'sin-do-over': '2026-06-29T00:00:00',
-    'sin-running-from-the-plug': '2026-07-14T00:00:00',
-    '101-hold-my-hand': '2026-07-29T00:00:00',
-    '303-in-the-deep': '2026-07-29T00:00:00',
-    '202-her-fantasy': '2026-07-29T00:00:00',
-    '202-siren': '2026-07-29T00:00:00',
-};
+
 
 const CURATED_PLAYLIST_ART_OVERRIDES: Record<string, string> = {
     'realm-303-break-the-code': '/break-the-code.png',
@@ -392,60 +374,10 @@ function getFeaturedTrackReleaseLabel(
 }
 
 function getFeaturedTrackAction(track: NexusFeaturedReleaseTrack, isSignedIn: boolean) {
-    const hasFullAudio = Boolean(track.audioUrl);
-    const hasPreviewAudio = Boolean(track.previewAudioUrl);
+    const availability = getMusicAvailability(track, { isCreatorView: false, isSignedIn });
+    return { label: availability.label, canPlay: availability.isPlayable,
+        url: availability.resolvedAudioUrl || '', className: `is-${availability.state}` };
 
-    if (isSignedIn && (hasFullAudio || hasPreviewAudio)) {
-        return {
-            label: 'Review',
-            canPlay: true,
-            url: track.audioUrl || track.previewAudioUrl || '',
-            className: 'is-review',
-        };
-    }
-
-    if (track.playbackStatus === 'playable' && hasFullAudio) {
-        return {
-            label: 'Play',
-            canPlay: true,
-            url: track.audioUrl || '',
-            className: 'is-playable',
-        };
-    }
-
-    if (track.playbackStatus === 'preview') {
-        if (hasPreviewAudio) {
-            return {
-                label: 'Preview',
-                canPlay: true,
-                url: track.previewAudioUrl || '',
-                className: 'is-preview',
-            };
-        }
-
-        return {
-            label: 'Preview pending',
-            canPlay: false,
-            url: '',
-            className: 'is-preview-pending',
-        };
-    }
-
-    if (track.playbackStatus === 'coming-soon') {
-        return {
-            label: 'Coming soon',
-            canPlay: false,
-            url: '',
-            className: 'is-coming-soon',
-        };
-    }
-
-    return {
-        label: 'Locked',
-        canPlay: false,
-        url: '',
-        className: 'is-locked',
-    };
 }
 
 function getFeaturedTrackMetaLine(
@@ -500,11 +432,18 @@ function toPlayerTrack(
     return {
         id: `release-${releaseTrack.id}`,
         trackTitle: releaseTrack.title,
-        artist: 'Cosmic',
+        artist: releaseTrack.artistName || 'Independent creator',
+        ownerId: releaseTrack.ownerId,
+        releaseSlug: releaseWorld?.slug,
+        accessTier: releaseTrack.accessTier,
+        playbackStatus: releaseTrack.playbackStatus,
+        previewAudioUrl: releaseTrack.previewAudioUrl,
+        unlockDate: releaseTrack.unlockDate,
+        dropDate: releaseTrack.dropDate,
         realmId: 0,
         realmName: 'INTERSIDDHI',
         realmColor: '#DCBA5C',
-        visibility: releaseTrack.visibility === 'public' || releaseTrack.isPublic ? 'public' : 'premium',
+        visibility: releaseTrack.visibility,
         trackUrl: getFeaturedTrackPlaybackUrl(releaseTrack, isSignedIn),
         artworkUrl: releaseWorld?.coverArtUrl ?? undefined,
     };
@@ -545,53 +484,27 @@ export default function CosmicNexusHub() {
     const curatedCarouselRef = useRef<HTMLDivElement | null>(null);
 
     const { playOrToggleTrack, currentTrack, isPlaying } = useMusicPlayer();
-    const { isCreatorView: selectedCreatorView } = useCreatorView();
-    const { isAuthenticated, canAccessCreatorOS } = usePlatformAccess();
-    const isCreatorView = canAccessCreatorOS && selectedCreatorView;
-    const isSignedInForMusic = isCreatorView && isAuthenticated;
+    const { isAuthenticated } = usePlatformAccess();
+    const isSignedInForMusic = isAuthenticated;
 
     const { data: userData, loading: userLoading } = useQuery(GET_ME, {
         skip: !session,
     });
 
     const { data: publicNexusTrackData } = useQuery(GET_PUBLIC_NEXUS_TRACKS, {
-        skip: isCreatorView,
-        fetchPolicy: 'cache-and-network',
-    });
-
-    const { data: creatorNexusTrackData } = useQuery(GET_MY_NEXUS_TRACKS, {
-        skip: !isCreatorView,
-        fetchPolicy: 'cache-and-network',
-    });
-
-    const { data: myFeaturedReleaseData } = useQuery(GET_MY_FEATURED_RELEASE_WORLD, {
-        skip: !isCreatorView,
         fetchPolicy: 'cache-and-network',
     });
 
     const { data: publicFeaturedReleaseData } = useQuery(GET_PUBLIC_FEATURED_RELEASE_WORLD, {
-        skip: isCreatorView,
         fetchPolicy: 'cache-and-network',
     });
 
-    const activeFeaturedReleaseId =
-        (isCreatorView
-            ? myFeaturedReleaseData?.getMyFeaturedReleaseWorld?.id
-            : publicFeaturedReleaseData?.getPublicFeaturedReleaseWorld?.id) ?? null;
-
-    const { data: myFeaturedReleaseTracksData, loading: myFeaturedReleaseTracksLoading } = useQuery(
-        GET_FEATURED_RELEASE_TRACKS,
-        {
-            skip: !isCreatorView || !activeFeaturedReleaseId,
-            variables: { releaseWorldId: activeFeaturedReleaseId },
-            fetchPolicy: 'cache-and-network',
-        }
-    );
+    const activeFeaturedReleaseId = publicFeaturedReleaseData?.getPublicFeaturedReleaseWorld?.id ?? null;
 
     const { data: publicFeaturedReleaseTracksData, loading: publicFeaturedReleaseTracksLoading } = useQuery(
         GET_PUBLIC_FEATURED_RELEASE_TRACKS,
         {
-            skip: isCreatorView || !activeFeaturedReleaseId,
+            skip: !activeFeaturedReleaseId,
             variables: { releaseWorldId: activeFeaturedReleaseId },
             fetchPolicy: 'cache-and-network',
         }
@@ -653,44 +566,18 @@ export default function CosmicNexusHub() {
     });
 
     const currentRelease = CURRENT_FEATURED_RELEASE;
-    const currentReleaseTracks = useMemo(() => getCurrentReleaseTracks(), []);
-    const creatorFeaturedRelease =
-        (isCreatorView
-            ? myFeaturedReleaseData?.getMyFeaturedReleaseWorld
-            : publicFeaturedReleaseData?.getPublicFeaturedReleaseWorld) as NexusFeaturedReleaseWorld | null | undefined;
+    const creatorFeaturedRelease = publicFeaturedReleaseData?.getPublicFeaturedReleaseWorld as NexusFeaturedReleaseWorld | null | undefined;
 
     const creatorFeaturedPortalHref = creatorFeaturedRelease?.slug
         ? `/releases/${creatorFeaturedRelease.slug}`
         : null;
 
-    const creatorFeaturedBoardHref = creatorFeaturedRelease?.slug
-        ? `/releases/${creatorFeaturedRelease.slug}/board`
-        : null;
-
     const creatorFeaturedArtworkUrl = creatorFeaturedRelease?.coverArtUrl?.trim() || null;
-    const featuredReleaseTracks = (
-        isCreatorView
-            ? myFeaturedReleaseTracksData?.getReleaseTracks
-            : publicFeaturedReleaseTracksData?.getPublicReleaseTracks
-    ) as NexusFeaturedReleaseTrack[] | undefined;
-
-    const isFeaturedReleaseTracksLoading =
-        isCreatorView
-            ? myFeaturedReleaseTracksLoading
-            : publicFeaturedReleaseTracksLoading;
+    const featuredReleaseTracks = publicFeaturedReleaseTracksData?.getPublicReleaseTracks as NexusFeaturedReleaseTrack[] | undefined;
+    const isFeaturedReleaseTracksLoading = publicFeaturedReleaseTracksLoading;
 
     const featuredReleaseTrackCount = featuredReleaseTracks?.length ?? 0;
-    const featuredReleasePrimaryTrack = useMemo(() => {
-        const playableTracks = [...(featuredReleaseTracks ?? [])]
-            .filter((track) => Boolean(getFeaturedTrackPlaybackUrl(track, isCreatorView)))
-            .sort((a, b) => (a.trackNumber || 0) - (b.trackNumber || 0));
-
-        return (
-            playableTracks.find((track) => track.isFocusTrack) ??
-            playableTracks[0] ??
-            null
-        );
-    }, [featuredReleaseTracks, isCreatorView]);
+    const featuredReleasePrimaryTrack = (publicFeaturedSignalData?.getPublicFeaturedSignal ?? null) as NexusFeaturedReleaseTrack | null;
 
     const featuredReleasePrimaryPlayerId = featuredReleasePrimaryTrack
         ? `release-${featuredReleasePrimaryTrack.id}`
@@ -701,14 +588,14 @@ export default function CosmicNexusHub() {
         isPlaying;
 
     const playFeaturedReleaseTrack = (track: NexusFeaturedReleaseTrack) => {
-        const selectedTrackUrl = getFeaturedTrackPlaybackUrl(track, isCreatorView);
+        const selectedTrackUrl = getFeaturedTrackPlaybackUrl(track, isSignedInForMusic);
         if (!selectedTrackUrl) return;
 
         const flowTracks = (featuredReleaseTracks ?? [])
-            .filter((releaseTrack) => Boolean(getFeaturedTrackPlaybackUrl(releaseTrack, isCreatorView)))
-            .map((releaseTrack) => toPlayerTrack(releaseTrack, creatorFeaturedRelease, isCreatorView));
+            .filter((releaseTrack) => Boolean(getFeaturedTrackPlaybackUrl(releaseTrack, isSignedInForMusic)))
+            .map((releaseTrack) => toPlayerTrack(releaseTrack, creatorFeaturedRelease, isSignedInForMusic));
 
-        void playOrToggleTrack(toPlayerTrack(track, creatorFeaturedRelease, isCreatorView), flowTracks, {
+        void playOrToggleTrack(toPlayerTrack(track, creatorFeaturedRelease, isSignedInForMusic), flowTracks, {
             source: 'nexus',
             label: creatorFeaturedRelease?.title ?? 'Featured release',
         });
@@ -716,9 +603,8 @@ export default function CosmicNexusHub() {
 
     const getTrackAvailability = (track: any) =>
         getMusicAvailability(track, {
-            isCreatorView,
+            isCreatorView: false,
             isSignedIn: isSignedInForMusic,
-            fallbackUnlockDate: track ? RELEASE_UNLOCKS[track.id] ?? null : null,
         });
 
     const isTrackLocked = (track: any) =>
@@ -768,15 +654,13 @@ export default function CosmicNexusHub() {
 
     const runtimeMusicCatalog = useMemo(() => {
         const creatorTracks = mapReleaseTracksToMusicTracks(
-            (isCreatorView
-                ? creatorNexusTrackData?.myReleaseTracks
-                : publicNexusTrackData?.getPublicNexusTracks) as
+            publicNexusTrackData?.getPublicNexusTracks as
             | PublicNexusReleaseTrack[]
             | undefined
         );
 
         return mergeMusicCatalogs(MUSIC_REGISTRY, creatorTracks);
-    }, [creatorNexusTrackData, isCreatorView, publicNexusTrackData]);
+    }, [publicNexusTrackData]);
 
     const nexusVisibleTracks = useMemo(() => {
         return runtimeMusicCatalog
@@ -797,7 +681,7 @@ export default function CosmicNexusHub() {
 
                 return a.trackTitle.localeCompare(b.trackTitle);
             });
-    }, [runtimeMusicCatalog, isCreatorView, isSignedInForMusic]);
+    }, [runtimeMusicCatalog, isSignedInForMusic]);
 
     const nexusPlayableFlowTracks = useMemo(() => {
         return nexusVisibleTracks
@@ -824,7 +708,7 @@ export default function CosmicNexusHub() {
 
                 return a.trackTitle.localeCompare(b.trackTitle);
             });
-    }, [nexusVisibleTracks, isCreatorView, isSignedInForMusic]);
+    }, [nexusVisibleTracks, isSignedInForMusic]);
 
     const groupedTracks = REALM_META.map((realm) => {
         const realmId = parseInt(realm.id);
@@ -837,10 +721,11 @@ export default function CosmicNexusHub() {
         };
     }).filter((realmGroup) => realmGroup.tracks.length > 0);
 
-    const publicCatalogCount = nexusVisibleTracks.filter((track) => track.visibility === 'public').length;
-    const memberCatalogCount = nexusVisibleTracks.filter((track) => track.visibility === 'signup').length;
+    const counts = listenerCatalogCounts(runtimeMusicCatalog, isSignedInForMusic);
+    const publicCatalogCount = counts.playable;
+    const memberCatalogCount = counts.memberGated;
     const premiumCatalogCount = nexusVisibleTracks.filter((track) => track.visibility === 'premium').length;
-    const releaseCatalogCount = currentReleaseTracks.length;
+    const releaseCatalogCount = featuredReleaseTrackCount;
     const guidanceRealmId = storedGuidance?.realmId ?? null;
     const guidanceRealm = guidanceRealmId !== null ? REALM_STATE_MAP[guidanceRealmId] : null;
 
@@ -858,13 +743,7 @@ export default function CosmicNexusHub() {
     const guidanceTrack = useMemo(() => {
         if (guidanceRealmId === null || !guidanceModeContent) return null;
 
-        return (
-            runtimeMusicCatalog.find(
-                (track) =>
-                    track.realmId === guidanceRealmId &&
-                    track.trackTitle === guidanceModeContent.recommendedTrack
-            ) ?? null
-        );
+        return findRealmRecommendation(runtimeMusicCatalog, MUSIC_REGISTRY, guidanceRealmId, guidanceModeContent.recommendedTrack);
     }, [guidanceRealmId, guidanceModeContent, runtimeMusicCatalog]);
 
     const guidanceTrackLocked = guidanceTrack ? isTrackLocked(guidanceTrack) : false;
@@ -888,15 +767,12 @@ export default function CosmicNexusHub() {
     const dynamicFlagshipTrack = mapReleaseTracksToMusicTracks(
         featuredSignalRecord ? [featuredSignalRecord as PublicNexusReleaseTrack] : []
     )[0] ?? null;
-    const flagshipTrack = dynamicFlagshipTrack ?? FLAGSHIP_TRACKS[0] ?? null;
+    const flagshipTrack = dynamicFlagshipTrack;
     const flagshipTrackLocked = flagshipTrack ? isTrackLocked(flagshipTrack) : false;
     const flagshipUnlockLabel = flagshipTrack ? getTrackUnlockLabel(flagshipTrack) : null;
     const flagshipIsCurrent = Boolean(flagshipTrack && currentTrack?.id === flagshipTrack.id);
-    const flagshipRealmHref = flagshipTrack
-        ? isSignedIn
-            ? `/realms/${flagshipTrack.realmId}`
-            : '/auth'
-        : '/nexus';
+    const flagshipRealmHref = flagshipTrack?.releaseSlug
+        ? `/releases/${flagshipTrack.releaseSlug}` : flagshipTrack ? `/realms/${flagshipTrack.realmId}` : '/nexus';
     const publicThreePieceCollections = PUBLIC_THREE_PIECE_COLLECTIONS;
     const releaseArtworkUrl = currentRelease?.coverArtUrl ?? null;
     // Track-specific artwork is preferred. The parent release cover remains
@@ -904,7 +780,6 @@ export default function CosmicNexusHub() {
     const featuredSignalArtwork =
         featuredSignalRecord?.artworkUrl?.trim() ||
         featuredSignalRecord?.releaseCoverArtUrl?.trim() ||
-        releaseArtworkUrl ||
         null;
     const getCuratedCollectionArtwork = (collection: any) => {
         return (
@@ -978,7 +853,7 @@ export default function CosmicNexusHub() {
                             className="text-xs uppercase tracking-[0.24em] text-muted mb-3"
                             style={{ letterSpacing: '0.24em' }}
                         >
-                            COSMIC · Christopher Gordon
+                            COSMIC · Music discovery
                         </p>
 
                         <h1
@@ -992,7 +867,7 @@ export default function CosmicNexusHub() {
                         </h1>
 
                         <p className="text-lg text-secondary max-w-3xl mx-auto">
-                            Songs, vocals and worlds by Christopher Gordon. Start with the music.
+                            Discover songs and creator worlds. Start with the music.
                         </p>
                         <div className="public-actions nexus-listen-entry">
                             {flagshipTrack && !flagshipTrackLocked && (
@@ -1000,6 +875,7 @@ export default function CosmicNexusHub() {
                                     {flagshipIsCurrent && isPlaying ? 'Pause' : 'Play'} {flagshipTrack.trackTitle}
                                 </button>
                             )}
+                            {nexusPlayableFlowTracks.length > 0 && <button type="button" className="public-link" onClick={() => tryPlayTrack(nexusPlayableFlowTracks[Math.floor(Math.random() * nexusPlayableFlowTracks.length)])}>Shuffle playable music</button>}
                             <a href="#realm-soundtracks" className="public-link">Explore the catalog →</a>
                         </div>
                     </header>
@@ -1055,7 +931,7 @@ export default function CosmicNexusHub() {
                                         className="px-3 py-1.5 rounded-full text-[11px] uppercase tracking-[0.14em] bg-[#7c5cff22] border border-[#7c5cff44] text-[#cdb7ff]"
                                         style={{ backdropFilter: 'blur(10px)' }}
                                     >
-                                        {isCreatorView ? 'Your project preview · not a Nexus feature' : 'Featured Portal'}
+                                        Nexus Spotlight
                                     </span>
 
                                     <span
@@ -1095,7 +971,7 @@ export default function CosmicNexusHub() {
                                                 playFeaturedReleaseTrack(featuredReleasePrimaryTrack);
                                             }
                                         }}
-                                        disabled={!featuredReleasePrimaryTrack || isFeaturedReleaseTracksLoading}
+                                        disabled={!featuredReleasePrimaryTrack || !getFeaturedTrackAction(featuredReleasePrimaryTrack, isSignedInForMusic).canPlay || isFeaturedReleaseTracksLoading}
                                         style={{
                                             borderRadius: '999px',
                                             boxShadow: '0 14px 28px rgba(0,0,0,0.2)',
@@ -1108,7 +984,7 @@ export default function CosmicNexusHub() {
                                             : isFeaturedReleasePrimaryPlaying
                                                 ? 'Pause'
                                                 : featuredReleasePrimaryTrack
-                                                    ? '▶ Play'
+                                                    ? `${getFeaturedTrackAction(featuredReleasePrimaryTrack, isSignedInForMusic).label} ${featuredReleasePrimaryTrack.title}`
                                                     : 'Coming Soon'}
                                     </button>
 
@@ -1120,7 +996,7 @@ export default function CosmicNexusHub() {
                                             backdropFilter: 'blur(10px)',
                                         }}
                                     >
-                                        Enter Release
+                                        Enter World
                                     </Link>
                                 </div>
 
@@ -1154,7 +1030,7 @@ export default function CosmicNexusHub() {
                                             ) : featuredReleaseTracks && featuredReleaseTracks.length > 0 ? (
                                                 <div className="nexus-featured-release-track-list">
                                                     {featuredReleaseTracks.map((track) => {
-                                                        const trackAction = getFeaturedTrackAction(track, isCreatorView);
+                                                        const trackAction = getFeaturedTrackAction(track, isSignedInForMusic);
                                                         const playerTrackId = `release-${track.id}`;
                                                         const isCurrentDynamicTrack =
                                                             currentTrack?.id === playerTrackId && isPlaying;
@@ -1174,7 +1050,7 @@ export default function CosmicNexusHub() {
                                                                     </div>
 
                                                                     <p>
-                                                                        {getFeaturedTrackMetaLine(track, isCreatorView, creatorFeaturedRelease)}
+                                                                        {getFeaturedTrackMetaLine(track, isSignedInForMusic, creatorFeaturedRelease)}
                                                                     </p>
                                                                 </div>
 
@@ -1200,19 +1076,7 @@ export default function CosmicNexusHub() {
                                             )}
                                         </div>
 
-                                        {isCreatorView && (
-                                            <div className="nexus-dynamic-release-creator-links">
-                                                {creatorFeaturedBoardHref && (
-                                                    <Link href={creatorFeaturedBoardHref} className="btn-secondary">
-                                                        Signal Board
-                                                    </Link>
-                                                )}
 
-                                                <Link href="/creator" className="btn-secondary">
-                                                    Creator Dashboard
-                                                </Link>
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
                             )}
@@ -1263,7 +1127,7 @@ export default function CosmicNexusHub() {
                                             Current Realm: <span className="text-primary">{currentRealmName}</span>
                                         </p>
                                         <p className="text-xs text-muted mt-1">
-                                            {nexusVisibleTracks.length} cataloged tracks • {memberCatalogCount} join unlocks
+                                            {nexusVisibleTracks.length} cataloged tracks • {memberCatalogCount} member-gated signals
                                         </p>
                                     </div>
                                 </div>
@@ -1306,7 +1170,7 @@ export default function CosmicNexusHub() {
                                 </p>
                                 <h2 className="text-2xl font-display mb-2">Go deeper in the Nexus</h2>
                                 <p className="text-sm text-secondary mb-4 leading-relaxed">
-                                    Public music is open to listen. The Nexus holds {nexusVisibleTracks.length} cataloged tracks across {groupedTracks.length} realms; sign in when you want to save progress and unlock the deeper traveler path.
+                                    The Nexus holds {nexusVisibleTracks.length} catalogued signals across {groupedTracks.length} realms, including upcoming and member-gated music. Playable now counts only what you can hear. Sign in for member access and saved Realm progress.
                                 </p>
 
                                 <div className="grid grid-cols-2 gap-2 mb-4">
@@ -1315,7 +1179,7 @@ export default function CosmicNexusHub() {
                                             {nexusVisibleTracks.length}
                                         </p>
                                         <p className="text-[10px] uppercase tracking-[0.14em] text-muted mt-1">
-                                            Total tracks
+                                            Catalogued signals
                                         </p>
                                     </div>
 
@@ -1324,7 +1188,7 @@ export default function CosmicNexusHub() {
                                             {publicCatalogCount}
                                         </p>
                                         <p className="text-[10px] uppercase tracking-[0.14em] text-muted mt-1">
-                                            Open / soon
+                                            Playable now
                                         </p>
                                     </div>
 
@@ -1333,7 +1197,7 @@ export default function CosmicNexusHub() {
                                             {memberCatalogCount}
                                         </p>
                                         <p className="text-[10px] uppercase tracking-[0.14em] text-muted mt-1">
-                                            Join unlocks
+                                            Member-gated signals
                                         </p>
                                     </div>
 
@@ -1342,7 +1206,7 @@ export default function CosmicNexusHub() {
                                             {releaseCatalogCount}
                                         </p>
                                         <p className="text-[10px] uppercase tracking-[0.14em] text-muted mt-1">
-                                            Current release
+                                            Spotlight world tracks
                                         </p>
                                     </div>
                                 </div>
@@ -1639,7 +1503,7 @@ export default function CosmicNexusHub() {
 
 
 
-                    <section
+                    {flagshipTrack && <section
                         className="glass-card nexus-panel nexus-latest-signal fade-in mb-5 overflow-hidden"
                         style={{
                             ...sectionStyle,
@@ -1669,14 +1533,14 @@ export default function CosmicNexusHub() {
                                         Latest Signal
                                     </span>
                                     <span className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.16em] bg-black/24 border border-white/10 text-white/70 backdrop-blur-md">
-                                        {flagshipTrackLocked && flagshipUnlockLabel ? `Opens ${flagshipUnlockLabel}` : 'Available Signal'}
+                                        {flagshipTrack ? getTrackAvailability(flagshipTrack).label : 'No editorial selection'}
                                     </span>
                                 </div>
                             </div>
 
                             <div className="p-5 md:p-6 flex flex-col justify-center">
                                 <p className="text-xs uppercase tracking-[0.2em] text-muted mb-2">
-                                    Single Spotlight
+                                    Spotlight Signal
                                 </p>
 
                                 <h3
@@ -1690,12 +1554,12 @@ export default function CosmicNexusHub() {
                                 </h3>
 
                                 <p className="text-secondary text-sm md:text-base leading-relaxed max-w-2xl mb-4">
-                                    Look to the light, the fire inside. Don’t look outside—siren cries…
+                                    {featuredSignalRecord?.hook || 'A selected signal from the Nexus Spotlight world.'}
                                 </p>
 
                                 <div className="flex flex-wrap gap-2 mb-4">
                                     <span className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.15em] bg-white/5 border border-white/10 text-white/68">
-                                        Cosmic
+                                        {flagshipTrack?.artist}
                                     </span>
                                     <span className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.15em] bg-white/5 border border-white/10 text-white/68">
                                         Direct Entry
@@ -1739,7 +1603,7 @@ export default function CosmicNexusHub() {
                                 </div>
                             </div>
                         </div>
-                    </section>
+                    </section>}
 
                     <section
                         id="realm-soundtracks"
@@ -1874,6 +1738,7 @@ export default function CosmicNexusHub() {
                                     return (
                                         <div
                                             key={realmGroup.id}
+                                            id={`realm-${realmGroup.id}`}
                                             className="realm-carousel-item"
                                         >
                                             <RealmOrbitCard
@@ -2039,7 +1904,7 @@ export default function CosmicNexusHub() {
                                 >
                                     {publicThreePieceCollections.map((collection) => {
                                         const allCollectionTracks = collection.trackIds
-                                            .map((trackId) => getTrackById(trackId))
+                                            .map((trackId) => runtimeMusicCatalog.find(track => track.legacyRegistryId === trackId || track.id === trackId))
                                             .filter(Boolean);
 
                                         const openCollectionTracks = allCollectionTracks.filter(

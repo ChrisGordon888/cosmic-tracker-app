@@ -5,6 +5,10 @@ export const GET_MY_NEXUS_TRACKS = gql`
     myReleaseTracks {
       id
       ownerId
+      artistName
+      releaseSlug
+      accessTier
+      legacyRegistryId
       releaseWorldId
       title
       slug

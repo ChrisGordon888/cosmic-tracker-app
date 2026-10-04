@@ -5,7 +5,6 @@ import { useQuery } from '@apollo/client';
 import RealmOrbitCard from '@/components/music/RealmOrbitCard';
 import { MUSIC_REGISTRY } from '@/lib/musicRegistry';
 import { GET_PUBLIC_NEXUS_TRACKS } from '@/graphql/realms';
-import { GET_MY_NEXUS_TRACKS } from '@/graphql/musicAccess';
 import {
     getRuntimeTracksForRealm,
     mapReleaseTracksToMusicTracks,
@@ -14,7 +13,6 @@ import {
 } from '@/lib/publicMusicCatalog';
 import type { RealmId } from '@/lib/realmStateMap';
 import { useMusicPlayer } from '@/hooks/useMusicPlayer';
-import { useCreatorView } from '@/context/CreatorViewProvider';
 import { usePlatformAccess } from '@/context/PlatformAccessProvider';
 import { getMusicAvailability } from '@/lib/musicAvailability';
 
@@ -39,14 +37,7 @@ interface RealmSoundstageProps {
     compactOnMobile?: boolean;
 }
 
-const RELEASE_UNLOCKS: Record<string, string> = {
-    'sin-do-over': '2026-06-29T00:00:00',
-    'sin-running-from-the-plug': '2026-07-14T00:00:00',
-    '101-hold-my-hand': '2026-07-29T00:00:00',
-    '303-in-the-deep': '2026-07-29T00:00:00',
-    '202-her-fantasy': '2026-07-29T00:00:00',
-    '202-siren': '2026-07-29T00:00:00',
-};
+
 
 export default function RealmSoundstage({
     realmId,
@@ -63,25 +54,16 @@ export default function RealmSoundstage({
     compactOnMobile = false,
 }: RealmSoundstageProps) {
     const { playOrToggleTrack, currentTrack, isPlaying } = useMusicPlayer();
-    const { isCreatorView: selectedCreatorView } = useCreatorView();
-    const { isAuthenticated, canAccessCreatorOS } = usePlatformAccess();
-    const isCreatorView = canAccessCreatorOS && selectedCreatorView;
-    const isSignedInForMusic = isCreatorView && isAuthenticated;
+    const { isAuthenticated } = usePlatformAccess();
+    const isSignedInForMusic = isAuthenticated;
     const { data: publicNexusTrackData } = useQuery(GET_PUBLIC_NEXUS_TRACKS, {
         variables: { realmId },
-        skip: isCreatorView,
-        fetchPolicy: 'cache-and-network',
-    });
-    const { data: creatorNexusTrackData } = useQuery(GET_MY_NEXUS_TRACKS, {
-        skip: !isCreatorView,
         fetchPolicy: 'cache-and-network',
     });
 
     const realmTracks = useMemo(() => {
         const creatorTracks = mapReleaseTracksToMusicTracks(
-            (isCreatorView
-                ? creatorNexusTrackData?.myReleaseTracks
-                : publicNexusTrackData?.getPublicNexusTracks) as
+            publicNexusTrackData?.getPublicNexusTracks as
                 | PublicNexusReleaseTrack[]
                 | undefined
         );
@@ -90,9 +72,8 @@ export default function RealmSoundstage({
         return getRuntimeTracksForRealm(runtimeCatalog, realmId)
             .map((track) => {
                 const availability = getMusicAvailability(track, {
-                    isCreatorView,
+                    isCreatorView: false,
                     isSignedIn: isSignedInForMusic,
-                    fallbackUnlockDate: RELEASE_UNLOCKS[track.id] ?? null,
                 });
 
                 return {
@@ -102,7 +83,7 @@ export default function RealmSoundstage({
                 };
             })
             .filter((track) => track.availability.isVisible);
-    }, [creatorNexusTrackData, publicNexusTrackData, realmId, isCreatorView, isSignedInForMusic]);
+    }, [publicNexusTrackData, realmId, isSignedInForMusic]);
 
     if (realmTracks.length === 0) {
         return (

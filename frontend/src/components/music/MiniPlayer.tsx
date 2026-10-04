@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { isPublicWorld } from '@/lib/publicJourney';
 import { useMusicPlayer } from '@/hooks/useMusicPlayer';
@@ -87,8 +88,9 @@ export default function MiniPlayer() {
                         </p>
 
                         <p className="text-xs text-white/70 truncate">
-                            {currentTrack.artist || 'Cosmic 888'} • {currentTrack.realmName}
+                            {currentTrack.artist || 'Independent creator'} • {currentTrack.realmName}
                         </p>
+                        {currentTrack.releaseSlug && <Link href={`/releases/${currentTrack.releaseSlug}`} className="text-xs text-white/70 hover:text-white">Enter World →</Link>}
                     </div>
 
                     <button

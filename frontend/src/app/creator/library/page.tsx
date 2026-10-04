@@ -37,6 +37,7 @@ const CREATOR_LIBRARY_QUERY = gql`
 
     myCatalogTracks {
       id
+      ownerId
       releaseWorldId
       title
       slug
@@ -200,6 +201,7 @@ type OrganizeResult = {
 } | null;
 
 type ReleaseTrack = CatalogTrack & {
+  ownerId?: string;
   audioContentHash?: string | null;
   sourceFileName?: string | null;
   sourceFileSize?: number | null;
@@ -509,6 +511,13 @@ export default function CreatorLibraryPage() {
     return {
       id: `library-${track.id}`,
       trackTitle: track.title,
+      ownerId: track.ownerId,
+      visibility: track.visibility,
+      accessTier: track.accessTier,
+      playbackStatus: track.playbackStatus,
+      previewAudioUrl: track.previewAudioUrl,
+      unlockDate: track.unlockDate,
+      dropDate: track.dropDate,
       artist: "COSMIC Creator",
       realmId: realm?.id ?? 0,
       realmName: realm?.name ?? "Creator Library",

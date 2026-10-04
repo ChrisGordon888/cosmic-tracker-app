@@ -222,7 +222,7 @@ export default function ProfilePage() {
                         Profile
                     </h1>
                     <p className="text-secondary max-w-2xl mx-auto">
-                        Your realm progress, listening history, trials, XP, and traveler state in one place.
+                        Your saved Realm progress, listening milestones, and creator identity in one place.
                     </p>
                 </header>
 
@@ -270,6 +270,11 @@ export default function ProfilePage() {
                                 </span>
                             </p>
 
+                            <div className="flex flex-wrap gap-3 mb-4">
+                                <Link href={`/realms/${user?.currentRealm ?? 303}`} className="btn-secondary">Continue in your Realm →</Link>
+                                <Link href="/find-your-realm" className="btn-secondary">Find a new path</Link>
+                                <Link href="/nexus" className="btn-secondary">Discover music</Link>
+                            </div>
                             <div>
                                 <div className="flex justify-between text-xs mb-1">
                                     <span className="text-secondary">Experience</span>
@@ -541,7 +546,7 @@ export default function ProfilePage() {
                                                         {track.trackTitle}
                                                     </p>
                                                     <p className="text-xs text-muted truncate">
-                                                        {track.artist ?? 'Cosmic 888'} • {realmMeta.name}
+                                                        {track.artist ?? 'Independent creator'} • {realmMeta.name}
                                                     </p>
                                                 </div>
 

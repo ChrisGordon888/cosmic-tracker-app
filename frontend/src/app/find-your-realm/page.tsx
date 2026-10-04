@@ -12,6 +12,11 @@ import {
 } from '@/lib/realmStateMap';
 import { REALM_ALIGNMENT_QUESTIONS } from '@/lib/realmAlignmentQuestions';
 import { REALM_RESULT_CONTENT } from '@/lib/realmResultContent';
+import { useQuery } from '@apollo/client';
+import { GET_PUBLIC_NEXUS_TRACKS } from '@/graphql/realms';
+import { mapReleaseTracksToMusicTracks, mergeMusicCatalogs, findRealmRecommendation } from '@/lib/publicMusicCatalog';
+import { getMusicAvailability } from '@/lib/musicAvailability';
+import { usePlatformAccess } from '@/context/PlatformAccessProvider';
 import { MUSIC_REGISTRY } from '@/lib/musicRegistry';
 import { useMusicPlayer } from '@/hooks/useMusicPlayer';
 
@@ -62,6 +67,9 @@ export default function FindYourRealmPage() {
 
     const { playOrToggleTrack, currentTrack, isPlaying } = useMusicPlayer();
 
+    const { isAuthenticated } = usePlatformAccess();
+    const { data: catalogData } = useQuery(GET_PUBLIC_NEXUS_TRACKS);
+    const catalog = useMemo(() => mergeMusicCatalogs(MUSIC_REGISTRY, mapReleaseTracksToMusicTracks(catalogData?.getPublicNexusTracks)), [catalogData]);
     const currentQuestion = REALM_ALIGNMENT_QUESTIONS[currentQuestionIndex];
     const totalQuestions = REALM_ALIGNMENT_QUESTIONS.length;
 
@@ -84,14 +92,9 @@ export default function FindYourRealmPage() {
     const suggestedTrack = useMemo(() => {
         if (recommendedRealmId === null || !modeContent) return null;
 
-        return (
-            MUSIC_REGISTRY.find(
-                (track) =>
-                    track.realmId === recommendedRealmId &&
-                    track.trackTitle === modeContent.recommendedTrack
-            ) ?? null
-        );
-    }, [recommendedRealmId, modeContent]);
+        return findRealmRecommendation(catalog, MUSIC_REGISTRY, recommendedRealmId, modeContent.recommendedTrack);
+    }, [recommendedRealmId, modeContent, catalog]);
+    const suggestedAvailability = suggestedTrack ? getMusicAvailability(suggestedTrack, { isCreatorView: false, isSignedIn: isAuthenticated }) : null;
 
     const allQuestionsAnswered =
         Object.keys(selectedAnswers).length === REALM_ALIGNMENT_QUESTIONS.length;
@@ -344,7 +347,7 @@ export default function FindYourRealmPage() {
                                         className="text-2xl font-display mb-3"
                                         style={{ color: recommendedRealm.color }}
                                     >
-                                        {modeContent.recommendedTrack}
+                                        {suggestedTrack?.trackTitle ?? modeContent.recommendedTrack}
                                     </h3>
                                     <p className="text-secondary text-sm">{modeContent.whyMusicFits}</p>
                                 </div>
@@ -433,34 +436,23 @@ export default function FindYourRealmPage() {
                                 </div>
 
                                 <div className="flex gap-3 flex-wrap">
-                                    <Link href="/nexus">
-                                        <button className="btn-secondary">Back to Nexus</button>
-                                    </Link>
-
-                                    {suggestedTrack && (
-                                        <button
-                                            onClick={() => playOrToggleTrack(suggestedTrack)}
-                                            className="btn-secondary"
-                                        >
-                                            {currentTrack?.id === suggestedTrack.id
-                                                ? isPlaying
-                                                    ? 'Pause Suggested Track'
-                                                    : 'Resume Suggested Track'
-                                                : '▶ Play Suggested Track'}
+                                    {suggestedTrack && suggestedAvailability?.isPlayable ? (
+                                        <button onClick={() => playOrToggleTrack(suggestedTrack)} className="btn-primary">
+                                            {currentTrack?.id === suggestedTrack.id && isPlaying ? 'Pause' : 'Play'} {suggestedTrack.trackTitle}
                                         </button>
-                                    )}
-
-                                    <Link href={recommendedRealm.route}>
-                                        <button className="btn-primary">
-                                            Enter {recommendedRealm.realmName} →
-                                        </button>
+                                    ) : suggestedAvailability?.label === 'Join to Unlock' ? (
+                                        <Link href="/auth" className="btn-primary">Sign in to listen</Link>
+                                    ) : <span className="text-secondary">{suggestedAvailability?.label ?? 'Explore the Realm for more music'}</span>}
+                                    <Link href={suggestedTrack?.releaseSlug ? `/releases/${suggestedTrack.releaseSlug}` : isAuthenticated ? recommendedRealm.route : `/nexus#realm-${recommendedRealmId}`} className="btn-secondary">
+                                        {suggestedTrack?.releaseSlug ? 'Explore World' : isAuthenticated ? `Enter ${recommendedRealm.realmName}` : `Explore ${recommendedRealm.realmName} music`} →
                                     </Link>
+                                    <Link href="/nexus" className="text-secondary self-center">Back to Nexus</Link>
                                 </div>
                             </div>
 
                             {allQuestionsAnswered && (
                                 <p className="text-xs text-muted mt-6 text-center">
-                                    This recommendation has been saved to your Nexus as Today’s Realm Guidance.
+                                    This path is saved in this browser and appears in Nexus as Today’s Realm Guidance.
                                     You can always choose a different realm if another one feels more true today.
                                 </p>
                             )}
