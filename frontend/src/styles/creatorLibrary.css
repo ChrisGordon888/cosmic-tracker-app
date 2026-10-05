@@ -926,3 +926,9 @@
 .cleanup-suggestion fieldset { padding:1rem; margin:1rem 0; border:1px solid #ffffff30; min-width:0; }
 .cleanup-suggestion button[aria-pressed=true] { background:#c6d9e8; color:#132131; }
 .cleanup-suggestion li { margin:.5rem 0; }
+
+.vault-review .cleanup-fields > details { grid-column: 1 / -1; }
+.vault-review summary { cursor: pointer; padding: .6rem 0; }
+.vault-review details label { margin: .8rem 0; }
+.vault-review textarea { width: 100%; min-width: 0; background: #202c39; color: inherit; padding: .6rem; border: 1px solid #ffffff30; border-radius: 6px; }
+.vault-review input[type="checkbox"] { width: auto; align-self: flex-start; }

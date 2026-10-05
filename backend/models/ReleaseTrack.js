@@ -2,6 +2,16 @@ const mongoose = require("mongoose");
 
 const ReleaseTrackSchema = new mongoose.Schema(
   {
+    catalogTreatment: { type: String, enum: ["current", "vault", "test"], default: "current", index: true },
+    rightsInfo: {
+      sourceType: { type: String, enum: require('../lib/trackVault').sourceTypes, default: 'unknown' },
+      reviewStatus: { type: String, enum: require('../lib/trackVault').reviewStatuses, default: 'unknown' },
+      producerName: { type: String, default: '', maxlength: 200 },
+      sourceUrl: { type: String, default: '', maxlength: 1000 },
+      notes: { type: String, default: '', maxlength: 4000 },
+      documentationRecorded: { type: Boolean, default: false },
+      commercialIntent: { type: Boolean, default: null },
+    },
     ownerId: { type: String, required: true, index: true },
     releaseWorldId: { type: mongoose.Schema.Types.ObjectId, ref: "ReleaseWorld", default: null, index: true },
     title: { type: String, required: true, trim: true },

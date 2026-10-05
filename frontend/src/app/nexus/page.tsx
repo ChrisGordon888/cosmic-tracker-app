@@ -492,7 +492,7 @@ export default function CosmicNexusHub() {
     });
 
     const { data: publicNexusTrackData } = useQuery(GET_PUBLIC_NEXUS_TRACKS, {
-        fetchPolicy: 'cache-and-network',
+        fetchPolicy: 'network-only',
     });
 
     const { data: publicFeaturedReleaseData } = useQuery(GET_PUBLIC_FEATURED_RELEASE_WORLD, {
@@ -659,7 +659,7 @@ export default function CosmicNexusHub() {
             | undefined
         );
 
-        return mergeMusicCatalogs(MUSIC_REGISTRY, creatorTracks);
+        return mergeMusicCatalogs(publicNexusTrackData ? MUSIC_REGISTRY : [], creatorTracks, publicNexusTrackData?.unavailableRegistryTrackIds);
     }, [publicNexusTrackData]);
 
     const nexusVisibleTracks = useMemo(() => {

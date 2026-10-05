@@ -138,6 +138,7 @@ export const LOG_DAILY_LOGIN = gql`
 
 export const GET_PUBLIC_NEXUS_TRACKS = gql`
   query GetPublicNexusTracks($realmId: Int) {
+    unavailableRegistryTrackIds
     getPublicNexusTracks(realmId: $realmId) {
       id
       ownerId

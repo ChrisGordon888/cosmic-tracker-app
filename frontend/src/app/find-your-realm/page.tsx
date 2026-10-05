@@ -68,8 +68,8 @@ export default function FindYourRealmPage() {
     const { playOrToggleTrack, currentTrack, isPlaying } = useMusicPlayer();
 
     const { isAuthenticated } = usePlatformAccess();
-    const { data: catalogData } = useQuery(GET_PUBLIC_NEXUS_TRACKS);
-    const catalog = useMemo(() => mergeMusicCatalogs(MUSIC_REGISTRY, mapReleaseTracksToMusicTracks(catalogData?.getPublicNexusTracks)), [catalogData]);
+    const { data: catalogData } = useQuery(GET_PUBLIC_NEXUS_TRACKS, { fetchPolicy: 'network-only' });
+    const catalog = useMemo(() => mergeMusicCatalogs(catalogData ? MUSIC_REGISTRY : [], mapReleaseTracksToMusicTracks(catalogData?.getPublicNexusTracks), catalogData?.unavailableRegistryTrackIds), [catalogData]);
     const currentQuestion = REALM_ALIGNMENT_QUESTIONS[currentQuestionIndex];
     const totalQuestions = REALM_ALIGNMENT_QUESTIONS.length;
 

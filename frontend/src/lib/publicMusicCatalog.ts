@@ -162,11 +162,12 @@ export function mapReleaseTracksToMusicTracks(
 
 export function mergeMusicCatalogs(
     registryTracks: MusicTrack[],
-    creatorTracks: RuntimeMusicTrack[]
+    creatorTracks: RuntimeMusicTrack[],
+    unavailableRegistryIds: string[] = [],
 ): RuntimeMusicTrack[] {
     const byIdentity = new Map<string, RuntimeMusicTrack>();
 
-    registryTracks.forEach((track) => {
+    registryTracks.filter(track => !unavailableRegistryIds.includes(track.id)).forEach((track) => {
         byIdentity.set(track.id, {
             ...track,
             source: 'registry',

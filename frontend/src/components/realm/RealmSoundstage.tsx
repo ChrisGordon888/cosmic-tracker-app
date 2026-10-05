@@ -58,7 +58,7 @@ export default function RealmSoundstage({
     const isSignedInForMusic = isAuthenticated;
     const { data: publicNexusTrackData } = useQuery(GET_PUBLIC_NEXUS_TRACKS, {
         variables: { realmId },
-        fetchPolicy: 'cache-and-network',
+        fetchPolicy: 'network-only',
     });
 
     const realmTracks = useMemo(() => {
@@ -67,7 +67,7 @@ export default function RealmSoundstage({
                 | PublicNexusReleaseTrack[]
                 | undefined
         );
-        const runtimeCatalog = mergeMusicCatalogs(MUSIC_REGISTRY, creatorTracks);
+        const runtimeCatalog = mergeMusicCatalogs(publicNexusTrackData ? MUSIC_REGISTRY : [], creatorTracks, publicNexusTrackData?.unavailableRegistryTrackIds);
 
         return getRuntimeTracksForRealm(runtimeCatalog, realmId)
             .map((track) => {

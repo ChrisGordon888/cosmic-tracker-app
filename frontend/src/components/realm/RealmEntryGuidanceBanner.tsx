@@ -47,7 +47,7 @@ export default function RealmEntryGuidanceBanner({
 
   const { data: publicNexusTrackData } = useQuery(GET_PUBLIC_NEXUS_TRACKS, {
     variables: { realmId },
-    fetchPolicy: 'cache-and-network',
+    fetchPolicy: 'network-only',
   });
 
 
@@ -69,7 +69,7 @@ export default function RealmEntryGuidanceBanner({
       publicNexusTrackData?.getPublicNexusTracks as PublicNexusReleaseTrack[] | undefined
     );
 
-    return getRuntimeTracksForRealm(mergeMusicCatalogs(MUSIC_REGISTRY, releaseTracks), realmId)
+    return getRuntimeTracksForRealm(mergeMusicCatalogs(publicNexusTrackData ? MUSIC_REGISTRY : [], releaseTracks, publicNexusTrackData?.unavailableRegistryTrackIds), realmId)
       .map((track) => {
         const availability = getMusicAvailability(track, {
           isCreatorView: false,

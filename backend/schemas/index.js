@@ -280,7 +280,35 @@ const typeDefs = gql`
 
   enum WorkingCoverStyle { minimal atmospheric signal artifact none }
 
+  enum CatalogTreatment { current vault test }
+  enum RightsSource { unknown selfProduced freeNonProfit freeForProfit purchased commissioned exclusiveRecorded other }
+  enum RightsReview { unknown needsReview recorded }
+  type TrackRightsInfo {
+    sourceType: RightsSource!
+    reviewStatus: RightsReview!
+    producerName: String
+    sourceUrl: String
+    notes: String
+    documentationRecorded: Boolean!
+    commercialIntent: Boolean
+  }
+  input TrackRightsInput {
+    sourceType: RightsSource!
+    reviewStatus: RightsReview!
+    producerName: String
+    sourceUrl: String
+    notes: String
+    documentationRecorded: Boolean
+    commercialIntent: Boolean
+  }
+  input TrackVaultInput {
+    catalogTreatment: CatalogTreatment
+    rightsInfo: TrackRightsInput
+    archive: Boolean
+  }
   type ReleaseTrack {
+    catalogTreatment: CatalogTreatment
+    rightsInfo: TrackRightsInfo
     artistName: String
     releaseSlug: String
     audioContentHash: String
@@ -687,6 +715,7 @@ const typeDefs = gql`
 
   # 📖 Queries
   type Query {
+    unavailableRegistryTrackIds: [String!]!
     myOpportunities: [Opportunity!]!
     hello: String
     todayMoonPhase: String
@@ -762,6 +791,7 @@ const typeDefs = gql`
 
   # 🛠️ Mutations
   type Mutation {
+    updateTrackVault(id: ID!, expectedUpdatedAt: String!, input: TrackVaultInput!): ReleaseTrack!
     createOpportunity(input: OpportunityInput!): Opportunity!
     updateOpportunity(id: ID!, input: OpportunityInput!, expectedUpdatedAt: String!): Opportunity!
     recordOpportunityResult(id: ID!, input: OpportunityResultInput!, expectedUpdatedAt: String!): Opportunity!

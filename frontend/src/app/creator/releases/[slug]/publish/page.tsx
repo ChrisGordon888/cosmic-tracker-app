@@ -1,5 +1,6 @@
 "use client";
 
+import {reviewLabels,sourceLabels,type RightsInfo} from "@/lib/trackVault";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
@@ -57,7 +58,7 @@ type ReleaseData = {
 const PREPARE_TRACKS = gql`
     query PrepareReleaseTracks($releaseWorldId: ID!) {
         getReleaseTracks(releaseWorldId: $releaseWorldId) {
-            id title status visibility isPublic playbackStatus audioUrl previewAudioUrl realmId accessTier
+            id title status visibility isPublic playbackStatus audioUrl previewAudioUrl realmId accessTier catalogTreatment rightsInfo { sourceType reviewStatus documentationRecorded }
         }
     }
 `;
@@ -66,7 +67,7 @@ const MAKE_TRACK_PUBLIC = gql`
         updateReleaseTrack(id: $id, input: $input) { id visibility isPublic playbackStatus }
     }
 `;
-type PrepareTrack = {id:string; title:string; status:string; visibility:string; isPublic:boolean; playbackStatus:string; audioUrl?:string; previewAudioUrl?:string; realmId?:number|null; accessTier?:string};
+type PrepareTrack = {catalogTreatment?:string; rightsInfo?:RightsInfo;id:string; title:string; status:string; visibility:string; isPublic:boolean; playbackStatus:string; audioUrl?:string; previewAudioUrl?:string; realmId?:number|null; accessTier?:string};
 
 export default function PublishingReadinessPage() {
     const params = useParams<{ slug: string }>();
@@ -92,7 +93,7 @@ export default function PublishingReadinessPage() {
     const tracksQuery = useQuery<{getReleaseTracks:PrepareTrack[]}>(PREPARE_TRACKS, {
         variables:{releaseWorldId:release?.id || ""}, skip:!release?.id, fetchPolicy:"cache-and-network",
     });
-    const tracks = (tracksQuery.data?.getReleaseTracks ?? []).filter(track => track.status !== "archived");
+    const tracks = (tracksQuery.data?.getReleaseTracks ?? []).filter(track => track.status !== "archived" && !["vault","test"].includes(track.catalogTreatment||""));
     const [makeTrackPublic, makePublicState] = useMutation(MAKE_TRACK_PUBLIC);
     const [listenerMessage, setListenerMessage] = useState("");
     async function exposeTrack(track: PrepareTrack) {
@@ -348,6 +349,8 @@ export default function PublishingReadinessPage() {
                         <li>One-line promise / story — {release.oneLineSummary?.trim() && release.story?.trim() ? "Added" : "Add your context"} · <Link href={`/releases/${slug}/board#portal`}>Edit release identity</Link></li>
                         <li>Release visibility — {release.visibility}. Use the publishing controls below when ready.</li>
                     </ul>
+                    <details className="mt-5"><summary>Rights information · informational only</summary><p>Creator-recorded information is not legal verification and does not block publication. You remain responsible for permissions and licenses. <Link href="/creator/library">Review in Library</Link></p>{tracks.map(track=><p key={track.id}>{track.title}: {reviewLabels[track.rightsInfo?.reviewStatus||'unknown']} · Creator recorded: {sourceLabels[track.rightsInfo?.sourceType||'unknown']}{track.rightsInfo?.documentationRecorded?' · Documentation held elsewhere':''}</p>)}</details>
+                    <p className="mt-3">Private Vault, Test / Sandbox, and archived tracks are excluded from release preparation. Manage their classification in <Link href="/creator/library">Library</Link>.</p>
                     <h3 className="mt-5 font-semibold">Listener access</h3>
                     {tracksQuery.loading && <p>Checking saved track settings…</p>}
                     {tracksQuery.error && <p role="alert">{tracksQuery.error.message}</p>}

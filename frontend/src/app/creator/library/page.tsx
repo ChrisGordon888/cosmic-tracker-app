@@ -1,5 +1,8 @@
 "use client";
 
+import TrackVaultReview from "@/components/creator/TrackVaultReview";
+import {matchesVault,trackExposure,type VaultTrack} from "@/lib/trackVault";
+import {MUSIC_REGISTRY} from "@/lib/musicRegistry";
 import Link from "next/link";
 import LibraryCleanupPanel from "@/components/creator/LibraryCleanupPanel";
 import SmartSortPanel from "@/components/creator/SmartSortPanel";
@@ -15,6 +18,14 @@ import { useMemo, useRef, useState } from "react";
 import { useMusicPlayer } from "@/hooks/useMusicPlayer";
 import "@/styles/creatorLibrary.css";
 
+const UPDATE_TRACK_VAULT = gql`
+  mutation UpdateTrackVault($id: ID!, $expectedUpdatedAt: String!, $input: TrackVaultInput!) {
+    updateTrackVault(id: $id, expectedUpdatedAt: $expectedUpdatedAt, input: $input) {
+      id updatedAt catalogTreatment status visibility showInNexus
+      rightsInfo { sourceType reviewStatus producerName sourceUrl notes documentationRecorded commercialIntent }
+    }
+  }
+`;
 const REPAIR_PROJECT_LINK = gql`
   mutation RepairCatalogTrackProjectLink($trackId: ID!) {
     repairCatalogTrackProjectLink(trackId: $trackId) { id releaseWorldId }
@@ -36,6 +47,9 @@ const CREATOR_LIBRARY_QUERY = gql`
     }
 
     myCatalogTracks {
+      catalogTreatment
+      legacyRegistryId
+      rightsInfo { sourceType reviewStatus producerName sourceUrl notes documentationRecorded commercialIntent }
       id
       ownerId
       releaseWorldId
@@ -200,7 +214,7 @@ type OrganizeResult = {
   boardHref: string;
 } | null;
 
-type ReleaseTrack = CatalogTrack & {
+type ReleaseTrack = CatalogTrack & VaultTrack & {
   ownerId?: string;
   audioContentHash?: string | null;
   sourceFileName?: string | null;
@@ -324,6 +338,10 @@ export default function CreatorLibraryPage() {
   const [intakeApproval, setIntakeApproval] = useState<IntakeApproval | null>(null);
   const [archiveRelease, { loading: archiving }] = useMutation(ARCHIVE_LIBRARY_RELEASE);
   const [view, setView] = useState<LibraryView>("tracks");
+  const [saveVault] = useMutation(UPDATE_TRACK_VAULT);
+  const [vaultFilter,setVaultFilter]=useState('browse');
+  const [vaultQueue,setVaultQueue]=useState<string[]>([]);
+  const [vaultIndex,setVaultIndex]=useState(0);
   const [cleanupFilter, setCleanupFilter] = useState("all");
   const [cleanupQueue, setCleanupQueue] = useState<CleanupTrack[]>([]);
   const [cleanupIndex, setCleanupIndex] = useState(0);
@@ -410,6 +428,7 @@ export default function CreatorLibraryPage() {
         .toLowerCase();
 
       return (
+        matchesVault(track,vaultFilter) &&
         matchesCleanup(track, cleanupFilter) &&
         (!query || searchTarget.includes(query)) &&
         (releaseFilter === "all" ||
@@ -419,7 +438,7 @@ export default function CreatorLibraryPage() {
         (publishingFilter === "all" || track.publishingState === publishingFilter)
       );
     });
-  }, [enrichedTracks, search, releaseFilter, realmFilter, statusFilter, publishingFilter, cleanupFilter]);
+  }, [enrichedTracks, search, releaseFilter, realmFilter, statusFilter, publishingFilter, cleanupFilter, vaultFilter]);
 
   const summary = useMemo(() => {
     return {
@@ -805,6 +824,7 @@ export default function CreatorLibraryPage() {
             <p>Capture songs first, organize them when the direction becomes clear, then develop the ones that belong to a Single, EP, Album, or other Release World.</p>
           </div>
           <div className="creator-library-hero-actions">
+            <button type="button" disabled={!filteredTracks.length} onClick={()=>{setVaultQueue(filteredTracks.map(t=>t.id));setVaultIndex(0);}}>Review catalog / rights</button>
             <button type="button" disabled={!filteredTracks.length} onClick={()=>{setCleanupQueue(filteredTracks.map(t=>({...t})));setCleanupIndex(0);}}>Clean up Library</button>
             <button type="button" disabled={!filteredTracks.some(t=>matchesCleanup(t,"realm"))} onClick={()=>{setSmartQueue(filteredTracks.filter(t=>matchesCleanup(t,"realm")).map(t=>({...t})));setSmartIndex(0);}}>Smart Sort tracks needing Realm ({filteredTracks.filter(t=>matchesCleanup(t,"realm")).length})</button>
             <button type="button" onClick={scrollToIntake}>+ Add Music</button>
@@ -813,6 +833,17 @@ export default function CreatorLibraryPage() {
             <Link href="/creator">Creator Home</Link>
           </div>
         </header>
+        <details className="glass-card p-5 my-4">
+          <summary>Public exposure audit · what can another person hear?</summary>
+          <p>Uses saved listener settings and public-world state, not creator preview. Member means a signed-in listener without premium privileges. Copied Blob URLs remain accessible independently.</p>
+          <p>{releases.filter(r=>r.visibility==='public'&&r.status!=='archived').length} published Release Worlds. Counts below describe saved eligibility, not successful audio delivery.</p>
+          {(() => {const rows=tracks.map(track=>({track,exposure:trackExposure(track,releaseMap.get(track.releaseWorldId||''),MUSIC_REGISTRY.find(r=>r.id===track.legacyRegistryId))}));return <>
+            <p>{rows.filter(r=>r.exposure.guest).length} playable signed out · {rows.filter(r=>r.exposure.member).length} playable signed in · {rows.filter(r=>r.exposure.nexus).length} marked for Nexus</p>
+            <ul>{rows.filter(r=>r.exposure.guest||r.exposure.member||r.exposure.publishedWorld||r.exposure.legacy).map(({track,exposure})=><li key={track.id} className="my-3"><strong>{track.title}</strong> · {track.visibility} · {track.accessTier} · signed out: {exposure.guest?'playable':'not playable'} · member: {exposure.member?'playable':'not playable'}{exposure.legacy?' · legacy registry exposure':''}{exposure.nexus?' · Nexus':''} <button type="button" onClick={()=>{setVaultQueue([track.id]);setVaultIndex(0);}}>Review</button></li>)}</ul>
+          </>;})()}
+          <p>Independent public fragments and media links must also be reviewed in Assets / Workshop. This audit cannot inventory copies shared outside COSMIC.</p>
+        </details>
+
 
 
         <section className="creator-library-intake" id="intake">
@@ -987,6 +1018,7 @@ export default function CreatorLibraryPage() {
           </div>
 
           <div className="creator-library-filter-grid">
+            <label><span>Library / Vault</span><select value={vaultFilter} onChange={e=>setVaultFilter(e.target.value)}>{[['browse','Library (without Sandbox)'],['all','All music, including Sandbox'],['current','Current'],['vault','Vault: private / archived / review'],['private','Private'],['public','Public visibility'],['listed','Listed visibility'],['review','Rights: explicitly needs review'],['unknown','Rights: unknown'],['test','Test / Sandbox']].map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
             <label><span>Organization / queue</span><select value={cleanupFilter} onChange={e=>setCleanupFilter(e.target.value)}>{[['all','All tracks'],['cleanup','Needs cleanup'],['realm','Realm undecided'],['standalone','Categorized standalone'],['release','Release tracks'],['ideas','Ideas / demos']].map(([id,label])=><option key={id} value={id}>{label}</option>)}</select></label>
             <label className="creator-library-search">
               <span>Search</span>
@@ -1069,6 +1101,8 @@ export default function CreatorLibraryPage() {
                     </div>
                     <div>
                       <strong>{track.title}</strong>
+                      <button type="button" onClick={()=>{setVaultQueue([track.id]);setVaultIndex(0);}}>Vault / rights</button>
+                      {track.catalogTreatment && track.catalogTreatment!=='current' && <small>{track.catalogTreatment==='vault'?'Private Vault':'Test / Sandbox'}</small>}
                       <p>{track.bpm ? `${track.bpm} BPM` : "BPM TBD"} · {track.keySignature || "Key TBD"}</p>
                       <small className={track.artworkUrl ? "has-track-art" : "uses-release-art"}>
                         {track.artworkUrl ? "Track artwork" : (track.releaseCoverArtUrl || release?.coverArtUrl) ? "Release artwork" : track.workingCoverStyle === "none" ? "No artwork" : "Working cover"}
@@ -1232,6 +1266,8 @@ export default function CreatorLibraryPage() {
                     {stateTracks.map((track) => (
                       <Link key={track.id} href={track.release ? `/releases/${track.release.slug}/board` : "/creator/projects"}>
                         <strong>{track.title}</strong>
+                      <button type="button" onClick={()=>{setVaultQueue([track.id]);setVaultIndex(0);}}>Vault / rights</button>
+                      {track.catalogTreatment && track.catalogTreatment!=='current' && <small>{track.catalogTreatment==='vault'?'Private Vault':'Test / Sandbox'}</small>}
                         <small>{track.release?.title ?? catalogProjectLabel(track, releaseMap)}</small>
                       </Link>
                     ))}
@@ -1247,6 +1283,7 @@ export default function CreatorLibraryPage() {
 
 
         {smartQueue[smartIndex] && <SmartSortPanel releases={releaseMap} key={smartQueue[smartIndex].id} track={smartQueue[smartIndex]} catalog={tracks} position={smartIndex+1} total={smartQueue.length} onClose={()=>setSmartQueue([])} onNext={()=>setSmartIndex(i=>i+1)} onSave={async realmId=>{await renameLibraryTrack({variables:{id:smartQueue[smartIndex].id,input:{realmId}}});await refetch();}}/>}
+        {(() => {const track=tracks.find(t=>t.id===vaultQueue[vaultIndex]);return track?<TrackVaultReview key={track.id} track={track} position={vaultIndex+1} total={vaultQueue.length} onClose={()=>setVaultQueue([])} onNext={()=>setVaultIndex(i=>i+1)} onSave={async input=>{await saveVault({variables:{id:track.id,expectedUpdatedAt:track.updatedAt,input}});await refetch();}}/>:null;})()}
         {cleanupQueue[cleanupIndex] && <LibraryCleanupPanel catalog={tracks} key={cleanupQueue[cleanupIndex].id} track={cleanupQueue[cleanupIndex]} position={cleanupIndex+1} total={cleanupQueue.length} location={releaseMap.get(cleanupQueue[cleanupIndex].releaseWorldId ?? '')?.title ?? catalogProjectLabel(cleanupQueue[cleanupIndex], releaseMap)} releaseArtwork={releaseMap.get(cleanupQueue[cleanupIndex].releaseWorldId ?? '')?.coverArtUrl} onClose={()=>setCleanupQueue([])} onNext={()=>setCleanupIndex(i=>i+1)} onSave={async changes=>{if(Object.keys(changes).length){await renameLibraryTrack({variables:{id:cleanupQueue[cleanupIndex].id,input:changes}});await refetch();}}}/>}
         {organizingTrack && (
           <div

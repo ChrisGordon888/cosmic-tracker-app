@@ -120,3 +120,7 @@ test('A creator following another artist’s public world gets public listening 
  },{creator:true});
  assert.match(html,/Public story fixture/);assert.doesNotMatch(html,/Creator tools|Keep shaping what the listener will feel/);
 });
+test('Explicit registry suppression hides migrated Vault/Sandbox audio without deleting other creators',()=>{
+ const registry=[{id:'retired',trackTitle:'Hidden',realmId:101,trackUrl:'/old',visibility:'public'},{id:'kept',trackTitle:'Kept',realmId:101,trackUrl:'/kept',visibility:'public'}];
+ const catalog=mergeMusicCatalogs(registry,[],['retired']);assert.deepEqual(Array.from(catalog,t=>t.id),['kept']);
+});
