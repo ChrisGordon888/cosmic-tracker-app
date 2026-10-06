@@ -1,0 +1,14 @@
+.creator-guided-tour { position: fixed; z-index: 90; right: 1rem; bottom: calc(6.5rem + env(safe-area-inset-bottom)); width: min(360px, calc(100vw - 2rem)); max-height: 42dvh; overflow: auto; padding: .9rem; border: 1px solid #dcba5c99; border-radius: 1rem; background: #111923f5; color: #f1eee6; box-shadow: 0 8px 36px #0008; font-size: .8rem; }
+.creator-guided-tour h2 { margin: .4rem 0; font-size: 1.05rem; color: #f4d982; }
+.creator-guided-tour p { line-height: 1.5; margin: .45rem 0 .65rem; }
+.creator-guided-tour-topline, .creator-guided-tour-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .45rem; }
+.creator-guided-tour-topline > span { margin-right: auto; color: #c6d6df; font-size: .7rem; }
+.creator-guided-tour button, .creator-guided-tour a, .creator-tour-invitation button { cursor: pointer; color: inherit; border: 1px solid #ffffff30; border-radius: .6rem; padding: .45rem .6rem; text-decoration: none; }
+.creator-guided-tour .is-primary { background: #dcba5c22; border-color: #dcba5c80; }
+.creator-guided-tour.is-minimized { display: flex; width: auto; max-width: calc(100vw - 2rem); align-items: center; gap: .4rem; padding: .4rem; }
+.creator-guided-tour :focus-visible, .creator-tour-invitation :focus-visible { outline: 2px solid #f4d982; outline-offset: 3px; }
+.creator-tour-invitation { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; padding: .65rem; border: 1px solid #dcba5c40; border-radius: .8rem; font-size: .8rem; }
+.creator-tour-target, .workspace-tour-target { outline: 3px solid #f4d982 !important; outline-offset: 5px; box-shadow: 0 0 0 7px #dcba5c20, 0 0 24px #dcba5c45 !important; animation: creator-tour-glow 2.8s ease-in-out infinite; scroll-margin-block: 8rem; }
+@keyframes creator-tour-glow { 0%, 100% { filter: drop-shadow(0 0 2px #dcba5c20); } 50% { filter: drop-shadow(0 0 6px #dcba5c70); } }
+@media (prefers-reduced-motion: reduce) { .creator-tour-target, .workspace-tour-target { animation: none !important; outline-color: #f4d982 !important; } }
+@media (max-width: 600px) { .creator-guided-tour { right: .65rem; width: calc(100vw - 1.3rem); padding: .7rem; max-height: 37dvh; } .creator-guided-tour.is-minimized { width: auto; } }

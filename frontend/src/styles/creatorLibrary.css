@@ -932,3 +932,11 @@
 .vault-review details label { margin: .8rem 0; }
 .vault-review textarea { width: 100%; min-width: 0; background: #202c39; color: inherit; padding: .6rem; border: 1px solid #ffffff30; border-radius: 6px; }
 .vault-review input[type="checkbox"] { width: auto; align-self: flex-start; }
+
+/* Organizer depth stays available without competing with capture. */
+.creator-library-organize { margin: 1rem 0; padding: 1rem; border: 1px solid #ffffff20; border-radius: 1rem; }
+.creator-library-organize > summary { cursor: pointer; color: #f4d982; }
+.creator-library-organize > p { margin: .75rem 0; color: #b9c1cf; }
+.creator-library-intake, #catalog, #organize { scroll-margin-top: 6rem; }
+.creator-library-intake:focus-visible, #catalog:focus-visible, #organize > summary:focus-visible { outline: 2px solid #f4d982; outline-offset: 4px; }
+.creator-library-hero-actions .is-primary { border-color: #dcba5c88; background: #dcba5c20; color: #f4d982; }

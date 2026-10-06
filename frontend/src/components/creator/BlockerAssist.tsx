@@ -93,9 +93,9 @@ export default function BlockerAssist({ featuredSelection }: { featuredSelection
       <button type="button" onClick={dismiss}>Dismiss</button>
     </> : <>
       <p>One publishing condition is unresolved: cover artwork is missing.</p>
-      <p>Register cover artwork in the Signal Board’s Assets tab to satisfy this publishing condition.</p>
+      <p>Register cover artwork in the Workshop’s Assets tab to satisfy this publishing condition.</p>
       <div className="creator-blocker-assist-actions">
-        <Link href={`/releases/${observation.release.slug}/board`}>Open Signal Board</Link>
+        <Link href={`/releases/${observation.release.slug}/board`}>Open Workshop</Link>
         <button type="button" onClick={dismiss}>Not now</button>
       </div>
       <p className="creator-blocker-assist-reason">Shown because this is your featured release and this is the only remaining supported publishing blocker.</p>

@@ -1175,3 +1175,16 @@ button.creator-projects-primary-button {
     min-height: 44px;
   }
 }
+/* Active work first; administrative depth remains explicit. */
+.creator-projects-grid { align-items: start; }
+.creator-projects-release-card-v2 { height: auto; min-height: 0; }
+.creator-projects-release-card-summary { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.creator-projects-create-card > summary, .creator-project-details > summary, .creator-project-archive > summary { cursor: pointer; color: #f4d982; padding: .4rem 0; }
+.creator-projects-create-card[open] > summary { margin-bottom: 1rem; }
+.creator-project-details { margin-top: 1rem; }
+.creator-project-details > a { display: inline-block; margin: .5rem .5rem .5rem 0; }
+.creator-project-details .creator-projects-release-card-slug { overflow-wrap: anywhere; }
+.creator-project-archive { margin-top: 1rem; scroll-margin-top: 6rem; }
+.creator-project-archive > p { margin: .75rem 0; color: #b9c1cf; }
+.creator-project-archive article { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .75rem; padding: 1rem 0; border-top: 1px solid #ffffff18; }
+.creator-project-archive article p { font-size: .8rem; color: #b9c1cf; }

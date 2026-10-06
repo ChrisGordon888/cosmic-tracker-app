@@ -2592,6 +2592,7 @@ export default function DynamicReleaseSignalBoardPage() {
                             </button>
                             <button
                                 type="button"
+                                data-workspace-tour="portal"
                                 aria-pressed={activePanel === "portal"}
                                 className={activePanel === "portal" ? "is-active" : ""}
                                 onClick={() => setActivePanel("portal")}

@@ -26,7 +26,7 @@ const memberItems: NavItem[] = [
 
 const creatorItems: NavItem[] = [
     { href: "/creator", label: "Creator OS", description: "Creative command center" },
-    { href: "/creator/library", label: "Creator Library", description: "Manage every track" },
+    { href: "/creator/library#catalog", label: "Creator Library", description: "Manage every track" },
 ];
 
 const adminItems: NavItem[] = [
@@ -35,6 +35,7 @@ const adminItems: NavItem[] = [
 
 function isRouteActive(pathname: string | null, href: string) {
     if (!pathname) return false;
+    href = href.split("#")[0];
     if (href === "/") return pathname === "/";
     return pathname === href || pathname.startsWith(`${href}/`);
 }

@@ -471,7 +471,7 @@ export default function TrackWorkspace({
                 </details>
 
                 <details className="signal-board-track-section-card signal-board-track-section-nexus signal-board-workspace-disclosure">
-                    <summary>Realm &amp; Nexus</summary>
+                    <summary data-creator-tour="nexus-review">Realm &amp; Nexus</summary>
                     <div className="signal-board-track-section-heading">
                         <div><p className="signal-board-panel-kicker">Nexus + Realm</p><h3>Prepare the signal</h3></div>
                         <span>Choose the Realm that feels right, then submit the signal for Cosmic review when it is ready.</span>

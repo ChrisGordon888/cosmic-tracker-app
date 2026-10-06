@@ -3873,6 +3873,9 @@ module.exports = {
             if (!releaseWorld) {
                 throw new Error("Release world not found.");
             }
+            if (releaseWorld.status === "archived") {
+                throw new Error("Restore this release world before featuring it.");
+            }
 
             const creativeProfile = await CreativeProfile.findOne({
                 _id: releaseWorld.creativeProfileId,

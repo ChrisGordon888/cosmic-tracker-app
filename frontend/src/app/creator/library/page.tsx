@@ -14,7 +14,7 @@ import { isOrganized, matchesCleanup, parseFilename, type CleanupTrack, type Wor
 import { gql, useMutation, useQuery } from "@apollo/client";
 import { upload } from "@vercel/blob/client";
 import { useSession } from "next-auth/react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMusicPlayer } from "@/hooks/useMusicPlayer";
 import "@/styles/creatorLibrary.css";
 
@@ -510,12 +510,23 @@ export default function CreatorLibraryPage() {
     if (audioInputRef.current) audioInputRef.current.value = "";
   }
 
-  function scrollToIntake() {
-    document.getElementById("intake")?.scrollIntoView({
-      behavior: "smooth",
-      block: "center",
-    });
-  }
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    function focusDestination() {
+      const id = window.location.hash.slice(1);
+      if (!["intake", "catalog", "organize"].includes(id)) return;
+      const target = document.getElementById(id);
+      if (target instanceof HTMLDetailsElement) {
+        target.open = true;
+        target.querySelector("summary")?.focus();
+      } else {
+        target?.focus();
+      }
+    }
+    focusDestination();
+    window.addEventListener("hashchange", focusDestination);
+    return () => window.removeEventListener("hashchange", focusDestination);
+  }, [status]);
 
   function handleDropSongs(event: React.DragEvent<HTMLDivElement>) {
     event.preventDefault();
@@ -824,15 +835,17 @@ export default function CreatorLibraryPage() {
             <p>Capture songs first, organize them when the direction becomes clear, then develop the ones that belong to a Single, EP, Album, or other Release World.</p>
           </div>
           <div className="creator-library-hero-actions">
+            <button type="button" className="is-primary" onClick={() => audioInputRef.current?.click()} disabled={isUploadingSongs}>+ Add Music</button>
+          </div>
+        </header>
+        <details className="creator-library-organize" id="organize">
+          <summary>Organize Library</summary>
+          <p>Tools use your current catalog filters. Change Library / Vault below to review another selection.</p>
+          <div className="creator-library-hero-actions">
             <button type="button" disabled={!filteredTracks.length} onClick={()=>{setVaultQueue(filteredTracks.map(t=>t.id));setVaultIndex(0);}}>Review catalog / rights</button>
             <button type="button" disabled={!filteredTracks.length} onClick={()=>{setCleanupQueue(filteredTracks.map(t=>({...t})));setCleanupIndex(0);}}>Clean up Library</button>
             <button type="button" disabled={!filteredTracks.some(t=>matchesCleanup(t,"realm"))} onClick={()=>{setSmartQueue(filteredTracks.filter(t=>matchesCleanup(t,"realm")).map(t=>({...t})));setSmartIndex(0);}}>Smart Sort tracks needing Realm ({filteredTracks.filter(t=>matchesCleanup(t,"realm")).length})</button>
-            <button type="button" onClick={scrollToIntake}>+ Add Music</button>
-            <Link href="/creator/projects">Release Worlds</Link>
-            <Link href="/nexus">View Nexus</Link>
-            <Link href="/creator">Creator Home</Link>
           </div>
-        </header>
         <details className="glass-card p-5 my-4">
           <summary>Public exposure audit · what can another person hear?</summary>
           <p>Uses saved listener settings and public-world state, not creator preview. Member means a signed-in listener without premium privileges. Copied Blob URLs remain accessible independently.</p>
@@ -843,10 +856,9 @@ export default function CreatorLibraryPage() {
           </>;})()}
           <p>Independent public fragments and media links must also be reviewed in Assets / Workshop. This audit cannot inventory copies shared outside COSMIC.</p>
         </details>
+        </details>
 
-
-
-        <section className="creator-library-intake" id="intake">
+        <section className="creator-library-intake" id="intake" tabIndex={-1}>
           <div className="creator-library-intake-copy">
             <p className="creator-library-kicker">Capture</p>
             <h2>Put the music in COSMIC first.</h2>
@@ -985,7 +997,7 @@ export default function CreatorLibraryPage() {
           </div>
         )}
 
-        <section className="creator-library-summary" aria-label="Catalog summary">
+        <section className="creator-library-summary" id="catalog" tabIndex={-1} aria-label="Catalog summary">
           {[
             ["Total tracks", summary.total],
             ["Organized", summary.organized],

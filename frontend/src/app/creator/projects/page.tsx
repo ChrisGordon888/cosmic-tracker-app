@@ -1,5 +1,7 @@
 "use client";
 
+import { activeCreatorProjects } from "@/lib/creatorNavigation";
+
 import Link from "next/link";
 import { gql, useMutation, useQuery } from "@apollo/client";
 import { signIn, useSession } from "next-auth/react";
@@ -304,6 +306,8 @@ export default function CreatorProjectsPage() {
   const [dropReleaseWorld] = useMutation(DROP_RELEASE_WORLD);
 
   const releaseWorlds: ReleaseWorld[] = data?.myReleaseWorlds ?? [];
+  const activeWorlds = activeCreatorProjects(releaseWorlds);
+  const archivedWorlds = releaseWorlds.filter(world => world.status === "archived");
   const creativeProfiles: CreativeProfile[] = profileData?.myCreativeProfiles ?? [];
 
   const activeProfile = useMemo(() => {
@@ -364,7 +368,7 @@ export default function CreatorProjectsPage() {
       });
 
       setForm(initialForm);
-      setFormMessage("Project created. Open its board to start building.");
+      setFormMessage("Project created. Open its Workshop to start building.");
       await refetch();
     } catch (createError) {
       const message =
@@ -426,7 +430,7 @@ export default function CreatorProjectsPage() {
         <div className="creator-projects-hero">
           <div>
             <p className="creator-projects-kicker">Creator OS</p>
-            <h1>EPs / Release Worlds</h1>
+            <h1>Projects</h1>
             <p className="creator-projects-subtitle">
               Build and manage singles, EPs, albums, and campaigns from one project-level dashboard.
             </p>
@@ -450,7 +454,7 @@ export default function CreatorProjectsPage() {
           <div>
             <span className="creator-projects-status-label">Library</span>
             <strong>
-              {releaseWorlds.length} release world{releaseWorlds.length === 1 ? "" : "s"}
+              {activeWorlds.length} active project{activeWorlds.length === 1 ? "" : "s"}
             </strong>
           </div>
           <div>
@@ -496,7 +500,8 @@ export default function CreatorProjectsPage() {
         )}
 
         {status === "authenticated" && (
-          <section className="creator-projects-card creator-projects-create-card">
+          <details className="creator-projects-card creator-projects-create-card" id="create-project">
+            <summary>Create a Single / EP / Album</summary>
             <div className="creator-projects-create-heading">
               <div>
                 <p className="creator-projects-kicker">New Release World</p>
@@ -620,7 +625,7 @@ export default function CreatorProjectsPage() {
               </label>
 
               <div className="creator-projects-form-footer">
-                <p>{formMessage || "Create a project, then open its board to begin."}</p>
+                <p>{formMessage || "Create a project, then open its Workshop to begin."}</p>
                 <button
                   className="creator-projects-primary-button"
                   type="submit"
@@ -630,7 +635,7 @@ export default function CreatorProjectsPage() {
                 </button>
               </div>
             </form>
-          </section>
+          </details>
         )}
 
         {status === "authenticated" && loading && (
@@ -658,19 +663,19 @@ export default function CreatorProjectsPage() {
           </section>
         )}
 
-        {status === "authenticated" && !loading && !error && releaseWorlds.length === 0 && (
+        {status === "authenticated" && !loading && !error && activeWorlds.length === 0 && (
           <section className="creator-projects-card creator-projects-message-card">
             <p className="creator-projects-kicker">Empty Library</p>
-            <h2>No release worlds found yet.</h2>
+            <h2>No active projects yet.</h2>
             <p>
               Create your first release world above and it will appear here.
             </p>
           </section>
         )}
 
-        {status === "authenticated" && !error && releaseWorlds.length > 0 && (
+        {status === "authenticated" && !error && activeWorlds.length > 0 && (
           <section className="creator-projects-grid">
-            {releaseWorlds.map((world) => {
+            {activeWorlds.map((world) => {
               const readiness = getReadinessScore(world);
               const featuredClassName = world.isFeatured ? " is-featured" : "";
 
@@ -697,7 +702,6 @@ export default function CreatorProjectsPage() {
 
                     <div>
                       <h2>{world.title}</h2>
-                      <p className="creator-projects-release-card-slug">/{world.slug}</p>
 
                       <p className="creator-projects-release-card-summary">
                         {world.oneLineSummary?.trim() ||
@@ -707,6 +711,15 @@ export default function CreatorProjectsPage() {
                     </div>
                   </div>
 
+                  <div className="creator-projects-release-card-actions creator-projects-release-card-actions-v2">
+                    <Link href={`/releases/${world.slug}/board`} className="creator-projects-primary-button">Open Workshop</Link>
+                    {world.visibility === "public" && <Link href={`/releases/${world.slug}`} className="creator-projects-secondary-button">View Portal</Link>}
+                  </div>
+                  <details className="creator-project-details">
+                    <summary>Project details &amp; publishing</summary>
+                    <p className="creator-projects-release-card-slug">/{world.slug}</p>
+                    {world.visibility !== "public" && <Link href={`/releases/${world.slug}`}>Preview Portal</Link>}
+                    <Link href="/nexus" className="creator-projects-secondary-button">View Nexus</Link>
                   <div className="creator-project-readiness-panel">
                     <div className="creator-project-readiness-header">
                       <div>
@@ -755,43 +768,6 @@ export default function CreatorProjectsPage() {
                     </div>
                   </div>
 
-                  <div className="creator-projects-release-card-actions creator-projects-release-card-actions-v2">
-                    {world.status === "active" && world.visibility === "public" ? (
-                      <>
-                        <Link
-                          href={`/releases/${world.slug}`}
-                          className="creator-projects-primary-button"
-                        >
-                          View Portal
-                        </Link>
-                        <Link
-                          href={`/releases/${world.slug}/board`}
-                          className="creator-projects-secondary-button"
-                        >
-                          Open Workshop
-                        </Link>
-                      </>
-                    ) : (
-                      <>
-                        <Link
-                          href={`/releases/${world.slug}/board`}
-                          className="creator-projects-primary-button"
-                        >
-                          Open Workshop
-                        </Link>
-                        <Link
-                          href={`/releases/${world.slug}`}
-                          className="creator-projects-secondary-button"
-                        >
-                          Preview Portal
-                        </Link>
-                      </>
-                    )}
-                    <Link href="/nexus" className="creator-projects-secondary-button">
-                      View Nexus
-                    </Link>
-                  </div>
-
                   <div className="creator-project-publishing-panel">
                     <div>
                       <span>Publishing</span>
@@ -807,7 +783,7 @@ export default function CreatorProjectsPage() {
                         href={`/creator/releases/${world.slug}/publish`}
                         className="creator-projects-publishing-review-link"
                       >
-                        Publishing Review
+                        Prepare Release →
                       </Link>
                       <button
                         type="button"
@@ -824,6 +800,8 @@ export default function CreatorProjectsPage() {
                     </div>
                   </div>
 
+                  </details>
+
                   {dropMessages[world.id] && (
                     <p className="creator-projects-drop-message" role="status">
                       {dropMessages[world.id]}
@@ -833,6 +811,16 @@ export default function CreatorProjectsPage() {
               );
             })}
           </section>
+        )}
+        {status === "authenticated" && !error && (
+          <details className="creator-projects-card creator-project-archive" id="archived">
+            <summary>Archived projects ({archivedWorlds.length})</summary>
+            <p>Kept safely out of active work. Open release settings to review and restore; restoring does not publish.</p>
+            {archivedWorlds.map(world => <article key={world.id}>
+              <div><strong>{world.title}</strong><p>{formatLabel(world.releaseType)} · Archived</p></div>
+              <Link href={`/creator/releases/${world.slug}/publish`}>Review / restore →</Link>
+            </article>)}
+          </details>
         )}
       </section>
     </main>

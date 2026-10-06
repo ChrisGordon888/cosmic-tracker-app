@@ -302,7 +302,7 @@ export default function PublishingReadinessPage() {
                         href={`/releases/${slug}/board`}
                         className="text-xs font-medium uppercase tracking-[0.16em] text-white/45 transition hover:text-[#F4D982]"
                     >
-                        Open Signal Board
+                        Open Workshop
                     </Link>
                     <Link
                         href={`/releases/${slug}`}
@@ -316,7 +316,7 @@ export default function PublishingReadinessPage() {
                     <p className="text-xs uppercase tracking-[0.24em] text-[#DCBA5C]/80">
                         Publishing Review
                     </p>
-                    <h1 className="mt-4 text-3xl font-semibold text-white sm:text-5xl">
+                    <h1 data-creator-tour="publish-review" className="mt-4 text-3xl font-semibold text-white sm:text-5xl">
                         {release?.title || "Release review"}
                     </h1>
                     <p className="mt-4 max-w-2xl text-sm leading-7 text-white/55">

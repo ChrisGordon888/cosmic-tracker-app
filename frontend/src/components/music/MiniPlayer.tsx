@@ -1,6 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { useCreatorTour } from '@/components/creator/CreatorTourProvider';
+import { adaptPlayer, choosePlayer, readPlayerDock, playerDock, PLAYER_DOCK_KEY, type PlayerDock, type PlayerPresentation, type PlayerMode } from '@/lib/playerPresentation';
+import '@/styles/playerDock.css';
 import { usePathname } from 'next/navigation';
 import { isPublicWorld } from '@/lib/publicJourney';
 import { useMusicPlayer } from '@/hooks/useMusicPlayer';
@@ -24,7 +28,7 @@ export default function MiniPlayer() {
         currentTime,
         duration,
         volume,
-        isExpanded,
+        isExpanded: initiallyExpanded,
         isShuffleEnabled,
         isContinuousEnabled,
         queueLength,
@@ -38,10 +42,32 @@ export default function MiniPlayer() {
         toggleContinuous,
         seekTo,
         setVolume,
-        toggleExpanded,
     } = useMusicPlayer();
 
+    const tourVisible = Boolean(useCreatorTour()?.guidanceVisible);
+    const [saved, setPresentation] = useState<PlayerPresentation>({ mode: initiallyExpanded ? 'expanded' : 'compact', previous: 'compact', tour: false, manual: false });
+    const presentation = adaptPlayer(saved, tourVisible);
+    if (presentation !== saved) setPresentation(presentation);
+    const isExpanded = presentation.mode === 'expanded';
+    const choose = (mode: PlayerMode) => setPresentation(choosePlayer(presentation, mode));
+
+    const [preferredDock, setPreferredDock] = useState<PlayerDock>('right');
+    useEffect(() => {
+        try { setPreferredDock(readPlayerDock(localStorage.getItem(PLAYER_DOCK_KEY))); } catch { /* Keep the in-memory default if storage is unavailable. */ }
+    }, []);
+    const dock = playerDock(preferredDock, tourVisible);
+    function changeDock() {
+        const next = preferredDock === 'right' ? 'left' : 'right';
+        setPreferredDock(next);
+        try { localStorage.setItem(PLAYER_DOCK_KEY, next); } catch { /* Navigation still retains the preference in memory. */ }
+    }
+
     if (!currentTrack) return null;
+    const playbackLabel = `${isPlaying ? 'Pause' : 'Play'} ${currentTrack.trackTitle}`;
+    if (presentation.mode === 'minimized') return <div className={`cosmic-mini-player adaptive-player is-minimized dock-${dock} ${isPlaying ? 'is-playing' : 'is-paused'} ${tourVisible ? 'with-guidance' : ''}`}>
+        <button type="button" aria-label={`Open player — ${currentTrack.trackTitle}`} onClick={() => choose('compact')} title={currentTrack.trackTitle}>♪</button>
+        <button type="button" aria-label={playbackLabel} onClick={togglePlayPause} title={playbackLabel}>{isPlaying ? '⏸' : '▶'}</button>
+    </div>;
 
     const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
     const realmTheme = getRealmTheme(currentTrack.realmId);
@@ -54,7 +80,7 @@ export default function MiniPlayer() {
 
     return (
         <div
-            className={`cosmic-mini-player ${publicWorld ? 'is-world-player' : ''} ${isExpanded ? 'is-expanded' : 'is-collapsed'} fixed z-[9999] rounded-2xl border backdrop-blur-xl shadow-2xl right-4 w-[340px] max-w-[calc(100vw-2rem)] max-[640px]:w-auto max-[640px]:rounded-2xl`}
+            className={`cosmic-mini-player ${publicWorld ? 'is-world-player' : ''} adaptive-player dock-${dock} ${isExpanded ? 'is-expanded' : 'is-compact'} ${tourVisible ? 'with-guidance' : ''} fixed z-[9999] rounded-2xl border backdrop-blur-xl shadow-2xl right-4 w-[340px] max-w-[calc(100vw-2rem)] max-[640px]:w-auto max-[640px]:rounded-2xl`}
             style={{
                 background: `radial-gradient(circle at top left, ${realmSoft}, transparent 42%), rgba(8, 10, 20, 0.9)`,
                 borderColor: realmBorder,
@@ -71,7 +97,7 @@ export default function MiniPlayer() {
                             border: `1px solid ${realmBorder}`,
                             boxShadow: `0 0 18px ${realmGlow}`,
                         }}
-                        aria-label={isPlaying ? 'Pause current track' : 'Play current track'}
+                        aria-label={playbackLabel}
                     >
                         {isPlaying ? '⏸' : '▶️'}
                     </button>
@@ -90,45 +116,36 @@ export default function MiniPlayer() {
                         <p className="text-xs text-white/70 truncate">
                             {currentTrack.artist || 'Independent creator'} • {currentTrack.realmName}
                         </p>
-                        {currentTrack.releaseSlug && <Link href={`/releases/${currentTrack.releaseSlug}`} className="text-xs text-white/70 hover:text-white">Enter World →</Link>}
+                        {isExpanded && currentTrack.releaseSlug && <Link href={`/releases/${currentTrack.releaseSlug}`} className="text-xs text-white/70 hover:text-white">Enter World →</Link>}
                     </div>
 
                     <button
-                        onClick={toggleExpanded}
+                        onClick={() => choose(isExpanded ? 'compact' : 'expanded')}
                         className="mini-player-toggle text-sm text-white/70 hover:text-white transition-colors"
-                        aria-label={isExpanded ? 'Minimize player' : 'Expand player'}
+                        aria-label={isExpanded ? 'Compact player' : 'Expand player'}
                     >
                         {isExpanded ? '▾' : '▴'}
                     </button>
+                    <button type="button" className="mini-player-toggle" aria-label="Minimize player" onClick={() => choose('minimized')}>−</button>
                 </div>
 
-                <div className="mini-player-progress">
-                    <div
-                        className="mt-3 h-2 rounded-full bg-white/10 cursor-pointer overflow-hidden"
-                        onClick={(e) => {
-                            const rect = e.currentTarget.getBoundingClientRect();
-                            const clickX = e.clientX - rect.left;
-                            const pct = rect.width > 0 ? clickX / rect.width : 0;
-                            seekTo((duration || 0) * pct);
-                        }}
-                    >
-                        <div
-                            className="h-full rounded-full"
-                            style={{
-                                width: `${progress}%`,
-                                background: `linear-gradient(90deg, ${realmColor}, ${realmSoft})`,
-                                boxShadow: `0 0 12px ${realmGlow}`,
-                            }}
-                        />
+                <div className="mini-player-transport">
+                    {!isExpanded && <button type="button" onClick={playPrevious} disabled={!hasPreviousTrack} aria-label="Play previous track">‹‹</button>}
+                    <div className="mini-player-progress">
+                        <input type="range" min="0" max={duration > 0 ? duration : 0} step="0.1"
+                            value={Math.min(currentTime, duration || 0)} disabled={!(duration > 0)}
+                            aria-label={`Seek ${currentTrack.trackTitle}`}
+                            aria-valuetext={`${formatTime(currentTime)} of ${formatTime(duration)}`}
+                            onChange={event => seekTo(Number(event.target.value))}
+                            style={{ accentColor: realmColor, background: `linear-gradient(to right, ${realmColor} ${progress}%, rgba(255,255,255,.15) ${progress}%)` }} />
+                        {isExpanded && <div className="mt-2 flex justify-between text-[11px] text-white/60">
+                            <span>{formatTime(currentTime)}</span><span>{formatTime(duration)}</span>
+                        </div>}
                     </div>
-
-                    <div className="mt-2 flex justify-between text-[11px] text-white/60">
-                        <span>{formatTime(currentTime)}</span>
-                        <span>{formatTime(duration)}</span>
-                    </div>
+                    {!isExpanded && <button type="button" onClick={playNext} disabled={!hasNextTrack} aria-label="Play next track">››</button>}
                 </div>
 
-                <div className="mt-3 flex items-center justify-between gap-2">
+                {isExpanded && <div className="mt-3 flex items-center justify-between gap-2">
                     <button
                         onClick={playPrevious}
                         disabled={!hasPreviousTrack}
@@ -182,11 +199,16 @@ export default function MiniPlayer() {
                     >
                         ››
                     </button>
-                </div>
+                </div>}
 
                 {isExpanded && (
                     <div className="mini-player-expanded mt-4 border-t border-white/10 pt-4">
                         <div className="mb-3">
+                            <button type="button" className="mini-player-dock" onClick={changeDock}
+                                aria-label={`Dock player ${preferredDock === 'right' ? 'left' : 'right'}`}
+                                title={`Preferred dock: bottom ${preferredDock}${tourVisible ? ' · temporarily left for tour' : ''}`}>
+                                {preferredDock === 'right' ? '⇤' : '⇥'}
+                            </button>
                             <p className="text-xs uppercase tracking-wide text-white/50 mb-1">
                                 Now Playing
                             </p>
@@ -204,6 +226,7 @@ export default function MiniPlayer() {
                             <span className="text-sm">🔊</span>
 
                             <input
+                                aria-label="Volume"
                                 type="range"
                                 min="0"
                                 max="1"

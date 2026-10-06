@@ -23,7 +23,7 @@ const creatorItems: BottomNavItem[] = [
     { href: "/nexus", icon: "🎵", label: "Nexus" },
     { href: "/practice", icon: "✦", label: "Practice" },
     { href: "/creator", icon: "◇", label: "Creator" },
-    { href: "/creator/library", icon: "☷", label: "Library" },
+    { href: "/creator/library#catalog", icon: "☷", label: "Library" },
     { href: "/profile", icon: "👤", label: "Profile" },
 ];
 
@@ -31,12 +31,13 @@ const adminItems: BottomNavItem[] = [
     { href: "/nexus", icon: "🎵", label: "Nexus" },
     { href: "/creator", icon: "◇", label: "Creator" },
     { href: "/admin", icon: "⚙", label: "Admin" },
-    { href: "/creator/library", icon: "☷", label: "Library" },
+    { href: "/creator/library#catalog", icon: "☷", label: "Library" },
     { href: "/profile", icon: "👤", label: "Profile" },
 ];
 
 function isRouteActive(pathname: string | null, href: string) {
     if (!pathname) return false;
+    href = href.split("#")[0];
     if (href === "/") return pathname === "/";
     return pathname === href || pathname.startsWith(`${href}/`);
 }
