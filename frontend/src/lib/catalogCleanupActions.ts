@@ -1,0 +1,3 @@
+export function catalogCleanupAction(action:'test'|'archive') {
+ return {input:action==='test'?{catalogTreatment:'test'}:{archive:true},confirmation:`${action==='test'?'Move this track to Test / Sandbox':'Archive this recording'}? It will become private, leave Nexus, and reset Nexus review. Files and project membership stay intact; linked projects may lose public playback/readiness. Existing copied file URLs cannot be revoked.`,success:action==='test'?'Moved to Test / Sandbox. Find it with the Test / Sandbox filter.':'Recording archived. Find it in Private Vault or All tracks; its files and project membership remain.'};
+}

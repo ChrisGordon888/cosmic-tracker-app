@@ -1,0 +1,8 @@
+.catalog-intelligence { margin:1rem 0; padding:1rem; border:1px solid #ffffff25; border-radius:1rem; }
+.catalog-intelligence summary { cursor:pointer; padding:.45rem 0; }
+.catalog-intelligence details { padding:.45rem .6rem; margin:.4rem 0; border:1px solid #ffffff18; border-radius:.6rem; }
+.catalog-intelligence p { margin:.5rem 0; line-height:1.5; overflow-wrap:anywhere; }
+.catalog-intelligence ul { padding-left:1rem; }
+.catalog-intelligence button { min-height:40px; text-align:left; text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+.catalog-intelligence :focus-visible { outline:2px solid #f4d982; outline-offset:3px; }
+.catalog-intelligence h3,.catalog-intelligence h4 { margin-top:.75rem; font-weight:600; }

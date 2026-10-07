@@ -1,5 +1,8 @@
 "use client";
 
+import CatalogIntelligencePanel from '@/components/creator/CatalogIntelligencePanel';
+import CatalogCleanupActions from '@/components/creator/CatalogCleanupActions';
+import { usePlatformAccess } from '@/context/PlatformAccessProvider';
 import TrackVaultReview from "@/components/creator/TrackVaultReview";
 import {matchesVault,trackExposure,type VaultTrack} from "@/lib/trackVault";
 import {MUSIC_REGISTRY} from "@/lib/musicRegistry";
@@ -347,6 +350,7 @@ function isSupportedAudioFile(file: File) {
 
 export default function CreatorLibraryPage() {
   const { status } = useSession();
+  const { user: creatorIdentity } = usePlatformAccess();
   const { playOrToggleTrack, currentTrack, isPlaying } = useMusicPlayer();
   const [smartQueue, setSmartQueue] = useState<CatalogTrack[]>([]);
   const [smartIndex, setSmartIndex] = useState(0);
@@ -863,6 +867,10 @@ export default function CreatorLibraryPage() {
             <button type="button" disabled={!filteredTracks.length} onClick={()=>{setCleanupQueue(filteredTracks.map(t=>({...t})));setCleanupIndex(0);}}>Clean up Library</button>
             <button type="button" disabled={!filteredTracks.some(t=>matchesCleanup(t,"realm"))} onClick={()=>{setSmartQueue(filteredTracks.filter(t=>matchesCleanup(t,"realm")).map(t=>({...t})));setSmartIndex(0);}}>Smart Sort · optional review ({filteredTracks.filter(t=>matchesCleanup(t,"realm")).length})</button>
           </div>
+        <CatalogIntelligencePanel tracks={tracks} ownerId={creatorIdentity?.id??''} onInspect={id=>{
+          setView('tracks');setVaultFilter('current');setSearch('');setReleaseFilter('all');setRealmFilter('all');setStatusFilter('all');setPublishingFilter('all');setCleanupFilter('all');
+          requestAnimationFrame(()=>{const target=document.getElementById(`catalog-track-${id}`);target?.scrollIntoView({block:'center'});target?.focus({preventScroll:true});});
+        }}/>
         <details className="glass-card p-5 my-4">
           <summary>Catalog signal scan · read-only</summary>
           <p>Tag songs directly in the catalog. Smart Sort is an optional review queue; the Workshop Realm Finder remains available for deeper reflection.</p>
@@ -1128,7 +1136,7 @@ export default function CreatorLibraryPage() {
               const realm = getRealmMeta(track.realmId);
               const release = track.release;
               return (
-                <article className="creator-library-track-row" key={track.id}>
+                <article className="creator-library-track-row" key={track.id} id={`catalog-track-${track.id}`} tabIndex={-1}>
                   <div className="creator-library-track-title">
                     <div className="creator-library-track-art">
                       <WorkingCover track={track} releaseArtwork={release?.coverArtUrl}/>
@@ -1162,6 +1170,12 @@ export default function CreatorLibraryPage() {
                   </div>
                   <div className="creator-library-row-actions">
                     <button type="button" onClick={()=>{setSmartQueue([{...track}]);setSmartIndex(0);}}>Suggest placement</button>
+                    <CatalogCleanupActions treatment={track.catalogTreatment} status={track.status} onSave={async input=>{
+                      if(!track.updatedAt)throw new Error('Reload Library before updating this track.');
+                      await saveVault({variables:{id:track.id,expectedUpdatedAt:track.updatedAt,input}});
+                      await refetch();setLibraryActionMessage(input.archive?'Track archived; files and project membership preserved.':'Moved to Test / Sandbox; files and project membership preserved.');
+                    }}/>
+
                     {release ? (
                       <Link className="is-primary" href={`/releases/${release.slug}/board`}>Open Workshop</Link>
                     ) : track.releaseWorldId ? (
