@@ -1,7 +1,7 @@
 'use client';
 import { similarCatalogTracks, suggestCatalogRealm, catalogRealms, type CatalogTrack } from '@/lib/catalogSorting';
 export default function CatalogPlacementSuggestion({track,catalog,onChoose,disabled=false}: {track:CatalogTrack;catalog:CatalogTrack[];onChoose:(id:number)=>void;disabled?:boolean}) {
- const result=suggestCatalogRealm(track), similar=similarCatalogTracks(track,catalog);
+ const result=suggestCatalogRealm(track,catalog), similar=similarCatalogTracks(track,catalog);
  const name=(id:number)=>catalogRealms.find(r=>r.id===id)?.name;
  return <section className="cleanup-suggestion" aria-label="Placement suggestion">
  <h3>Suggested Home: {result.home===null?'No clear suggestion':name(result.home)}</h3>

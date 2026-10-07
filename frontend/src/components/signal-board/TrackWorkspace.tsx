@@ -524,7 +524,7 @@ export default function TrackWorkspace({
                             aria-expanded={isRealmFinderOpen}
                         >
                             <span>
-                                <small>Realm Finder</small>
+                                <small>Deep Realm Finder · optional</small>
                                 <strong>Need help choosing a Realm?</strong>
                             </span>
                             <em>{isRealmFinderOpen ? "Close" : "Find My Realm"}</em>

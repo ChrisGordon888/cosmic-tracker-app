@@ -5,6 +5,9 @@ import {matchesVault,trackExposure,type VaultTrack} from "@/lib/trackVault";
 import {MUSIC_REGISTRY} from "@/lib/musicRegistry";
 import Link from "next/link";
 import LibraryCleanupPanel from "@/components/creator/LibraryCleanupPanel";
+import { suggestCatalogRealm } from '@/lib/catalogSorting';
+import InlineTrackSignals from '@/components/creator/InlineTrackSignals';
+import { scanCatalog, type RealmDecision } from '@/lib/creativeFingerprint';
 import SmartSortPanel from "@/components/creator/SmartSortPanel";
 import CatalogIntakePreflight from "@/components/creator/CatalogIntakePreflight";
 import { fileIdentity, intakeSignature, type IntakeApproval } from "@/lib/catalogIntake";
@@ -69,6 +72,10 @@ const CREATOR_LIBRARY_QUERY = gql`
       sourceFileName
       sourceFileSize
       realmFinderScores { realm303 realm202 realm101 realm55 realm44 realm0 }
+      creativeSignals
+      creativeDecisions { realmId suggestedRealmId action engineVersion signals at }
+      hook
+      notes
       realmFinderSignals
       realmFinderSuggestedRealmId
       realmFinderSecondaryRealmId
@@ -113,6 +120,10 @@ const CREATE_CATALOG_TRACK = gql`
       sourceFileName
       sourceFileSize
       realmFinderScores { realm303 realm202 realm101 realm55 realm44 realm0 }
+      creativeSignals
+      creativeDecisions { realmId suggestedRealmId action engineVersion signals at }
+      hook
+      notes
       realmFinderSignals
       realmFinderSuggestedRealmId
       realmFinderSecondaryRealmId
@@ -216,6 +227,10 @@ type OrganizeResult = {
 
 type ReleaseTrack = CatalogTrack & VaultTrack & {
   ownerId?: string;
+  creativeSignals?: string[] | null;
+  creativeDecisions?: RealmDecision[] | null;
+  hook?: string | null;
+  notes?: string | null;
   audioContentHash?: string | null;
   sourceFileName?: string | null;
   sourceFileSize?: number | null;
@@ -378,6 +393,8 @@ export default function CreatorLibraryPage() {
 
   const releases = useMemo<ReleaseWorld[]>(() => data?.myReleaseWorlds ?? [], [data?.myReleaseWorlds]);
   const tracks = useMemo<ReleaseTrack[]>(() => data?.myCatalogTracks ?? [], [data?.myCatalogTracks]);
+
+  const signalScan = useMemo(()=>scanCatalog(tracks.filter(t=>t.realmId==null),tracks),[tracks]);
 
   const intakeCatalog = useMemo(()=>tracks.map(t=>({id:t.id,title:t.title,fileName:t.sourceFileName,audioContentHash:t.audioContentHash,audioUrl:t.audioUrl || t.previewAudioUrl})),[tracks]);
 
@@ -844,8 +861,13 @@ export default function CreatorLibraryPage() {
           <div className="creator-library-hero-actions">
             <button type="button" disabled={!filteredTracks.length} onClick={()=>{setVaultQueue(filteredTracks.map(t=>t.id));setVaultIndex(0);}}>Review catalog / rights</button>
             <button type="button" disabled={!filteredTracks.length} onClick={()=>{setCleanupQueue(filteredTracks.map(t=>({...t})));setCleanupIndex(0);}}>Clean up Library</button>
-            <button type="button" disabled={!filteredTracks.some(t=>matchesCleanup(t,"realm"))} onClick={()=>{setSmartQueue(filteredTracks.filter(t=>matchesCleanup(t,"realm")).map(t=>({...t})));setSmartIndex(0);}}>Smart Sort tracks needing Realm ({filteredTracks.filter(t=>matchesCleanup(t,"realm")).length})</button>
+            <button type="button" disabled={!filteredTracks.some(t=>matchesCleanup(t,"realm"))} onClick={()=>{setSmartQueue(filteredTracks.filter(t=>matchesCleanup(t,"realm")).map(t=>({...t})));setSmartIndex(0);}}>Smart Sort · optional review ({filteredTracks.filter(t=>matchesCleanup(t,"realm")).length})</button>
           </div>
+        <details className="glass-card p-5 my-4">
+          <summary>Catalog signal scan · read-only</summary>
+          <p>Tag songs directly in the catalog. Smart Sort is an optional review queue; the Workshop Realm Finder remains available for deeper reflection.</p>
+          {['Strong suggestion','Ambiguous','Needs more signals','No evidence'].map(bucket => {const rows=signalScan.filter(r=>r.bucket===bucket);return <p key={bucket}>{bucket}: {rows.length} {rows.length>0&&<button type="button" onClick={()=>{setSmartQueue(rows.map(r=>r.track));setSmartIndex(0);}}>Review</button>}</p>;})}
+        </details>
         <details className="glass-card p-5 my-4">
           <summary>Public exposure audit · what can another person hear?</summary>
           <p>Uses saved listener settings and public-world state, not creator preview. Member means a signed-in listener without premium privileges. Copied Blob URLs remain accessible independently.</p>
@@ -1198,6 +1220,7 @@ export default function CreatorLibraryPage() {
                     {realm && <Link href={`/realms/${realm.id}`}>Realm</Link>}
                     {track.showInNexus && <Link href="/nexus">Nexus</Link>}
                   </div>
+                  <InlineTrackSignals track={track} catalog={tracks} onRefresh={refetch} />
                 </article>
               );
             })}
@@ -1294,7 +1317,7 @@ export default function CreatorLibraryPage() {
 
 
 
-        {smartQueue[smartIndex] && <SmartSortPanel releases={releaseMap} key={smartQueue[smartIndex].id} track={smartQueue[smartIndex]} catalog={tracks} position={smartIndex+1} total={smartQueue.length} onClose={()=>setSmartQueue([])} onNext={()=>setSmartIndex(i=>i+1)} onSave={async realmId=>{await renameLibraryTrack({variables:{id:smartQueue[smartIndex].id,input:{realmId}}});await refetch();}}/>}
+        {smartQueue[smartIndex] && <SmartSortPanel releases={releaseMap} key={smartQueue[smartIndex].id} track={smartQueue[smartIndex]} catalog={tracks} position={smartIndex+1} total={smartQueue.length} onClose={()=>setSmartQueue([])} onNext={()=>setSmartIndex(i=>i+1)} onSave={async realmId=>{const suggested=suggestCatalogRealm(smartQueue[smartIndex],tracks).home;await renameLibraryTrack({variables:{id:smartQueue[smartIndex].id,input:{realmId,creativeDecision:{suggestedRealmId:suggested,action:suggested===null?'manual':suggested===realmId?'accepted':'overridden'}}}});await refetch();}}/>}
         {(() => {const track=tracks.find(t=>t.id===vaultQueue[vaultIndex]);return track?<TrackVaultReview key={track.id} track={track} position={vaultIndex+1} total={vaultQueue.length} onClose={()=>setVaultQueue([])} onNext={()=>setVaultIndex(i=>i+1)} onSave={async input=>{await saveVault({variables:{id:track.id,expectedUpdatedAt:track.updatedAt,input}});await refetch();}}/>:null;})()}
         {cleanupQueue[cleanupIndex] && <LibraryCleanupPanel catalog={tracks} key={cleanupQueue[cleanupIndex].id} track={cleanupQueue[cleanupIndex]} position={cleanupIndex+1} total={cleanupQueue.length} location={releaseMap.get(cleanupQueue[cleanupIndex].releaseWorldId ?? '')?.title ?? catalogProjectLabel(cleanupQueue[cleanupIndex], releaseMap)} releaseArtwork={releaseMap.get(cleanupQueue[cleanupIndex].releaseWorldId ?? '')?.coverArtUrl} onClose={()=>setCleanupQueue([])} onNext={()=>setCleanupIndex(i=>i+1)} onSave={async changes=>{if(Object.keys(changes).length){await renameLibraryTrack({variables:{id:cleanupQueue[cleanupIndex].id,input:changes}});await refetch();}}}/>}
         {organizingTrack && (

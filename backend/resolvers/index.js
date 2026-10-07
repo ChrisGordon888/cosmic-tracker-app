@@ -1553,7 +1553,10 @@ async function saveOpportunityChange(record, user, update) {
 }
 
 module.exports = {
+    CreativeRealmDecision: { at: event => new Date(event.at).toISOString() },
     ReleaseTrack: {
+        creativeSignals: (track, _, { user }) => user?.id && String(user.id) === String(track.ownerId) ? (track.creativeSignals || []) : null,
+        creativeDecisions: (track, _, { user }) => user?.id && String(user.id) === String(track.ownerId) ? (track.creativeDecisions || []) : null,
         catalogTreatment: (track, _, { user }) => canManageCreatorContent(user, track.ownerId) ? (track.catalogTreatment || 'current') : null,
         rightsInfo: (track, _, { user }) => canManageCreatorContent(user, track.ownerId) ? (track.rightsInfo || { sourceType: 'unknown', reviewStatus: 'unknown', documentationRecorded: false }) : null,
         releaseSlug: async (track) => {
@@ -4013,6 +4016,13 @@ module.exports = {
             return track;
         },
 
+        setTrackCreativeSignal: async (_, { id, signal, enabled }, { user }) => {
+            requireCreator(user);
+            if (!require('../lib/creativeFingerprint').signals.includes(signal)) throw new Error('Unknown creative signal.');
+            const track = await ReleaseTrack.findOneAndUpdate({ _id: id, ownerId: user.id }, enabled ? { $addToSet: { creativeSignals: signal } } : { $pull: { creativeSignals: signal } }, { new: true, runValidators: true });
+            if (!track) throw new Error('Release track not found.');
+            return track;
+        },
         updateReleaseTrack: async (_, { id, input }, { user }) => {
             requireCreator(user);
 
@@ -4045,6 +4055,12 @@ module.exports = {
                 ...input,
                 lastOpenedAt: new Date(),
             };
+
+            if (input.creativeDecision) {
+                const decision = require('../lib/creativeFingerprint').realmDecision(input.creativeDecision, input.realmId, existingTrack);
+                delete update.creativeDecision;
+                update.$push = { creativeDecisions: { $each: [decision], $slice: -20 } };
+            }
 
             // Identity belongs to the uploaded bytes, never to a replacement URL.
             if (input.audioUrl !== undefined && input.audioUrl !== existingTrack.audioUrl) {

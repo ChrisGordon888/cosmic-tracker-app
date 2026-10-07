@@ -12,6 +12,8 @@ const ReleaseTrackSchema = new mongoose.Schema(
       documentationRecorded: { type: Boolean, default: false },
       commercialIntent: { type: Boolean, default: null },
     },
+    creativeSignals: { type: [{ type: String, enum: require('../lib/creativeFingerprint').signals }], default: [] },
+    creativeDecisions: { type: [{ _id: false, realmId: Number, suggestedRealmId: Number, action: String, engineVersion: String, signals: [String], at: Date }], default: [] },
     ownerId: { type: String, required: true, index: true },
     releaseWorldId: { type: mongoose.Schema.Types.ObjectId, ref: "ReleaseWorld", default: null, index: true },
     title: { type: String, required: true, trim: true },

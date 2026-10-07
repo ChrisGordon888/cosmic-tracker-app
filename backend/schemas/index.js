@@ -306,7 +306,11 @@ const typeDefs = gql`
     rightsInfo: TrackRightsInput
     archive: Boolean
   }
+  type CreativeRealmDecision { realmId: Int! suggestedRealmId: Int action: String! engineVersion: String! signals: [String!]! at: String! }
+  input CreativeRealmDecisionInput { suggestedRealmId: Int action: String! }
   type ReleaseTrack {
+    creativeSignals: [String!]
+    creativeDecisions: [CreativeRealmDecision!]
     catalogTreatment: CatalogTreatment
     rightsInfo: TrackRightsInfo
     artistName: String
@@ -581,6 +585,7 @@ const typeDefs = gql`
   }
 
   input UpdateReleaseTrackInput {
+    creativeDecision: CreativeRealmDecisionInput
     workingCoverStyle: WorkingCoverStyle
     title: String
     slug: String
@@ -908,6 +913,7 @@ const typeDefs = gql`
     setFeaturedReleaseWorld(releaseWorldId: ID!): ReleaseWorld!
 
     createReleaseTrack(input: ReleaseTrackInput!): ReleaseTrack!
+    setTrackCreativeSignal(id: ID!, signal: String!, enabled: Boolean!): ReleaseTrack!
     updateReleaseTrack(id: ID!, input: UpdateReleaseTrackInput!): ReleaseTrack!
     deleteCatalogTrack(trackId: ID!): ReleaseTrack!
     attachTrackToReleaseWorld(trackId: ID!, releaseWorldId: ID!): ReleaseTrack!

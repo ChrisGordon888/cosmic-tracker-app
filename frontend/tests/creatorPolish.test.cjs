@@ -39,7 +39,7 @@ test('Capture and catalog have distinct stable targets; all organizer tools stay
   assert.match(source, /id="intake" tabIndex=\{-1\}/);
   assert.match(source, /id="catalog" tabIndex=\{-1\}/);
   const disclosure = source.slice(source.indexOf('<details className="creator-library-organize"'), source.indexOf('<section className="creator-library-intake"'));
-  for (const label of ['Review catalog / rights', 'Clean up Library', 'Smart Sort tracks needing Realm', 'Public exposure audit']) assert.ok(disclosure.includes(label));
+  for (const label of ['Review catalog / rights', 'Clean up Library', 'Smart Sort · optional review', 'Public exposure audit']) assert.ok(disclosure.includes(label));
 });
 
 test('Home resumes recent active work independently of feature, excludes archive, and keeps actionable recent links', () => {
