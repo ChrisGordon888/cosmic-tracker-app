@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "@apollo/client";
 import Link from "next/link";
+import ProjectSelections from '@/components/admin/ProjectSelections';
 import OwnerAccessGate from "@/components/admin/OwnerAccessGate";
 import {
   NEXUS_EDITORIAL_QUERY,
@@ -142,6 +143,7 @@ export default function NexusEditorialPage() {
   return (
     <OwnerAccessGate>
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10">
+        <ProjectSelections />
         <section className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.055] to-white/[0.02] p-5 sm:p-7">
           <p className="text-[10px] uppercase tracking-[0.24em] text-[#DCBA5C]/80">Owner Nexus Editorial</p>
           <div className="mt-2 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">

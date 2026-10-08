@@ -2,9 +2,10 @@
 
 import PublicAtmosphere from '@/components/public/PublicAtmosphere';
 
-import { useSession, signIn } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
+import SelectedWorlds from '@/components/creator/SelectedWorlds';
 import { gql, useQuery, useMutation } from '@apollo/client';
 import { getTodayMoonPhase, getRealmMoonAlignment } from '@/lib/moonPhases';
 import { GET_ME, GET_PUBLIC_NEXUS_TRACKS, LOG_DAILY_LOGIN } from '@/graphql/realms';
@@ -12,9 +13,7 @@ import { useMusicPlayer } from '@/hooks/useMusicPlayer';
 import { usePlatformAccess } from '@/context/PlatformAccessProvider';
 import { getMusicAvailability, listenerCatalogCounts } from '@/lib/musicAvailability';
 import {
-    CURRENT_FEATURED_RELEASE,
     MUSIC_REGISTRY,
-    PUBLIC_THREE_PIECE_COLLECTIONS,
     REALM_NAMES,
 } from '@/lib/musicRegistry';
 import { REALM_STATE_MAP, type ExperienceMode, type RealmId } from '@/lib/realmStateMap';
@@ -232,14 +231,7 @@ const REALM_META = [
 
 
 
-const CURATED_PLAYLIST_ART_OVERRIDES: Record<string, string> = {
-    'realm-303-break-the-code': '/break-the-code.png',
-    'realm-202-dont-follow-the-siren': '/veil-signal.png',
-    'realm-101-hold-on-while-you-drift': '/hold-on-while-you-drift.png',
-    'realm-55-glory-and-command': '/glory-and-command.png',
-    'realm-44-price-of-focus': '/price-of-focus.png',
-    'realm-0-same-self-higher-form': '/same-self-higher-form.png',
-};
+
 
 function getRealmTint(realmId?: number | null) {
     return getRealmTheme(realmId);
@@ -449,39 +441,16 @@ function toPlayerTrack(
     };
 }
 
-function getCollectionTypeLabel(totalCount: number, openCount: number) {
-    if (totalCount <= 1) return 'Signal';
-    if (openCount < totalCount) return 'Curated EP';
-    return 'Curated EP';
-}
-
-function getCollectionStatusCopy(totalCount: number, openCount: number) {
-    if (totalCount <= 1) {
-        return openCount > 0 ? 'Available now' : 'Coming soon';
-    }
-
-    return openCount < totalCount ? 'Rolling out' : 'Complete collection';
-}
-
-function getCollectionMetaCopy(totalCount: number) {
-    if (totalCount <= 1) return 'Featured track';
-    if (totalCount === 2) return 'Two-track capsule';
-    if (totalCount === 3) return 'Three-track EP';
-    return `${totalCount}-song collection`;
-}
-
 export default function CosmicNexusHub() {
     const { data: session, status } = useSession();
     const [moonPhase, setMoonPhase] = useState<any>(null);
     const [realmAlignment, setRealmAlignment] = useState<any>(null);
     const [storedGuidance, setStoredGuidance] = useState<StoredRealmGuidance | null>(null);
 
-    const [showJourneys, setShowJourneys] = useState(false);
     const [showReleaseDetails, setShowReleaseDetails] = useState(false);
 
     const soundtrackCarouselRef = useRef<HTMLDivElement | null>(null);
 
-    const curatedCarouselRef = useRef<HTMLDivElement | null>(null);
 
     const { playOrToggleTrack, currentTrack, isPlaying } = useMusicPlayer();
     const { isAuthenticated } = usePlatformAccess();
@@ -565,7 +534,6 @@ export default function CosmicNexusHub() {
         fetchPolicy: 'cache-and-network',
     });
 
-    const currentRelease = CURRENT_FEATURED_RELEASE;
     const creatorFeaturedRelease = publicFeaturedReleaseData?.getPublicFeaturedReleaseWorld as NexusFeaturedReleaseWorld | null | undefined;
 
     const creatorFeaturedPortalHref = creatorFeaturedRelease?.slug
@@ -719,7 +687,7 @@ export default function CosmicNexusHub() {
             progress: getRealmProgress(realmId),
             tracks: nexusVisibleTracks.filter((track) => track.realmId === realmId),
         };
-    }).filter((realmGroup) => realmGroup.tracks.length > 0);
+    });
 
     const counts = listenerCatalogCounts(runtimeMusicCatalog, isSignedInForMusic);
     const publicCatalogCount = counts.playable;
@@ -773,21 +741,12 @@ export default function CosmicNexusHub() {
     const flagshipIsCurrent = Boolean(flagshipTrack && currentTrack?.id === flagshipTrack.id);
     const flagshipRealmHref = flagshipTrack?.releaseSlug
         ? `/releases/${flagshipTrack.releaseSlug}` : flagshipTrack ? `/realms/${flagshipTrack.realmId}` : '/nexus';
-    const publicThreePieceCollections = PUBLIC_THREE_PIECE_COLLECTIONS;
-    const releaseArtworkUrl = currentRelease?.coverArtUrl ?? null;
     // Track-specific artwork is preferred. The parent release cover remains
     // the stable fallback, preserving existing projects without track art.
     const featuredSignalArtwork =
         featuredSignalRecord?.artworkUrl?.trim() ||
         featuredSignalRecord?.releaseCoverArtUrl?.trim() ||
         null;
-    const getCuratedCollectionArtwork = (collection: any) => {
-        return (
-            CURATED_PLAYLIST_ART_OVERRIDES[collection.id] ??
-            collection.artworkUrl ??
-            (collection.releaseProjectId === currentRelease?.id ? releaseArtworkUrl : null)
-        );
-    };
 
     const panelStyle = {
         borderRadius: '28px',
@@ -1170,7 +1129,7 @@ export default function CosmicNexusHub() {
                                 </p>
                                 <h2 className="text-2xl font-display mb-2">Go deeper in the Nexus</h2>
                                 <p className="text-sm text-secondary mb-4 leading-relaxed">
-                                    The Nexus holds {nexusVisibleTracks.length} catalogued signals across {groupedTracks.length} realms, including upcoming and member-gated music. Playable now counts only what you can hear. Sign in for member access and saved Realm progress.
+                                    {nexusVisibleTracks.length} current discovery signals across six Realms. Playable now counts only what you can hear. Sign in to save Realm progress{memberCatalogCount > 0 ? " and listen to available member music" : ""}.
                                 </p>
 
                                 <div className="grid grid-cols-2 gap-2 mb-4">
@@ -1218,7 +1177,7 @@ export default function CosmicNexusHub() {
                                 )}
 
                                 <button
-                                    onClick={() => signIn('github')}
+                                    onClick={() => window.location.assign('/auth?callbackUrl=%2Fnexus')}
                                     className="btn-secondary w-full"
                                     style={{ borderRadius: '999px' }}
                                 >
@@ -1296,12 +1255,12 @@ export default function CosmicNexusHub() {
                                                         disabled={guidanceTrackLocked}
                                                         title={guidanceTrackLocked ? getTrackLockLabel(guidanceTrack) ?? 'Track locked' : 'Play recommended track'}
                                                     >
-                                                        {guidanceModeContent.recommendedTrack}
+                                                        {guidanceTrack?.trackTitle || 'No current standalone recommendation'}
                                                         <span aria-hidden="true">↗</span>
                                                     </button>
                                                 ) : (
                                                     <p className="text-sm text-secondary">
-                                                        {guidanceModeContent.recommendedTrack}
+                                                        No current standalone recommendation
                                                     </p>
                                                 )}
                                             </div>
@@ -1729,7 +1688,7 @@ export default function CosmicNexusHub() {
                                 {groupedTracks.map((realmGroup) => {
                                     const realmId = parseInt(realmGroup.id);
                                     const pathUnlocked = isRealmUnlocked(realmId);
-                                    const soundtrackPathLabel = isSignedIn
+                                    const soundtrackPathLabel = realmGroup.tracks.length === 0 ? "Realm quiet · no current signal" : isSignedIn
                                         ? pathUnlocked
                                             ? getRealmTrackCountLabel(realmGroup.tracks.length)
                                             : `${getRealmTrackCountLabel(realmGroup.tracks.length)} • Realm Locked`
@@ -1741,7 +1700,7 @@ export default function CosmicNexusHub() {
                                             id={`realm-${realmGroup.id}`}
                                             className="realm-carousel-item"
                                         >
-                                            <RealmOrbitCard
+                                            {realmGroup.tracks.length === 0 ? <article className="glass-card p-6 h-full"><p className="text-xs uppercase">Realm quiet</p><h3 className="text-2xl font-display">{realmGroup.name}</h3><p className="mt-3">No current signal. This Realm remains part of COSMIC; its soundtrack can wait for the right work.</p><Link className="btn-secondary mt-4" href={isSignedIn?`/realms/${realmGroup.id}`:`/auth?callbackUrl=${encodeURIComponent(`/realms/${realmGroup.id}`)}`}>Explore the Realm path →</Link></article> : <RealmOrbitCard
                                                 realmId={realmGroup.id}
                                                 realmName={realmGroup.name}
                                                 realmIcon={realmGroup.icon}
@@ -1752,7 +1711,7 @@ export default function CosmicNexusHub() {
                                                 onPlayTrack={handlePlayOrbitTrack}
                                                 progress={realmGroup.progress}
                                                 isUnlocked={true}
-                                                realmRoute={isSignedIn ? `/realms/${realmGroup.id}` : '/auth'}
+                                                realmRoute={isSignedIn ? `/realms/${realmGroup.id}` : `/auth?callbackUrl=${encodeURIComponent(`/realms/${realmGroup.id}`)}`}
                                                 isCurrentRealm={isSignedIn && realmId === user?.currentRealm}
                                                 isRecommended={guidanceRealmId !== null && realmId === guidanceRealmId}
                                                 compactOnMobile
@@ -1763,7 +1722,7 @@ export default function CosmicNexusHub() {
                                                 flowTracks={nexusPlayableFlowTracks}
                                                 flowSource="nexus"
                                                 flowLabel="Nexus flow"
-                                            />
+                                            />}
                                         </div>
                                     );
                                 })}
@@ -1779,351 +1738,7 @@ export default function CosmicNexusHub() {
 
 
 
-                    <section className="mb-5 fade-in" style={{ animationDelay: '0.28s' }}>
-                        <button
-                            className="glass-card nexus-panel w-full p-4 flex items-center justify-between text-left"
-                            onClick={() => setShowJourneys((prev) => !prev)}
-                            style={{
-                                ...sectionStyle,
-                                borderRadius: '26px',
-                            }}
-                        >
-                            <div>
-                                <p className="text-xs uppercase tracking-[0.18em] text-muted mb-1">
-                                    Curated Listening
-                                </p>
-                                <h2 className="text-2xl font-display">
-                                    <span className="nexus-section-mark">⌁</span> CURATED EPS
-                                </h2>
-                            </div>
-                            <span className="text-xl text-secondary">{showJourneys ? '−' : '+'}</span>
-                        </button>
-
-                        {showJourneys && publicThreePieceCollections.length > 0 && (
-                            <div
-                                className="glass-card nexus-panel p-5 mt-3"
-                                style={{
-                                    ...sectionStyle,
-                                    borderRadius: '28px',
-                                }}
-                            >
-                                <style jsx>{`
-            .curated-shelf {
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    align-items: stretch;
-}
-
-.curated-shelf::-webkit-scrollbar {
-    display: none;
-}
-
-.curated-shelf-item {
-    flex: 0 0 84%;
-    scroll-snap-align: start;
-    min-width: 0;
-    max-width: 84%;
-    display: flex;
-}
-
-.curated-shelf-item > :global(*) {
-    width: 100%;
-    min-width: 0;
-}
-
-           @media (min-width: 768px) {
-    .curated-shelf-item {
-        flex-basis: 320px;
-        max-width: 320px;
-    }
-}
-
-@media (min-width: 1280px) {
-    .curated-shelf-item {
-        flex-basis: 340px;
-        max-width: 340px;
-    }
-}
-        `}</style>
-
-                                <div className="flex items-start justify-between gap-4 mb-4">
-                                    <div>
-                                        <p className="text-secondary text-sm leading-relaxed max-w-2xl">
-                                            Focused listening arcs built around artwork, mood, and sequence.
-                                        </p>
-                                    </div>
-
-                                    <div className="hidden md:flex items-center gap-2 shrink-0">
-                                        <button
-                                            type="button"
-                                            aria-label="Scroll curated EPs left"
-                                            className="rounded-full border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 transition-all"
-                                            style={{
-                                                width: '36px',
-                                                height: '36px',
-                                                backdropFilter: 'blur(10px)',
-                                            }}
-                                            onClick={() =>
-                                                curatedCarouselRef.current?.scrollBy({
-                                                    left: -320,
-                                                    behavior: 'smooth',
-                                                })
-                                            }
-                                        >
-                                            ←
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            aria-label="Scroll curated EPs right"
-                                            className="rounded-full border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 transition-all"
-                                            style={{
-                                                width: '36px',
-                                                height: '36px',
-                                                backdropFilter: 'blur(10px)',
-                                            }}
-                                            onClick={() =>
-                                                curatedCarouselRef.current?.scrollBy({
-                                                    left: 320,
-                                                    behavior: 'smooth',
-                                                })
-                                            }
-                                        >
-                                            →
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div
-                                    ref={curatedCarouselRef}
-                                    className="curated-shelf flex gap-4 overflow-x-auto pb-1 pr-2"
-                                    style={{
-                                        scrollSnapType: 'x mandatory',
-                                        WebkitOverflowScrolling: 'touch',
-                                    }}
-                                >
-                                    {publicThreePieceCollections.map((collection) => {
-                                        const allCollectionTracks = collection.trackIds
-                                            .map((trackId) => runtimeMusicCatalog.find(track => track.legacyRegistryId === trackId || track.id === trackId))
-                                            .filter(Boolean);
-
-                                        const openCollectionTracks = allCollectionTracks.filter(
-                                            (track) => !isTrackLocked(track)
-                                        );
-
-                                        const firstTrack = openCollectionTracks[0] ?? allCollectionTracks[0] ?? null;
-                                        const leadTrack = openCollectionTracks[0] ?? null;
-                                        const openCount = openCollectionTracks.length;
-                                        const totalCount = allCollectionTracks.length;
-                                        const collectionArtwork = getCuratedCollectionArtwork(collection);
-                                        const collectionTypeLabel = getCollectionTypeLabel(totalCount, openCount);
-                                        const collectionStatusCopy = getCollectionStatusCopy(totalCount, openCount);
-                                        const collectionMetaCopy = getCollectionMetaCopy(totalCount);
-
-                                        if (!firstTrack) return null;
-
-                                        const collectionRealmId = Number(collection.realmId ?? firstTrack.realmId) as RealmId;
-                                        const collectionRealmTint = getRealmTint(collectionRealmId);
-                                        const collectionRealmLabel = collection.realmId
-                                            ? `Realm ${collection.realmId}`
-                                            : REALM_NAMES[collectionRealmId] ?? collectionTypeLabel;
-
-                                        return (
-                                            <div key={collection.id} className="curated-shelf-item">
-                                                <div
-                                                    className="rounded-[24px] border border-white/10 bg-white/[0.03] overflow-hidden h-full flex flex-col min-w-0"
-                                                    style={{
-                                                        borderColor: collectionRealmTint.border,
-                                                        background:
-                                                            `radial-gradient(circle at top left, ${collectionRealmTint.glow}, transparent 34%), linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.018))`,
-                                                        boxShadow: `inset 0 1px 0 rgba(255,255,255,0.05), 0 0 18px ${collectionRealmTint.glow}`,
-                                                    }}
-                                                >
-                                                    <div
-                                                        style={{
-                                                            position: 'relative',
-                                                            aspectRatio: '1 / 0.76',
-                                                            background: collectionArtwork
-                                                                ? `linear-gradient(180deg, rgba(8,10,18,0.00), rgba(8,10,18,0.42)), radial-gradient(circle at top left, ${collectionRealmTint.soft}, transparent 38%), url(${collectionArtwork}) center/cover`
-                                                                : `radial-gradient(circle at top left, ${collectionRealmTint.soft}, rgba(255,255,255,0.03) 42%, rgba(9,11,20,0.82) 100%)`,
-                                                        }}
-                                                    >
-                                                        <div
-                                                            style={{
-                                                                position: 'absolute',
-                                                                inset: 0,
-                                                                background:
-                                                                    `linear-gradient(180deg, rgba(6,8,14,0.00) 0%, rgba(6,8,14,0.10) 42%, rgba(6,8,14,0.78) 100%), radial-gradient(circle at top left, ${collectionRealmTint.glow}, transparent 34%)`,
-                                                            }}
-                                                        />
-
-                                                        <div
-                                                            style={{
-                                                                position: 'absolute',
-                                                                top: 12,
-                                                                left: 12,
-                                                                right: 12,
-                                                                display: 'flex',
-                                                                justifyContent: 'space-between',
-                                                                gap: 10,
-                                                            }}
-                                                        >
-                                                            <span
-                                                                className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.16em]"
-                                                                style={{
-                                                                    background: `linear-gradient(135deg, ${collectionRealmTint.soft}, rgba(8,10,18,0.46))`,
-                                                                    border: `1px solid ${collectionRealmTint.border}`,
-                                                                    backdropFilter: 'blur(10px)',
-                                                                    color: collectionRealmTint.accent,
-                                                                    boxShadow: `0 0 14px ${collectionRealmTint.glow}`,
-                                                                }}
-                                                            >
-                                                                {collectionRealmLabel}
-                                                            </span>
-
-                                                            <span
-                                                                className="px-3 py-1.5 rounded-full text-[10px] uppercase tracking-[0.16em]"
-                                                                style={{
-                                                                    background:
-                                                                        openCount < totalCount
-                                                                            ? 'rgba(255,255,255,0.08)'
-                                                                            : 'rgba(220,186,92,0.13)',
-                                                                    border:
-                                                                        openCount < totalCount
-                                                                            ? '1px solid rgba(255,255,255,0.12)'
-                                                                            : '1px solid rgba(220,186,92,0.30)',
-                                                                    backdropFilter: 'blur(10px)',
-                                                                    color:
-                                                                        openCount < totalCount
-                                                                            ? 'rgba(255,255,255,0.82)'
-                                                                            : 'rgba(236,220,174,0.92)',
-                                                                    boxShadow:
-                                                                        openCount < totalCount
-                                                                            ? 'none'
-                                                                            : '0 0 14px rgba(220,186,92,0.08)',
-                                                                }}
-                                                            >
-                                                                {collectionTypeLabel}
-                                                            </span>
-                                                        </div>
-
-                                                        <div
-                                                            style={{
-                                                                position: 'absolute',
-                                                                left: 16,
-                                                                right: 16,
-                                                                bottom: 16,
-                                                            }}
-                                                        >
-                                                            <p
-                                                                className="text-[10px] uppercase tracking-[0.18em] mb-2"
-                                                                style={{ color: collectionRealmTint.accent }}
-                                                            >
-                                                                {collectionMetaCopy}
-                                                            </p>
-
-                                                            <h3
-                                                                className="font-display mb-1.5"
-                                                                style={{
-                                                                    fontSize: '1.2rem',
-                                                                    lineHeight: 1.05,
-                                                                    color: 'rgba(255,255,255,0.95)',
-                                                                    textShadow: `0 10px 28px rgba(0,0,0,0.34), ${collectionRealmTint.textShadow}`,
-                                                                }}
-                                                            >
-                                                                {collection.title}
-                                                            </h3>
-
-                                                            <p className="text-sm text-white/78 line-clamp-2 leading-relaxed">
-                                                                {collection.description}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="p-3.5 flex flex-col flex-1 min-w-0">
-                                                        <div className="flex gap-2 overflow-x-auto pb-1 mb-3 min-w-0 max-w-full">
-                                                            {allCollectionTracks.length > 0 ? (
-                                                                allCollectionTracks.map((track) => {
-                                                                    const locked = isTrackLocked(track);
-                                                                    const lockLabel = getTrackLockLabel(track);
-                                                                    const isCurrentTrack = currentTrack?.id === track!.id;
-                                                                    const trackTheme = getRealmTheme(track!.realmId);
-
-                                                                    return (
-                                                                        <button
-                                                                            key={track!.id}
-                                                                            onClick={() => tryPlayTrack(track!)}
-                                                                            disabled={locked}
-                                                                            className="shrink-0 px-2.5 py-1.5 rounded-full text-[11px] border transition-all whitespace-nowrap"
-                                                                            style={{
-                                                                                borderColor: isCurrentTrack
-                                                                                    ? trackTheme.border
-                                                                                    : locked
-                                                                                        ? 'rgba(255,255,255,0.10)'
-                                                                                        : trackTheme.border,
-                                                                                background: isCurrentTrack
-                                                                                    ? trackTheme.soft
-                                                                                    : locked
-                                                                                        ? 'rgba(255,255,255,0.025)'
-                                                                                        : 'rgba(255,255,255,0.04)',
-                                                                                color: locked
-                                                                                    ? 'rgba(255,255,255,0.45)'
-                                                                                    : isCurrentTrack
-                                                                                        ? trackTheme.accent
-                                                                                        : 'rgba(255,255,255,0.74)',
-                                                                                opacity: locked ? 0.72 : 1,
-                                                                                cursor: locked ? 'not-allowed' : 'pointer',
-                                                                            }}
-                                                                            title={locked && lockLabel ? lockLabel : track!.trackTitle}
-                                                                        >
-                                                                            {locked
-                                                                                ? `🔒 ${track!.trackTitle}${lockLabel ? ` • ${lockLabel}` : ''}`
-                                                                                : `${isCurrentTrack && isPlaying ? '⏸' : '♪'} ${track!.trackTitle}`}
-                                                                        </button>
-                                                                    );
-                                                                })
-                                                            ) : (
-                                                                <div className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-secondary whitespace-nowrap">
-                                                                    Collection coming soon
-                                                                </div>
-                                                            )}
-                                                        </div>
-
-                                                        <div className="flex items-center justify-between gap-3 mb-2">
-                                                            <p className="text-[11px] text-muted uppercase tracking-[0.14em]">
-                                                                {collectionStatusCopy}
-                                                            </p>
-                                                            <p className="text-[11px] text-muted">
-                                                                {openCount}/{totalCount} open
-                                                            </p>
-                                                        </div>
-
-                                                        <p className="text-xs text-muted line-clamp-2 leading-relaxed mb-3">
-                                                            {collection.story}
-                                                        </p>
-
-                                                        {leadTrack && (
-                                                            <button
-                                                                className="btn-secondary w-full mt-auto"
-                                                                onClick={() => tryPlayTrack(leadTrack)}
-                                                                style={{
-                                                                    borderRadius: '999px',
-                                                                }}
-                                                            >
-                                                                {currentTrack?.id === leadTrack.id && isPlaying
-                                                                    ? 'Pause Preview'
-                                                                    : `▶ Play Preview`}
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        )}
-                    </section>
+                    <SelectedWorlds />
 
                     <section id="build-with-cosmic" className="nexus-public-invitation">
                         <div><p className="public-label">Have a song in progress?</p><h2 className="public-title">Find its next direction.</h2></div>

@@ -50,7 +50,7 @@ test('Source metadata validates bounded notes and URLs, with no legal-cleared st
  assert.throws(()=>rightsInput({...rights,notes:'x'.repeat(4001)}),/4000/);
 });
 test('Legacy registry suppression returns only IDs for explicit internal classifications or archive',async()=>{
- const original=T.find;try{T.find=q=>({distinct:async field=>{assert.equal(field,'legacyRegistryId');assert.deepEqual(q.$or,[{catalogTreatment:{$in:['vault','test']}},{status:'archived'}]);return ['legacy-id'];}});assert.deepEqual(await r.Query.unavailableRegistryTrackIds(),['legacy-id']);}finally{T.find=original;}
+ const original=[T.find,W.find];try{W.find=()=>({distinct:async()=>[]});T.find=q=>({distinct:async field=>{assert.equal(field,'legacyRegistryId');assert.deepEqual(q.$or,[{catalogTreatment:{$in:['vault','test']}},{status:'archived'},{publicCanon:false},{releaseWorldId:{$in:[]}}]);return ['legacy-id'];}});assert.deepEqual(await r.Query.unavailableRegistryTrackIds(),['legacy-id']);}finally{[T.find,W.find]=original;}
 });
 test('Protected tracks cannot be submitted or selected for Nexus even with stale publication metadata',async()=>{
  const original=[T.findOne,T.findById,W.findOne];

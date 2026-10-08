@@ -160,7 +160,7 @@ export default function RealmEntryGuidanceBanner({
                 {recommendedTrackTitle}
               </button>
             ) : (
-              <span className="text-secondary">{recommendedTrackTitle}</span>
+              <span className="text-secondary">No current standalone recommendation</span>
             )}
           </div>
         </div>

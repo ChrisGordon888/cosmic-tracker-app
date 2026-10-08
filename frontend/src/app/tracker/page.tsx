@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSession, signIn } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import MoonPhaseCard from "@/components/MoonPhaseCard";
 import AddPracticeQuestForm from "@/components/AddPracticeQuestForm";
 import RitualPracticeSection from "@/components/RitualPracticeSection";
@@ -34,9 +34,9 @@ export default function TrackerPage() {
           <h1>Sign in to view your tracker.</h1>
           <p>Your quests and ritual practices are part of the private Practice Portal.</p>
           <div className="practice-subpage-actions tracker-state-actions">
-            <button type="button" onClick={() => signIn("github", { callbackUrl: "/tracker" })}>
+            <Link href="/auth?callbackUrl=%2Ftracker">
               Sign in
-            </button>
+            </Link>
             <Link href="/practice">Practice Portal</Link>
           </div>
         </section>

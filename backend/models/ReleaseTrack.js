@@ -21,6 +21,7 @@ const ReleaseTrackSchema = new mongoose.Schema(
     trackNumber: { type: Number, default: 1, min: 1, index: true },
     role: { type: String, enum: ["intro","lead-single","second-single","focus-track","deep-cut","interlude","outro","bonus","unknown"], default: "unknown" },
     status: { type: String, enum: ["idea","writing","demo","recording","mixing","mastered","released","archived"], default: "idea", index: true },
+    publicCanon: { type: Boolean },
     visibility: { type: String, enum: ["private","listed","public"], default: "private", index: true },
     // Listener access is independent from release/Nexus publication.
     accessTier: { type: String, enum: ["public","signup","premium"], default: "public", index: true },

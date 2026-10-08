@@ -1,5 +1,6 @@
 "use client";
 
+import PublicCurationReview from '@/components/creator/PublicCurationReview';
 import CatalogIntelligencePanel from '@/components/creator/CatalogIntelligencePanel';
 import CatalogCleanupActions from '@/components/creator/CatalogCleanupActions';
 import { usePlatformAccess } from '@/context/PlatformAccessProvider';
@@ -41,6 +42,7 @@ const REPAIR_PROJECT_LINK = gql`
 const CREATOR_LIBRARY_QUERY = gql`
   query CreatorLibrary {
     myReleaseWorlds {
+      publicCanon
       id
       title
       slug
@@ -53,6 +55,7 @@ const CREATOR_LIBRARY_QUERY = gql`
     }
 
     myCatalogTracks {
+      publicCanon
       catalogTreatment
       legacyRegistryId
       rightsInfo { sourceType reviewStatus producerName sourceUrl notes documentationRecorded commercialIntent }
@@ -867,6 +870,7 @@ export default function CreatorLibraryPage() {
             <button type="button" disabled={!filteredTracks.length} onClick={()=>{setCleanupQueue(filteredTracks.map(t=>({...t})));setCleanupIndex(0);}}>Clean up Library</button>
             <button type="button" disabled={!filteredTracks.some(t=>matchesCleanup(t,"realm"))} onClick={()=>{setSmartQueue(filteredTracks.filter(t=>matchesCleanup(t,"realm")).map(t=>({...t})));setSmartIndex(0);}}>Smart Sort · optional review ({filteredTracks.filter(t=>matchesCleanup(t,"realm")).length})</button>
           </div>
+        <PublicCurationReview tracks={tracks} worlds={releases} onSaved={refetch}/>
         <CatalogIntelligencePanel tracks={tracks} ownerId={creatorIdentity?.id??''} onInspect={id=>{
           setView('tracks');setVaultFilter('current');setSearch('');setReleaseFilter('all');setRealmFilter('all');setStatusFilter('all');setPublishingFilter('all');setCleanupFilter('all');
           requestAnimationFrame(()=>{const target=document.getElementById(`catalog-track-${id}`);target?.scrollIntoView({block:'center'});target?.focus({preventScroll:true});});

@@ -91,7 +91,7 @@
 }
 
 .services-nav a,
-.services-inquire-actions a {
+.services-inquire-actions :is(a, button) {
     min-height: 2.65rem;
     display: inline-flex;
     align-items: center;
@@ -110,12 +110,12 @@
 }
 
 .services-nav a:hover,
-.services-inquire-actions a:hover {
+.services-inquire-actions :is(a, button):hover {
     transform: translateY(-2px);
     border-color: rgba(126, 211, 255, 0.42);
 }
 
-.services-inquire-actions a:first-child {
+.services-inquire-actions :is(a, button):first-child {
     color: #081018;
     border-color: rgba(247, 239, 228, 0.48);
     background: linear-gradient(135deg, rgba(247, 239, 228, 0.96), rgba(126, 211, 255, 0.86));
@@ -395,7 +395,8 @@
     }
 
     .services-inquire-actions,
-    .services-inquire-actions a {
+    .services-inquire-actions :is(a, button) {
         width: 100%;
     }
 }
+.services-inquire-actions button:disabled { opacity: .6; cursor: wait; }

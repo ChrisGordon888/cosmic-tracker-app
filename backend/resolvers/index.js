@@ -1,3 +1,5 @@
+const { publicWorldFilter, projectTrackFilter, projectRealm } = require('../lib/publicProjects');
+const { curationUpdate, discoveryFilter } = require('../lib/publicCanon');
 const { catalogTreatments, publicCatalogFilter, isProtectedTrack, rightsInput } = require('../lib/trackVault');
 const { validateAudioIdentity, archiveBlockReason } = require("../lib/catalogHygiene");
 const Opportunity = require("../models/Opportunity");
@@ -56,7 +58,7 @@ function getRealmEditorialEntry(items, realmId) {
 async function requirePublishedNexusTrack(trackId, realmId = null) {
     const track = await ReleaseTrack.findById(trackId);
     if (!track) throw new Error("Track not found.");
-    if (isProtectedTrack(track) || !track.showInNexus || track.nexusReviewStatus !== "published") {
+    if (track.publicCanon === false || isProtectedTrack(track) || !track.showInNexus || track.nexusReviewStatus !== "published") {
         throw new Error("Only a published Nexus signal can be curated.");
     }
     if (realmId !== null && Number(track.realmId) !== Number(realmId)) {
@@ -373,6 +375,7 @@ function getNexusPublicationCandidate(existingTrack, input = {}) {
 
 function validateNexusPublication(candidate, releaseWorld) {
     if (!candidate.showInNexus) return;
+    if (candidate.publicCanon === false) throw new Error("Choose Canon before requesting Nexus inclusion.");
     if (isProtectedTrack(candidate)) throw new Error("Return this track to Current before requesting Nexus inclusion.");
 
     const errors = [];
@@ -383,7 +386,7 @@ function validateNexusPublication(candidate, releaseWorld) {
     const hasPreview = Boolean(String(candidate.previewAudioUrl || "").trim());
     const hasOpenDate = Boolean(candidate.unlockDate || candidate.dropDate);
 
-    if (!releaseWorld || releaseWorld.visibility !== "public" || releaseWorld.status === "archived") {
+    if (!releaseWorld || releaseWorld.publicCanon === false || releaseWorld.visibility !== "public" || releaseWorld.status === "archived") {
         errors.push("the parent release world must be public and active");
     }
 
@@ -1199,17 +1202,17 @@ async function getPublicSpotlightTrack() {
         : { nexusRole: "flagship" };
     if (!selection) return null;
     const track = await ReleaseTrack.findOne({
-        ...publicCatalogFilter, ...selection, showInNexus: true, status: { $ne: "archived" },
+        ...publicCatalogFilter, ...discoveryFilter, ...selection, showInNexus: true, status: { $ne: "archived" },
         $or: [{ visibility: { $in: ["public", "listed"] } }, { visibility: { $exists: false }, isPublic: true }],
     });
     if (!track) return null;
-    const world = await ReleaseWorld.findOne({ _id: track.releaseWorldId, ownerId: track.ownerId, visibility: "public", status: { $ne: "archived" } });
+    const world = await ReleaseWorld.findOne({ _id: track.releaseWorldId, ownerId: track.ownerId, visibility: "public", ...discoveryFilter, status: { $ne: "archived" } });
     return world ? track : null;
 }
 
 async function getPublicFeaturedReleaseWorld() {
     const track = await getPublicSpotlightTrack();
-    return track ? await ReleaseWorld.findOne({ _id: track.releaseWorldId, ownerId: track.ownerId, visibility: "public", status: { $ne: "archived" } }) : null;
+    return track ? await ReleaseWorld.findOne({ _id: track.releaseWorldId, ownerId: track.ownerId, visibility: "public", ...discoveryFilter, status: { $ne: "archived" } }) : null;
 }
 
 async function getFeaturedSignalTrack(query = {}) {
@@ -1601,11 +1604,35 @@ module.exports = {
         recordedAt: (result) => result.recordedAt.toISOString(),
     },
     Query: {
+        publicProjects: async (_, { selectedOnly = false }) => {
+            const query = { ...publicWorldFilter };
+            if (selectedOnly) {
+                const config = await NexusEditorialConfig.findOne({ key: 'global' });
+                query._id = { $in: config?.selectedWorldIds || [] };
+            }
+            const worlds = await ReleaseWorld.find(query).sort({ updatedAt: -1, _id: 1 });
+            return Promise.all(worlds.map(async world => {
+                const tracks = await ReleaseTrack.find(projectTrackFilter(world)).sort({ trackNumber: 1, createdAt: 1, _id: 1 });
+                return { world, tracks, realmId: projectRealm(tracks) };
+            }));
+        },
+        getShareableTrack: async (_, { id }) => {
+            const track = await ReleaseTrack.findOne({ _id: id, ...publicCatalogFilter, status: { $ne: 'archived' }, visibility: { $in: ['public','listed'] } });
+            if (!track) return null;
+            if (track.releaseWorldId) {
+                const world = await ReleaseWorld.findOne({ _id: track.releaseWorldId, ownerId: track.ownerId, visibility: 'public', status: { $ne: 'archived' } });
+                if (!world) return null;
+            }
+            return track;
+        },
         // Only migration IDs already represented in the shipped registry, never private titles/notes.
-        unavailableRegistryTrackIds: async () => ReleaseTrack.find({
-            legacyRegistryId: { $exists: true, $ne: '' },
-            $or: [{ catalogTreatment: { $in: ['vault', 'test'] } }, { status: 'archived' }],
-        }).distinct('legacyRegistryId'),
+        unavailableRegistryTrackIds: async () => {
+            const hiddenWorldIds = await ReleaseWorld.find({ publicCanon: false }).distinct('_id');
+            return ReleaseTrack.find({
+                legacyRegistryId: { $exists: true, $ne: '' },
+                $or: [{ catalogTreatment: { $in: ['vault', 'test'] } }, { status: 'archived' }, { publicCanon: false }, { releaseWorldId: { $in: hiddenWorldIds } }],
+            }).distinct('legacyRegistryId');
+        },
         myOpportunities: async (_, __, { user }) => {
             requireCreator(user);
             return Opportunity.find({ ownerId: user.id }).sort({ createdAt: -1 });
@@ -2139,6 +2166,7 @@ module.exports = {
 
             const publicReleaseWorldIds = await ReleaseWorld.find({
                 visibility: "public",
+                ...discoveryFilter,
                 status: { $ne: "archived" },
             }).distinct("_id");
 
@@ -2149,7 +2177,7 @@ module.exports = {
                 showInNexus: true,
                 realmId: { $ne: null },
                 status: { $ne: "archived" },
-                ...publicCatalogFilter,
+                ...publicCatalogFilter, ...discoveryFilter,
                 playbackStatus: { $in: ["preview", "playable", "coming-soon"] },
                 $and: [
                     {
@@ -2284,6 +2312,27 @@ module.exports = {
     },
 
     Mutation: {
+        curatePublicTrack: async (_, { id, expectedUpdatedAt, choice, confirmImpact }, { user }) => {
+            requireCreator(user);
+            const track = await ReleaseTrack.findOne({ _id: id, ownerId: user.id });
+            if (!track) throw new Error('Track not found.');
+            const expected = new Date(/^\d+$/.test(expectedUpdatedAt) ? Number(expectedUpdatedAt) : expectedUpdatedAt);
+            if (!Number.isFinite(expected.getTime()) || expected.getTime() !== new Date(track.updatedAt).getTime()) throw new Error('This track changed. Reload Library before saving.');
+            if (!confirmImpact) throw new Error('Confirm the public exposure change first.');
+            const update = curationUpdate(track, choice);
+            const saved = await ReleaseTrack.findOneAndUpdate({ _id: id, ownerId: user.id, updatedAt: track.updatedAt }, { $set: update }, { new: true, runValidators: true });
+            if (!saved) throw new Error('This track changed. Reload Library before saving.');
+            if (choice !== 'canon') await removeTrackFromNexusEditorialConfig(track._id, user.id);
+            return saved;
+        },
+        curatePublicWorld: async (_, { id, expectedUpdatedAt, selected }, { user }) => {
+            requireCreator(user);
+            const expected = new Date(/^\d+$/.test(expectedUpdatedAt) ? Number(expectedUpdatedAt) : expectedUpdatedAt);
+            if (!Number.isFinite(expected.getTime())) throw new Error('Reload Library before saving.');
+            const saved = await ReleaseWorld.findOneAndUpdate({ _id: id, ownerId: user.id, updatedAt: expected }, { $set: { publicCanon: selected } }, { new: true, runValidators: true });
+            if (!saved) throw new Error('Release changed or was not found. Reload Library.');
+            return saved;
+        },
         updateTrackVault: async (_, { id, expectedUpdatedAt, input }, { user }) => {
             requireCreator(user);
             const track = await ReleaseTrack.findOne({ _id: id, ownerId: user.id });
@@ -2298,7 +2347,7 @@ module.exports = {
             if (input.rightsInfo != null) update.rightsInfo = rightsInput(input.rightsInfo);
             if (input.archive === true) update.status = 'archived';
             const protect = isProtectedTrack({ catalogTreatment: update.catalogTreatment ?? track.catalogTreatment }) || input.archive === true;
-            if (protect) Object.assign(update, { visibility: 'private', isPublic: false, showInNexus: false, nexusReviewStatus: 'draft' });
+            if (protect) Object.assign(update, { publicCanon: false, visibility: 'private', isPublic: false, showInNexus: false, nexusReviewStatus: 'draft' });
             const saved = await ReleaseTrack.findOneAndUpdate({ _id: id, ownerId: user.id, updatedAt: track.updatedAt }, { $set: update }, { new: true, runValidators: true });
             if (!saved) throw new Error('This track changed. Reload Library before saving.');
             if (protect) await removeTrackFromNexusEditorialConfig(track._id, user.id);
@@ -4056,6 +4105,8 @@ module.exports = {
                 lastOpenedAt: new Date(),
             };
 
+            if (existingTrack.publicCanon != null && (['private', 'listed'].includes(input.visibility) || input.isPublic === false)) update.publicCanon = false;
+
             if (input.creativeDecision) {
                 const decision = require('../lib/creativeFingerprint').realmDecision(input.creativeDecision, input.realmId, existingTrack);
                 delete update.creativeDecision;
@@ -4454,6 +4505,12 @@ module.exports = {
             return track;
         },
 
+        setNexusProjectSelection: async (_, { worldId, selected }, { user }) => {
+            requireNexusEditorial(user);
+            if (selected && !await ReleaseWorld.findOne({ _id: worldId, ...publicWorldFilter })) throw new Error('Select a public Canon Release World.');
+            const config = await getOrCreateNexusEditorialConfig();
+            return NexusEditorialConfig.findOneAndUpdate({ _id: config._id }, { [selected ? '$addToSet' : '$pull']: { selectedWorldIds: worldId }, $set: { updatedBy: user.id } }, { new: true, runValidators: true });
+        },
         setNexusFeaturedSignal: async (_, { trackId }, { user }) => {
             requireNexusEditorial(user);
             const track = await requirePublishedNexusTrack(trackId);

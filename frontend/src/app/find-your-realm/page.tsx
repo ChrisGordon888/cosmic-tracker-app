@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
+import { PUBLIC_PROJECTS } from '@/graphql/publicProjects';
+import { listenerRealmPath } from '@/lib/listenerPaths';
 import RealmBackground from '@/components/realm/RealmBackground';
 import '@/styles/realmShared.css';
 import {
@@ -68,6 +70,7 @@ export default function FindYourRealmPage() {
     const { playOrToggleTrack, currentTrack, isPlaying } = useMusicPlayer();
 
     const { isAuthenticated } = usePlatformAccess();
+    const { data: projectData } = useQuery(PUBLIC_PROJECTS, { fetchPolicy: 'network-only' });
     const { data: catalogData } = useQuery(GET_PUBLIC_NEXUS_TRACKS, { fetchPolicy: 'network-only' });
     const catalog = useMemo(() => mergeMusicCatalogs(catalogData ? MUSIC_REGISTRY : [], mapReleaseTracksToMusicTracks(catalogData?.getPublicNexusTracks), catalogData?.unavailableRegistryTrackIds), [catalogData]);
     const currentQuestion = REALM_ALIGNMENT_QUESTIONS[currentQuestionIndex];
@@ -94,6 +97,7 @@ export default function FindYourRealmPage() {
 
         return findRealmRecommendation(catalog, MUSIC_REGISTRY, recommendedRealmId, modeContent.recommendedTrack);
     }, [recommendedRealmId, modeContent, catalog]);
+    const listenerPath = recommendedRealmId===null ? null : listenerRealmPath(recommendedRealmId,catalog,projectData?.publicProjects||[],isAuthenticated,suggestedTrack?.id);
     const suggestedAvailability = suggestedTrack ? getMusicAvailability(suggestedTrack, { isCreatorView: false, isSignedIn: isAuthenticated }) : null;
 
     const allQuestionsAnswered =
@@ -341,15 +345,15 @@ export default function FindYourRealmPage() {
                                     }}
                                 >
                                     <p className="text-sm text-secondary uppercase tracking-[0.18em] mb-2">
-                                        Recommended Track
+                                        {suggestedTrack ? "Recommended Track" : "Current listening path"}
                                     </p>
                                     <h3
                                         className="text-2xl font-display mb-3"
                                         style={{ color: recommendedRealm.color }}
                                     >
-                                        {suggestedTrack?.trackTitle ?? modeContent.recommendedTrack}
+                                        {suggestedTrack?.trackTitle ?? (listenerPath?.state==='project'?'Explore a current World':listenerPath?.state==='quiet'?'Realm quiet':'Explore Realm music')}
                                     </h3>
-                                    <p className="text-secondary text-sm">{modeContent.whyMusicFits}</p>
+                                    <p className="text-secondary text-sm">{suggestedTrack ? modeContent.whyMusicFits : 'Only currently eligible music is offered here. Your Realm result remains meaningful even when its soundtrack is quiet.'}</p>
                                 </div>
 
                                 <div className="quest-card">
@@ -443,8 +447,8 @@ export default function FindYourRealmPage() {
                                     ) : suggestedAvailability?.label === 'Join to Unlock' ? (
                                         <Link href="/auth" className="btn-primary">Sign in to listen</Link>
                                     ) : <span className="text-secondary">{suggestedAvailability?.label ?? 'Explore the Realm for more music'}</span>}
-                                    <Link href={suggestedTrack?.releaseSlug ? `/releases/${suggestedTrack.releaseSlug}` : isAuthenticated ? recommendedRealm.route : `/nexus#realm-${recommendedRealmId}`} className="btn-secondary">
-                                        {suggestedTrack?.releaseSlug ? 'Explore World' : isAuthenticated ? `Enter ${recommendedRealm.realmName}` : `Explore ${recommendedRealm.realmName} music`} →
+                                    <Link href={listenerPath?.href || `/nexus#realm-${recommendedRealmId}`}  className="btn-secondary">
+                                        {listenerPath?.label || `Explore ${recommendedRealm.realmName}`}  →
                                     </Link>
                                     <Link href="/nexus" className="text-secondary self-center">Back to Nexus</Link>
                                 </div>

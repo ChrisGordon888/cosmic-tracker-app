@@ -9,7 +9,7 @@ function load(relative) {
   const file = path.join(__dirname, '../src', relative);
   const code = ts.transpileModule(fs.readFileSync(file, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText;
   const module = { exports: {} };
-  vm.runInNewContext(`(function(require,module,exports){${code}\n})`, { Date, Intl })(name => name.startsWith('@/') ? load(`${name.slice(2)}.ts`) : require(name), module, module.exports);
+  vm.runInNewContext(`(function(require,module,exports){${code}\n})`, { Date, Intl })(name => name.startsWith('@/') ? load(`${name.slice(2)}.ts`) : name.startsWith('./') ? load(path.join(path.dirname(relative),`${name}.ts`)) : require(name), module, module.exports);
   return module.exports;
 }
 const { getMusicAvailability: availability, playableMusicTracks, listenerCatalogCounts } = load('lib/musicAvailability.ts');

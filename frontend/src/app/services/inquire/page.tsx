@@ -100,41 +100,15 @@ function InquiryForm() {
         selectedOffer.messagePrompt ||
         "Tell me what you are building, where you feel stuck, what you want support with, and what a good outcome would look like.";
 
-    const mailtoHref = useMemo(() => {
-        const subject = `Services Inquiry — ${selectedOffer.label}`;
-        const body = [
-            `Intent: ${selectedIntent.label}`,
-            `Offer: ${selectedOffer.label}`,
-            `Price / range: ${selectedOffer.price}`,
-            `Name: ${name}`,
-            `Email: ${email}`,
-            `Preferred contact: ${contactPreference}`,
-            `Timeline / preferred timing: ${timeline}`,
-            "",
-            "Links / references / project materials:",
-            links,
-            "",
-            isCreativeDirection
-                ? "Song-development focus — what I'm building, what feels unclear, and what I want to leave with:"
-                : "What I'm building / what I need help with:",
-            message,
-            "",
-            "Anything else Chris should know:",
-        ].join("\n");
-
-        return `mailto:chris.c.gordon777@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    }, [
-        contactPreference,
-        email,
-        links,
-        message,
-        name,
-        isCreativeDirection,
-        selectedIntent.label,
-        selectedOffer.label,
-        selectedOffer.price,
-        timeline,
-    ]);
+    const [website,setWebsite]=useState('');
+    const [sending,setSending]=useState(false);
+    const [feedback,setFeedback]=useState('');
+    async function submit(event:React.FormEvent){
+        event.preventDefault();if(sending)return;setSending(true);setFeedback('');
+        try{const response=await fetch('/api/services-inquiry',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,offer,intent,message,links,timeline,contactPreference,website})});const result=await response.json();setFeedback(result.message||'Inquiry not sent. Please try again.');}
+        catch{setFeedback('Could not confirm sending. Your entries are still here; please try again later.');}
+        finally{setSending(false);}
+    }
 
     return (
         <section className="services-inquire-card services-inquire-card-v2">
@@ -193,7 +167,8 @@ function InquiryForm() {
                     </div>
                 </aside>
 
-                <form className="services-inquire-form services-inquire-form-v2">
+                <form className="services-inquire-form services-inquire-form-v2" onSubmit={submit}>
+                    <label hidden aria-hidden="true" style={{display:"none"}}>Website<input tabIndex={-1} autoComplete="off" value={website} onChange={e=>setWebsite(e.target.value)}/></label>
                     <div className="services-inquire-grid">
                         <label>
                             Offer
@@ -221,13 +196,13 @@ function InquiryForm() {
                     <div className="services-inquire-grid">
                         <label>
                             Name
-                            <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Your name" />
+                            <input required maxLength={150} value={name} onChange={(event) => setName(event.target.value)} placeholder="Your name" />
                         </label>
 
                         <label>
                             Email
                             <input
-                                type="email"
+                                type="email" required maxLength={254}
                                 value={email}
                                 onChange={(event) => setEmail(event.target.value)}
                                 placeholder="you@example.com"
@@ -238,7 +213,7 @@ function InquiryForm() {
                     <label>
                         Links to music / socials / website / project
                         <textarea
-                            value={links}
+                            maxLength={3000} value={links}
                             onChange={(event) => setLinks(event.target.value)}
                             placeholder={linkPlaceholder}
                         />
@@ -248,7 +223,7 @@ function InquiryForm() {
                         <label>
                             Timeline / preferred timing
                             <input
-                                value={timeline}
+                                maxLength={300} value={timeline}
                                 onChange={(event) => setTimeline(event.target.value)}
                                 placeholder="Example: this week, this month, before my next release..."
                             />
@@ -269,7 +244,7 @@ function InquiryForm() {
                     <label>
                         {isCreativeDirection ? "Song-development focus" : "What do you need help with?"}
                         <textarea
-                            value={message}
+                            required maxLength={6000} value={message}
                             onChange={(event) => setMessage(event.target.value)}
                             placeholder={messagePlaceholder}
                         />
@@ -278,16 +253,15 @@ function InquiryForm() {
                     <div className="services-inquire-note">
                         <strong>Before you send:</strong>
                         <p>
-                            {isCreativeDirection
-                                ? "Rough links and honest context are enough. This opens your email app with a creative-development inquiry prefilled so you can edit before sending."
-                                : "A few rough links and honest context are enough. This form opens your email app with everything prefilled, so you can edit before sending."}
+                            Your inquiry is sent securely to the business inbox. This is a conversation, not a booking or payment.
                         </p>
                     </div>
 
                     <div className="services-inquire-actions">
-                        <a href={mailtoHref}>{isCreativeDirection ? "Open Email Inquiry" : "Open Email Inquiry"}</a>
+                        <button type="submit" disabled={sending}>{sending ? "Sending…" : "Send inquiry"}</button>
                         <Link href="/services">Back to Services</Link>
                     </div>
+                    <p role="status" aria-live="polite">{feedback}</p>
                 </form>
             </div>
         </section>

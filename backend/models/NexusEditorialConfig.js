@@ -21,6 +21,7 @@ const RealmOrderSchema = new mongoose.Schema(
 const NexusEditorialConfigSchema = new mongoose.Schema(
   {
     key: { type: String, default: "global", unique: true, index: true },
+    selectedWorldIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "ReleaseWorld" }],
     featuredTrackId: { type: mongoose.Schema.Types.ObjectId, ref: "ReleaseTrack", default: null },
     realmAnchors: { type: [RealmAnchorSchema], default: () => REALM_IDS.map((realmId) => ({ realmId, trackId: null })) },
     realmOrders: { type: [RealmOrderSchema], default: () => REALM_IDS.map((realmId) => ({ realmId, trackIds: [] })) },

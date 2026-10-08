@@ -40,6 +40,7 @@ const ReleaseWorldSchema = new mongoose.Schema(
       index: true,
     },
 
+    publicCanon: { type: Boolean },
     isFeatured: { type: Boolean, default: false, index: true },
 
     oneLineSummary: { type: String, default: "" },

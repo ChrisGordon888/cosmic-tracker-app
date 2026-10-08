@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSession, signIn } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import "@/styles/practicePage.css";
 import CosmicClock from "@/components/CosmicClock";
 import MoonPhaseCard from "@/components/MoonPhaseCard";
@@ -100,9 +100,9 @@ export default function PracticePortal() {
                         and history. The public music universe remains open through the Nexus.
                     </p>
                     <div className="practice-actions">
-                        <button type="button" onClick={() => signIn("github", { callbackUrl: "/practice" })}>
-                            Sign in with GitHub
-                        </button>
+                        <Link href="/auth?callbackUrl=%2Fpractice">
+                            Sign in
+                        </Link>
                         <Link href="/nexus">Enter the Nexus</Link>
                     </div>
                 </section>
