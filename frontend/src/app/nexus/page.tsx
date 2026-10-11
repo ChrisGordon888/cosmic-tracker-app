@@ -2,10 +2,12 @@
 
 import PublicAtmosphere from '@/components/public/PublicAtmosphere';
 
+import "@/styles/realmDormant.css";
 import { useSession } from 'next-auth/react';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
-import SelectedWorlds from '@/components/creator/SelectedWorlds';
+import { playerRealm } from '@/lib/playerRealm';
+import { PublicWorlds } from '@/components/creator/SelectedWorlds';
 import { gql, useQuery, useMutation } from '@apollo/client';
 import { getTodayMoonPhase, getRealmMoonAlignment } from '@/lib/moonPhases';
 import { GET_ME, GET_PUBLIC_NEXUS_TRACKS, LOG_DAILY_LOGIN } from '@/graphql/realms';
@@ -145,6 +147,7 @@ interface NexusFeaturedReleaseWorld {
 }
 
 interface NexusFeaturedReleaseTrack {
+    realmId?: number | null;
     ownerId?: string;
     artistName?: string;
     releaseSlug?: string;
@@ -432,9 +435,7 @@ function toPlayerTrack(
         previewAudioUrl: releaseTrack.previewAudioUrl,
         unlockDate: releaseTrack.unlockDate,
         dropDate: releaseTrack.dropDate,
-        realmId: 0,
-        realmName: 'INTERSIDDHI',
-        realmColor: '#DCBA5C',
+        ...playerRealm(releaseTrack.realmId),
         visibility: releaseTrack.visibility,
         trackUrl: getFeaturedTrackPlaybackUrl(releaseTrack, isSignedIn),
         artworkUrl: releaseWorld?.coverArtUrl ?? undefined,
@@ -460,7 +461,8 @@ export default function CosmicNexusHub() {
         skip: !session,
     });
 
-    const { data: publicNexusTrackData } = useQuery(GET_PUBLIC_NEXUS_TRACKS, {
+    const { data: publicNexusTrackData, loading: catalogLoading, error: catalogError } = useQuery(GET_PUBLIC_NEXUS_TRACKS, {
+        variables: { nexusOnly: false },
         fetchPolicy: 'network-only',
     });
 
@@ -627,7 +629,7 @@ export default function CosmicNexusHub() {
             | undefined
         );
 
-        return mergeMusicCatalogs(publicNexusTrackData ? MUSIC_REGISTRY : [], creatorTracks, publicNexusTrackData?.unavailableRegistryTrackIds);
+        return mergeMusicCatalogs([], creatorTracks);
     }, [publicNexusTrackData]);
 
     const nexusVisibleTracks = useMemo(() => {
@@ -642,6 +644,8 @@ export default function CosmicNexusHub() {
                 };
             })
             .sort((a, b) => {
+                const canonPriority = Number(b.publicCanon === true) - Number(a.publicCanon === true);
+                if (canonPriority) return canonPriority;
                 const aOrder = a.sortOrder ?? 999;
                 const bOrder = b.sortOrder ?? 999;
 
@@ -669,6 +673,8 @@ export default function CosmicNexusHub() {
                     return safeARealmIndex - safeBRealmIndex;
                 }
 
+                const canonPriority = Number(b.publicCanon === true) - Number(a.publicCanon === true);
+                if (canonPriority) return canonPriority;
                 const aOrder = a.sortOrder ?? 999;
                 const bOrder = b.sortOrder ?? 999;
 
@@ -835,7 +841,7 @@ export default function CosmicNexusHub() {
                                 </button>
                             )}
                             {nexusPlayableFlowTracks.length > 0 && <button type="button" className="public-link" onClick={() => tryPlayTrack(nexusPlayableFlowTracks[Math.floor(Math.random() * nexusPlayableFlowTracks.length)])}>Shuffle playable music</button>}
-                            <a href="#realm-soundtracks" className="public-link">Explore the catalog →</a>
+                            <a href="#realm-soundtracks" className="public-link">Explore the soundtracks →</a>
                         </div>
                     </header>
 
@@ -1086,7 +1092,7 @@ export default function CosmicNexusHub() {
                                             Current Realm: <span className="text-primary">{currentRealmName}</span>
                                         </p>
                                         <p className="text-xs text-muted mt-1">
-                                            {nexusVisibleTracks.length} cataloged tracks • {memberCatalogCount} member-gated signals
+                                            {nexusVisibleTracks.length} public tracks • {memberCatalogCount} member-gated signals
                                         </p>
                                     </div>
                                 </div>
@@ -1129,7 +1135,7 @@ export default function CosmicNexusHub() {
                                 </p>
                                 <h2 className="text-2xl font-display mb-2">Go deeper in the Nexus</h2>
                                 <p className="text-sm text-secondary mb-4 leading-relaxed">
-                                    {nexusVisibleTracks.length} current discovery signals across six Realms. Playable now counts only what you can hear. Sign in to save Realm progress{memberCatalogCount > 0 ? " and listen to available member music" : ""}.
+                                    {nexusVisibleTracks.length} public signals across six Realms. Playable now counts only what you can hear. Sign in to save Realm progress{memberCatalogCount > 0 ? " and listen to available member music" : ""}.
                                 </p>
 
                                 <div className="grid grid-cols-2 gap-2 mb-4">
@@ -1138,7 +1144,7 @@ export default function CosmicNexusHub() {
                                             {nexusVisibleTracks.length}
                                         </p>
                                         <p className="text-[10px] uppercase tracking-[0.14em] text-muted mt-1">
-                                            Catalogued signals
+                                            Public signals
                                         </p>
                                     </div>
 
@@ -1564,6 +1570,7 @@ export default function CosmicNexusHub() {
                         </div>
                     </section>}
 
+
                     <section
                         id="realm-soundtracks"
                         className="glass-card nexus-panel nexus-soundtracks p-6 mb-5 fade-in"
@@ -1676,7 +1683,7 @@ export default function CosmicNexusHub() {
                             </div>
                         </div>
 
-                        {groupedTracks.length > 0 ? (
+                        {catalogLoading ? <p role="status">Loading Realm music…</p> : catalogError ? <p role="status">Realm music could not be loaded. Try again shortly.</p> : groupedTracks.length > 0 ? (
                             <div
                                 ref={soundtrackCarouselRef}
                                 className="realm-carousel flex gap-4 overflow-x-auto pb-2 pr-2"
@@ -1700,7 +1707,7 @@ export default function CosmicNexusHub() {
                                             id={`realm-${realmGroup.id}`}
                                             className="realm-carousel-item"
                                         >
-                                            {realmGroup.tracks.length === 0 ? <article className="glass-card p-6 h-full"><p className="text-xs uppercase">Realm quiet</p><h3 className="text-2xl font-display">{realmGroup.name}</h3><p className="mt-3">No current signal. This Realm remains part of COSMIC; its soundtrack can wait for the right work.</p><Link className="btn-secondary mt-4" href={isSignedIn?`/realms/${realmGroup.id}`:`/auth?callbackUrl=${encodeURIComponent(`/realms/${realmGroup.id}`)}`}>Explore the Realm path →</Link></article> : <RealmOrbitCard
+                                            {realmGroup.tracks.length === 0 ? <article className={`realm-dormant realm-dormant-${realmGroup.id}`}><span className="realm-dormant-glyph" aria-hidden="true">{realmGroup.icon}</span><p className="text-xs uppercase tracking-widest">Realm quiet</p><h3 className="text-2xl font-display">{realmGroup.name}</h3><p className="mt-3">No public soundtrack yet.</p><p>{realmGroup.description}</p><Link className="btn-secondary mt-4" href={`/realms/${realmGroup.id}`}>Enter the Realm →</Link></article> : <RealmOrbitCard
                                                 realmId={realmGroup.id}
                                                 realmName={realmGroup.name}
                                                 realmIcon={realmGroup.icon}
@@ -1711,7 +1718,7 @@ export default function CosmicNexusHub() {
                                                 onPlayTrack={handlePlayOrbitTrack}
                                                 progress={realmGroup.progress}
                                                 isUnlocked={true}
-                                                realmRoute={isSignedIn ? `/realms/${realmGroup.id}` : `/auth?callbackUrl=${encodeURIComponent(`/realms/${realmGroup.id}`)}`}
+                                                realmRoute={`/realms/${realmGroup.id}`}
                                                 isCurrentRealm={isSignedIn && realmId === user?.currentRealm}
                                                 isRecommended={guidanceRealmId !== null && realmId === guidanceRealmId}
                                                 compactOnMobile
@@ -1738,7 +1745,7 @@ export default function CosmicNexusHub() {
 
 
 
-                    <SelectedWorlds />
+                    <PublicWorlds selectedOnly />
 
                     <section id="build-with-cosmic" className="nexus-public-invitation">
                         <div><p className="public-label">Have a song in progress?</p><h2 className="public-title">Find its next direction.</h2></div>

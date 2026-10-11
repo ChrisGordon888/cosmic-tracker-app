@@ -250,7 +250,7 @@ const typeDefs = gql`
     trackIds: [ID!]!
   }
 
-  type PublicProject { world: ReleaseWorld! tracks: [ReleaseTrack!]! realmId: Int }
+  type PublicProject { creatorName: String! isSelected: Boolean! world: ReleaseWorld! tracks: [ReleaseTrack!]! realmId: Int }
   type NexusEditorialConfig {
     selectedWorldIds: [ID!]
     id: ID!
@@ -787,7 +787,7 @@ const typeDefs = gql`
     nexusPublishedSignals(realmId: Int): [NexusReviewItem!]!
     getReleaseTracks(releaseWorldId: ID!): [ReleaseTrack!]!
     getPublicReleaseTracks(releaseWorldId: ID!): [ReleaseTrack!]!
-    getPublicNexusTracks(realmId: Int): [ReleaseTrack!]!
+    getPublicNexusTracks(realmId: Int, nexusOnly: Boolean = false): [ReleaseTrack!]!
     getMyFeaturedSignal: ReleaseTrack
     getPublicFeaturedSignal: ReleaseTrack
     getReleaseTrack(id: ID!): ReleaseTrack

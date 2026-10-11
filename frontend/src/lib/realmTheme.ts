@@ -1,7 +1,7 @@
 import type { RealmId } from '@/lib/realmStateMap';
 
 export interface RealmTheme {
-  realmId: RealmId;
+  realmId: RealmId | null;
   name: string;
   shortName: string;
   accent: string;
@@ -88,7 +88,7 @@ export const REALM_THEMES: Record<RealmId, RealmTheme> = {
 };
 
 export const DEFAULT_REALM_THEME: RealmTheme = {
-  realmId: 0,
+  realmId: null,
   name: 'Cosmic Nexus',
   shortName: 'Nexus',
   accent: 'rgba(188, 224, 255, 0.92)',
@@ -101,6 +101,7 @@ export const DEFAULT_REALM_THEME: RealmTheme = {
 };
 
 export function getRealmTheme(realmId?: number | string | null): RealmTheme {
+  if (realmId == null || realmId === '') return DEFAULT_REALM_THEME;
   const numericRealmId = Number(realmId);
 
   if (

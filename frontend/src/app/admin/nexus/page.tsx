@@ -32,7 +32,7 @@ type ReviewItem = {
     nexusReviewedAt?: string | null; nexusReviewedBy?: string | null; nexusReviewNotes?: string | null;
     nexusPublishedAt?: string | null; nexusPublishedBy?: string | null;
     nexusUnpublishedAt?: string | null; nexusUnpublishedBy?: string | null;
-    showInNexus: boolean; status: string; visibility: string; accessTier: string; canAccessAudio: boolean; accessGate: string; playbackStatus: string;
+    publicCanon?: boolean; showInNexus: boolean; status: string; visibility: string; accessTier: string; canAccessAudio: boolean; accessGate: string; playbackStatus: string;
     bpm?: number | null; keySignature?: string | null; mood?: string | null; hook?: string | null; notes?: string | null;
     audioUrl?: string | null; previewAudioUrl?: string | null; platformUrl?: string | null;
     artworkUrl?: string | null; releaseCoverArtUrl?: string | null;
@@ -215,6 +215,7 @@ export default function NexusReviewPage() {
                     <div>
                       <p className="text-[10px] uppercase tracking-[0.2em] text-white/35">{item.creativeProfile?.artistName || "Creator"}</p>
                       <h3 className="mt-2 text-2xl font-semibold">{track.title}</h3>
+                      {track.publicCanon === true && <p className="text-xs text-amber-200">Artist Canon</p>}
                       <p className="mt-1 text-sm text-white/50">{item.releaseWorld.title} · {label(item.releaseWorld.releaseType)} · Track {track.trackNumber} of {item.releaseTrackCount || "?"}</p>
                       <div className="mt-3 flex flex-wrap gap-2 text-xs">
                         <span className={`rounded-full border px-3 py-1.5 ${statusClasses(track.nexusReviewStatus)}`}>{label(track.nexusReviewStatus)}</span>

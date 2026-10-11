@@ -9,7 +9,7 @@ test('Listener routing covers active, contextual project, member and quiet desti
  assert.equal(listenerRealmPath(202,[active],[],false).state,'active');
  assert.equal(listenerRealmPath(202,[],[p],false).href,'/releases/fixture');
  const member={...active,accessTier:'signup'};assert.equal(listenerRealmPath(202,[member],[],false).state,'member');assert.ok(listenerRealmPath(202,[member],[],false).href.includes('callbackUrl='));
- assert.equal(listenerRealmPath(44,[],[],false).href,'/nexus#realm-44');assert.equal(listenerRealmPath(44,[],[],false).state,'quiet');
+ assert.equal(listenerRealmPath(44,[],[],false).href,'/realms/44');assert.equal(listenerRealmPath(44,[],[],false).state,'quiet');
 });
 test('Nexus runtime no longer references hardcoded EPs; all six anchors survive empty catalogs',()=>{const source=fs.readFileSync('src/app/nexus/page.tsx','utf8');assert.ok(!source.includes('PUBLIC_THREE_PIECE_COLLECTIONS'));assert.ok(!source.includes("signIn('github')"));assert.ok(!source.includes('filter((realmGroup) => realmGroup.tracks.length > 0)'));assert.ok(source.includes('SelectedWorlds'));});
 test('Normal listener and practice sign-in use provider-choice route with return destinations',()=>{for(const route of ['nexus','practice','tracker']){const s=fs.readFileSync(`src/app/${route}/page.tsx`,'utf8');assert.ok(!/signIn\(['"]github/.test(s));assert.ok(s.includes(`/auth?callbackUrl=%2F${route}`));}});

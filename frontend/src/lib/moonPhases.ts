@@ -240,3 +240,19 @@ export function getMoonPhaseForDate(date: Date): MoonPhase {
     date,
   };
 }
+
+/** Approximate local dates of principal phase crossings; not poetic phase windows. */
+export function getLunarMonthMarkers(month: Date) {
+  const markers: {date: Date; phase: string; icon: string}[] = [];
+  const year=month.getFullYear(), index=month.getMonth();
+  const days=new Date(year,index+1,0).getDate();
+  for(let day=1;day<=days;day++) {
+    const start=new Date(year,index,day),end=new Date(year,index,day+1);
+    const a=SunCalc.getMoonIllumination(start).phase,b=SunCalc.getMoonIllumination(end).phase;
+    if(b<a) markers.push({date:start,phase:'New Moon',icon:'🌑'});
+    for(const [threshold,phase,icon] of [[.25,'First Quarter','🌓'],[.5,'Full Moon','🌕'],[.75,'Third Quarter','🌗']] as const) {
+      if(a<threshold&&b>=threshold) markers.push({date:start,phase,icon});
+    }
+  }
+  return markers;
+}

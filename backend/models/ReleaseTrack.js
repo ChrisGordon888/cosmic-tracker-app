@@ -31,7 +31,7 @@ const ReleaseTrackSchema = new mongoose.Schema(
     legacyVibe: { type: [String], default: [] },
     legacyBestUse: { type: [String], default: [] },
     legacyImportedAt: { type: Date, default: null },
-    playbackStatus: { type: String, enum: ["locked","preview","playable","coming-soon"], default: "locked", index: true },
+    playbackStatus: { type: String, enum: ["locked","preview","playable","coming-soon"], default: "playable", index: true },
     dropDate: { type: Date, default: null },
     unlockDate: { type: Date, default: null },
     workingCoverStyle: { type: String, enum: ["minimal", "atmospheric", "signal", "artifact", "none"], default: undefined },

@@ -2,10 +2,10 @@ import { getMusicAvailability } from './musicAvailability';
 import type { RuntimeMusicTrack } from './publicMusicCatalog';
 import type { PublicProject } from './publicProjects';
 export function listenerRealmPath(realmId:number,catalog:RuntimeMusicTrack[],projects:PublicProject[],signedIn:boolean,preferredId?:string){
- const destination=`/nexus#realm-${realmId}`;
- const candidates=catalog.filter(t=>t.realmId===realmId).sort((a,b)=>Number(b.id===preferredId)-Number(a.id===preferredId));
+ const destination=`/realms/${realmId}`;
+ const candidates=catalog.filter(t=>t.realmId===realmId).sort((a,b)=>(Number(b.publicCanon===true)-Number(a.publicCanon===true))||(Number(b.id===preferredId)-Number(a.id===preferredId)));
  const playable=candidates.find(t=>getMusicAvailability(t,{isCreatorView:false,isSignedIn:signedIn}).isPlayable);
- if(playable)return {href:playable.releaseSlug?`/releases/${playable.releaseSlug}`:destination,label:'Explore Realm music',state:'active'};
+ if(playable)return {href:destination,label:'Explore Realm music',state:'active'};
  const project=projects.find(p=>p.realmId===realmId&&p.tracks.some(t=>getMusicAvailability(t,{isCreatorView:false,isSignedIn:signedIn,releaseVisibility:'public'}).isPlayable));
  if(project)return {href:`/releases/${project.world.slug}`,label:'Explore World',state:'project'};
  const memberProject=projects.find(p=>p.realmId===realmId&&p.tracks.some(t=>t.accessTier==='signup'));

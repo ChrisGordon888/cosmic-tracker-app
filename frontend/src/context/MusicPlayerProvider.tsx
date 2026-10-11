@@ -22,7 +22,7 @@ export interface MusicTrack {
     artist?: string;
     realmName: string;
     realmColor?: string;
-    realmId: number;
+    realmId: number | null;
     visibility?: string;
     sortOrder?: number;
     audioUrl?: string | null;
@@ -643,7 +643,7 @@ export function MusicPlayerProvider({
 
     useEffect(() => {
         // Listen history requires an account; fictional demo audio never writes it.
-        if (!isAuthenticated || !currentTrack || currentTrack.source === 'demo' || !isPlaying || currentTime < 1) return;
+        if (!isAuthenticated || !currentTrack || currentTrack.realmId == null || currentTrack.source === 'demo' || !isPlaying || currentTime < 1) return;
 
         const listenProgress = duration > 0 ? currentTime / duration : 0;
         const hasMetListenThreshold = currentTime >= 30 || listenProgress >= 0.8;

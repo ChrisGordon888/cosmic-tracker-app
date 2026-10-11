@@ -1,0 +1,19 @@
+.public-world-shelf { margin-block:2.5rem; min-width:0; }
+.public-world-shelf > header { display:flex; flex-wrap:wrap; gap:.4rem 1rem; align-items:baseline; margin-bottom:1rem; }
+.public-world-shelf h2 { font-size:1.5rem; }
+.public-world-shelf > header p,.public-world-empty { color:#b6b5c3; font-size:.875rem; }
+.public-world-empty { padding-block:.5rem; }
+.public-world-tiles { display:flex; overflow-x:auto; gap:1rem; max-width:100%; padding-bottom:.75rem; scroll-snap-type:x proximity; }
+.public-world-tile { flex:0 0 min(360px, 100%); box-sizing:border-box; scroll-snap-align:start; display:flex; align-items:center; gap:1rem; padding:1rem; border:1px solid #ffffff24; border-radius:1rem; background:#11111e99; min-width:0; }
+.public-world-tile > a { flex:0 0 88px; }
+.public-world-tile img { width:88px; height:88px; object-fit:cover; border-radius:.6rem; }
+.public-world-tile-copy { min-width:0; }
+.public-world-label { font-size:.6rem; letter-spacing:.13em; text-transform:uppercase; color:#c4bdd9; }
+.public-world-tile h3 { font-size:1.1rem; line-height:1.35; overflow-wrap:anywhere; }
+.public-world-tile p { font-size:.75rem; color:#b9b9c5; line-height:1.6; }
+.public-world-actions { display:flex; flex-wrap:wrap; gap:.25rem .8rem; margin-top:.25rem; }
+.public-world-actions a,.public-world-actions button { display:inline-flex; align-items:center; min-height:44px; font-size:.8rem; }
+.public-world-actions :focus-visible { outline:2px solid #eee; outline-offset:3px; }
+@media(max-width:420px) { .public-world-tile { padding:.8rem; gap:.8rem; } .public-world-tile > a { flex-basis:68px; } .public-world-tile img { width:68px; height:68px; } }
+
+.public-world-tile-selected { border-color:#b5a8df80; }

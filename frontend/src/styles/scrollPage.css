@@ -620,3 +620,12 @@
     padding: 0.9rem;
   }
 }
+.scroll-mirror-copy a:focus-visible { outline:2px solid white; outline-offset:4px; }
+@media(prefers-reduced-motion:reduce) { .scroll-page *, .scroll-page *::before, .scroll-page *::after { animation:none!important; transition:none!important; } }
+
+.scroll-context summary,.scroll-lenses summary { cursor:pointer; min-height:44px; padding:1rem 0; color:#ded2b6; }
+.scroll-lenses { display:block; } .scroll-lenses p { line-height:1.8; color:#c4c7d1; margin:1rem 0; }
+.scroll-lens-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1.5rem; } .scroll-lens-grid h3 { font-size:1.2rem; }
+@media(max-width:650px) { .scroll-lens-grid { grid-template-columns:1fr; } }
+.scroll-lenses { padding-block:1rem; }
+.scroll-lenses summary { font-size:.85rem; }

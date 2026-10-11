@@ -4,6 +4,7 @@ import { useRef, useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import RealmBackground from '@/components/realm/RealmBackground';
+import { PublicWorlds } from '@/components/creator/SelectedWorlds';
 import RealmGuidanceCard from '@/components/realm/RealmGuidanceCard';
 import RealmSoundstage from '@/components/realm/RealmSoundstage';
 import RealmEntryGuidanceBanner from '@/components/realm/RealmEntryGuidanceBanner';
@@ -32,6 +33,7 @@ export default function Realm44() {
     const [showProgression, setShowProgression] = useState(false);
 
     const { data: userData, loading: userLoading, refetch } = useQuery(GET_ME, {
+        skip: !session,
         fetchPolicy: 'network-only',
         nextFetchPolicy: 'cache-first',
     });
@@ -204,32 +206,7 @@ export default function Realm44() {
         );
     }
 
-    if (!session) {
-        return (
-            <div className="min-h-screen grid place-items-center p-6 nexus-shell">
-                <div className="glass-card nexus-panel max-w-md text-center">
-                    <div className="mx-auto mb-4 w-12 h-12 rounded-full border border-white/15 grid place-items-center"
-                        style={{ color: REALM_COLOR }}>
-                        ✦
-                    </div>
 
-                    <p className="text-xs uppercase tracking-[0.22em] text-muted mb-2">
-                        Realm Locked
-                    </p>
-
-                    <h1 className="text-3xl font-display mb-3">Sign in to enter</h1>
-
-                    <p className="text-secondary mb-6">
-                        Save realm progress, XP, listening history, and trial completion.
-                    </p>
-
-                    <Link href="/auth" className="btn-primary">
-                        Open Cosmic Access
-                    </Link>
-                </div>
-            </div>
-        );
-    }
 
     const merchantQuarterUnlocked = !!trial1;
     const gamblersDenUnlocked = !!trial2;
@@ -260,7 +237,7 @@ export default function Realm44() {
             <div className="min-h-screen pb-32 realm-44-shell">
                 <div className="container mx-auto px-4 py-8 max-w-6xl realm-44-container">
                     <div className="realm-top-nav fade-in" aria-label="Realm navigation">
-                        <Link href="/nexus" className="realm-top-nav-link">← Nexus</Link>
+                        <Link href="/nexus#realm-44" className="realm-top-nav-link">← Nexus</Link>
                         <span className="realm-top-nav-label">Realm 44</span>
                     </div>
 
@@ -292,6 +269,8 @@ export default function Realm44() {
                         </div>
                     </header>
 
+                    {!session && <p className="glass-card p-4 mb-6"><Link href="/auth?callbackUrl=%2Frealms%2F44" className="btn-secondary">Sign in for saved progress and the optional Realm Path →</Link></p>}
+
                     <RealmEntryGuidanceBanner
                         realmId={44}
                         realmName="Astral Bazaar"
@@ -312,6 +291,7 @@ export default function Realm44() {
                         isCurrentRealm={true}
                         compactOnMobile
                     />
+                        <PublicWorlds realmId={44} />
 
                     <div
                         className="glass-card realm-44-overview p-6 mb-8 fade-in"
@@ -369,6 +349,7 @@ export default function Realm44() {
                         style={{ animationDelay: '0.15s' }}
                     >
                         <button
+                            disabled={!session}
                             onClick={() => setShowProgression((prev) => !prev)}
                             className="w-full flex items-center justify-between text-left"
                         >
@@ -393,7 +374,7 @@ export default function Realm44() {
                         </button>
                     </div>
 
-                    {showProgression && (
+                    {session && showProgression && (
                         <>
                             <div className="mb-8 fade-in">
                                 <h2 className="text-3xl font-display mb-6 flex items-center gap-3">
@@ -745,7 +726,7 @@ export default function Realm44() {
                             <button className="btn-secondary">← Skybound City</button>
                         </Link>
 
-                        <Link href="/nexus">
+                        <Link href="/nexus#realm-44">
                             <button className="btn-secondary">Back to Nexus</button>
                         </Link>
 

@@ -2,6 +2,7 @@
 
 import { activeCreatorProjects } from "@/lib/creatorNavigation";
 
+import ProjectCanonControl from "@/components/creator/ProjectCanonControl";
 import Link from "next/link";
 import { gql, useMutation, useQuery } from "@apollo/client";
 import { signIn, useSession } from "next-auth/react";
@@ -30,6 +31,7 @@ const MY_RELEASE_WORLDS = gql`
       releaseType
       status
       visibility
+      publicCanon
       isFeatured
       oneLineSummary
       story
@@ -53,6 +55,7 @@ const CREATE_RELEASE_WORLD = gql`
       releaseType
       status
       visibility
+      publicCanon
       isFeatured
       oneLineSummary
       story
@@ -77,6 +80,7 @@ const DROP_RELEASE_WORLD = gql`
         releaseType
         status
         visibility
+      publicCanon
         isFeatured
         oneLineSummary
         story
@@ -111,6 +115,7 @@ type ReleaseWorld = {
   slug: string;
   releaseType: string;
   status: string;
+  publicCanon?: boolean | null;
   visibility: string;
   isFeatured: boolean;
   oneLineSummary?: string | null;
@@ -675,7 +680,7 @@ export default function CreatorProjectsPage() {
 
         {status === "authenticated" && !error && activeWorlds.length > 0 && (
           <section className="creator-projects-grid">
-            {activeWorlds.map((world) => {
+            {[...activeWorlds].sort((a,b)=>Number(b.publicCanon===true)-Number(a.publicCanon===true)).map((world) => {
               const readiness = getReadinessScore(world);
               const featuredClassName = world.isFeatured ? " is-featured" : "";
 
@@ -685,7 +690,7 @@ export default function CreatorProjectsPage() {
                   key={world.id}
                 >
                   <div className="creator-projects-release-card-topline">
-                    <span>{getProjectTypeCopy(world)}</span>
+                    <span>{world.publicCanon===true ? "Canon World" : "Other / hidden project"} · {getProjectTypeCopy(world)}</span>
                     {world.isFeatured && <span>Your featured project</span>}
                   </div>
 
@@ -715,6 +720,7 @@ export default function CreatorProjectsPage() {
                     <Link href={`/releases/${world.slug}/board`} className="creator-projects-primary-button">Open Workshop</Link>
                     {world.visibility === "public" && <Link href={`/releases/${world.slug}`} className="creator-projects-secondary-button">View Portal</Link>}
                   </div>
+                  <ProjectCanonControl world={world} onSaved={refetch} />
                   <details className="creator-project-details">
                     <summary>Project details &amp; publishing</summary>
                     <p className="creator-projects-release-card-slug">/{world.slug}</p>

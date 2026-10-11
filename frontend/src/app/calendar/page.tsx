@@ -1,5 +1,6 @@
 "use client";
 
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useQuery } from "@apollo/client";
@@ -9,10 +10,10 @@ import "@/styles/reactCalendar.css";
 import "@/styles/calendarPage.css";
 import { ALL_MOOD_ENTRIES } from "@/graphql/mood";
 import { ALL_PRACTICE_QUESTS } from "@/graphql/practiceQuest";
-import moonData from "@/data/moonPhases2026.json";
+import { getMoonPhaseForDate, getLunarMonthMarkers } from "@/lib/moonPhases";
 import dayjs from "dayjs";
-import CosmicBackground from "@/components/CosmicBackground";
-import "@/styles/innerOSBackgroundReveal.css";
+import PracticeShell from "@/components/practice/PracticeShell";
+
 
 type MoodEntry = {
   id?: string;
@@ -71,21 +72,6 @@ function getMoodLabel(mood: number) {
   return "Clear signal";
 }
 
-function getPhaseIcon(phase: string) {
-  switch (phase) {
-    case "New Moon":
-      return "🌑";
-    case "First Quarter":
-      return "🌓";
-    case "Full Moon":
-      return "🌕";
-    case "Third Quarter":
-      return "🌗";
-    default:
-      return "🌘";
-  }
-}
-
 function getSelectedDate(value: CalendarValue) {
   if (value instanceof Date) return value;
   if (Array.isArray(value) && value[0] instanceof Date) return value[0];
@@ -93,10 +79,12 @@ function getSelectedDate(value: CalendarValue) {
 }
 
 export default function CalendarPage() {
+  const {data:session,status}=useSession();
   const [selectedDate, setSelectedDate] = useState<CalendarValue>(new Date());
+  const [activeMonth, setActiveMonth] = useState(new Date());
 
-  const { data: moodData, loading: moodLoading, error: moodError } = useQuery(ALL_MOOD_ENTRIES);
-  const { data: questsData, loading: questsLoading, error: questsError } = useQuery(ALL_PRACTICE_QUESTS);
+  const { data: moodData, loading: moodLoading, error: moodError } = useQuery(ALL_MOOD_ENTRIES, {skip:!session});
+  const { data: questsData, loading: questsLoading, error: questsError } = useQuery(ALL_PRACTICE_QUESTS, {skip:!session});
 
   const moodEntries: MoodEntry[] = moodData?.allMoodEntries ?? [];
   const practiceQuests: PracticeQuest[] = questsData?.allPracticeQuests ?? [];
@@ -104,17 +92,12 @@ export default function CalendarPage() {
   const moonMap = useMemo(() => {
     const map: Record<string, MoonEvent> = {};
 
-    moonData.forEach((entry) => {
-      const dateStr = normalizeDate(entry.date);
-      map[dateStr] = {
-        date: dateStr,
-        phase: entry.phase,
-        icon: getPhaseIcon(entry.phase),
-      };
-    });
-
+    for(const marker of getLunarMonthMarkers(activeMonth)) {
+      const key=normalizeDate(marker.date.toISOString());
+      map[key]={date:key,phase:marker.phase,icon:marker.icon};
+    }
     return map;
-  }, []);
+  }, [activeMonth]);
 
   const importantDateMap = useMemo(() => {
     const map: Record<string, typeof IMPORTANT_DATES> = {};
@@ -128,7 +111,7 @@ export default function CalendarPage() {
   }, []);
 
   const selectedDateKey = normalizeDate(getSelectedDate(selectedDate).toISOString());
-  const selectedMoon = moonMap[selectedDateKey];
+  const selectedMoon = getMoonPhaseForDate(getSelectedDate(selectedDate));
   const selectedMood = moodEntries.find((entry) => normalizeDate(entry.date) === selectedDateKey);
   const selectedCompletedQuests = practiceQuests.filter(
     (quest) => normalizeDate(quest.date) === selectedDateKey && quest.completed,
@@ -136,16 +119,16 @@ export default function CalendarPage() {
   const selectedEvents = importantDateMap[selectedDateKey] ?? [];
 
   const visibleMoonEvents = useMemo(() => {
-    const currentMonth = dayjs(getSelectedDate(selectedDate));
+    const currentMonth = dayjs(activeMonth);
 
     return Object.values(moonMap)
       .filter((event) => dayjs(event.date).isSame(currentMonth, "month"))
       .sort((a, b) => a.date.localeCompare(b.date));
-  }, [moonMap, selectedDate]);
+  }, [moonMap, activeMonth]);
 
   const calendarStats = [
     {
-      label: "Moon markers",
+      label: "Calculated phase changes",
       value: visibleMoonEvents.length,
       detail: "visible this month",
     },
@@ -206,9 +189,11 @@ export default function CalendarPage() {
     );
   };
 
+  if(!session) return <PracticeShell><section className="practice-state-card"><h1>{status==='loading'?'Opening your practice…':'Your personal chamber'}</h1><p>Sign in to keep your rituals and history connected to your account.</p><Link href="/auth?callbackUrl=%2Fcalendar">Sign in →</Link></section></PracticeShell>;
+
   return (
-    <main className="calendar-page calendar-practice-page">
-      <CosmicBackground />
+    <PracticeShell className="calendar-page calendar-practice-page">
+
 
       <section className="calendar-hero">
         <div>
@@ -255,6 +240,7 @@ export default function CalendarPage() {
           {questsError && <p className="calendar-inline-error">Error loading quests: {questsError.message}</p>}
 
           <Calendar
+            onActiveStartDateChange={({activeStartDate}) => { if(activeStartDate) setActiveMonth(activeStartDate); }}
             value={selectedDate}
             onChange={setSelectedDate}
             tileContent={tileContent}
@@ -332,7 +318,7 @@ export default function CalendarPage() {
 
         <div className="calendar-moon-card">
           <p className="calendar-kicker">This Month</p>
-          <h2>Moon markers</h2>
+          <h2>Calculated phase changes</h2><p>Approximate local dates of principal phases, calculated with SunCalc; not exact event times. Lunar phases do not predict mood or health.</p>
           {visibleMoonEvents.length > 0 ? (
             <div className="calendar-moon-list">
               {visibleMoonEvents.map((event) => (
@@ -343,10 +329,10 @@ export default function CalendarPage() {
               ))}
             </div>
           ) : (
-            <p>No moon markers found for this month. The moon data file may need the current year added.</p>
+            <p>No calculated phase changes in this view.</p>
           )}
         </div>
       </section>
-    </main>
+    </PracticeShell>
   );
 }

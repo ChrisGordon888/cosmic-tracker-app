@@ -114,7 +114,7 @@ export default function MiniPlayer() {
                         </p>
 
                         <p className="text-xs text-white/70 truncate">
-                            {currentTrack.artist || 'Independent creator'} • {currentTrack.realmName}
+                            {currentTrack.artist || 'Independent creator'}{currentTrack.realmId != null && currentTrack.realmName ? ` • ${currentTrack.realmName}` : ''}
                         </p>
                         {isExpanded && currentTrack.releaseSlug && <Link href={`/releases/${currentTrack.releaseSlug}`} className="text-xs text-white/70 hover:text-white">Enter World →</Link>}
                     </div>
@@ -213,9 +213,9 @@ export default function MiniPlayer() {
                                 Now Playing
                             </p>
 
-                            <p className="text-sm text-white/90">
+                            {currentTrack.realmId != null && currentTrack.realmName && <p className="text-sm text-white/90">
                                 Realm {currentTrack.realmId} • {currentTrack.realmName}
-                            </p>
+                            </p>}
 
                             <p className="text-xs text-white/45 mt-1">
                                 {flowLabel} • {queueCopy} • Shuffle {isShuffleEnabled ? 'on' : 'off'} • Flow {isContinuousEnabled ? 'on' : 'off'}

@@ -253,7 +253,7 @@ function InquiryForm() {
                     <div className="services-inquire-note">
                         <strong>Before you send:</strong>
                         <p>
-                            Your inquiry is sent securely to the business inbox. This is a conversation, not a booking or payment.
+                            Your inquiry will be sent to the configured business inbox when you submit. This is a conversation, not a booking or payment.
                         </p>
                     </div>
 

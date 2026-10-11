@@ -18,31 +18,37 @@ const REALMS = [
   {
     sigil: '∴',
     name: 'Fractured Frontier',
+    id: 303,
     note: 'Pressure into motion',
   },
   {
     sigil: '◐',
     name: 'The Veil',
+    id: 202,
     note: 'Desire, mystery, signal',
   },
   {
     sigil: '☾',
     name: 'Moonlit Roads',
+    id: 101,
     note: 'Memory and return',
   },
   {
     sigil: '△',
     name: 'Skybound City',
+    id: 55,
     note: 'Ambition with direction',
   },
   {
     sigil: '◇',
     name: 'Astral Bazaar',
+    id: 44,
     note: 'Worth, focus, exchange',
   },
   {
     sigil: '∞',
     name: 'InterSiddhi',
+    id: 0,
     note: 'Center and source',
   },
 ];
@@ -254,14 +260,15 @@ export default function LandingPage() {
 
         <div
           className="landing-realms"
-          role="list"
+          role="navigation"
           aria-label="The six realms of COSMIC"
         >
           {REALMS.map((realm) => (
-            <article
+            <Link
+              href={`/realms/${realm.id}`}
               key={realm.name}
               className="landing-realm"
-              role="listitem"
+
               aria-label={`${realm.name} — ${realm.note}`}
             >
               <span
@@ -280,13 +287,13 @@ export default function LandingPage() {
                   {realm.note}
                 </small>
               </div>
-            </article>
+            </Link>
           ))}
         </div>
 
         <div className="landing-realm-actions">
           <Link
-            href="/nexus"
+            href="/nexus#realm-soundtracks"
             className="public-link"
           >
             Explore the Realms in Nexus →

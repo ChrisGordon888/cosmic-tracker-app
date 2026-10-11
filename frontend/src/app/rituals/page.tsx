@@ -1,5 +1,6 @@
 "use client";
 
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useQuery, useMutation } from "@apollo/client";
 import {
@@ -8,14 +9,15 @@ import {
   UPDATE_RITUAL,
   DELETE_RITUAL,
 } from "@/graphql/rituals";
-import CosmicBackground from "@/components/CosmicBackground";
+import PracticeShell from "@/components/practice/PracticeShell";
 import RitualList, { type Ritual } from "@/components/RitualList";
 import AddRitualForm from "@/components/AddRitualForm";
 import "@/styles/ritualsPage.css";
-import "@/styles/innerOSBackgroundReveal.css";
+
 
 export default function RitualsPage() {
-  const { data, loading, error, refetch } = useQuery(ALL_RITUALS);
+  const {data:session,status}=useSession();
+  const { data, loading, error, refetch } = useQuery(ALL_RITUALS, {skip:!session});
   const [addRitual] = useMutation(ADD_RITUAL);
   const [updateRitual] = useMutation(UPDATE_RITUAL);
   const [deleteRitual] = useMutation(DELETE_RITUAL);
@@ -70,9 +72,11 @@ export default function RitualsPage() {
     }
   };
 
+  if(!session) return <PracticeShell><section className="practice-state-card"><h1>{status==='loading'?'Opening your practice…':'Your personal chamber'}</h1><p>Sign in to keep your rituals and history connected to your account.</p><Link href="/auth?callbackUrl=%2Frituals">Sign in →</Link></section></PracticeShell>;
+
   return (
-    <main className="rituals-page practice-subpage">
-      <CosmicBackground />
+    <PracticeShell className="rituals-page practice-subpage">
+
 
       <section className="practice-subpage-hero rituals-hero">
         <div>
@@ -126,6 +130,6 @@ export default function RitualsPage() {
         </div>
         <AddRitualForm onAdd={handleAdd} />
       </section>
-    </main>
+    </PracticeShell>
   );
 }

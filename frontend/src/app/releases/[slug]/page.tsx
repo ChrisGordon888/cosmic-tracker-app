@@ -10,6 +10,7 @@ import { useMusicPlayer } from '@/hooks/useMusicPlayer';
 import { useCreatorView } from '@/context/CreatorViewProvider';
 import { usePlatformAccess } from '@/context/PlatformAccessProvider';
 import { getMusicAvailability } from '@/lib/musicAvailability';
+import { playerRealm } from '@/lib/playerRealm';
 import WorldSurface from '@/components/world/WorldSurface';
 import '@/styles/releaseWorld.css';
 
@@ -36,6 +37,7 @@ const RELEASE_WORLD_FIELDS = gql`
 
 const RELEASE_TRACK_FIELDS = gql`
   fragment ReleaseTrackFields on ReleaseTrack {
+    realmId
     id
     ownerId
     artistName
@@ -151,6 +153,7 @@ type ReleaseWorld = {
 };
 
 type ReleaseTrack = {
+    realmId?: number | null;
     artistName?: string | null;
     ownerId?: string | null;
     id: string;
@@ -503,9 +506,7 @@ export default function DynamicReleasePage() {
             artist: track.artistName || 'Independent creator',
             ownerId: track.ownerId,
             releaseSlug: world.slug,
-            realmId: 0,
-            realmName: 'INTERSIDDHI',
-            realmColor: '#DCBA5C',
+            ...playerRealm(track.realmId),
             visibility: track.visibility ?? (track.isPublic ? 'public' : 'private'),
             accessTier: track.accessTier ?? 'public',
             trackUrl: availability.href,

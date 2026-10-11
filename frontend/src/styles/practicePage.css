@@ -753,3 +753,28 @@
         padding: 0.9rem;
     }
 }
+/* Dedicated static chamber. Set --practice-environment-image: url(...) on
+   .practice-chamber when approved original artwork is available. */
+.practice-chamber { --practice-environment-image: none; font-family:inherit; background:#0b171b; }
+.practice-chamber::before { display:none; }
+.practice-environment { position:absolute; inset:0; z-index:-1; pointer-events:none; background-image:var(--practice-environment-image),radial-gradient(ellipse at 80% 8%,#b7d8d529,transparent 40%),radial-gradient(ellipse at 5% 45%,#97654324,transparent 50%),linear-gradient(155deg,#0e2426,#141924 65%,#0a1414); background-size:cover; background-position:center; }
+.practice-chamber-moon { position:absolute; top:7rem; right:8%; width:clamp(10rem,24vw,22rem); aspect-ratio:1; border:1px solid #dcf3e933; border-radius:50%; box-shadow:0 0 100px #b1d5c312,inset -35px -12px 60px #c8e8dc0d; }
+.practice-chamber-shelf { position:absolute; top:35rem; left:3%; right:3%; height:10rem; border-bottom:2px solid #cbb09221; background:repeating-linear-gradient(90deg,transparent 0 75px,#acbead0a 75px 104px,transparent 104px 130px); border-radius:40% 40% 0 0; }
+.practice-chamber .practice-hero { background:transparent; border:0; box-shadow:none; backdrop-filter:none; }
+.practice-daily-grid,.practice-secondary-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1.25rem; width:min(1180px,100%); margin:2rem auto; }
+.practice-chamber .practice-module { min-width:0; padding:clamp(1.2rem,3vw,2rem); border-radius:1.5rem; background:rgba(13,28,31,.82); }
+.practice-chamber h2 { font-size:1.4rem; line-height:1.3; margin:.6rem 0 1rem; }
+.practice-chamber p,.practice-chamber li { line-height:1.8; }
+.practice-chamber ol { list-style:decimal; padding-left:1.2rem; }
+.practice-chamber .practice-fine { font-size:.8rem; color:#b5c9c6; margin-top:1rem; }
+.practice-state-options { display:flex; flex-wrap:wrap; gap:.5rem; }
+.practice-state-options button { min-height:44px; padding:.5rem .8rem; border:1px solid #b1c8bd55; border-radius:2rem; }
+.practice-state-options button[aria-pressed=true] { background:#b8d6c8; color:#102420; }
+.practice-chamber textarea { display:block; width:100%; border:1px solid #b1c8bd55; border-radius:.75rem; background:#0a191c; color:inherit; padding:.8rem; margin-top:.7rem; resize:vertical; }
+.practice-private-tools,.practice-private-status { width:min(1180px,100%); margin:2rem auto; padding:1.5rem; border-top:1px solid #b1c8bd33; }
+.practice-chamber summary { cursor:pointer; padding:.7rem 0; min-height:44px; }
+.practice-chamber :is(a,button,textarea,summary):focus-visible { outline:2px solid #e1f3e9; outline-offset:4px; }
+@media(max-width:760px) { .practice-daily-grid,.practice-secondary-grid { grid-template-columns:1fr; } .practice-private-tools { padding:.5rem; } }
+@media(prefers-reduced-motion:reduce) { .practice-chamber *, .practice-chamber *::before,.practice-chamber *::after { animation:none!important; transition:none!important; } }
+
+.practice-chamber .practice-hero-links { align-self:center; align-items:center; }

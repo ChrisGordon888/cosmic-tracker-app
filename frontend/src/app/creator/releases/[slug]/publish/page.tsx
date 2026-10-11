@@ -1,6 +1,7 @@
 "use client";
 
 import {reviewLabels,sourceLabels,type RightsInfo} from "@/lib/trackVault";
+import ProjectCanonControl from "@/components/creator/ProjectCanonControl";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
@@ -33,6 +34,8 @@ const GET_RELEASE = gql`
             slug
             status
             visibility
+            publicCanon
+            updatedAt
             fullDropDate
             coverArtUrl
             oneLineSummary
@@ -48,6 +51,8 @@ type ReleaseData = {
         slug: string;
         status: string;
         visibility: string;
+        publicCanon?: boolean | null;
+        updatedAt?: string | null;
         fullDropDate?: string | null;
         coverArtUrl?: string | null;
         oneLineSummary?: string | null;
@@ -325,6 +330,8 @@ export default function PublishingReadinessPage() {
                         publish, schedule, or update its public state.
                     </p>
                 </section>
+
+                {release && <ProjectCanonControl world={release} onSaved={releaseQuery.refetch} />}
 
                 {(releaseQuery.loading || readinessQuery.loading) &&
                 !readiness ? (

@@ -66,4 +66,24 @@ test('Compact renders usable transport and seek; Expanded retains Shuffle and Fl
   expanded=true;
   const full=renderToStaticMarkup(React.createElement(component.exports.default));
   for(const label of ['Shuffle','Flow','Compact player','Dock player left']) assert.ok(full.includes(label),label);
+  player.currentTrack.realmId=null;player.currentTrack.realmName='';
+  const unknown=renderToStaticMarkup(React.createElement(component.exports.default));
+  assert.ok(!unknown.includes('Realm 0'));assert.ok(!unknown.includes('INTERSIDDHI'));
+
+});
+
+test('Actual shared-player actions replace stale track, audio and context on explicit selection',async()=>{
+ const source=fs.readFileSync('src/context/MusicPlayerProvider.tsx','utf8');
+ const start=source.slice(source.indexOf('    const startTrack = useCallback('),source.indexOf('    const setQueue = useCallback('));
+ const play=source.slice(source.indexOf('    const playOrToggleTrack = useCallback('),source.indexOf('    const togglePlayPause = useCallback('));
+ const old={id:'old-session',trackTitle:'Previous song',trackUrl:'/old'};
+ const audio={paused:false,src:'/old',currentTime:12,pause(){this.paused=true},async play(){this.paused=false}};
+ let selected=old,context=null;
+ const refs={current:old};const out={};
+ const env={exports:out,console,useCallback:fn=>fn,audioRef:{current:audio},currentTrackRef:refs,resolvePlayableTrack:t=>t,setCurrentTrack:t=>selected=t,setCurrentTime:()=>{},setDuration:()=>{},setIsPlaying:()=>{},markRecentlyPlayed:()=>{},replaceQueue:(_,options)=>context=options,ensureTrackQueue:()=>{},pushCurrentTrackToHistory:()=>{}};
+ vm.runInNewContext(ts.transpileModule(start+play+'\nexports.play=playOrToggleTrack;',{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText,env);
+ for(const [id,title,url,label] of [['canon','Not Enough','/canon','Canon entry'],['suggested','HardWay','/hardway','Realm guidance'],['orbit','Orbit song','/orbit','Realm flow']]){
+  const track={id,trackTitle:title,trackUrl:url,artworkUrl:`/${id}.png`};await out.play(track,[track],{source:'realm',label});
+  assert.equal(selected.trackTitle,title);assert.equal(refs.current.id,id);assert.equal(audio.src,url);assert.equal(selected.artworkUrl,`/${id}.png`);assert.equal(context.label,label);assert.equal(audio.paused,false);
+ }
 });
