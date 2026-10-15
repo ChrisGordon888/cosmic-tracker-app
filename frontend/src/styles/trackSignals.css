@@ -1,0 +1,10 @@
+.track-signals { margin-top:.6rem; padding-top:.6rem; border-top:1px solid #ffffff20; font-size:.8rem; }
+.track-signals details { margin:.4rem 0; }
+.track-signals summary { cursor:pointer; }
+.track-signals fieldset { border:0; padding:.35rem 0; }
+.track-signals legend { text-transform:capitalize; color:#c8b47d; }
+.track-signals button { border:1px solid #ffffff30; border-radius:1rem; padding:.4rem .65rem; margin:.2rem; min-height:36px; text-transform:capitalize; }
+.track-signals button[aria-pressed=true] { background:#c8b47d30; border-color:#c8b47d; }
+.track-signals button:disabled { opacity:.5; }
+.track-signals :focus-visible { outline:2px solid #f4d982; outline-offset:2px; }
+.track-signals select { max-width:100%; background:#141923; color:inherit; }

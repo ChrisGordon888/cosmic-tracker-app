@@ -1,0 +1,80 @@
+[
+  {
+    "id": "realm-303-break-the-code",
+    "title": "Break the Code",
+    "realmId": 303,
+    "description": "Three tracks for pressure, fracture, and self-overcoming.",
+    "story": "A sequence about recognizing the code, surviving mental pressure, and turning pain into force.",
+    "trackIds": [
+      "303-hardcoded",
+      "303-losing-my-mind",
+      "303-hardway"
+    ],
+    "artworkUrl": "/break-the-code.png"
+  },
+  {
+    "id": "realm-202-dont-follow-the-siren",
+    "title": "Don’t Follow the Siren",
+    "realmId": 202,
+    "description": "Three tracks for mystery, fantasy, warning, and emotional fog.",
+    "story": "A sequence about hearing the warning, seeing the fantasy, and recognizing the voices inside the haze.",
+    "trackIds": [
+      "202-siren",
+      "202-her-fantasy",
+      "202-voices"
+    ],
+    "artworkUrl": "/veil-signal.png"
+  },
+  {
+    "id": "realm-101-hold-on-while-you-drift",
+    "title": "Hold On While You Drift",
+    "realmId": 101,
+    "description": "Three tracks for healing, surrender, and night-road reflection.",
+    "story": "A sequence about being held, pushing a little further, and surrendering into the unknown.",
+    "trackIds": [
+      "101-hold-my-hand",
+      "101-little-further",
+      "101-freefall"
+    ],
+    "artworkUrl": "/hold-on-while-you-drift.png"
+  },
+  {
+    "id": "realm-55-glory-and-command",
+    "title": "Glory & Command",
+    "realmId": 55,
+    "description": "Three tracks for ambition, power, money motion, and command.",
+    "story": "A sequence about stepping into glory, moving resources, and claiming the city of self-command.",
+    "trackIds": [
+      "55-glory-n-power",
+      "realm-55-bank",
+      "realm-55-mula"
+    ],
+    "artworkUrl": "/glory-and-command.png"
+  },
+  {
+    "id": "realm-44-price-of-focus",
+    "title": "The Price of Focus",
+    "realmId": 44,
+    "description": "Three tracks for value, temptation, taste, and discernment.",
+    "story": "A sequence about distraction, style, access, and deciding what is actually worth your energy.",
+    "trackIds": [
+      "44-13933",
+      "44-new-jazz",
+      "realm-44-golden-tickets"
+    ],
+    "artworkUrl": "/price-of-focus.png"
+  },
+  {
+    "id": "realm-0-same-self-higher-form",
+    "title": "Same Self, Higher Form",
+    "realmId": 0,
+    "description": "Three tracks for source, self-recognition, blessing, and integration.",
+    "story": "A sequence about remaining the same core person while walking forward into blessing and integration.",
+    "trackIds": [
+      "0-same-person",
+      "realm-0-walking-forward",
+      "realm-0-feel-blessed"
+    ],
+    "artworkUrl": "/same-self-higher-form.png"
+  }
+]

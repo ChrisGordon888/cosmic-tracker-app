@@ -9,7 +9,7 @@ export interface PublicNexusReleaseTrack {
     releaseSlug?: string | null;
     accessTier?: string | null;
     legacyRegistryId?: string | null;
-    releaseWorldId: string;
+    releaseWorldId?: string | null;
     title: string;
     slug?: string | null;
     trackNumber?: number | null;
@@ -32,6 +32,8 @@ export interface PublicNexusReleaseTrack {
     isPublic?: boolean | null;
     realmId?: number | null;
     showInNexus?: boolean | null;
+    publicCanon?: boolean | null;
+    catalogTreatment?: string | null;
     nexusRole?: string | null;
     isRealmAnchor?: boolean | null;
     isPublicPick?: boolean | null;
@@ -40,6 +42,7 @@ export interface PublicNexusReleaseTrack {
 
 export interface RuntimeMusicTrack extends MusicTrack {
     source?: 'registry' | 'creator';
+    publicCanon?: boolean | null;
     accessTier?: string | null;
     ownerId?: string | null;
     releaseSlug?: string | null;
@@ -109,7 +112,7 @@ function getPlaybackUrl(track: PublicNexusReleaseTrack) {
 export function mapReleaseTrackToMusicTrack(
     track: PublicNexusReleaseTrack
 ): RuntimeMusicTrack | null {
-    if (track.visibility === "private" || (track.visibility == null && track.isPublic === false) || track.status === "archived" || !track.showInNexus || !isRealmId(track.realmId)) return null;
+    if (track.visibility === "private" || (track.visibility == null && track.isPublic === false) || track.status === "archived" || ["vault", "test"].includes(track.catalogTreatment ?? "") || !isRealmId(track.realmId)) return null;
 
     const realm = REALM_STATE_MAP[track.realmId];
     const theme = getRealmTheme(track.realmId);
@@ -127,20 +130,21 @@ export function mapReleaseTrackToMusicTrack(
         accessTier: track.accessTier ?? 'public',
         trackUrl,
         realmColor: theme.accent,
-        role: mapRole(track.nexusRole),
+        role: mapRole(track.publicCanon === true ? track.nexusRole : 'public'),
+        publicCanon: track.publicCanon ?? null,
         visibility: mapVisibility(track.visibility),
         status: mapStatus(track.status),
         key: track.keySignature?.trim() || undefined,
         bpm: track.bpm ?? undefined,
         vibe: track.mood?.trim() ? [track.mood.trim()] : undefined,
         notes: track.notes?.trim() || track.hook?.trim() || undefined,
-        isFeatured: track.nexusRole === 'featured' || track.nexusRole === 'flagship',
-        isFlagship: track.nexusRole === 'flagship',
-        isRealmAnchor: Boolean(track.isRealmAnchor || track.nexusRole === 'anchor'),
-        isPublicPick: Boolean(track.isPublicPick),
+        isFeatured: track.publicCanon === true && (track.nexusRole === 'featured' || track.nexusRole === 'flagship'),
+        isFlagship: track.publicCanon === true && track.nexusRole === 'flagship',
+        isRealmAnchor: Boolean(track.publicCanon === true && (track.isRealmAnchor || track.nexusRole === 'anchor')),
+        isPublicPick: Boolean(track.publicCanon === true && track.isPublicPick),
         sortOrder: track.nexusSortOrder ?? 999,
         source: 'creator',
-        releaseWorldId: track.releaseWorldId,
+        releaseWorldId: track.releaseWorldId ?? undefined,
         releaseTrackId: track.id,
         playbackStatus: track.playbackStatus ?? undefined,
         unlockDate: track.unlockDate ?? null,
@@ -185,6 +189,8 @@ export function mergeMusicCatalogs(
     return Array.from(byIdentity.values()).sort((a, b) => {
         if (a.realmId !== b.realmId) return a.realmId - b.realmId;
 
+        const canonPriority = Number(b.publicCanon === true) - Number(a.publicCanon === true);
+        if (canonPriority) return canonPriority;
         const aOrder = a.sortOrder ?? 999;
         const bOrder = b.sortOrder ?? 999;
         if (aOrder !== bOrder) return aOrder - bOrder;
@@ -200,6 +206,8 @@ export function getRuntimeTracksForRealm(
     return catalog
         .filter((track) => track.realmId === realmId)
         .sort((a, b) => {
+            const canonPriority = Number(b.publicCanon === true) - Number(a.publicCanon === true);
+            if (canonPriority) return canonPriority;
             const aOrder = a.sortOrder ?? 999;
             const bOrder = b.sortOrder ?? 999;
             if (aOrder !== bOrder) return aOrder - bOrder;

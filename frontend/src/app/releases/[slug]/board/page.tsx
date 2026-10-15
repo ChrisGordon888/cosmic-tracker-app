@@ -576,7 +576,7 @@ function getEmptyTrackForm(nextTrackNumber = 1): TrackForm {
         previewAudioUrl: "",
         platformUrl: "",
         visibility: "private",
-        playbackStatus: "locked",
+        playbackStatus: "playable",
         dropDate: "",
         unlockDate: "",
         isFocusTrack: false,
@@ -616,7 +616,7 @@ function getTrackFormFromReleaseTrack(track: ReleaseTrack): TrackForm {
         previewAudioUrl: track.previewAudioUrl ?? "",
         platformUrl: track.platformUrl ?? "",
         visibility: track.visibility ?? (track.isPublic ? "public" : "private"),
-        playbackStatus: track.playbackStatus ?? "locked",
+        playbackStatus: track.playbackStatus ?? "playable",
         dropDate: formatDateForInput(track.dropDate),
         unlockDate: formatDateForInput(track.unlockDate),
         isFocusTrack: Boolean(track.isFocusTrack),
@@ -2592,6 +2592,7 @@ export default function DynamicReleaseSignalBoardPage() {
                             </button>
                             <button
                                 type="button"
+                                data-workspace-tour="portal"
                                 aria-pressed={activePanel === "portal"}
                                 className={activePanel === "portal" ? "is-active" : ""}
                                 onClick={() => setActivePanel("portal")}

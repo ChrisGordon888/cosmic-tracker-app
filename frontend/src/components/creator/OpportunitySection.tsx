@@ -36,7 +36,7 @@ export default function OpportunitySection({ releases }: { releases: Release[] }
       <p><strong>Outcome:</strong> {item.desiredOutcome}</p>
       {item.status === 'open' && <p className="creator-opportunity-action">{item.nextAction}</p>}
       {item.context && <p className="creator-opportunity-context">{item.context}</p>}
-      {release && <Link href={`/releases/${release.slug}/board`}>Open {release.title} Signal Board →</Link>}
+      {release && <Link href={`/releases/${release.slug}/board`}>Open {release.title} Workshop →</Link>}
       <div className="creator-opportunity-actions">
         {item.status === 'open' && <>
           <button type="button" onClick={() => { setNotice(''); setEditor({ mode: 'result', record: item }); }}>Record result</button>

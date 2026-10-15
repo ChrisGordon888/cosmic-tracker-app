@@ -53,7 +53,7 @@ export default function RealmEntryGuidanceBanner({
 
   useEffect(() => {
     const guidance = getStoredRealmGuidance();
-    if (guidance?.realmId === realmId) setStoredGuidance(guidance);
+    setStoredGuidance(guidance?.realmId === realmId ? guidance : null);
   }, [realmId]);
 
   const modeContent = useMemo(() => {
@@ -157,10 +157,10 @@ export default function RealmEntryGuidanceBanner({
                 className="font-medium transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-55"
                 style={{ color: realmColor }}
               >
-                {recommendedTrackTitle}
+                {suggestedTrack.trackTitle}
               </button>
             ) : (
-              <span className="text-secondary">{recommendedTrackTitle}</span>
+              <span className="text-secondary">No current standalone recommendation</span>
             )}
           </div>
         </div>

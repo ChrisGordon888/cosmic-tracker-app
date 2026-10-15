@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "@apollo/client";
 import Link from "next/link";
-import OwnerAccessGate from "@/components/admin/OwnerAccessGate";
+import ProjectSelections from '@/components/admin/ProjectSelections';
 import {
   NEXUS_EDITORIAL_QUERY,
   SET_NEXUS_FEATURED_SIGNAL_MUTATION,
@@ -139,11 +139,17 @@ export default function NexusEditorialPage() {
     );
   }
 
+  // The existing editorial query enforces owner or delegated nexus.editorial authority.
+  if (loading && !data) return <p role="status" className="p-6">Verifying editorial access…</p>;
+  if (error || !data) return <p role="alert" className="p-6">{error?.message || 'Editorial access required.'}</p>;
+
   return (
-    <OwnerAccessGate>
+    <>
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10">
+        <ProjectSelections />
+        <p className="mb-5 text-sm"><Link href="/admin/nexus">Track submissions / review / publication →</Link></p>
         <section className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.055] to-white/[0.02] p-5 sm:p-7">
-          <p className="text-[10px] uppercase tracking-[0.24em] text-[#DCBA5C]/80">Owner Nexus Editorial</p>
+          <p className="text-[10px] uppercase tracking-[0.24em] text-[#DCBA5C]/80">Nexus Editorial</p>
           <div className="mt-2 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <h2 className="text-2xl font-semibold sm:text-3xl">Curate the public Nexus</h2>
@@ -155,7 +161,6 @@ export default function NexusEditorialPage() {
 
         {feedback && <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.035] px-4 py-3 text-sm text-white/75">{feedback}</div>}
         {loading && !data && <p className="mt-6 text-sm text-white/50">Loading Nexus editorial state…</p>}
-        {error && <p className="mt-6 rounded-2xl border border-rose-300/15 bg-rose-300/[0.05] px-4 py-3 text-sm text-rose-100">{error.message}</p>}
 
         <section className="mt-6 overflow-hidden rounded-3xl border border-[#DCBA5C]/20 bg-[#DCBA5C]/[0.035]">
           <div className="grid md:grid-cols-[220px_minmax(0,1fr)]">
@@ -228,6 +233,6 @@ export default function NexusEditorialPage() {
           })}
         </section>
       </main>
-    </OwnerAccessGate>
+    </>
   );
 }

@@ -669,3 +669,13 @@
     padding-bottom: 0.75rem;
   }
 }
+/* Current work: static moonlight, including reduced-motion users. */
+.landing-artwork { box-shadow: 0 0 28px rgba(255,255,255,.13), 0 12px 32px rgba(0,0,0,.3); border: 1px solid rgba(255,255,255,.24); }
+.landing-realm { text-decoration: none; color: inherit; min-height: 64px; }
+.landing-realm:focus-visible { outline: 2px solid white; outline-offset: 4px; }
+.landing-realm:hover { border-color: rgba(255,255,255,.4); }
+
+.landing-artwork { position:relative; border:1px solid rgba(255,255,255,.55); box-shadow:0 0 0 5px rgba(255,255,255,.035),0 0 48px rgba(230,240,255,.23),0 22px 45px rgba(0,0,0,.5); transform:perspective(800px) rotateY(-3deg) translateY(-3px); transition:transform .45s ease,box-shadow .45s ease; }
+@media(hover:hover) { .landing-artwork:hover { transform:perspective(800px) rotateY(0) translateY(-7px); box-shadow:0 0 50px rgba(240,245,255,.3),0 26px 45px #0008; } }
+@media(prefers-reduced-motion:reduce) { .landing-artwork,.landing-artwork:hover { transform:none; transition:none; } }
+.landing-proof { box-shadow:0 0 55px -25px #d4dfff38; }

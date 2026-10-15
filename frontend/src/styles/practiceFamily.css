@@ -1,0 +1,29 @@
+/* One environment hook for foyer, Today, Rituals and History. */
+.practice-family.practice-chamber { --practice-environment-image:none; background:#0b171b!important; color:#e1ece8; font-family:inherit; isolation:isolate; position:relative; padding:5rem max(1rem,3vw) 7rem; }
+.practice-family::before,.practice-family::after { display:none!important; }
+.practice-room-nav { width:min(1180px,100%); margin:0 auto 2rem; display:flex; flex-wrap:wrap; gap:.5rem; }
+.practice-room-nav a { display:inline-flex; align-items:center; min-height:44px; padding:.6rem 1rem; border:1px solid #b1c8bd44; border-radius:2rem; text-decoration:none; font-size:.85rem; }
+.practice-room-nav a[aria-current=page] { background:#b8d6c8; color:#102420; }
+.practice-family :is(.tracker-module,.rituals-module,.calendar-shell,.calendar-side-card,.calendar-moon-card,.calendar-stats-grid article,.rituals-stats-grid article,.tracker-flow-grid article,.sacred-yes-card,.mood-section,.mood-card,.practice-quests-card,.add-practice-quest-card,.ritual-practice-card,.add-ritual-form,.rituals-list-item,.moon-phase-card,.ritual-card) { background:rgba(13,28,31,.84); border:1px solid #b1c8bd33; border-radius:1.5rem; box-shadow:0 14px 35px #0002; }
+.practice-family :is(.practice-subpage-hero,.calendar-hero) { background:transparent; border:0; box-shadow:none; }
+.practice-family :is(.practice-subpage-kicker,.calendar-kicker,.practice-kicker) { color:#b5c9c6; font-size:.7rem; letter-spacing:.15em; }
+.practice-family :is(button,input,select,textarea,.react-calendar) { font-family:inherit!important; }
+.practice-family :is(button,a,input,select,textarea,summary):focus-visible { outline:2px solid #e1f3e9; outline-offset:3px; }
+.practice-family :is(button,input,select) { min-height:44px; }
+.practice-family .react-calendar { width:100%; max-width:100%; background:#0a191c!important; border-radius:1.25rem; }
+.practice-family .react-calendar__tile--active { background:#b8d6c8!important; color:#102420!important; }
+.practice-family .practice-subpage-hero .practice-subpage-actions,.practice-family .calendar-hero-actions { display:none; }
+.practice-family .practice-private-tools > .practice-actions { margin-bottom:2rem; }
+@media(max-width:650px) { .practice-family { padding-inline:1rem; } .practice-family :is(.tracker-flow-grid,.rituals-stats-grid,.calendar-stats-grid,.calendar-shell) { grid-template-columns:minmax(0,1fr); } .practice-family .practice-room-nav { gap:.4rem; } }
+@media(prefers-reduced-motion:reduce) { .practice-family *,.practice-family *::before,.practice-family *::after { animation:none!important; transition:none!important; } }
+
+.practice-family :is(.practice-hero,.practice-subpage-hero,.calendar-hero) h1 { font-size:clamp(2.4rem,5vw,4.3rem); line-height:1.08; letter-spacing:-.045em; }
+
+/* Shared rhythm across the foyer and existing saved tools. */
+.practice-family { --practice-gap:1.25rem; --practice-pad:clamp(1rem,2.5vw,1.75rem); }
+.practice-family :is(.practice-hero,.practice-subpage-hero,.calendar-hero) { margin-bottom:2rem; padding:var(--practice-pad); }
+.practice-family :is(.practice-public-grid,.practice-secondary-grid,.tracker-flow-grid,.rituals-stats-grid,.calendar-stats-grid) { gap:var(--practice-gap); align-items:stretch; }
+.practice-family :is(.practice-module,.practice-surface,.tracker-module,.rituals-module,.calendar-side-card,.calendar-moon-card) { padding:var(--practice-pad); }
+.practice-family :is(.practice-actions,.practice-subpage-actions) { display:flex; flex-wrap:wrap; gap:.75rem; }
+.practice-family :is(.tracker-flow-grid,.rituals-stats-grid,.calendar-stats-grid) { margin-bottom:var(--practice-gap); }
+.practice-family .practice-room-nav { margin-bottom:1.25rem; }

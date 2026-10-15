@@ -6,6 +6,8 @@ import { useSession } from 'next-auth/react';
 import '@/styles/creator.css';
 import OpportunitySection from '@/components/creator/OpportunitySection';
 import BlockerAssist from '@/components/creator/BlockerAssist';
+import CreatorHomeTour from '@/components/creator/CreatorHomeTour';
+import { activeCreatorProjects, CREATOR_LINKS } from '@/lib/creatorNavigation';
 
 const CREATOR_HOME_QUERY = gql`
   query CreatorHome {
@@ -28,6 +30,8 @@ const CREATOR_HOME_QUERY = gql`
       playbackStatus
       realmId
       showInNexus
+      catalogTreatment
+      rightsInfo { reviewStatus }
     }
 
     myReleaseWorlds {
@@ -93,6 +97,8 @@ type CatalogTrack = {
     playbackStatus?: string | null;
     realmId?: number | null;
     showInNexus: boolean;
+    catalogTreatment?: string | null;
+    rightsInfo?: { reviewStatus?: string | null } | null;
 };
 
 type ReleaseWorld = {
@@ -216,8 +222,8 @@ function getFeaturedProject(
     const profileFeaturedId = activeProfile?.featuredReleaseWorldId;
 
     return (
-        projects.find((project) => profileFeaturedId && project.id === profileFeaturedId) ??
-        projects.find((project) => project.isFeatured) ??
+        projects.find((project) => project.status !== 'archived' && profileFeaturedId && project.id === profileFeaturedId) ??
+        projects.find((project) => project.status !== 'archived' && project.isFeatured) ??
         null
     );
 }
@@ -226,7 +232,7 @@ function getReleaseHealth(project?: ReleaseWorld | null) {
     if (!project) {
         return [
             { label: 'World', value: 'Missing' },
-            { label: 'Board', value: 'Start' },
+            { label: 'Workshop', value: 'Start' },
             { label: 'Portal', value: 'Draft' },
         ];
     }
@@ -270,35 +276,39 @@ export default function CreatorDashboardPage() {
     const profiles: CreativeProfile[] = data?.myCreativeProfiles ?? [];
     const catalogTracks: CatalogTrack[] = data?.myCatalogTracks ?? [];
     const projects: ReleaseWorld[] = data?.myReleaseWorlds ?? [];
-    const unsortedTrackCount = catalogTracks.filter((track) => !track.releaseWorldId).length;
+    const activeProjects = activeCreatorProjects(projects);
+    const currentTracks = catalogTracks.filter(track => track.status !== 'archived' && track.catalogTreatment !== 'test' && track.catalogTreatment !== 'vault');
+    const unsortedTrackCount = currentTracks.filter(track => !track.releaseWorldId).length;
+    const needsRealmCount = currentTracks.filter(track => track.realmId == null).length;
+    const rightsReviewCount = currentTracks.filter(track => track.rightsInfo?.reviewStatus === 'needsReview').length;
 
     const activeProfile = profiles[0] ?? null;
     const featuredProject = getFeaturedProject(projects, activeProfile);
-    const activeProject = featuredProject ?? projects[0] ?? null;
-    const recentProjects = [...projects]
+    const recentProjects = [...activeProjects]
         .sort((a, b) => {
-            const aTime = getTimestamp(a.lastOpenedAt || a.updatedAt);
-            const bTime = getTimestamp(b.lastOpenedAt || b.updatedAt);
+            const aTime = Math.max(getTimestamp(a.lastOpenedAt), getTimestamp(a.updatedAt));
+            const bTime = Math.max(getTimestamp(b.lastOpenedAt), getTimestamp(b.updatedAt));
             return bTime - aTime;
         })
         .slice(0, 6);
+    const activeProject = recentProjects[0] ?? null;
 
     const commandLinks = activeProject
         ? [
             {
                 label: 'Add Music',
-                href: '/creator/library#intake',
+                href: CREATOR_LINKS.capture,
                 meta: 'Capture songs',
                 priority: 'primary',
             },
             {
                 label: 'Creator Library',
-                href: '/creator/library',
+                href: CREATOR_LINKS.catalog,
                 meta: `${catalogTracks.length} tracks`,
                 priority: 'secondary',
             },
             {
-                label: 'Workshop',
+                label: 'Open Workshop',
                 href: `/releases/${activeProject.slug}/board`,
                 meta: 'Develop project',
                 priority: 'secondary',
@@ -319,13 +329,13 @@ export default function CreatorDashboardPage() {
         : [
             {
                 label: 'Add Music',
-                href: '/creator/library#intake',
+                href: CREATOR_LINKS.capture,
                 meta: 'Capture songs',
                 priority: 'primary',
             },
             {
                 label: 'Creator Library',
-                href: '/creator/library',
+                href: CREATOR_LINKS.catalog,
                 meta: `${catalogTracks.length} tracks`,
                 priority: 'secondary',
             },
@@ -344,7 +354,7 @@ export default function CreatorDashboardPage() {
         ];
 
     async function handleSetFeatured(project: ReleaseWorld) {
-        if (!project.id) return;
+        if (!project.id || project.status === 'archived') return;
 
         try {
             await setFeaturedReleaseWorld({
@@ -362,10 +372,6 @@ export default function CreatorDashboardPage() {
     if (status === 'loading') {
         return (
             <main className="creator-console-shell">
-                <aside className="creator-console-rail" aria-label="Creator console rail">
-                    <div className="creator-console-mark">C</div>
-                    <p>Creator OS</p>
-                </aside>
 
                 <section className="creator-console">
                     <header className="creator-console-header creator-console-header-centered">
@@ -383,10 +389,6 @@ export default function CreatorDashboardPage() {
     if (status === 'unauthenticated') {
         return (
             <main className="creator-console-shell">
-                <aside className="creator-console-rail" aria-label="Creator console rail">
-                    <div className="creator-console-mark">C</div>
-                    <p>Creator OS</p>
-                </aside>
 
                 <section className="creator-console">
                     <header className="creator-console-header">
@@ -413,10 +415,6 @@ export default function CreatorDashboardPage() {
     if (error) {
         return (
             <main className="creator-console-shell">
-                <aside className="creator-console-rail" aria-label="Creator console rail">
-                    <div className="creator-console-mark">C</div>
-                    <p>Creator OS</p>
-                </aside>
 
                 <section className="creator-console">
                     <header className="creator-console-header">
@@ -439,20 +437,12 @@ export default function CreatorDashboardPage() {
 
     return (
         <main className="creator-console-shell">
-            <aside className="creator-console-rail" aria-label="Creator console rail">
-                <div className="creator-console-mark">C</div>
-                <div className="creator-console-rail-lines" aria-hidden="true">
-                    <span />
-                    <span />
-                    <span />
-                </div>
-                <p>Creator OS</p>
-            </aside>
 
             <section className="creator-console">
                 <header className="creator-hero">
                     <div className="creator-hero-copy">
                         <p className="creator-console-kicker">Creator Command Center</p>
+                        <p className="creator-console-note">{activeProject ? 'Continue your most recently active project' : 'Start with the music'}</p>
                         <h1>{activeProject?.title ?? 'Creator OS'}</h1>
                         <p>
                             {activeProject
@@ -463,6 +453,7 @@ export default function CreatorDashboardPage() {
                         <div className="creator-hero-actions">
                             {commandLinks.map((link) => (
                                 <Link
+                                    data-creator-tour={link.href === CREATOR_LINKS.capture ? "add-music" : undefined}
                                     key={link.href}
                                     href={link.href}
                                     className={link.priority === 'primary' ? 'is-primary' : undefined}
@@ -476,35 +467,35 @@ export default function CreatorDashboardPage() {
 
                     <aside className="creator-feature-card">
                         <div className="creator-feature-topline">
-                            <span>{featuredProject ? 'Your featured project' : 'Recent project'}</span>
-                            <em>{activeProject ? formatRelativeSignal(activeProject.lastOpenedAt) : 'Ready'}</em>
+                            <span>Your featured project</span>
+                            <em>{featuredProject ? formatRelativeSignal(featuredProject.lastOpenedAt) : 'Ready'}</em>
                         </div>
 
-                        {activeProject ? (
+                        {featuredProject ? (
                             <Link
-                                href={`/releases/${activeProject.slug}/board`}
+                                href={`/releases/${featuredProject.slug}/board`}
                                 className="creator-feature-cover-link"
-                                aria-label={`Open ${activeProject.title} Workshop`}
+                                aria-label={`Open ${featuredProject.title} Workshop`}
                             >
-                                <ProjectCover project={activeProject} />
+                                <ProjectCover project={featuredProject} />
                             </Link>
                         ) : (
-                            <ProjectCover project={activeProject} />
+                            <ProjectCover project={featuredProject} />
                         )}
 
                         <div className="creator-feature-copy">
-                            {activeProject ? (
-                                <Link href={`/releases/${activeProject.slug}`} className="creator-feature-title-link">
-                                    {activeProject.title}
+                            {featuredProject ? (
+                                <Link href={featuredProject.visibility === 'public' ? `/releases/${featuredProject.slug}` : `/releases/${featuredProject.slug}/board`} className="creator-feature-title-link">
+                                    {featuredProject.title}
                                 </Link>
                             ) : (
-                                <strong>{activeProfile?.artistName ?? 'No active project'}</strong>
+                                <a href="#active-projects">Choose your featured project below</a>
                             )}
-                            <p>{getProjectSignal(activeProject)}</p>
+                            <p>{featuredProject ? getProjectSignal(featuredProject) : 'Use Set Featured on an active project below. Nexus Spotlight is selected separately by COSMIC editorial.'}</p>
                         </div>
 
                         <div className="creator-feature-metrics">
-                            {getReleaseHealth(activeProject).map((item) => (
+                            {getReleaseHealth(featuredProject).map((item) => (
                                 <div key={item.label}>
                                     <span>{item.label}</span>
                                     <strong>{item.value}</strong>
@@ -513,6 +504,8 @@ export default function CreatorDashboardPage() {
                         </div>
                     </aside>
                 </header>
+
+                <CreatorHomeTour ready={!loading} projectSlug={activeProject?.slug} />
 
                 <BlockerAssist featuredSelection={activeProfile?.featuredReleaseWorldId ?? projects.find((project) => project.isFeatured)?.id ?? null} />
                 <OpportunitySection releases={projects} />
@@ -531,49 +524,28 @@ export default function CreatorDashboardPage() {
                     </article>
 
                     <article>
-                        <span>Release Worlds</span>
-                        <strong>{projects.length}</strong>
+                        <span>Active Projects</span>
+                        <strong>{activeProjects.length}</strong>
                         <p>Singles, EPs, albums, and other intentional projects.</p>
                     </article>
 
                     <article>
                         <span>Public Projects</span>
-                        <strong>{countByVisibility(projects, 'public')}</strong>
-                        <p>{countByVisibility(projects, 'private')} private projects.</p>
+                        <strong>{countByVisibility(activeProjects, 'public')}</strong>
+                        <p>{countByVisibility(activeProjects, 'private')} private projects.</p>
                     </article>
                 </section>
 
                 <section className="creator-console-grid creator-console-grid-main">
                     <article className="creator-console-panel creator-console-panel-featured">
-                        <div className="creator-panel-title-row">
-                            <div>
-                                <p className="creator-console-kicker">Your featured project</p>
-                                <h2>Your creative focus</h2>
-                            </div>
-                            <Link href="/nexus">View Nexus</Link>
-                        </div>
-
-                        <p className="creator-console-note">
-                            A featured Release World can be a Single, EP, Album, or another intentional project.
-                            This is your account’s featured project. Global Nexus features are selected separately by COSMIC editorial.
-                        </p>
-
-                        <div className="creator-feature-flow">
-                            <div>
-                                <span>01</span>
-                                <strong>Develop</strong>
-                                <p>Shape the chosen songs inside a Release World and its Workshop.</p>
-                            </div>
-                            <div>
-                                <span>02</span>
-                                <strong>Feature</strong>
-                                <p>Choose the release leading the current chapter.</p>
-                            </div>
-                            <div>
-                                <span>03</span>
-                                <strong>Publish</strong>
-                                <p>Publish its Release World. Submit tracks to Nexus separately when ready.</p>
-                            </div>
+                        <p className="creator-console-kicker">Needs attention</p>
+                        <h2>Useful next stops</h2>
+                        <p className="creator-console-note">Saved state from your current music. These are shortcuts, not recommendations.</p>
+                        <div className="creator-attention-links">
+                            <Link href={CREATOR_LINKS.catalog}>Realm undecided · {needsRealmCount}</Link>
+                            <Link href="/creator/library#organize">Rights explicitly needing review · {rightsReviewCount}</Link>
+                            {activeProject && <Link href={`/creator/releases/${activeProject.slug}/publish`}>Check release readiness · {activeProject.title}</Link>}
+                            <Link href="/creator/projects#archived">Archived projects · {projects.length - activeProjects.length}</Link>
                         </div>
                     </article>
 
@@ -582,10 +554,10 @@ export default function CreatorDashboardPage() {
                         <h2>Creative status</h2>
 
                         <div className="creator-asset-status-grid">
-                            {['draft', 'active', 'released', 'archived'].map((projectStatus) => (
+                            {['draft', 'active', 'released'].map((projectStatus) => (
                                 <div key={projectStatus}>
                                     <span>{projectStatus}</span>
-                                    <strong>{countByStatus(projects, projectStatus)}</strong>
+                                    <strong>{countByStatus(activeProjects, projectStatus)}</strong>
                                 </div>
                             ))}
                         </div>
@@ -608,19 +580,19 @@ export default function CreatorDashboardPage() {
                     </article>
                 </section>
 
-                <section className="creator-console-grid creator-console-grid-balanced">
+                <section className="creator-console-grid creator-console-grid-projects">
                     <article className="creator-console-panel creator-console-wide">
                         <div className="creator-panel-title-row">
                             <div>
-                                <p className="creator-console-kicker">All Projects Preview</p>
-                                <h2>Release worlds</h2>
+                                <p className="creator-console-kicker">Active Projects Preview</p>
+                                <h2 id="active-projects">Release worlds</h2>
                             </div>
                             <Link href="/creator/projects">View All Projects</Link>
                         </div>
 
                         <div className="creator-project-library-grid">
-                            {projects.length > 0 ? (
-                                projects.slice(0, 6).map((project) => (
+                            {activeProjects.length > 0 ? (
+                                recentProjects.map((project) => (
                                     <article
                                         key={project.id}
                                         className={`creator-project-card ${project.id === featuredProject?.id ? 'is-featured' : ''}`}
@@ -635,11 +607,10 @@ export default function CreatorDashboardPage() {
 
                                             <strong>{project.title}</strong>
                                             <p>{getProjectSummary(project)}</p>
-                                            <code>/{project.slug}</code>
 
                                             <div className="creator-project-card-actions">
-                                                <Link href={`/releases/${project.slug}`}>Portal</Link>
-                                                <Link href={`/releases/${project.slug}/board`}>Workshop</Link>
+                                                <Link href={`/releases/${project.slug}/board`}>Open Workshop</Link>
+                                                {project.visibility === 'public' && <Link href={`/releases/${project.slug}`}>View Portal</Link>}
                                                 <button
                                                     type="button"
                                                     disabled={isSettingFeatured || project.id === featuredProject?.id}
@@ -664,9 +635,39 @@ export default function CreatorDashboardPage() {
                         </div>
                     </article>
 
+
+                </section>
+
+                <section className="creator-console-grid creator-console-grid-bottom">
+                    <article className="creator-console-panel creator-console-wide">
+                        <p className="creator-console-kicker">Recent Activity</p>
+                        <h2>Recent active work</h2>
+
+                        <div className="creator-console-track-strip">
+                            {recentProjects.map((project, index) => (
+                                <Link href={`/releases/${project.slug}/board`} key={project.id}>
+                                    <span>{String(index + 1).padStart(2, '0')}</span>
+                                    <strong>{project.title}</strong>
+                                    <p>
+                                        {formatRelativeSignal(String(Math.max(getTimestamp(project.lastOpenedAt), getTimestamp(project.updatedAt))))} · {formatLabel(project.status)}
+                                    </p>
+                                </Link>
+                            ))}
+
+                            {activeProjects.length === 0 && (
+                                <div>
+                                    <span>00</span>
+                                    <strong>No active projects yet</strong>
+                                    <p>Create one in All Projects.</p>
+                                </div>
+                            )}
+                        </div>
+                    </article>
+
                     <article className="creator-console-panel">
                         <p className="creator-console-kicker">Creator Profile</p>
                         <h2>{activeProfile?.artistName ?? 'Profile needed'}</h2>
+                        <Link href={CREATOR_LINKS.profile}>Edit creator profile →</Link>
 
                         <div className="creator-profile-card">
                             <span>{activeProfile?.isPublic ? 'Public profile' : 'Private profile'}</span>
@@ -683,7 +684,7 @@ export default function CreatorDashboardPage() {
                                 'Creator mode',
                                 'Creator library',
                                 'Release worlds',
-                                'Signal boards',
+                                'Workshop',
                                 'Your featured project',
                                 'Public portals',
                             ].map((item) => (
@@ -692,36 +693,8 @@ export default function CreatorDashboardPage() {
                         </div>
                     </article>
                 </section>
-
-                <section className="creator-console-grid creator-console-grid-bottom">
-                    <article className="creator-console-panel creator-console-wide">
-                        <p className="creator-console-kicker">Recent Activity</p>
-                        <h2>Recently opened</h2>
-
-                        <div className="creator-console-track-strip">
-                            {recentProjects.map((project, index) => (
-                                <div key={project.id}>
-                                    <span>{String(index + 1).padStart(2, '0')}</span>
-                                    <strong>{project.title}</strong>
-                                    <p>
-                                        {formatRelativeSignal(project.lastOpenedAt || project.updatedAt)} · {formatLabel(project.status)}
-                                    </p>
-                                </div>
-                            ))}
-
-                            {projects.length === 0 && (
-                                <div>
-                                    <span>00</span>
-                                    <strong>No release worlds yet</strong>
-                                    <p>Create one in All Projects.</p>
-                                </div>
-                            )}
-                        </div>
-                    </article>
-
-                    <article className="creator-console-panel">
-                        <p className="creator-console-kicker">Core Workflow</p>
-                        <h2>The Creator Loop</h2>
+                    <details className="creator-console-panel creator-workflow-summary">
+                        <summary>The Creator Loop</summary>
 
                         <div className="creator-console-phases">
                             {[
@@ -738,12 +711,12 @@ export default function CreatorDashboardPage() {
                                     body: 'Create a Single, EP, Album, or other Release World and deepen it in the Workshop.',
                                 },
                                 {
-                                    title: 'Present',
-                                    body: 'Shape the public Release Page when the project is ready to be experienced.',
+                                    title: 'Publish',
+                                    body: 'Use Prepare Release to verify requirements and publish the listener-facing world.',
                                 },
                                 {
-                                    title: 'Publish',
-                                    body: 'Submit intentional signals to Nexus for curated discovery.',
+                                    title: 'Circulate',
+                                    body: 'Share the public world. Submit eligible tracks to Nexus for separate editorial review.',
                                 },
                             ].map((beat, index) => (
                                 <div key={beat.title}>
@@ -755,8 +728,7 @@ export default function CreatorDashboardPage() {
                                 </div>
                             ))}
                         </div>
-                    </article>
-                </section>
+                    </details>
 
             </section>
         </main>

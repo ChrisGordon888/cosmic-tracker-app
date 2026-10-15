@@ -1,6 +1,8 @@
 "use client";
 
 import CreatorAccessGate from "@/components/creator/CreatorAccessGate";
+import CreatorRail from "@/components/creator/CreatorRail";
+import "@/styles/creatorNavigation.css";
 
 export default function CreatorLayout({
     children,
@@ -20,7 +22,10 @@ export default function CreatorLayout({
                 </div>
             </div>
 
-            {children}
+            <div className="creator-workspace-layout">
+                <CreatorRail />
+                <div className="creator-workspace-content">{children}</div>
+            </div>
         </CreatorAccessGate>
     );
 }

@@ -1,56 +1,56 @@
 "use client";
 
 import Link from "next/link";
-import { useSession, signIn } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import MoonPhaseCard from "@/components/MoonPhaseCard";
 import AddPracticeQuestForm from "@/components/AddPracticeQuestForm";
 import RitualPracticeSection from "@/components/RitualPracticeSection";
-import CosmicBackground from "@/components/CosmicBackground";
+import PracticeShell from "@/components/practice/PracticeShell";
 import "@/styles/trackerPage.css";
-import "@/styles/innerOSBackgroundReveal.css";
+
 
 export default function TrackerPage() {
   const { data: session, status } = useSession();
 
   if (status === "loading") {
     return (
-      <main className="tracker-page practice-subpage tracker-state-page">
-        <CosmicBackground />
+      <PracticeShell className="tracker-page practice-subpage tracker-state-page">
+
         <section className="tracker-state-card">
-          <p className="practice-subpage-kicker">Discipline Tracker</p>
+          <p className="practice-subpage-kicker">Practice / Today</p>
           <h1>Loading your practice field...</h1>
           <p>Please wait while your ritual data comes online.</p>
         </section>
-      </main>
+      </PracticeShell>
     );
   }
 
   if (!session) {
     return (
-      <main className="tracker-page practice-subpage tracker-state-page">
-        <CosmicBackground />
+      <PracticeShell className="tracker-page practice-subpage tracker-state-page">
+
         <section className="tracker-state-card">
           <p className="practice-subpage-kicker">Private Practice Layer</p>
           <h1>Sign in to view your tracker.</h1>
           <p>Your quests and ritual practices are part of the private Practice Portal.</p>
           <div className="practice-subpage-actions tracker-state-actions">
-            <button type="button" onClick={() => signIn("github", { callbackUrl: "/tracker" })}>
+            <Link href="/auth?callbackUrl=%2Ftracker">
               Sign in
-            </button>
+            </Link>
             <Link href="/practice">Practice Portal</Link>
           </div>
         </section>
-      </main>
+      </PracticeShell>
     );
   }
 
   return (
-    <main className="tracker-page practice-subpage">
-      <CosmicBackground />
+    <PracticeShell className="tracker-page practice-subpage">
+
 
       <section className="practice-subpage-hero tracker-hero">
         <div>
-          <p className="practice-subpage-kicker">Discipline Tracker</p>
+          <p className="practice-subpage-kicker">Practice / Today</p>
           <h1>Turn intention into daily motion.</h1>
           <p>
             Add quests, practice your rituals, and keep the day connected to your body, signal, and creative discipline.
@@ -66,8 +66,8 @@ export default function TrackerPage() {
       <section className="tracker-flow-grid">
         <article>
           <span>01</span>
-          <h2>Read the atmosphere</h2>
-          <p>Start with the moon and notice the quality of the day.</p>
+          <h2>Notice the cycle</h2>
+          <p>Check the calculated lunar phase, then choose your own pace.</p>
         </article>
         <article>
           <span>02</span>
@@ -84,7 +84,7 @@ export default function TrackerPage() {
       <section className="tracker-module tracker-module-moon">
         <div className="tracker-section-heading">
           <p className="practice-subpage-kicker">Moon</p>
-          <h2>Begin with the field.</h2>
+          <h2>Today’s lunar estimate.</h2>
         </div>
         <MoonPhaseCard />
       </section>
@@ -110,6 +110,6 @@ export default function TrackerPage() {
           Strengthen your discipline by aligning daily quests with your core rituals. The tracker is the action layer of the Practice Portal.
         </p>
       </section>
-    </main>
+    </PracticeShell>
   );
 }

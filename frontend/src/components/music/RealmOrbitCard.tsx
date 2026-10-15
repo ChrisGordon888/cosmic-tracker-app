@@ -21,7 +21,7 @@ type OrbitTrack = Pick<
     | 'isPublicPick'
     | 'vibe'
     | 'sortOrder'
->;
+> & { publicCanon?: boolean | null };
 
 interface RealmOrbitCardProps {
     realmId?: string | number;
@@ -137,6 +137,8 @@ export default function RealmOrbitCard({
 
     const sortedTracks = useMemo(() => {
         return [...tracks].sort((a, b) => {
+            const canonPriority = Number(b.publicCanon === true) - Number(a.publicCanon === true);
+            if (canonPriority) return canonPriority;
             const aOrder = a.sortOrder ?? 999;
             const bOrder = b.sortOrder ?? 999;
 
@@ -309,9 +311,6 @@ export default function RealmOrbitCard({
         void playTrackInActiveFlow(track);
     };
 
-    const handleSelectOnly = (track: OrbitTrack) => {
-        setSelectedTrackId(track.id);
-    };
 
     const renderTrackPill = (track: OrbitTrack) => {
         const isSelected = selectedTrackId === track.id;
@@ -992,7 +991,6 @@ export default function RealmOrbitCard({
                             <button
                                 key={track.id}
                                 onClick={() => handleTrackClick(track)}
-                                onMouseEnter={() => handleSelectOnly(track)}
                                 className={`absolute rounded-full flex items-center justify-center transition-all hover:scale-110 ${isCurrent && !locked ? 'orbit-node-active' : 'orbit-node-idle'
                                     }`}
                                 style={{

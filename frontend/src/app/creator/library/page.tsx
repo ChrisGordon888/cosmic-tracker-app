@@ -1,10 +1,17 @@
 "use client";
 
+import PublicCurationReview from '@/components/creator/PublicCurationReview';
+import CatalogIntelligencePanel from '@/components/creator/CatalogIntelligencePanel';
+import CatalogCleanupActions from '@/components/creator/CatalogCleanupActions';
+import { usePlatformAccess } from '@/context/PlatformAccessProvider';
 import TrackVaultReview from "@/components/creator/TrackVaultReview";
 import {matchesVault,trackExposure,type VaultTrack} from "@/lib/trackVault";
 import {MUSIC_REGISTRY} from "@/lib/musicRegistry";
 import Link from "next/link";
 import LibraryCleanupPanel from "@/components/creator/LibraryCleanupPanel";
+import { suggestCatalogRealm } from '@/lib/catalogSorting';
+import InlineTrackSignals from '@/components/creator/InlineTrackSignals';
+import { scanCatalog, type RealmDecision } from '@/lib/creativeFingerprint';
 import SmartSortPanel from "@/components/creator/SmartSortPanel";
 import CatalogIntakePreflight from "@/components/creator/CatalogIntakePreflight";
 import { fileIdentity, intakeSignature, type IntakeApproval } from "@/lib/catalogIntake";
@@ -14,7 +21,7 @@ import { isOrganized, matchesCleanup, parseFilename, type CleanupTrack, type Wor
 import { gql, useMutation, useQuery } from "@apollo/client";
 import { upload } from "@vercel/blob/client";
 import { useSession } from "next-auth/react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMusicPlayer } from "@/hooks/useMusicPlayer";
 import "@/styles/creatorLibrary.css";
 
@@ -35,6 +42,7 @@ const REPAIR_PROJECT_LINK = gql`
 const CREATOR_LIBRARY_QUERY = gql`
   query CreatorLibrary {
     myReleaseWorlds {
+      publicCanon
       id
       title
       slug
@@ -47,6 +55,7 @@ const CREATOR_LIBRARY_QUERY = gql`
     }
 
     myCatalogTracks {
+      publicCanon
       catalogTreatment
       legacyRegistryId
       rightsInfo { sourceType reviewStatus producerName sourceUrl notes documentationRecorded commercialIntent }
@@ -69,6 +78,10 @@ const CREATOR_LIBRARY_QUERY = gql`
       sourceFileName
       sourceFileSize
       realmFinderScores { realm303 realm202 realm101 realm55 realm44 realm0 }
+      creativeSignals
+      creativeDecisions { realmId suggestedRealmId action engineVersion signals at }
+      hook
+      notes
       realmFinderSignals
       realmFinderSuggestedRealmId
       realmFinderSecondaryRealmId
@@ -113,6 +126,10 @@ const CREATE_CATALOG_TRACK = gql`
       sourceFileName
       sourceFileSize
       realmFinderScores { realm303 realm202 realm101 realm55 realm44 realm0 }
+      creativeSignals
+      creativeDecisions { realmId suggestedRealmId action engineVersion signals at }
+      hook
+      notes
       realmFinderSignals
       realmFinderSuggestedRealmId
       realmFinderSecondaryRealmId
@@ -216,6 +233,10 @@ type OrganizeResult = {
 
 type ReleaseTrack = CatalogTrack & VaultTrack & {
   ownerId?: string;
+  creativeSignals?: string[] | null;
+  creativeDecisions?: RealmDecision[] | null;
+  hook?: string | null;
+  notes?: string | null;
   audioContentHash?: string | null;
   sourceFileName?: string | null;
   sourceFileSize?: number | null;
@@ -332,6 +353,7 @@ function isSupportedAudioFile(file: File) {
 
 export default function CreatorLibraryPage() {
   const { status } = useSession();
+  const { user: creatorIdentity } = usePlatformAccess();
   const { playOrToggleTrack, currentTrack, isPlaying } = useMusicPlayer();
   const [smartQueue, setSmartQueue] = useState<CatalogTrack[]>([]);
   const [smartIndex, setSmartIndex] = useState(0);
@@ -378,6 +400,8 @@ export default function CreatorLibraryPage() {
 
   const releases = useMemo<ReleaseWorld[]>(() => data?.myReleaseWorlds ?? [], [data?.myReleaseWorlds]);
   const tracks = useMemo<ReleaseTrack[]>(() => data?.myCatalogTracks ?? [], [data?.myCatalogTracks]);
+
+  const signalScan = useMemo(()=>scanCatalog(tracks.filter(t=>t.realmId==null),tracks),[tracks]);
 
   const intakeCatalog = useMemo(()=>tracks.map(t=>({id:t.id,title:t.title,fileName:t.sourceFileName,audioContentHash:t.audioContentHash,audioUrl:t.audioUrl || t.previewAudioUrl})),[tracks]);
 
@@ -510,12 +534,23 @@ export default function CreatorLibraryPage() {
     if (audioInputRef.current) audioInputRef.current.value = "";
   }
 
-  function scrollToIntake() {
-    document.getElementById("intake")?.scrollIntoView({
-      behavior: "smooth",
-      block: "center",
-    });
-  }
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    function focusDestination() {
+      const id = window.location.hash.slice(1);
+      if (!["intake", "catalog", "organize"].includes(id)) return;
+      const target = document.getElementById(id);
+      if (target instanceof HTMLDetailsElement) {
+        target.open = true;
+        target.querySelector("summary")?.focus();
+      } else {
+        target?.focus();
+      }
+    }
+    focusDestination();
+    window.addEventListener("hashchange", focusDestination);
+    return () => window.removeEventListener("hashchange", focusDestination);
+  }, [status]);
 
   function handleDropSongs(event: React.DragEvent<HTMLDivElement>) {
     event.preventDefault();
@@ -824,15 +859,27 @@ export default function CreatorLibraryPage() {
             <p>Capture songs first, organize them when the direction becomes clear, then develop the ones that belong to a Single, EP, Album, or other Release World.</p>
           </div>
           <div className="creator-library-hero-actions">
-            <button type="button" disabled={!filteredTracks.length} onClick={()=>{setVaultQueue(filteredTracks.map(t=>t.id));setVaultIndex(0);}}>Review catalog / rights</button>
-            <button type="button" disabled={!filteredTracks.length} onClick={()=>{setCleanupQueue(filteredTracks.map(t=>({...t})));setCleanupIndex(0);}}>Clean up Library</button>
-            <button type="button" disabled={!filteredTracks.some(t=>matchesCleanup(t,"realm"))} onClick={()=>{setSmartQueue(filteredTracks.filter(t=>matchesCleanup(t,"realm")).map(t=>({...t})));setSmartIndex(0);}}>Smart Sort tracks needing Realm ({filteredTracks.filter(t=>matchesCleanup(t,"realm")).length})</button>
-            <button type="button" onClick={scrollToIntake}>+ Add Music</button>
-            <Link href="/creator/projects">Release Worlds</Link>
-            <Link href="/nexus">View Nexus</Link>
-            <Link href="/creator">Creator Home</Link>
+            <button type="button" className="is-primary" onClick={() => audioInputRef.current?.click()} disabled={isUploadingSongs}>+ Add Music</button>
           </div>
         </header>
+        <details className="creator-library-organize" id="organize">
+          <summary>Organize Library</summary>
+          <p>Tools use your current catalog filters. Change Library / Vault below to review another selection.</p>
+          <div className="creator-library-hero-actions">
+            <button type="button" disabled={!filteredTracks.length} onClick={()=>{setVaultQueue(filteredTracks.map(t=>t.id));setVaultIndex(0);}}>Review catalog / rights</button>
+            <button type="button" disabled={!filteredTracks.length} onClick={()=>{setCleanupQueue(filteredTracks.map(t=>({...t})));setCleanupIndex(0);}}>Clean up Library</button>
+            <button type="button" disabled={!filteredTracks.some(t=>matchesCleanup(t,"realm"))} onClick={()=>{setSmartQueue(filteredTracks.filter(t=>matchesCleanup(t,"realm")).map(t=>({...t})));setSmartIndex(0);}}>Smart Sort · optional review ({filteredTracks.filter(t=>matchesCleanup(t,"realm")).length})</button>
+          </div>
+        <PublicCurationReview tracks={tracks} worlds={releases} onSaved={refetch}/>
+        <CatalogIntelligencePanel tracks={tracks} ownerId={creatorIdentity?.id??''} onInspect={id=>{
+          setView('tracks');setVaultFilter('current');setSearch('');setReleaseFilter('all');setRealmFilter('all');setStatusFilter('all');setPublishingFilter('all');setCleanupFilter('all');
+          requestAnimationFrame(()=>{const target=document.getElementById(`catalog-track-${id}`);target?.scrollIntoView({block:'center'});target?.focus({preventScroll:true});});
+        }}/>
+        <details className="glass-card p-5 my-4">
+          <summary>Catalog signal scan · read-only</summary>
+          <p>Tag songs directly in the catalog. Smart Sort is an optional review queue; the Workshop Realm Finder remains available for deeper reflection.</p>
+          {['Strong suggestion','Ambiguous','Needs more signals','No evidence'].map(bucket => {const rows=signalScan.filter(r=>r.bucket===bucket);return <p key={bucket}>{bucket}: {rows.length} {rows.length>0&&<button type="button" onClick={()=>{setSmartQueue(rows.map(r=>r.track));setSmartIndex(0);}}>Review</button>}</p>;})}
+        </details>
         <details className="glass-card p-5 my-4">
           <summary>Public exposure audit · what can another person hear?</summary>
           <p>Uses saved listener settings and public-world state, not creator preview. Member means a signed-in listener without premium privileges. Copied Blob URLs remain accessible independently.</p>
@@ -843,10 +890,9 @@ export default function CreatorLibraryPage() {
           </>;})()}
           <p>Independent public fragments and media links must also be reviewed in Assets / Workshop. This audit cannot inventory copies shared outside COSMIC.</p>
         </details>
+        </details>
 
-
-
-        <section className="creator-library-intake" id="intake">
+        <section className="creator-library-intake" id="intake" tabIndex={-1}>
           <div className="creator-library-intake-copy">
             <p className="creator-library-kicker">Capture</p>
             <h2>Put the music in COSMIC first.</h2>
@@ -985,7 +1031,7 @@ export default function CreatorLibraryPage() {
           </div>
         )}
 
-        <section className="creator-library-summary" aria-label="Catalog summary">
+        <section className="creator-library-summary" id="catalog" tabIndex={-1} aria-label="Catalog summary">
           {[
             ["Total tracks", summary.total],
             ["Organized", summary.organized],
@@ -1094,7 +1140,7 @@ export default function CreatorLibraryPage() {
               const realm = getRealmMeta(track.realmId);
               const release = track.release;
               return (
-                <article className="creator-library-track-row" key={track.id}>
+                <article className="creator-library-track-row" key={track.id} id={`catalog-track-${track.id}`} tabIndex={-1}>
                   <div className="creator-library-track-title">
                     <div className="creator-library-track-art">
                       <WorkingCover track={track} releaseArtwork={release?.coverArtUrl}/>
@@ -1128,6 +1174,12 @@ export default function CreatorLibraryPage() {
                   </div>
                   <div className="creator-library-row-actions">
                     <button type="button" onClick={()=>{setSmartQueue([{...track}]);setSmartIndex(0);}}>Suggest placement</button>
+                    <CatalogCleanupActions treatment={track.catalogTreatment} status={track.status} onSave={async input=>{
+                      if(!track.updatedAt)throw new Error('Reload Library before updating this track.');
+                      await saveVault({variables:{id:track.id,expectedUpdatedAt:track.updatedAt,input}});
+                      await refetch();setLibraryActionMessage(input.archive?'Track archived; files and project membership preserved.':'Moved to Test / Sandbox; files and project membership preserved.');
+                    }}/>
+
                     {release ? (
                       <Link className="is-primary" href={`/releases/${release.slug}/board`}>Open Workshop</Link>
                     ) : track.releaseWorldId ? (
@@ -1186,6 +1238,7 @@ export default function CreatorLibraryPage() {
                     {realm && <Link href={`/realms/${realm.id}`}>Realm</Link>}
                     {track.showInNexus && <Link href="/nexus">Nexus</Link>}
                   </div>
+                  <InlineTrackSignals track={track} catalog={tracks} onRefresh={refetch} />
                 </article>
               );
             })}
@@ -1282,7 +1335,7 @@ export default function CreatorLibraryPage() {
 
 
 
-        {smartQueue[smartIndex] && <SmartSortPanel releases={releaseMap} key={smartQueue[smartIndex].id} track={smartQueue[smartIndex]} catalog={tracks} position={smartIndex+1} total={smartQueue.length} onClose={()=>setSmartQueue([])} onNext={()=>setSmartIndex(i=>i+1)} onSave={async realmId=>{await renameLibraryTrack({variables:{id:smartQueue[smartIndex].id,input:{realmId}}});await refetch();}}/>}
+        {smartQueue[smartIndex] && <SmartSortPanel releases={releaseMap} key={smartQueue[smartIndex].id} track={smartQueue[smartIndex]} catalog={tracks} position={smartIndex+1} total={smartQueue.length} onClose={()=>setSmartQueue([])} onNext={()=>setSmartIndex(i=>i+1)} onSave={async realmId=>{const suggested=suggestCatalogRealm(smartQueue[smartIndex],tracks).home;await renameLibraryTrack({variables:{id:smartQueue[smartIndex].id,input:{realmId,creativeDecision:{suggestedRealmId:suggested,action:suggested===null?'manual':suggested===realmId?'accepted':'overridden'}}}});await refetch();}}/>}
         {(() => {const track=tracks.find(t=>t.id===vaultQueue[vaultIndex]);return track?<TrackVaultReview key={track.id} track={track} position={vaultIndex+1} total={vaultQueue.length} onClose={()=>setVaultQueue([])} onNext={()=>setVaultIndex(i=>i+1)} onSave={async input=>{await saveVault({variables:{id:track.id,expectedUpdatedAt:track.updatedAt,input}});await refetch();}}/>:null;})()}
         {cleanupQueue[cleanupIndex] && <LibraryCleanupPanel catalog={tracks} key={cleanupQueue[cleanupIndex].id} track={cleanupQueue[cleanupIndex]} position={cleanupIndex+1} total={cleanupQueue.length} location={releaseMap.get(cleanupQueue[cleanupIndex].releaseWorldId ?? '')?.title ?? catalogProjectLabel(cleanupQueue[cleanupIndex], releaseMap)} releaseArtwork={releaseMap.get(cleanupQueue[cleanupIndex].releaseWorldId ?? '')?.coverArtUrl} onClose={()=>setCleanupQueue([])} onNext={()=>setCleanupIndex(i=>i+1)} onSave={async changes=>{if(Object.keys(changes).length){await renameLibraryTrack({variables:{id:cleanupQueue[cleanupIndex].id,input:changes}});await refetch();}}}/>}
         {organizingTrack && (

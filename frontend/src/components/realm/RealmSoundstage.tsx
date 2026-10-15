@@ -56,7 +56,7 @@ export default function RealmSoundstage({
     const { playOrToggleTrack, currentTrack, isPlaying } = useMusicPlayer();
     const { isAuthenticated } = usePlatformAccess();
     const isSignedInForMusic = isAuthenticated;
-    const { data: publicNexusTrackData } = useQuery(GET_PUBLIC_NEXUS_TRACKS, {
+    const { data: publicNexusTrackData, loading, error } = useQuery(GET_PUBLIC_NEXUS_TRACKS, {
         variables: { realmId },
         fetchPolicy: 'network-only',
     });
@@ -89,7 +89,7 @@ export default function RealmSoundstage({
         return (
             <div className="glass-card p-4 md:p-6 mb-8">
                 <h2 className="text-2xl font-display mb-3">🎵 Realm Soundstage</h2>
-                <p className="text-secondary">No tracks loaded for this realm yet.</p>
+                <p className="text-secondary">{loading ? 'Listening for current signals…' : error ? 'Music could not be loaded. Try again shortly.' : 'Realm quiet. No eligible public music here yet; this territory is still open. Explore its Worlds below, or follow the personal Realm path.'}</p>
             </div>
         );
     }
@@ -125,6 +125,7 @@ export default function RealmSoundstage({
     };
 
     const featuredTrack =
+        realmTracks.find((track) => !isTrackLocked(track) && track.publicCanon === true) ??
         realmTracks.find((track) => !isTrackLocked(track) && track.isRealmAnchor) ??
         realmTracks.find((track) => !isTrackLocked(track) && track.isPublicPick) ??
         realmTracks.find((track) => !isTrackLocked(track)) ??
@@ -209,7 +210,7 @@ export default function RealmSoundstage({
                     <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2 mb-2">
                             <p className="text-xs uppercase tracking-[0.18em] text-white/60">
-                                Featured Entry
+                                {featuredTrack.publicCanon === true ? 'Canon entry' : 'From the public catalog'}
                             </p>
 
                             {featuredTrackLocked && (

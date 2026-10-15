@@ -10,11 +10,11 @@ test('Library/Vault filters preserve lifecycle and distinguish unknown from expl
 });
 test('Exposure uses listener access, parent publication, actual preview media and registry fallback',()=>{
  const world={id:'w',visibility:'public',status:'active'};
- assert.equal(trackExposure(track,world).guest,true);assert.equal(trackExposure(track,{...world,visibility:'private'}).guest,false);assert.equal(trackExposure(track).guest,false);
+ assert.equal(trackExposure(track,world).guest,true);assert.equal(trackExposure({...track,releaseWorldId:'w'},{...world,visibility:'private'}).guest,false);assert.equal(trackExposure(track).guest,true);assert.equal(trackExposure({...track,releaseWorldId:'missing'}).guest,false);
  const member=trackExposure({...track,accessTier:'signup'},world);assert.equal(member.guest,false);assert.equal(member.member,true);
  assert.equal(trackExposure({...track,playbackStatus:'preview'},world).guest,false);assert.equal(trackExposure({...track,playbackStatus:'preview',previewAudioUrl:'/preview'},world).guest,true);
- assert.equal(trackExposure({...track,visibility:'private'},undefined,track).guest,true);
- assert.equal(trackExposure({...track,visibility:'private',showInNexus:true},world,track).guest,true, 'stale Nexus flag must not conceal legacy registry exposure');
+ assert.equal(trackExposure({...track,visibility:'private'},undefined,track).guest,false);
+ assert.equal(trackExposure({...track,visibility:'private',showInNexus:true},world,track).guest,false, 'stale Nexus and registry flags cannot expose private persisted music');
  for(const catalogTreatment of ['vault','test'])assert.equal(trackExposure({...track,catalogTreatment},world,track).guest,false);
 });
 test('Review mounts without a mutation; explicit save awaits confirmation and Skip never invokes save',()=>{

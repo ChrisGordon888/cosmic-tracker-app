@@ -10,6 +10,7 @@ import { MusicPlayerProvider } from "@/context/MusicPlayerProvider";
 import MiniPlayer from "@/components/music/MiniPlayer";
 import { PlatformAccessProvider } from "@/context/PlatformAccessProvider";
 import { CreatorViewProvider } from "@/context/CreatorViewProvider";
+import CreatorTourProvider from '@/components/creator/CreatorTourProvider';
 import PublicPreviewBanner from "@/components/creator/PublicPreviewBanner";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 <SessionWrapper>
                     <ApolloWrapper>
                         <PlatformAccessProvider>
+                            <CreatorTourProvider>
                             <CreatorViewProvider>
                                 <MusicPlayerProvider>
                                     <CosmicTopNav />
@@ -36,6 +38,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                                     <MiniPlayer />
                                 </MusicPlayerProvider>
                             </CreatorViewProvider>
+                            </CreatorTourProvider>
                         </PlatformAccessProvider>
                     </ApolloWrapper>
                 </SessionWrapper>

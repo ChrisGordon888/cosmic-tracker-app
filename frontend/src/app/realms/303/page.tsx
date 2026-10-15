@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useQuery, useMutation } from '@apollo/client';
 import RealmBackground from '@/components/realm/RealmBackground';
+import { PublicWorlds } from '@/components/creator/SelectedWorlds';
 import RealmGuidanceCard from '@/components/realm/RealmGuidanceCard';
 import RealmSoundstage from '@/components/realm/RealmSoundstage';
 import RealmEntryGuidanceBanner from '@/components/realm/RealmEntryGuidanceBanner';
@@ -43,6 +44,7 @@ export default function Realm303() {
     const [showProgression, setShowProgression] = useState(false);
 
     const { data: userData, loading: userLoading, refetch } = useQuery(GET_ME, {
+        skip: !session,
         fetchPolicy: 'network-only',
         nextFetchPolicy: 'cache-first',
     });
@@ -240,33 +242,7 @@ export default function Realm303() {
         );
     }
 
-    if (!session) {
-        return (
-            <div className="min-h-screen grid place-items-center p-6 nexus-shell">
-                <div className="glass-card nexus-panel max-w-md text-center">
-                    <div className="mx-auto mb-4 w-12 h-12 rounded-full border border-white/15 grid place-items-center text-[#DCBA5C]">
-                        ✦
-                    </div>
 
-                    <p className="text-xs uppercase tracking-[0.22em] text-muted mb-2">
-                        Realm Locked
-                    </p>
-
-                    <h1 className="text-3xl font-display mb-3">
-                        Sign in to enter
-                    </h1>
-
-                    <p className="text-secondary mb-6">
-                        Save realm progress, XP, listening history, and trial completion.
-                    </p>
-
-                    <Link href="/auth" className="btn-primary">
-                        Open Cosmic Access
-                    </Link>
-                </div>
-            </div>
-        );
-    }
 
     const canExploreGlitchDistrict = trial1Started && trial1Steps === 0;
     const canExploreCreationForge = trial2Started && trial2Steps === 0;
@@ -290,7 +266,7 @@ export default function Realm303() {
             <div className="min-h-screen pb-32 realm-303-shell">
                 <div className="container mx-auto px-4 py-8 max-w-6xl realm-303-container">
                     <nav className="realm-303-top-nav fade-in" aria-label="Realm navigation">
-                        <Link href="/nexus" className="realm-303-back-link">
+                        <Link href="/nexus#realm-303" className="realm-303-back-link">
                             ← Nexus
                         </Link>
                         <span>Realm 303</span>
@@ -329,6 +305,8 @@ export default function Realm303() {
                         </div>
                     </header>
 
+                    {!session && <p className="glass-card p-4 mb-6"><Link href="/auth?callbackUrl=%2Frealms%2F303" className="btn-secondary">Sign in for saved progress and the optional Realm Path →</Link></p>}
+
                     <RealmEntryGuidanceBanner
                         realmId={REALM_ID}
                         realmName="Fractured Frontier"
@@ -350,6 +328,7 @@ export default function Realm303() {
                             isCurrentRealm={true}
                             compactOnMobile
                         />
+                        <PublicWorlds realmId={303} />
                     </div>
 
                     <div
@@ -411,6 +390,7 @@ export default function Realm303() {
                         style={{ animationDelay: '0.15s' }}
                     >
                         <button
+                            disabled={!session}
                             onClick={() => setShowProgression((prev) => !prev)}
                             className="w-full flex items-center justify-between text-left"
                         >
@@ -435,7 +415,7 @@ export default function Realm303() {
                         </button>
                     </div>
 
-                    {showProgression && (
+                    {session && showProgression && (
                         <>
                             <div className="mb-8 fade-in">
                                 <h2 className="text-3xl font-display mb-6 flex items-center gap-3">
@@ -899,7 +879,7 @@ export default function Realm303() {
                         className="realm-page-nav fade-in"
                         style={{ animationDelay: '0.8s' }}
                     >
-                        <Link href="/nexus">
+                        <Link href="/nexus#realm-303">
                             <button className="btn-secondary">← Back to Nexus</button>
                         </Link>
 

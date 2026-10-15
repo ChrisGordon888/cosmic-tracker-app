@@ -1,6 +1,7 @@
 "use client";
 
 import {reviewLabels,sourceLabels,type RightsInfo} from "@/lib/trackVault";
+import ProjectCanonControl from "@/components/creator/ProjectCanonControl";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
@@ -33,6 +34,8 @@ const GET_RELEASE = gql`
             slug
             status
             visibility
+            publicCanon
+            updatedAt
             fullDropDate
             coverArtUrl
             oneLineSummary
@@ -48,6 +51,8 @@ type ReleaseData = {
         slug: string;
         status: string;
         visibility: string;
+        publicCanon?: boolean | null;
+        updatedAt?: string | null;
         fullDropDate?: string | null;
         coverArtUrl?: string | null;
         oneLineSummary?: string | null;
@@ -302,7 +307,7 @@ export default function PublishingReadinessPage() {
                         href={`/releases/${slug}/board`}
                         className="text-xs font-medium uppercase tracking-[0.16em] text-white/45 transition hover:text-[#F4D982]"
                     >
-                        Open Signal Board
+                        Open Workshop
                     </Link>
                     <Link
                         href={`/releases/${slug}`}
@@ -316,7 +321,7 @@ export default function PublishingReadinessPage() {
                     <p className="text-xs uppercase tracking-[0.24em] text-[#DCBA5C]/80">
                         Publishing Review
                     </p>
-                    <h1 className="mt-4 text-3xl font-semibold text-white sm:text-5xl">
+                    <h1 data-creator-tour="publish-review" className="mt-4 text-3xl font-semibold text-white sm:text-5xl">
                         {release?.title || "Release review"}
                     </h1>
                     <p className="mt-4 max-w-2xl text-sm leading-7 text-white/55">
@@ -325,6 +330,8 @@ export default function PublishingReadinessPage() {
                         publish, schedule, or update its public state.
                     </p>
                 </section>
+
+                {release && <ProjectCanonControl world={release} onSaved={releaseQuery.refetch} />}
 
                 {(releaseQuery.loading || readinessQuery.loading) &&
                 !readiness ? (

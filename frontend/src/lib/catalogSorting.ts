@@ -1,8 +1,9 @@
+import { fingerprint, interpretFingerprint, type FingerprintTrack } from './creativeFingerprint';
 import { realmFinderRealms } from './creatorRealmFinder';
 import type { RealmFinderRealmId } from '@/components/signal-board/types';
 import type { CleanupTrack } from './libraryCleanup';
 
-export type CatalogTrack = CleanupTrack & {
+export type CatalogTrack = CleanupTrack & FingerprintTrack & {
   mood?: string | null;
   realmFinderScores?: Record<string, number | null> | null;
   realmFinderSuggestedRealmId?: number | null;
@@ -24,9 +25,11 @@ function cosine(a: number[], b: number[]) {
 const key = (value?: string | null) => value?.trim().toLowerCase().replace(/\s+/g,' ') ?? '';
 export function similarCatalogTracks(track: CatalogTrack, catalog: CatalogTrack[]) {
   const mood = words(track.mood ?? '');
-  return catalog.filter(t => t.id !== track.id && t.status !== 'archived').map(candidate => {
+  return catalog.filter(t => t.id !== track.id && t.status !== 'archived' && (!track.ownerId || t.ownerId === track.ownerId)).map(candidate => {
     let score = 0; const reasons: string[] = [];
-    if (track.realmId != null && ids.includes(track.realmId) && track.realmId === candidate.realmId) {score += 3; reasons.push('Same assigned Realm');}
+    if (track.realmId != null && ids.includes(track.realmId) && track.realmId === candidate.realmId) {score += 1; reasons.push('Same assigned Realm (weak context only)');}
+    const shared=fingerprint(track).evidence.filter(e=>fingerprint(candidate).evidence.some(other=>other.signal===e.signal));
+    if(shared.length) {score+=shared.length*2;reasons.push(`Shared signals: ${shared.map(e=>e.signal).join(' · ')}`);}
     const a=vector(track), b=vector(candidate);
     if (hasVector(a) && hasVector(b)) {const similarity=cosine(a,b); if(similarity>=.75){score+=4*similarity;reasons.push('Similar saved Realm Finder scores');}}
     const otherMood=words(candidate.mood ?? '');
@@ -40,7 +43,9 @@ export function similarCatalogTracks(track: CatalogTrack, catalog: CatalogTrack[
   }).filter((item): item is NonNullable<typeof item> => item !== null)
     .sort((a,b)=>b.score-a.score || a.track.id.localeCompare(b.track.id)).slice(0,5);
 }
-export function suggestCatalogRealm(track: CatalogTrack) {
+export function suggestCatalogRealm(track: CatalogTrack, catalog: CatalogTrack[] = []) {
+  const interpreted=interpretFingerprint(track,catalog);
+  if ((track.creativeSignals?.length ?? 0)>0 || interpreted.fingerprint.evidence.length>=2) return interpreted;
   const saved = vector(track);
   const hasSnapshot=hasVector(saved);
   const mood=words([track.mood,...(track.realmFinderSignals ?? [])].filter(Boolean).join(' '));

@@ -9,7 +9,7 @@ function load(relative) {
   const file = path.join(__dirname, '../src', relative);
   const code = ts.transpileModule(fs.readFileSync(file, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText;
   const module = { exports: {} };
-  vm.runInNewContext(`(function(require,module,exports){${code}\n})`, { Date, Intl })(name => name.startsWith('@/') ? load(`${name.slice(2)}.ts`) : require(name), module, module.exports);
+  vm.runInNewContext(`(function(require,module,exports){${code}\n})`, { Date, Intl })(name => name.startsWith('@/') ? load(`${name.slice(2)}.ts`) : name.startsWith('./') ? load(path.join(path.dirname(relative),`${name}.ts`)) : require(name), module, module.exports);
   return module.exports;
 }
 const { getMusicAvailability: availability, playableMusicTracks, listenerCatalogCounts } = load('lib/musicAvailability.ts');
@@ -74,6 +74,7 @@ function renderPage(relative, responses, auth = false, stateOverrides) {
     if(name==='@/hooks/useMusicPlayer')return {useMusicPlayer:()=>({playOrToggleTrack:()=>{},currentTrack:null,isPlaying:false})};
     if(name==='next/link')return {__esModule:true,default:({children,...props})=>React.createElement('a',props,children)};
     if(name==='next/image')return {__esModule:true,default:({priority,...props})=>React.createElement('img',props)};
+    if(name==='@/components/creator/SelectedWorlds')return {__esModule:true,default:()=>null,PublicWorlds:()=>null};
     if(name.startsWith('@/components/'))return {__esModule:true,default:()=>null};
     if(name.startsWith('@/'))return load(name.slice(2)+'.ts');
     return require(name);
@@ -108,7 +109,7 @@ test('Realm result renders immediate music for public tracks and an explicit sig
  const track={id:'result',releaseWorldId:'world',releaseSlug:'result-world',title:original.trackTitle,realmId:303,showInNexus:true,visibility:'public',playbackStatus:'playable',audioUrl:'/fixture.wav',legacyRegistryId:original.id};
  const states=[0,{},'move-through',true];
  const publicHtml=renderPage('app/find-your-realm/page.tsx',{GetPublicNexusTracks:{getPublicNexusTracks:[track]}},false,states);
- assert.ok(publicHtml.includes(`Play ${track.title}`));assert.match(publicHtml,/href="\/releases\/result-world"/);
+ assert.ok(publicHtml.includes(`Play ${track.title}`));assert.match(publicHtml,/href="\/realms\/303"/);
  const gatedHtml=renderPage('app/find-your-realm/page.tsx',{GetPublicNexusTracks:{getPublicNexusTracks:[{...track,accessTier:'signup',audioUrl:null}]}},false,states);
  assert.match(gatedHtml,/Sign in to listen/);assert.ok(!gatedHtml.includes(`Play ${track.title}`));
 });
@@ -123,4 +124,39 @@ test('A creator following another artist’s public world gets public listening 
 test('Explicit registry suppression hides migrated Vault/Sandbox audio without deleting other creators',()=>{
  const registry=[{id:'retired',trackTitle:'Hidden',realmId:101,trackUrl:'/old',visibility:'public'},{id:'kept',trackTitle:'Kept',realmId:101,trackUrl:'/kept',visibility:'public'}];
  const catalog=mergeMusicCatalogs(registry,[],['retired']);assert.deepEqual(Array.from(catalog,t=>t.id),['kept']);
+});
+
+
+test('Listed-only Realm stays public; Canon ranks above Listed and protected tracks stay excluded',()=>{
+ const base={title:'Song',realmId:44,visibility:'listed',publicCanon:false,showInNexus:false,playbackStatus:'playable',audioUrl:'/song',nexusSortOrder:0};
+ const tracks=mapReleaseTracksToMusicTracks([{...base,id:'listed'},{...base,id:'canon',visibility:'public',publicCanon:true,nexusSortOrder:999},{...base,id:'private',visibility:'private'},{...base,id:'test',catalogTreatment:'test'},{...base,id:'vault',catalogTreatment:'vault'},{...base,id:'archived',status:'archived'}]);
+ assert.equal(tracks.length,2);
+ const catalog=mergeMusicCatalogs([],tracks);
+ assert.deepEqual(Array.from(catalog,t=>t.id),['release-canon','release-listed']);
+ assert.equal(availability(catalog[1],anon).isPlayable,true);
+ assert.equal(catalog[1].isFlagship,false);assert.equal(catalog[1].isRealmAnchor,false);
+ assert.equal(findRealmRecommendation(catalog,[],44,'Song'),null);
+ const onlyListed=mapReleaseTracksToMusicTracks([{...base,id:'only'}]);assert.equal(onlyListed.length,1);assert.equal(availability(onlyListed[0],anon).isPlayable,true);
+});
+
+test('Suppressed persisted registry identity cannot revive a private track through shipped audio',()=>{
+ const registry=[{id:'private-legacy',realmId:44,trackTitle:'Old audio',trackUrl:'/old'}];
+ assert.equal(mergeMusicCatalogs(registry,[],['private-legacy']).length,0);
+});
+
+test('Named HardWay guidance cannot be replaced by the Not Enough Canon doorway',()=>{
+ const registry=[{id:'hard-way',realmId:303,trackTitle:'HardWay'}];
+ const catalog=mapReleaseTracksToMusicTracks([{id:'canon',title:'Not Enough',realmId:303,visibility:'public',publicCanon:true,audioUrl:'/canon'},{id:'suggested',title:'HardWay',legacyRegistryId:'hard-way',realmId:303,visibility:'listed',publicCanon:false,audioUrl:'/hardway'}]);
+ assert.equal(mergeMusicCatalogs([],catalog)[0].trackTitle,'Not Enough');
+ assert.equal(findRealmRecommendation(catalog,registry,303,'HardWay').trackTitle,'HardWay');
+ assert.equal(findRealmRecommendation(catalog.slice(0,1),registry,303,'HardWay'),null);
+});
+
+test('All six canonical Realm pages render signed out without the former whole-page auth gate',()=>{
+ for(const id of [303,202,101,55,44,0]){
+  const html=renderPage(`app/realms/${id}/page.tsx`,{},false);
+  assert.ok(html.includes('Sign in for saved progress'));
+  assert.match(html,/Optional (Realm|Source) Path/);
+  assert.ok(!html.includes('Sign in to enter'));
+ }
 });

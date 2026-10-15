@@ -203,6 +203,7 @@ const typeDefs = gql`
   }
 
   type ReleaseWorld {
+    publicCanon: Boolean
     id: ID!
     ownerId: String!
     creativeProfileId: ID!
@@ -249,7 +250,9 @@ const typeDefs = gql`
     trackIds: [ID!]!
   }
 
+  type PublicProject { creatorName: String! isSelected: Boolean! world: ReleaseWorld! tracks: [ReleaseTrack!]! realmId: Int }
   type NexusEditorialConfig {
+    selectedWorldIds: [ID!]
     id: ID!
     key: String!
     featuredTrackId: ID
@@ -306,7 +309,12 @@ const typeDefs = gql`
     rightsInfo: TrackRightsInput
     archive: Boolean
   }
+  type CreativeRealmDecision { realmId: Int! suggestedRealmId: Int action: String! engineVersion: String! signals: [String!]! at: String! }
+  input CreativeRealmDecisionInput { suggestedRealmId: Int action: String! }
   type ReleaseTrack {
+    publicCanon: Boolean
+    creativeSignals: [String!]
+    creativeDecisions: [CreativeRealmDecision!]
     catalogTreatment: CatalogTreatment
     rightsInfo: TrackRightsInfo
     artistName: String
@@ -581,6 +589,7 @@ const typeDefs = gql`
   }
 
   input UpdateReleaseTrackInput {
+    creativeDecision: CreativeRealmDecisionInput
     workingCoverStyle: WorkingCoverStyle
     title: String
     slug: String
@@ -715,6 +724,7 @@ const typeDefs = gql`
 
   # 📖 Queries
   type Query {
+    getShareableTrack(id: ID!): ReleaseTrack
     unavailableRegistryTrackIds: [String!]!
     myOpportunities: [Opportunity!]!
     hello: String
@@ -772,11 +782,12 @@ const typeDefs = gql`
     getPublicReleaseWorldBySlug(slug: String!): ReleaseWorld
 
     nexusReviewQueue(status: String): [NexusReviewItem!]!
+    publicProjects(selectedOnly: Boolean = false): [PublicProject!]!
     nexusEditorialConfig: NexusEditorialConfig!
     nexusPublishedSignals(realmId: Int): [NexusReviewItem!]!
     getReleaseTracks(releaseWorldId: ID!): [ReleaseTrack!]!
     getPublicReleaseTracks(releaseWorldId: ID!): [ReleaseTrack!]!
-    getPublicNexusTracks(realmId: Int): [ReleaseTrack!]!
+    getPublicNexusTracks(realmId: Int, nexusOnly: Boolean = false): [ReleaseTrack!]!
     getMyFeaturedSignal: ReleaseTrack
     getPublicFeaturedSignal: ReleaseTrack
     getReleaseTrack(id: ID!): ReleaseTrack
@@ -791,6 +802,8 @@ const typeDefs = gql`
 
   # 🛠️ Mutations
   type Mutation {
+    curatePublicTrack(id: ID!, expectedUpdatedAt: String!, choice: String!, confirmImpact: Boolean!): ReleaseTrack!
+    curatePublicWorld(id: ID!, expectedUpdatedAt: String!, selected: Boolean!): ReleaseWorld!
     updateTrackVault(id: ID!, expectedUpdatedAt: String!, input: TrackVaultInput!): ReleaseTrack!
     createOpportunity(input: OpportunityInput!): Opportunity!
     updateOpportunity(id: ID!, input: OpportunityInput!, expectedUpdatedAt: String!): Opportunity!
@@ -908,6 +921,7 @@ const typeDefs = gql`
     setFeaturedReleaseWorld(releaseWorldId: ID!): ReleaseWorld!
 
     createReleaseTrack(input: ReleaseTrackInput!): ReleaseTrack!
+    setTrackCreativeSignal(id: ID!, signal: String!, enabled: Boolean!): ReleaseTrack!
     updateReleaseTrack(id: ID!, input: UpdateReleaseTrackInput!): ReleaseTrack!
     deleteCatalogTrack(trackId: ID!): ReleaseTrack!
     attachTrackToReleaseWorld(trackId: ID!, releaseWorldId: ID!): ReleaseTrack!
@@ -923,6 +937,7 @@ const typeDefs = gql`
     ): ReleaseTrack!
     publishTrackToNexus(trackId: ID!): ReleaseTrack!
     unpublishTrackFromNexus(trackId: ID!, notes: String): ReleaseTrack!
+    setNexusProjectSelection(worldId: ID!, selected: Boolean!): NexusEditorialConfig!
     setNexusFeaturedSignal(trackId: ID!): NexusEditorialConfig!
     setNexusRealmAnchor(realmId: Int!, trackId: ID!): NexusEditorialConfig!
     setNexusRealmOrder(realmId: Int!, orderedTrackIds: [ID!]!): NexusEditorialConfig!
