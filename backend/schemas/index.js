@@ -311,7 +311,16 @@ const typeDefs = gql`
   }
   type CreativeRealmDecision { realmId: Int! suggestedRealmId: Int action: String! engineVersion: String! signals: [String!]! at: String! }
   input CreativeRealmDecisionInput { suggestedRealmId: Int action: String! }
+  type SongMoment { id: ID! timeSeconds: Float! endTimeSeconds: Float type: String! label: String note: String createdAt: String! updatedAt: String! }
+  input SongMomentInput { timeSeconds: Float! endTimeSeconds: Float type: String! label: String note: String }
+  type SongCreatorContext { meaning: String emotionalStart: String emotionalEnd: String referenceNotes: String creatorRole: String }
+  input SongCreatorContextInput { meaning: String emotionalStart: String emotionalEnd: String referenceNotes: String creatorRole: String hook: String }
+  enum HypothesisResponse { RESONATES INTERESTING NOT_REALLY }
+  type HypothesisFeedback { id: ID! hypothesisKey: String! subjectType: String! subjectId: ID! hypothesisType: String! engineVersion: String! evidenceHash: String! response: HypothesisResponse! note: String createdAt: String! updatedAt: String! }
+  input HypothesisFeedbackInput { subjectType: String! subjectId: ID! hypothesisType: String! engineVersion: String! evidenceHash: String! response: HypothesisResponse note: String }
   type ReleaseTrack {
+    songMoments: [SongMoment!]
+    creatorContext: SongCreatorContext
     publicCanon: Boolean
     creativeSignals: [String!]
     creativeDecisions: [CreativeRealmDecision!]
@@ -724,6 +733,8 @@ const typeDefs = gql`
 
   # 📖 Queries
   type Query {
+    songLabTrack(trackId: ID!): ReleaseTrack
+    myHypothesisFeedback: [HypothesisFeedback!]!
     getShareableTrack(id: ID!): ReleaseTrack
     unavailableRegistryTrackIds: [String!]!
     myOpportunities: [Opportunity!]!
@@ -802,6 +813,10 @@ const typeDefs = gql`
 
   # 🛠️ Mutations
   type Mutation {
+    saveSongMoment(trackId: ID!, momentId: ID, input: SongMomentInput!): ReleaseTrack!
+    deleteSongMoment(trackId: ID!, momentId: ID!): ReleaseTrack!
+    saveSongContext(trackId: ID!, input: SongCreatorContextInput!): ReleaseTrack!
+    respondToHypothesis(input: HypothesisFeedbackInput!): HypothesisFeedback
     curatePublicTrack(id: ID!, expectedUpdatedAt: String!, choice: String!, confirmImpact: Boolean!): ReleaseTrack!
     curatePublicWorld(id: ID!, expectedUpdatedAt: String!, selected: Boolean!): ReleaseWorld!
     updateTrackVault(id: ID!, expectedUpdatedAt: String!, input: TrackVaultInput!): ReleaseTrack!

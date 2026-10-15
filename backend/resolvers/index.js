@@ -1564,9 +1564,20 @@ async function saveOpportunityChange(record, user, update) {
     return saved;
 }
 
+const intelligenceResolvers = require('../lib/intelligenceResolvers')(requireCreator);
 module.exports = {
+    SongMoment: {
+        createdAt: moment => new Date(moment.createdAt).toISOString(),
+        updatedAt: moment => new Date(moment.updatedAt).toISOString(),
+    },
+    HypothesisFeedback: {
+        createdAt: record => new Date(record.createdAt).toISOString(),
+        updatedAt: record => new Date(record.updatedAt).toISOString(),
+    },
     CreativeRealmDecision: { at: event => new Date(event.at).toISOString() },
     ReleaseTrack: {
+        songMoments: (track, _, { user }) => user?.id && String(user.id) === String(track.ownerId) ? [...(track.songMoments || [])].sort((a,b)=>a.timeSeconds-b.timeSeconds) : null,
+        creatorContext: (track, _, { user }) => user?.id && String(user.id) === String(track.ownerId) ? (track.creatorContext || {}) : null,
         creativeSignals: (track, _, { user }) => user?.id && String(user.id) === String(track.ownerId) ? (track.creativeSignals || []) : null,
         creativeDecisions: (track, _, { user }) => user?.id && String(user.id) === String(track.ownerId) ? (track.creativeDecisions || []) : null,
         catalogTreatment: (track, _, { user }) => canManageCreatorContent(user, track.ownerId) ? (track.catalogTreatment || 'current') : null,
@@ -1613,6 +1624,8 @@ module.exports = {
         recordedAt: (result) => result.recordedAt.toISOString(),
     },
     Query: {
+        songLabTrack: intelligenceResolvers.songLabTrack,
+        myHypothesisFeedback: intelligenceResolvers.myHypothesisFeedback,
         publicProjects: async (_, { selectedOnly = false }) => {
             const config = await NexusEditorialConfig.findOne({ key: 'global' });
             const selectedIds = (config?.selectedWorldIds || []).map(String);
@@ -2322,6 +2335,10 @@ module.exports = {
     },
 
     Mutation: {
+        saveSongMoment: intelligenceResolvers.saveSongMoment,
+        deleteSongMoment: intelligenceResolvers.deleteSongMoment,
+        saveSongContext: intelligenceResolvers.saveSongContext,
+        respondToHypothesis: intelligenceResolvers.respondToHypothesis,
         curatePublicTrack: async (_, { id, expectedUpdatedAt, choice, confirmImpact }, { user }) => {
             requireCreator(user);
             const track = await ReleaseTrack.findOne({ _id: id, ownerId: user.id });
