@@ -4,6 +4,7 @@ export const CREATOR_LINKS = {
   catalog: '/creator/library#catalog',
   projects: '/creator/projects',
   profile: '/creator/onboarding/profile',
+  intelligence: '/creator/intelligence',
 } as const;
 
 export function creatorHomeTourKey(ownerId: string) {
