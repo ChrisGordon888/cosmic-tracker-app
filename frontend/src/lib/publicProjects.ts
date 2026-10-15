@@ -5,7 +5,16 @@ export type ProjectTrack={id:string;title:string;trackNumber:number;realmId?:num
 export type PublicProject={creatorName?:string;isSelected?:boolean;realmId:number|null;world:{id:string;title:string;slug:string;coverArtUrl?:string|null;oneLineSummary?:string|null;story?:string|null;releaseType:string};tracks:ProjectTrack[]};
 export function projectPlayback(project:PublicProject,signedIn:boolean){
  const tracks=project.tracks.map(track=>({track,availability:getMusicAvailability(track,{isCreatorView:false,isSignedIn:signedIn,releaseVisibility:'public'})}));
- const playable=tracks.filter(t=>t.availability.isPlayable);
- const lead=playable.find(t=>t.track.isFocusTrack)||playable[0];
- return {total:tracks.length,available:playable.length,member:tracks.filter(t=>t.track.accessTier==='signup'&&!t.availability.isPlayable).length,lead:lead?{id:`release-${lead.track.id}`,trackTitle:lead.track.title,trackUrl:lead.availability.resolvedAudioUrl,...playerRealm(lead.track.realmId),artist:project.creatorName||'Independent creator',visibility:'public',releaseSlug:project.world.slug} as MusicTrack:null};
+ const playable=tracks.filter(t=>t.availability.isPlayable && t.availability.resolvedAudioUrl)
+  .sort((a,b)=>a.track.trackNumber-b.track.trackNumber);
+ const queue:MusicTrack[]=playable.map(({track,availability})=>({
+  id:`release-${track.id}`,trackTitle:track.title,trackUrl:availability.resolvedAudioUrl!,
+  ...playerRealm(track.realmId),artist:project.creatorName||'Independent creator',
+  visibility:track.visibility,accessTier:track.accessTier,playbackStatus:track.playbackStatus,
+  audioUrl:track.audioUrl,previewAudioUrl:track.previewAudioUrl,unlockDate:track.unlockDate,dropDate:track.dropDate,
+  releaseSlug:project.world.slug,
+ }));
+ const focusIndex=playable.findIndex(t=>t.track.isFocusTrack);
+ return {total:tracks.length,available:queue.length,member:tracks.filter(t=>t.track.accessTier==='signup'&&!t.availability.isPlayable).length,
+  queue,lead:queue[focusIndex>=0?focusIndex:0]??null};
 }

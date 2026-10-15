@@ -30,7 +30,7 @@ export function PublicWorlds({realmId, selectedOnly = false}:{realmId?:number;se
                         <p>{state.available} playable now{state.member ? ` · ${state.member} require sign-in` : ''}</p>
                         <div className="public-world-actions">
                             <Link href={`/releases/${p.world.slug}`}>Enter World →</Link>
-                            {state.lead && <button type="button" onClick={() => playOrToggleTrack(state.lead!)} aria-label={`Play or pause ${state.lead.trackTitle}`}>{currentTrack?.id === state.lead.id && isPlaying ? 'Pause' : 'Play'}</button>}
+                            {state.lead && <button type="button" onClick={() => playOrToggleTrack(state.lead!, state.queue, {source: 'release', label: `${p.world.title} release`})} aria-label={`Play or pause ${state.lead.trackTitle}`}>{currentTrack?.id === state.lead.id && isPlaying ? 'Pause' : 'Play'}</button>}
                         </div>
                     </div>
                 </article>;

@@ -11,7 +11,7 @@ const uri=process.env.MONGODB_URI;
  if(apply)assertLocalApply(uri,database);
  await mongoose.connect(uri,{dbName:database,autoIndex:false,autoCreate:false,serverSelectionTimeoutMS:7000});
  const db=mongoose.connection.db;
- const read=async session=>({ownerId,profileId,profiles:await db.collection('creativeprofiles').find({ownerId},{session,projection:{ownerId:1}}).toArray(),worlds:await db.collection('releaseworlds').find({ownerId},{session,projection:{ownerId:1,title:1,slug:1}}).toArray(),tracks:await db.collection('releasetracks').find({ownerId},{session,projection:{ownerId:1,legacyRegistryId:1,releaseWorldId:1,realmId:1,isFocusTrack:1,updatedAt:1}}).toArray(),artworkExists:url=>fs.existsSync(path.join(__dirname,'../../frontend/public',url))});
+ const read=async session=>({ownerId,profileId,profiles:await db.collection('creativeprofiles').find({ownerId},{session,projection:{ownerId:1}}).toArray(),worlds:await db.collection('releaseworlds').find({ownerId},{session,projection:{ownerId:1,title:1,slug:1}}).toArray(),tracks:await db.collection('releasetracks').find({ownerId},{session,projection:{ownerId:1,legacyRegistryId:1,releaseWorldId:1,realmId:1,isFocusTrack:1,visibility:1,isPublic:1,updatedAt:1}}).toArray(),artworkExists:url=>fs.existsSync(path.join(__dirname,'../../frontend/public',url))});
  let plans=planMigration(await read());
  const report=plans.map(p=>({title:p.candidate.title,status:p.status,issues:p.issues,trackIds:p.trackIds,worldId:p.worldId}));
  console.log(JSON.stringify({mode:apply?'local-apply':'dry-run',candidates:report},null,2));

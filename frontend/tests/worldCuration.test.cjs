@@ -18,3 +18,19 @@ test('Admin query failure does not show an empty eligibility list or active sele
  const {default:Panel}=load('src/components/admin/ProjectSelections.tsx',{...common,react:{Fragment:require('react').Fragment,useState:v=>[v,()=>{}]},'@apollo/client':{gql:()=>'',useQuery:()=>({error:new Error('offline')}),useMutation:()=>[()=>{}]}});
  const nodes=walk(Panel());assert.equal(nodes.filter(n=>n.props?.role==='alert').length,1);assert.deepEqual(nodes.filter(n=>n.type==='button').map(n=>n.props.children),['Retry']);
 });
+function realLib(name){return load(`src/lib/${name}.ts`,{'./musicAvailability':load('src/lib/musicAvailability.ts',{}),'./playerRealm':load('src/lib/playerRealm.ts',{'./realmTheme':load('src/lib/realmTheme.ts',{})})});}
+for(const surface of ['Realm','Nexus'])test(`${surface} World Play hands off the full ordered public queue from its actual card`,()=>{
+ const playback=realLib('publicProjects'),calls=[];
+ const song=(id,trackNumber,realmId,visibility='listed',isFocusTrack=false)=>({id,title:id,trackNumber,realmId,visibility,isFocusTrack,audioUrl:`/${id}.mp3`,accessTier:'public',playbackStatus:'playable'});
+ const p={world:{id:'world',title:'Break the Code',slug:'break-the-code'},creatorName:'Artist',realmId:303,isSelected:surface==='Nexus',tracks:[song('C',3,0),song('A',1,303),song('private',2.5,55,'private'),song('B',2,null,'listed',true)]};
+ let variables;
+ const {PublicWorlds}=load('src/components/creator/SelectedWorlds.tsx',{...common,'@/lib/publicProjects':playback,'@apollo/client':{useQuery:(_,o)=>{variables=o.variables;return {data:{publicProjects:[p]}};}},'@/hooks/useMusicPlayer':{useMusicPlayer:()=>({playOrToggleTrack:(...args)=>calls.push(args)})},'@/context/PlatformAccessProvider':{usePlatformAccess:()=>({isAuthenticated:false})}});
+ const nodes=walk(PublicWorlds(surface==='Realm'?{realmId:303}:{selectedOnly:true}));
+ nodes.find(n=>n.type==='button').props.onClick();
+ const [selected,queue,options]=calls[0];assert.ok(queue,'World card must supply a queue');
+ assert.deepEqual(Array.from(queue,t=>t.trackTitle),['A','B','C']);assert.equal(selected.id,'release-B');
+ assert.deepEqual(Array.from(queue,t=>t.realmId),[303,null,0]);assert.ok(queue.every(t=>t.releaseSlug==='break-the-code'));
+ assert.equal(options.source,'release');assert.equal(options.label,'Break the Code release');assert.equal(variables.selectedOnly,surface==='Nexus');
+ const first=playback.projectPlayback({...p,tracks:p.tracks.map(t=>({...t,isFocusTrack:false}))},false);assert.equal(first.lead.id,'release-A');
+ const single=playback.projectPlayback({...p,tracks:[p.tracks[1]]},false);assert.equal(single.queue.length,1);
+});
