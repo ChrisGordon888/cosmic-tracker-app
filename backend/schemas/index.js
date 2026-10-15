@@ -311,14 +311,24 @@ const typeDefs = gql`
   }
   type CreativeRealmDecision { realmId: Int! suggestedRealmId: Int action: String! engineVersion: String! signals: [String!]! at: String! }
   input CreativeRealmDecisionInput { suggestedRealmId: Int action: String! }
-  type SongMoment { id: ID! timeSeconds: Float! endTimeSeconds: Float type: String! label: String note: String createdAt: String! updatedAt: String! }
-  input SongMomentInput { timeSeconds: Float! endTimeSeconds: Float type: String! label: String note: String }
+  type IntelligenceEvidenceProvenance { engineVersion: String! inputHash: String! }
+  type IntelligenceEvidence { id: ID! type: String! subjectId: ID! source: String! summary: String! sourcePath: String! provenance: IntelligenceEvidenceProvenance! timeSeconds: Float line: Int }
+  type IntelligenceClaim { id: ID! subjectType: String! subjectId: ID! claimType: String! statement: String! confidence: String! evidenceIds: [String!]! unknowns: [String!]! sourceMode: String! engineVersion: String! inputHash: String! generatedAt: String! }
+  type SongReflection { available: Boolean! provider: String! model: String! status: String! inputHash: String! engineVersion: String! promptVersion: String! claims: [IntelligenceClaim!]! evidence: [IntelligenceEvidence!]! questions: [String!]! generatedAt: String errorMessage: String }
+  enum LyricsStatus { DRAFT PARTIAL COMPLETE }
+  type SongLyrics { text: String! status: LyricsStatus! updatedAt: String }
+  input SongLyricsInput { text: String! status: LyricsStatus! }
+  type SongMoment { id: ID! timeSeconds: Float! endTimeSeconds: Float type: String! label: String note: String lyricExcerpt: String createdAt: String! updatedAt: String! }
+  input SongMomentInput { timeSeconds: Float! endTimeSeconds: Float type: String! label: String note: String lyricExcerpt: String }
   type SongCreatorContext { meaning: String emotionalStart: String emotionalEnd: String referenceNotes: String creatorRole: String }
   input SongCreatorContextInput { meaning: String emotionalStart: String emotionalEnd: String referenceNotes: String creatorRole: String hook: String }
   enum HypothesisResponse { RESONATES INTERESTING NOT_REALLY }
-  type HypothesisFeedback { id: ID! hypothesisKey: String! subjectType: String! subjectId: ID! hypothesisType: String! engineVersion: String! evidenceHash: String! response: HypothesisResponse! note: String createdAt: String! updatedAt: String! }
-  input HypothesisFeedbackInput { subjectType: String! subjectId: ID! hypothesisType: String! engineVersion: String! evidenceHash: String! response: HypothesisResponse note: String }
+  type HypothesisResponseEvent { response: HypothesisResponse! note: String at: String! }
+  type HypothesisFeedback { statement: String history: [HypothesisResponseEvent!]  id: ID! hypothesisKey: String! subjectType: String! subjectId: ID! hypothesisType: String! engineVersion: String! evidenceHash: String! response: HypothesisResponse! note: String createdAt: String! updatedAt: String! }
+  input HypothesisFeedbackInput { statement: String  subjectType: String! subjectId: ID! hypothesisType: String! engineVersion: String! evidenceHash: String! response: HypothesisResponse note: String }
   type ReleaseTrack {
+    lyrics: SongLyrics
+    lyricsUpdatedAt: String
     songMoments: [SongMoment!]
     creatorContext: SongCreatorContext
     publicCanon: Boolean
@@ -733,6 +743,8 @@ const typeDefs = gql`
 
   # 📖 Queries
   type Query {
+    songReflection(trackId: ID!): SongReflection!
+    songReasoningSources(trackId: ID!): ReleaseTrack
     songLabTrack(trackId: ID!): ReleaseTrack
     myHypothesisFeedback: [HypothesisFeedback!]!
     getShareableTrack(id: ID!): ReleaseTrack
@@ -813,6 +825,8 @@ const typeDefs = gql`
 
   # 🛠️ Mutations
   type Mutation {
+    reflectOnSong(trackId: ID!, expectedInputHash: String!): SongReflection!
+    saveSongLyrics(trackId: ID!, input: SongLyricsInput!): ReleaseTrack!
     saveSongMoment(trackId: ID!, momentId: ID, input: SongMomentInput!): ReleaseTrack!
     deleteSongMoment(trackId: ID!, momentId: ID!): ReleaseTrack!
     saveSongContext(trackId: ID!, input: SongCreatorContextInput!): ReleaseTrack!

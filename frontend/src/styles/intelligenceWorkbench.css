@@ -5,3 +5,8 @@
 .intelligence-context label{display:block;margin:14px 0}.intelligence-workbench textarea{display:block;box-sizing:border-box;width:100%;max-width:100%;padding:12px;background:#090f1a;color:#e4e9ef;border:1px solid #43516a;border-radius:10px;font:inherit;resize:vertical}.intelligence-workbench fieldset{border:0;padding:0;min-width:0}.intelligence-feedback{margin:16px 0}.intelligence-feedback small{display:block;margin-bottom:10px}
 
 .intelligence-song-lab{margin:20px 0;padding:16px;border:1px solid #344155;border-radius:12px;min-width:0}.intelligence-song-lab input{max-width:100%;box-sizing:border-box}.intelligence-song-lab label{display:block;margin:12px 0}.intelligence-moment-strip{position:relative;height:38px;margin:0 18px}.intelligence-moment-strip button{position:absolute;transform:translateX(-50%);min-height:32px;padding:5px;border:0;background:transparent}.intelligence-song-lab input[type=range]{width:100%}
+
+.intelligence-reasoning { min-width: 0; margin-block: 1.25rem; }
+.intelligence-reasoning textarea { box-sizing: border-box; max-width: 100%; }
+.intelligence-reasoning blockquote, .intelligence-workbench blockquote { margin-inline: 0; padding-left: .75rem; border-left: 2px solid #6b7999; overflow-wrap: anywhere; }
+.intelligence-reasoning small, .intelligence-workbench .intelligence-panel article { overflow-wrap: anywhere; }

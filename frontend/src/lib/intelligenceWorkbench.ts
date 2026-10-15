@@ -3,10 +3,11 @@ import { z } from 'zod';
 import { analyzeCatalog } from './catalogIntelligence';
 import { fingerprint, ENGINE_VERSION as FINGERPRINT_VERSION } from './creativeFingerprint';
 
-export const ANALYSIS_VERSION = `workbench-v3.1:${FINGERPRINT_VERSION}:catalog-v1`;
+export const ANALYSIS_VERSION = `workbench-v3.2:${FINGERPRINT_VERSION}:catalog-v1`;
 const text = z.string().nullish();
 const realm = z.union([z.literal(303),z.literal(202),z.literal(101),z.literal(55),z.literal(44),z.literal(0)]).nullable();
 export const SongSourceSchema = z.object({
+  lyricsUpdatedAt:z.string().nullish(),
   creatorContext:CreatorContextSchema.nullish(),
   songMoments:z.array(SongMomentSchema).max(200).nullish(),
   id:z.string().min(1),ownerId:z.string().min(1),title:z.string(),releaseWorldId:text,

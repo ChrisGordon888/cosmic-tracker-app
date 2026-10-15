@@ -12,7 +12,7 @@ function contextInput(input) {
 }
 function feedbackIdentity(input) {
   if (!['track', 'world'].includes(input.subjectType) || !/^[a-f\d]{24}$/i.test(input.subjectId)) throw new Error('Invalid hypothesis subject.');
-  if (!['bridge', 'cluster', 'anchor-role', 'bridge-role'].includes(input.hypothesisType)) throw new Error('Invalid hypothesis type.');
+  if (!['bridge', 'cluster', 'anchor-role', 'bridge-role', 'model-claim'].includes(input.hypothesisType)) throw new Error('Invalid hypothesis type.');
   if (!/^[a-zA-Z0-9:._-]{1,120}$/.test(input.engineVersion) || !/^[a-f0-9]{1,64}$/.test(input.evidenceHash)) throw new Error('Invalid hypothesis evidence identity.');
   return [input.subjectType, input.subjectId, input.hypothesisType, input.engineVersion, input.evidenceHash].join('|');
 }

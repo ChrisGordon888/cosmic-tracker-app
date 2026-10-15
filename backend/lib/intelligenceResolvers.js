@@ -1,10 +1,24 @@
 const Track = require('../models/ReleaseTrack');
 const World = require('../models/ReleaseWorld');
 const Feedback = require('../models/HypothesisFeedback');
+const { lyricsInput } = require('./lyricsContext');
 const { momentInput } = require('./songMoments');
 const { contextInput, feedbackIdentity } = require('./intelligenceContext');
 module.exports = function intelligenceResolvers(requireCreator) {
   return {
+    songReasoningSources: async (_, { trackId }, { user }) => {
+      requireCreator(user);
+      if (!/^[a-f\d]{24}$/i.test(trackId)) throw new Error('Invalid song.');
+      return Track.findOne({ _id: trackId, ownerId: user.id, catalogTreatment: { $nin: ['vault', 'test'] }, status: { $ne: 'archived' } });
+    },
+    saveSongLyrics: async (_, { trackId, input }, { user }) => {
+      requireCreator(user);
+      if (!/^[a-f\d]{24}$/i.test(trackId)) throw new Error('Invalid song.');
+      const lyrics = lyricsInput(input);
+      const track = await Track.findOneAndUpdate({ _id: trackId, ownerId: user.id }, { $set: { lyrics } }, { new: true, runValidators: true });
+      if (!track) throw new Error('Song not found.');
+      return track;
+    },
     songLabTrack: async (_, { trackId }, { user }) => {
       requireCreator(user);
       if (!/^[a-f\d]{24}$/i.test(trackId)) throw new Error('Invalid song.');
@@ -50,6 +64,7 @@ module.exports = function intelligenceResolvers(requireCreator) {
     respondToHypothesis: async (_, { input }, { user }) => {
       requireCreator(user);
       const hypothesisKey = feedbackIdentity(input);
+      if (input.statement != null && (typeof input.statement !== "string" || input.statement.length > 1200)) throw new Error("Hypothesis wording must be at most 1200 characters.");
       if (input.response != null && !['RESONATES', 'INTERESTING', 'NOT_REALLY'].includes(input.response)) throw new Error('Invalid response.');
       if (input.note != null && (typeof input.note !== 'string' || input.note.length > 2000)) throw new Error('Note must be at most 2000 characters.');
       const Model = input.subjectType === 'track' ? Track : World;
@@ -57,7 +72,7 @@ module.exports = function intelligenceResolvers(requireCreator) {
       const filter = { ownerId: user.id, hypothesisKey };
       if (input.response == null) { await Feedback.deleteOne(filter); return null; }
       const { subjectType, subjectId, hypothesisType, engineVersion, evidenceHash, response } = input;
-      return Feedback.findOneAndUpdate(filter, { $set: { subjectType, subjectId, hypothesisType, engineVersion, evidenceHash, response, note: input.note?.trim() || '' } }, { new: true, upsert: true, runValidators: true });
+      return Feedback.findOneAndUpdate(filter, { $set: { subjectType, subjectId, hypothesisType, engineVersion, evidenceHash, response, statement: input.statement || '', note: input.note?.trim() || '' }, $push: { history: { $each: [{ response, note: input.note?.trim() || '', at: new Date() }], $slice: -50 } } }, { new: true, upsert: true, runValidators: true });
     },
   };
 };

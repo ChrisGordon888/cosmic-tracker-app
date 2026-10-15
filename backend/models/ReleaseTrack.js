@@ -12,12 +12,18 @@ const ReleaseTrackSchema = new mongoose.Schema(
       documentationRecorded: { type: Boolean, default: false },
       commercialIntent: { type: Boolean, default: null },
     },
+    lyrics: {
+      text: { type: String, default: '', maxlength: 30000 },
+      status: { type: String, enum: ['DRAFT', 'PARTIAL', 'COMPLETE'], default: 'DRAFT' },
+      updatedAt: { type: Date, default: null },
+    },
     songMoments: { type: [new mongoose.Schema({
       timeSeconds: { type: Number, required: true, min: 0, max: 86400 },
       endTimeSeconds: { type: Number, default: null, min: 0, max: 86400 },
       type: { type: String, enum: require('../lib/songMoments').momentTypes, required: true },
       label: { type: String, default: '', maxlength: 200 },
       note: { type: String, default: '', maxlength: 2000 },
+      lyricExcerpt: { type: String, default: '', maxlength: 1000 },
     }, { timestamps: true })], default: [] },
     creatorContext: {
       meaning: { type: String, default: '', maxlength: 4000 },

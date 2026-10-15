@@ -19,11 +19,11 @@ export function contextFingerprint(track: ContextTrack) {
   const contextual = fingerprint({ ...track, notes: contextText(track), mood: '', hook: '', creativeSignals: [], realmFinderSignals: [] });
   return { ...original, evidence: [...original.evidence, ...contextual.evidence.filter(e => !original.evidence.some(o => o.signal === e.signal)).map(e => ({ ...e, source: 'CREATOR_CONTEXT' as const }))] };
 }
-export type HypothesisIdentity = { subjectType: 'track' | 'world'; subjectId: string; hypothesisType: string; engineVersion: string; evidenceHash: string; hypothesisKey: string };
-export type Feedback = { hypothesisKey: string; response: 'RESONATES' | 'INTERESTING' | 'NOT_REALLY'; note?: string | null };
+export type HypothesisIdentity = { subjectType: 'track' | 'world'; subjectId: string; hypothesisType: string; engineVersion: string; evidenceHash: string; hypothesisKey: string; statement?: string };
+export type Feedback = { hypothesisKey: string; response: 'RESONATES' | 'INTERESTING' | 'NOT_REALLY'; note?: string | null; statement?:string|null; updatedAt?:string; engineVersion?:string; evidenceHash?:string; history?:{response:string;note?:string|null;at:string}[]|null };
 export function hypothesisIdentity(subjectType: 'track' | 'world', subjectId: string, hypothesisType: string, engineVersion: string, evidenceHash: string): HypothesisIdentity {
   return { subjectType, subjectId, hypothesisType, engineVersion, evidenceHash, hypothesisKey: [subjectType, subjectId, hypothesisType, engineVersion, evidenceHash].join('|') };
 }
 
-export const SongMomentSchema=z.object({id:z.string(),timeSeconds:z.number().min(0).max(86400),endTimeSeconds:z.number().min(0).max(86400).nullish(),type:z.enum(['HOOK','VERSE','TURN','DROP','MOMENT','NOTE','LYRIC','ENERGY','CUSTOM']),label:z.string().max(200).nullish(),note:z.string().max(2000).nullish(),createdAt:z.string().optional(),updatedAt:z.string().optional()});
+export const SongMomentSchema=z.object({id:z.string(),timeSeconds:z.number().min(0).max(86400),endTimeSeconds:z.number().min(0).max(86400).nullish(),type:z.enum(['HOOK','VERSE','TURN','DROP','MOMENT','NOTE','LYRIC','ENERGY','CUSTOM']),label:z.string().max(200).nullish(),note:z.string().max(2000).nullish(),lyricExcerpt:z.string().max(1000).nullish(),createdAt:z.string().optional(),updatedAt:z.string().optional()});
 export type SongMoment=z.infer<typeof SongMomentSchema>;

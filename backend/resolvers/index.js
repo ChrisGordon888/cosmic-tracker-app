@@ -1566,6 +1566,8 @@ async function saveOpportunityChange(record, user, update) {
 
 const intelligenceResolvers = require('../lib/intelligenceResolvers')(requireCreator);
 module.exports = {
+    HypothesisResponseEvent: { at: event => new Date(event.at).toISOString() },
+    SongLyrics: { updatedAt: lyrics => lyrics.updatedAt ? new Date(lyrics.updatedAt).toISOString() : null },
     SongMoment: {
         createdAt: moment => new Date(moment.createdAt).toISOString(),
         updatedAt: moment => new Date(moment.updatedAt).toISOString(),
@@ -1576,6 +1578,8 @@ module.exports = {
     },
     CreativeRealmDecision: { at: event => new Date(event.at).toISOString() },
     ReleaseTrack: {
+        lyrics: (track, _, { user }) => user?.id && String(user.id) === String(track.ownerId) ? (track.lyrics || { text: '', status: 'DRAFT' }) : null,
+        lyricsUpdatedAt: (track, _, { user }) => user?.id && String(user.id) === String(track.ownerId) && track.lyrics?.updatedAt ? new Date(track.lyrics.updatedAt).toISOString() : null,
         songMoments: (track, _, { user }) => user?.id && String(user.id) === String(track.ownerId) ? [...(track.songMoments || [])].sort((a,b)=>a.timeSeconds-b.timeSeconds) : null,
         creatorContext: (track, _, { user }) => user?.id && String(user.id) === String(track.ownerId) ? (track.creatorContext || {}) : null,
         creativeSignals: (track, _, { user }) => user?.id && String(user.id) === String(track.ownerId) ? (track.creativeSignals || []) : null,
@@ -1624,6 +1628,8 @@ module.exports = {
         recordedAt: (result) => result.recordedAt.toISOString(),
     },
     Query: {
+        songReflection: async (_, { trackId }, { user }) => { requireCreator(user); return require('../lib/songReasoning').get(user.id, trackId); },
+        songReasoningSources: intelligenceResolvers.songReasoningSources,
         songLabTrack: intelligenceResolvers.songLabTrack,
         myHypothesisFeedback: intelligenceResolvers.myHypothesisFeedback,
         publicProjects: async (_, { selectedOnly = false }) => {
@@ -2335,6 +2341,8 @@ module.exports = {
     },
 
     Mutation: {
+        reflectOnSong: async (_, { trackId, expectedInputHash }, { user }) => { requireCreator(user); return require('../lib/songReasoning').reflect(user.id, trackId, expectedInputHash); },
+        saveSongLyrics: intelligenceResolvers.saveSongLyrics,
         saveSongMoment: intelligenceResolvers.saveSongMoment,
         deleteSongMoment: intelligenceResolvers.deleteSongMoment,
         saveSongContext: intelligenceResolvers.saveSongContext,
