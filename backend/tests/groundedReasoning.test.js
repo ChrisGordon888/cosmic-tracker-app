@@ -1,6 +1,10 @@
 const test=require('node:test'),assert=require('node:assert/strict');
 const resolvers=require('../resolvers'),Track=require('../models/ReleaseTrack'),World=require('../models/ReleaseWorld'),Run=require('../models/IntelligenceRun'),Feedback=require('../models/HypothesisFeedback');
 const provider=require('../lib/groundedProvider'),service=require('../lib/songReasoning'),{lyricsInput}=require('../lib/lyricsContext');
+const Audio=require('../models/AudioFeatureProfile');
+const originalAudioFind=Audio.findOne;
+test.before(()=>{Audio.findOne=()=>({lean:async()=>null});});
+test.after(()=>{Audio.findOne=originalAudioFind;});
 const id='aaaaaaaaaaaaaaaaaaaaaaaa',user={id:'owner-a',role:'creator',creatorStatus:'active'};
 test('Lyrics create/edit/clear are verbatim, bounded and owner only; public fields are protected',async()=>{
  const old=Track.findOneAndUpdate;let state={ownerId:user.id,realmId:0};

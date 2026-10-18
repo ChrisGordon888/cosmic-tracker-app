@@ -2,17 +2,20 @@ const crypto=require('node:crypto');
 const Track=require('../models/ReleaseTrack'),World=require('../models/ReleaseWorld'),Run=require('../models/IntelligenceRun');
 const provider=require('./groundedProvider');
 const VERSION='grounded-v1';
+const Audio=require('../models/AudioFeatureProfile');
+const {currentProfile}=require('./audioFeatures');
 const hash=value=>crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
 const eligible=ownerId=>({ownerId,catalogTreatment:{$nin:['vault','test']},status:{$ne:'archived'}});
 async function snapshot(ownerId,trackId){
  if(!/^[a-f\d]{24}$/i.test(trackId))throw new Error('Invalid song.');
- const track=await Track.findOne({_id:trackId,...eligible(ownerId)}).select('title realmId creativeSignals creatorContext hook mood notes lyrics songMoments releaseWorldId trackNumber updatedAt').lean();
+ const track=await Track.findOne({_id:trackId,...eligible(ownerId)}).select('title realmId creativeSignals creatorContext hook mood notes lyrics songMoments releaseWorldId trackNumber updatedAt audioUrl audioContentHash sourceFileSize').lean();
  if(!track)throw new Error('Song not found.');
  const world=track.releaseWorldId?await World.findOne({_id:track.releaseWorldId,ownerId,status:{$ne:'archived'}}).select('title story updatedAt').lean():null;
  const related=(track.creativeSignals||[]).length?await Track.find({...eligible(ownerId),_id:{$ne:track._id},creativeSignals:{$in:track.creativeSignals}}).select('title creativeSignals').sort({_id:1}).limit(60).lean():[];
  const ranked=related.map(t=>({id:String(t._id),title:t.title,shared:(t.creativeSignals||[]).filter(s=>track.creativeSignals.includes(s))})).filter(t=>t.shared.length>=2).sort((a,b)=>b.shared.length-a.shared.length||a.id.localeCompare(b.id)).slice(0,3);
+ const audio=currentProfile(track,await Audio.findOne({ownerId,trackId}).lean());
  const evidence=[];let characters=0;
- function add(type,path,text,extra={}){if(!text||evidence.length>=240)return;const summary=String(text).slice(0,2000);if(characters+summary.length>36000)return;characters+=summary.length;const id=`ev-${hash({trackId,type,path,summary,extra})}`;evidence.push({id,type,subjectId:trackId,source:['REALM','PROJECT_POSITION'].includes(type)?'STORED_FACT':type==='TRACK_RELATIONSHIP'?'DERIVED':'CREATOR',summary,sourcePath:path,provenance:{engineVersion:VERSION,inputHash:hash({summary,extra})},...extra});}
+ function add(type,path,text,extra={}){if(!text||evidence.length>=240)return;const summary=String(text).slice(0,2000);if(characters+summary.length>36000)return;characters+=summary.length;const id=`ev-${hash({trackId,type,path,summary,extra})}`;evidence.push({id,type,subjectId:trackId,source:['REALM','PROJECT_POSITION','AUDIO_MEASUREMENT'].includes(type)?'STORED_FACT':type==='TRACK_RELATIONSHIP'?'DERIVED':'CREATOR',summary,sourcePath:path,provenance:{engineVersion:VERSION,inputHash:hash({summary,extra})},...extra});}
  add('CREATOR_CONTEXT','title',track.title);add('CREATOR_MEANING','creatorContext.meaning',track.creatorContext?.meaning);
  for(const field of ['emotionalStart','emotionalEnd','creatorRole','referenceNotes'])add(field==='creatorRole'?'CREATOR_ROLE':'CREATOR_CONTEXT',`creatorContext.${field}`,track.creatorContext?.[field]);
  for(const field of ['hook','mood','notes'])add(field==='hook'?'HOOK':'CREATOR_CONTEXT',field,track[field]);
@@ -22,8 +25,9 @@ async function snapshot(ownerId,trackId){
  for(const m of (track.songMoments||[]).slice(0,40)){add('CREATOR_MOMENT',`songMoments.${m._id}`,`Creator marked ${m.type}: ${m.label||''} ${m.note||''}`,{timeSeconds:m.timeSeconds});add('CREATOR_LYRIC',`songMoments.${m._id}.lyricExcerpt`,m.lyricExcerpt,{timeSeconds:m.timeSeconds});}
  if(world){add('PROJECT_POSITION','releaseWorldId/trackNumber',`${world.title}, position ${track.trackNumber??'unknown'}`);add('PROJECT_STORY','project.story',world.story,{subjectId:String(world._id)});}
  for(const r of ranked)add('TRACK_RELATIONSHIP',`relationships.${r.id}`,`${r.title} shares explicit signals ${r.shared.join(', ')}; not acoustic similarity.`);
+ if(audio)add('AUDIO_MEASUREMENT','audio.rms',`Owner-browser measurement of resampled PCM: duration ${audio.durationSeconds.toFixed(1)}s, RMS ${audio.rmsDbfs.toFixed(1)} dBFS, sample peak ${audio.peakDbfs.toFixed(1)} dBFS. Not LUFS, true peak, emotion, or sonic similarity.`);
  let lyricChars=0;(track.lyrics?.text||'').split('\n').forEach((line,i)=>{if(line.trim()&&i<300&&lyricChars+line.length<=16000){add('CREATOR_LYRIC',`lyrics.line.${i+1}`,line,{line:i+1});lyricChars+=line.length;}});
- return {trackId,evidence,inputHash:hash({version:VERSION,track,world,ranked}),engineVersion:VERSION};
+ return {trackId,evidence,inputHash:hash({version:VERSION,track,world,ranked,audio:audio?{audioHash:audio.audioHash,analysisVersion:audio.analysisVersion,rmsDbfs:audio.rmsDbfs,peakDbfs:audio.peakDbfs,durationSeconds:audio.durationSeconds}:null}),engineVersion:VERSION};
 }
 function display(run,current,config){
  let status=run?.status||'NOT_RUN';if(run&&(run.inputHash!==current.inputHash||run.promptVersion!==provider.PROMPT_VERSION||(config.model&&run.model!==config.model)))status='STALE';else if(status==='RUNNING'&&Date.now()-new Date(run.updatedAt).getTime()>90000)status='FAILED';

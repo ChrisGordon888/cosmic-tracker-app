@@ -1566,6 +1566,7 @@ async function saveOpportunityChange(record, user, update) {
 
 const intelligenceResolvers = require('../lib/intelligenceResolvers')(requireCreator);
 module.exports = {
+    AudioFeatureProfile: { generatedAt: profile => new Date(profile.generatedAt).toISOString() },
     HypothesisResponseEvent: { at: event => new Date(event.at).toISOString() },
     SongLyrics: { updatedAt: lyrics => lyrics.updatedAt ? new Date(lyrics.updatedAt).toISOString() : null },
     SongMoment: {
@@ -1628,6 +1629,10 @@ module.exports = {
         recordedAt: (result) => result.recordedAt.toISOString(),
     },
     Query: {
+        myCreativePaths: async (_, args, { user }) => { requireCreator(user); return (await require("../lib/creativePaths").list(user.id)).map(p=>({...p,id:String(p._id)})); },
+        myCreativeDirections: async (_, args, { user }) => { requireCreator(user); return require("../lib/creativeDirection").list(user.id); },
+        myAudioProfiles: async (_, args, { user }) => { requireCreator(user); return require("../lib/audioFeatures").list(user.id); },
+        songAudioState: async (_, { trackId }, { user }) => { requireCreator(user); return require("../lib/audioFeatures").state(user.id, trackId); },
         songReflection: async (_, { trackId }, { user }) => { requireCreator(user); return require('../lib/songReasoning').get(user.id, trackId); },
         songReasoningSources: intelligenceResolvers.songReasoningSources,
         songLabTrack: intelligenceResolvers.songLabTrack,
@@ -2341,6 +2346,11 @@ module.exports = {
     },
 
     Mutation: {
+        saveCreativePath: async (_, { input }, { user }) => { requireCreator(user); return (await require("../lib/creativePaths").save(user.id,input)).map(p=>({...p,id:String(p._id)})); },
+        removeCreativePath: async (_, { id }, { user }) => { requireCreator(user); return (await require("../lib/creativePaths").remove(user.id,id)).map(p=>({...p,id:String(p._id)})); },
+        saveCreativeDirection: async (_, { input }, { user }) => { requireCreator(user); return require("../lib/creativeDirection").save(user.id, input); },
+        resetCreativeDirections: async (_, args, { user }) => { requireCreator(user); return require("../lib/creativeDirection").reset(user.id); },
+        saveSongAudioMeasurements: async (_, { trackId, sourceIdentity, input }, { user }) => { requireCreator(user); return require("../lib/audioFeatures").save(user.id, trackId, sourceIdentity, input); },
         reflectOnSong: async (_, { trackId, expectedInputHash }, { user }) => { requireCreator(user); return require('../lib/songReasoning').reflect(user.id, trackId, expectedInputHash); },
         saveSongLyrics: intelligenceResolvers.saveSongLyrics,
         saveSongMoment: intelligenceResolvers.saveSongMoment,

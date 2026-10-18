@@ -1,0 +1,82 @@
+'use client';
+import Link from 'next/link';
+import ImpossibleEnvironment from './ImpossibleEnvironment';
+import CreatorPaths, { type CreatorPath, type PathSave } from './CreatorPaths';
+import { REALM_ORDER, REALM_COLORS, REALM_NAMES } from '@/lib/musicRegistry';
+import { Component, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import dynamic from 'next/dynamic';
+import { livingUniverse, type UniverseView } from '@/lib/livingUniverse';
+import { compassPairing, type Direction } from '@/lib/creativeCompass';
+import type { Workbench } from '@/lib/intelligenceWorkbench';
+import type { IntelligenceAudition } from './useIntelligenceAudition';
+import type { DirectionSave } from './CreativeCompass';
+const Scene = dynamic(() => import('./UniverseScene'), { ssr: false, loading: () => <p className="universe-loading" role="status">Opening your universe…</p> });
+class SceneBoundary extends Component<{ children: ReactNode; onFailure: () => void }, { failed: boolean }> { state = { failed: false }; static getDerivedStateFromError() { return { failed: true }; } componentDidCatch() { this.props.onFailure(); } render() { return this.state.failed ? null : this.props.children; } }
+export default function LivingIntelligence({ analysis, selectedId, onSelect, listening, directions, onDirection, onShape, onInspect, discovery, paths = [], onSavePath, onRemovePath }: { paths?: CreatorPath[]; onSavePath?: PathSave; onRemovePath?: (id: string) => Promise<void>; discovery?: ReactNode; analysis: Workbench; selectedId: string; onSelect: (id: string) => void; listening: IntelligenceAudition; directions: Direction[]; onDirection?: DirectionSave; onShape: (ids: string[]) => void; onInspect: () => void }) {
+    const [view, setView] = useState<UniverseView>({ scale: 'song' }), [search, setSearch] = useState(''), [searchOpen, setSearchOpen] = useState(false);
+    const universe = useMemo(() => livingUniverse(analysis, selectedId, paths, view), [analysis, selectedId, paths, view]);
+    const choose = (id: string) => { setView(v => ({ scale: 'song', context: v.scale === 'song' ? v.context : { scale: v.scale, realmId: v.realmId, page: v.page } })); setSearchOpen(false); setSearch(''); onSelect(id); };
+    const matches = analysis.songs.filter(s => s.sourceFacts.title.toLowerCase().includes(search.trim().toLowerCase())).slice(0, 8);
+    const pairing = useMemo(() => compassPairing(analysis, selectedId, directions), [analysis, selectedId, directions]);
+    const [failed, setFailed] = useState(false), [light, setLight] = useState(false), [small, setSmall] = useState(true), [reduced, setReduced] = useState(true), [quiet, setQuiet] = useState(false), [overview, setOverview] = useState(0), [alternative, setAlternative] = useState(0), [response, setResponse] = useState(''), [saving, setSaving] = useState(false), [pathsOpen, setPathsOpen] = useState(false), [pathPair, setPathPair] = useState<string[] | null>(null);
+    useEffect(() => { const media = matchMedia('(max-width:640px)'), motion = matchMedia('(prefers-reduced-motion:reduce)'); const update = () => { setSmall(media.matches); setReduced(motion.matches); }; update(); media.addEventListener('change', update); motion.addEventListener('change', update); return () => { media.removeEventListener('change', update); motion.removeEventListener('change', update); }; }, []);
+    useEffect(() => { setAlternative(0); setResponse(''); setPathPair(null); setPathsOpen(false); setSearchOpen(false); setView(v => v.scale === 'song' ? v : { scale: 'song', context: { scale: v.scale, realmId: v.realmId, page: v.page } }); }, [selectedId]);
+    const fail = useCallback(() => setFailed(true), []);
+    const song = analysis.songs.find(s => s.trackId === selectedId), connection = pairing.candidates[alternative % Math.max(1, pairing.candidates.length)], related = analysis.songs.find(s => s.trackId === connection?.id);
+    const fallback = failed || light || small;
+    const pathEditor = useRef<HTMLDivElement>(null), searchBox = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        const outside = (e: PointerEvent) => { if (!searchBox.current?.contains(e.target as Node)) setSearchOpen(false); };
+        const escape = (e: KeyboardEvent) => { if (e.key === 'Escape') { setSearchOpen(false); setPathPair(null); setPathsOpen(false); } };
+        document.addEventListener('pointerdown', outside); document.addEventListener('keydown', escape);
+        return () => { document.removeEventListener('pointerdown', outside); document.removeEventListener('keydown', escape); };
+    }, []);
+    useEffect(() => { if (pathsOpen) pathEditor.current?.scrollIntoView({ block: 'nearest', behavior: reduced ? 'auto' : 'smooth' }); }, [pathsOpen, reduced]);
+    const selectedAuthoredPath = pathPair ? paths.find(p => (p.a === pathPair[0] && p.b === pathPair[1]) || (p.a === pathPair[1] && p.b === pathPair[0])) : undefined;
+    const selectedCatalogEdge = pathPair && !selectedAuthoredPath ? analysis.catalog.edges.find(e => (e.a === pathPair[0] && e.b === pathPair[1]) || (e.a === pathPair[1] && e.b === pathPair[0])) : undefined;
+    const pathExplanation = selectedAuthoredPath ? (selectedAuthoredPath.note || 'You chose to connect these songs.') : (selectedCatalogEdge?.shared.join(' · ') || 'Catalog evidence unavailable.');
+    return <section className={`living-universe ${fallback ? 'is-lightweight' : ''}`} data-scale={view.scale} aria-label="Living Intelligence"><div className="universe-heading"><div><p>ONE SONG. MANY POSSIBILITIES.</p><h2>Follow what could be.</h2></div><span>{analysis.songs.length} voices · private</span></div>
+        <div className="universe-stage"><ImpossibleEnvironment paused={reduced || quiet || fallback} />
+            <div className="universe-realms" aria-label="Your six Realms">{REALM_ORDER.map(id => <button key={id} aria-pressed={view.scale === 'realm' && view.realmId === id} onClick={() => { setView({ scale: 'realm', realmId: id, page: 0 }); setPathPair(null); }} style={{ borderColor: REALM_COLORS[id], color: REALM_COLORS[id] }}>{REALM_NAMES[id]} <small>{analysis.songs.filter(s => s.sourceFacts.realmId === id).length}</small></button>)}</div>
+            {!fallback && <SceneBoundary onFailure={fail}><Scene universe={universe} selectedId={selectedId} onSelect={choose} onFailure={fail} reduced={reduced || quiet} overview={overview} onPath={(a, b) => setPathPair([a, b])} /></SceneBoundary>}
+            {fallback && <div className="universe-fallback" aria-label="Lightweight song universe">{universe.nodes.map(n => <button key={n.id} onClick={() => choose(n.id)} aria-pressed={n.id === selectedId}><span className="universe-mini-record">{n.artwork ? <img src={n.artwork} alt="" loading="lazy" /> : n.title.slice(0, 1)}</span><strong>{n.title}</strong><small style={{ color: n.color }}>{n.realmName}</small></button>)}</div>}
+            {pathPair ? (
+                <div className="universe-focus-dock universe-path-dock" role="region" aria-label="Selected musical connection">
+                    <div className="universe-dock-copy">
+                        <small>{selectedAuthoredPath ? 'YOUR PATH · CREATIVE INTENTION' : 'COSMIC CONNECTION · CATALOG EVIDENCE'}</small>
+                        <strong>{pathPair.map(id => analysis.songs.find(s => s.trackId === id)?.sourceFacts.title ?? 'Song').join(' ↔ ')}</strong>
+                        <span className="universe-dock-evidence">{pathExplanation}</span>
+                    </div>
+                    <div className="universe-dock-actions">
+                        <button disabled={listening.busy} onClick={() => void listening.audition(pathPair)}>Hear connection</button>
+                        <button onClick={() => onShape(pathPair)}>Try together</button>
+                        <button onClick={() => setPathPair(null)} aria-label="Close selected connection">Close</button>
+                    </div>
+                </div>
+            ) : view.scale === 'song' && song ? (
+                <div className="universe-focus-dock" role="region" aria-label="Selected song actions">
+                    <div className="universe-dock-copy"><small>IN FOCUS</small><strong>{song.sourceFacts.title}</strong>{related && connection && <span className="universe-dock-evidence">Connected to {related.sourceFacts.title}</span>}</div>
+                    <div className="universe-dock-actions">
+                        <button disabled={listening.busy} onClick={() => void listening.audition([selectedId])}>▶ Listen</button>
+                        {related && connection && <button disabled={listening.busy} onClick={() => void listening.audition([selectedId, related.trackId])}>Hear together</button>}
+                        <button onClick={onInspect}>Inspect</button><button onClick={() => onShape(related && connection ? [selectedId, related.trackId] : [selectedId])}>Experiment</button>
+                        <button onClick={() => setPathsOpen(!pathsOpen)} aria-expanded={pathsOpen}>Connect</button>
+                    </div>
+                </div>
+            ) : null}
+            {view.scale === 'realm' && !universe.scopeCount && <p className="universe-empty">No eligible songs in this Realm yet.</p>}
+            {!analysis.songs.length && <p className="universe-empty">Your songs will find their place here. Add a song through Library to begin.</p>}
+            <div className="universe-stage-caption">{view.scale !== 'song' ? `${view.scale === 'realm' ? REALM_NAMES[view.realmId as keyof typeof REALM_NAMES] : 'Universe'} · ${universe.scopeCount} songs · select one to follow its connections` : failed ? '3D is unavailable here. Song selection and listening still work.' : fallback ? 'Your songs, within reach.' : `Drag to orbit · scroll to zoom · select a record or connection`}</div>
+        </div>
+            <div className="universe-tools"><div className="universe-search" ref={searchBox}><label><span className="sr-only">Find a song</span><input type="search" aria-label="Find a song" placeholder="Find a song…" value={search} onFocus={() => setSearchOpen(true)} onChange={e => { setSearch(e.target.value); setSearchOpen(true); }} onKeyDown={e => { if (e.key === 'Escape') setSearchOpen(false); }} aria-controls="universe-search-results" /></label>{searchOpen && <div id="universe-search-results" className="universe-search-results"><button onClick={() => setSearchOpen(false)}>Close search</button>{matches.map(s => <button key={s.trackId} onClick={() => choose(s.trackId)}><strong>{s.sourceFacts.title}</strong><small>{analysis.projects.find(p => p.world.id === s.sourceFacts.releaseWorldId)?.world.title ?? 'Standalone'} · {s.sourceFacts.realmId == null ? 'Realm undecided' : REALM_NAMES[s.sourceFacts.realmId as keyof typeof REALM_NAMES] ?? 'Realm undecided'}</small></button>)}{!matches.length && <p>No matching songs.</p>}</div>}</div>
+                <button aria-pressed={view.scale === 'song'} onClick={() => setView(v => ({ scale: 'song', context: v.scale === 'song' ? v.context : { scale: v.scale, realmId: v.realmId, page: v.page } }))}>Song</button>{view.scale === 'song' && view.context && <button onClick={() => { setView(view.context!); setPathPair(null); }}>← Back to {view.context.scale === 'realm' ? REALM_NAMES[view.context.realmId as keyof typeof REALM_NAMES] : 'Universe'}</button>}<button aria-pressed={view.scale === 'universe'} onClick={() => { setView({ scale: 'universe', page: 0 }); }}>Universe</button>{view.scale !== 'song' && universe.pageCount > 1 && <><button aria-label="Previous songs" disabled={universe.page === 0} onClick={() => setView(v => ({ ...v, page: universe.page - 1 }))}>←</button><span>{universe.page + 1}/{universe.pageCount}</span><button aria-label="Next songs" disabled={universe.page === universe.pageCount - 1} onClick={() => setView(v => ({ ...v, page: universe.page + 1 }))}>→</button></>}
+                {!fallback && <><button onClick={() => setOverview(n => n + 1)}>Reframe</button><button disabled={reduced} aria-pressed={reduced || quiet} onClick={() => setQuiet(!quiet)}>{reduced ? 'Reduced motion' : quiet ? 'Motion paused' : 'Pause motion'}</button></>}<button aria-pressed={light} onClick={() => setLight(!light)} disabled={small || failed}>{fallback ? 'Lightweight view' : 'Use lightweight view'}</button></div>
+        {view.scale === 'song' && song && <details className="universe-depth" key={song.trackId}>
+            <summary>More about {song.sourceFacts.title} <span>· context, evidence &amp; connections</span></summary>
+            <div className="universe-discovery"><div className="universe-selected"><small>IN FOCUS</small><h3>{song.sourceFacts.title}</h3><button disabled={listening.busy} onClick={() => void listening.audition([selectedId])}>▶ Listen</button><button onClick={onInspect}>Inside this song ↗</button><button onClick={() => setPathsOpen(!pathsOpen)} aria-expanded={pathsOpen}>Connect a song</button></div><div className="universe-connection">{related && connection ? <><small>A THREAD WORTH FOLLOWING</small><h3><button onClick={() => choose(related.trackId)}>{related.sourceFacts.title} ↗</button></h3><p>Connected through {connection.edge.shared.slice(0, 3).join(' · ')}.</p><div className="universe-actions"><button disabled={listening.busy} onClick={() => void listening.audition([selectedId, related.trackId])}>Hear them together</button><button onClick={() => onShape([selectedId, related.trackId])}>Try these together →</button></div><details><summary>Why this connection?</summary><p>{connection.why}</p></details><div className="universe-responses">{pairing.candidates.length > 1 && <button onClick={() => setAlternative(n => n + 1)}>Show another connection</button>}{onDirection && <button disabled={saving} aria-pressed={directions.some(d => d.targetId === related.trackId && d.value === 'ASPIRE')} onClick={async () => { setSaving(true); const clear = directions.some(d => d.targetId === related.trackId && d.value === 'ASPIRE'); try { await onDirection(related.trackId, clear ? null : 'ASPIRE'); setResponse(clear ? 'Exploration preference cleared.' : 'Saved as a direction to explore. Use the same button to clear it.'); } catch { setResponse('Could not save this direction. Try again.'); } finally { setSaving(false); } }}>{directions.some(d => d.targetId === related.trackId && d.value === 'ASPIRE') ? 'Clear exploration preference' : 'I want to explore this direction'}</button>}</div></> : <><small>ITS OWN VOICE</small><p>No supported connection yet. Listen without forcing a relationship.</p><button onClick={() => onShape([selectedId])}>Start an experiment →</button></>}</div></div></details>}
+        {pathsOpen && <div ref={pathEditor} className="universe-path-editor"><CreatorPaths key={selectedId} analysis={analysis} selectedId={selectedId} paths={paths} onSave={onSavePath} onRemove={onRemovePath ? async (id) => { await onRemovePath(id); setPathPair(null); } : undefined} onTry={onShape} onListen={ids => void listening.audition(ids)} /></div>}
+        {analysis.songs.some(s => s.sourceFacts.realmId == null) && <p className="universe-catalog-review"><Link href="/creator/library">{analysis.songs.filter(s => s.sourceFacts.realmId == null).length} songs without a Realm · review in Library →</Link></p>}
+        {discovery && <div className="universe-grounded-response">{discovery}</div>}
+        {(response || listening.error || listening.busy) && <p className="universe-status" role={listening.error ? 'alert' : 'status'}>{listening.error || response || (listening.busy ? 'Opening your authorized recordings…' : '')}</p>}
+    </section>;
+}

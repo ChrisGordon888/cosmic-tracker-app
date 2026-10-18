@@ -10,7 +10,7 @@ export const SongSourceSchema = z.object({
   lyricsUpdatedAt:z.string().nullish(),
   creatorContext:CreatorContextSchema.nullish(),
   songMoments:z.array(SongMomentSchema).max(200).nullish(),
-  id:z.string().min(1),ownerId:z.string().min(1),title:z.string(),releaseWorldId:text,
+  artworkUrl:text,id:z.string().min(1),ownerId:z.string().min(1),title:z.string(),releaseWorldId:text,
   trackNumber:z.number().nullish(),realmId:realm.optional(),creativeSignals:z.array(z.string()).nullish(),
   realmFinderSignals:z.array(z.string()).nullish(),mood:text,hook:text,notes:text,bpm:z.number().nullish(),keySignature:text,
   role:text,isFocusTrack:z.boolean().nullish(),visibility:text,publicCanon:z.boolean().nullish(),
@@ -92,6 +92,6 @@ export function constellationGraph(workbench:Workbench,filters:{realm?:string;wo
   const realmOrder=[303,202,101,55,44,0,null];
   const maxGroup=Math.max(1,...realmOrder.map(r=>visible.filter(s=>(s.sourceFacts.realmId??null)===r).length));
   const groupSpan=Math.ceil(Math.sqrt(maxGroup));
-  const nodes=visible.map(s=>{const r=s.sourceFacts.realmId??null;const sector=realmOrder.indexOf(r);const group=visible.filter(t=>(t.sourceFacts.realmId??null)===r),i=group.indexOf(s);const columns=Math.ceil(Math.sqrt(group.length));return {id:s.trackId,title:s.sourceFacts.title,realmId:r,x:(sector%3)*(groupSpan*200+160)+(i%columns)*200,y:Math.floor(sector/3)*(groupSpan*140+160)+Math.floor(i/columns)*140};});
+  const nodes=visible.map(s=>{const r=s.sourceFacts.realmId??null;const sector=realmOrder.indexOf(r);const group=visible.filter(t=>(t.sourceFacts.realmId??null)===r).sort((a,b)=>(a.sourceFacts.releaseWorldId??'~').localeCompare(b.sourceFacts.releaseWorldId??'~')||(a.sourceFacts.trackNumber??0)-(b.sourceFacts.trackNumber??0)||a.trackId.localeCompare(b.trackId)),i=group.indexOf(s);const columns=Math.ceil(Math.sqrt(group.length));return {id:s.trackId,title:s.sourceFacts.title,realmId:r,x:(sector%3)*(groupSpan*230+160)+(i%columns)*230,y:Math.floor(sector/3)*(groupSpan*220+160)+Math.floor(i/columns)*220};});
   return {nodes,edges,total:candidates.length,hidden:candidates.length-visible.length};
 }

@@ -1,0 +1,144 @@
+# COSMIC V3.6 manual development handoff
+
+## Checkpoint: 2026-10-18 — final weekly pass
+
+Branch: `feat/cosmic-intelligence-v3`. Nothing committed, merged or deployed in this pass. The starting tree already contained 17 modified tracked files and extensive untracked V3.3–V3.6 source, tests, documentation and approved environment media. Preserve all of it. `git status --short` is the authoritative current inventory; untracked does not mean disposable.
+
+Manual Patch 01 is preserved: toolbar below the scene, compact contextual dock, deeper information in disclosure. The weekly pass adds true orbit/zoom, stable 3D Realm neighborhoods, physical song emergence, wider camera return, visible/selectable relationship geometry and transient-search dismissal. No backend, media, Realm configuration, publishing, player or experiment contracts changed.
+
+This pass changed exactly:
+- `frontend/src/components/intelligence/UniverseScene.tsx`
+- `frontend/src/components/intelligence/LivingIntelligence.tsx`
+- `frontend/src/lib/livingUniverse.ts`
+- `frontend/src/styles/intelligenceWorkbench.css`
+- `frontend/tests/livingUniverse.test.cjs`
+- this handoff document.
+
+Before-patch copies of the five implementation/test/style files are in `/tmp/cosmic-v36-weekly-before/`. This is temporary local backup storage, not a durable checkpoint.
+
+## Share these first / minimal refinement inventory
+
+Paths below are relative to the repository root. Share this document and these four files first:
+
+1. `frontend/src/components/intelligence/LivingIntelligence.tsx` — navigation, search, selected connection, inspector, environment and scene composition.
+2. `frontend/src/lib/livingUniverse.ts` — pure scene model, membership, positioning, pagination and relationship selection.
+3. `frontend/src/components/intelligence/UniverseScene.tsx` — Three.js objects, camera, paths, hit testing and rendering.
+4. `frontend/src/styles/intelligenceWorkbench.css` — stage, overlays, labels, controls and responsive rules. Later Stage A/B blocks intentionally override older rules; inspect the cascade before editing.
+
+Supporting files, only when the patch needs them:
+
+- `frontend/src/components/intelligence/ImpossibleEnvironment.tsx`: video/poster lifecycle.
+- `frontend/src/components/intelligence/IntelligenceWorkbench.tsx`: authoritative UI song selection and desk/experiment integration.
+- `frontend/src/components/intelligence/CreatorPaths.tsx`: authored connection editing.
+- `frontend/src/components/intelligence/CreativeCompass.tsx`: session experiment sequence and direction feedback.
+- `frontend/src/components/intelligence/useIntelligenceAudition.ts` and `frontend/src/lib/creativeAudition.ts`: authorized source resolution and shared playback.
+- `frontend/src/app/creator/intelligence/page.tsx`: authenticated owner boundary, queries and mutation callbacks.
+- `frontend/src/graphql/intelligence.ts`: existing operation contracts.
+- `frontend/src/lib/intelligenceWorkbench.ts`: underlying analysis; presentation changes must not rewrite its evidence logic.
+- `frontend/src/lib/musicRegistry.ts`: authoritative Realm names/colors, including ID 0.
+- `frontend/tests/livingUniverse.test.cjs`: scene membership, density, owner-eligible inputs, Realm zero, paging and nonmutation regressions.
+- `frontend/public/intelligence/escher_cosmic_loop.mp4` and `escher-poster.jpg`: approved visual assets, not required when reviewing code alone.
+
+## Hierarchy and state
+
+`creator/intelligence/page.tsx` → owner-keyed `IntelligenceWorkbench` → `LivingIntelligence` → `ImpossibleEnvironment` + dynamically loaded `UniverseScene` (or lightweight cards) + connection inspector / `CreatorPaths`.
+
+Workbench also retains the optional deeper desk, Song Lab and `CreativeCompass`. A shape/try callback seeds an existing session experiment; it does not change project membership.
+
+Workbench owns the selected song ID. LivingIntelligence owns `UniverseView`, search, motion/fallback and selected connection. A Song view retains its originating Realm/Universe page in `view.context`; the Back button restores it. Search and record selection close transient results. Escape closes search, connection and Path editor; clicking outside search closes results. Inspect and Experiment reuse the existing deeper workspace; Connect still uses the existing Path editor below the scene rather than adding another relationship form.
+
+`livingUniverse` computes owner-eligible scene data only. Realm/Universe pages contain at most 12 records. Song mode retains that page and adds the selected song plus up to three relevant neighbors (maximum 16), quieting background records instead of erasing their context. Realm 0 remains explicitly valid; unassigned songs have a separate neutral neighborhood. Search matches title substrings and shows up to eight results with project/Realm context.
+
+## Scene and camera ownership
+
+UniverseScene owns a single renderer/camera/OrbitControls per mount. `current` receives fresh props. `reconcile()` adds/removes records and updates path resources; changing selection does not destroy the renderer or camera. `draw(time)` reads current selection/scale, transitions objects and camera, updates curves/labels and renders. Cleanup disposes all owned resources and observers. Lightweight mode intentionally unmounts Three.js; returning from lightweight creates a new camera session.
+
+Orbit has full azimuth, bounded polar angle (.3 to PI-.3), no panning, and zoom distance 9–75. Drag/zoom cancels an automatic camera transition. `cameras` stores wider-view position/target by context key (scale, Realm, page). Entering Song saves the outgoing wider camera; Back restores it. Reframe deliberately fits the current context again. There is no database/local-storage camera persistence. Resizing updates aspect, not the user's angle; use Reframe after a large viewport change.
+
+Selected records move four world units toward the viewing direction plus .8 elevation, grow to 1.7×, and gain their existing Realm halo. Camera focuses at distance 25. Other records keep their base coordinates. Returning interpolates the record home and restores the wider camera. Reduced/paused motion applies final transforms immediately and disables highlight animation. User orbit is still available because it is deliberate input.
+
+## Placement and relationship geometry
+
+`positionFor()` hashes immutable track ID with avalanche mixing, giving stable offsets around authoritative Realm centers. X/Y/Z all vary. Positions do not depend on selected song or page order. These are navigation coordinates, NOT measured acoustic distance or creative confidence. Realm configuration itself is unchanged.
+
+Broad views select up to 12 supported edges with a maximum degree of three per node; Song view prioritizes edges incident to selection. Up to six authored Paths are added, suppressing duplicate inferred lines for a pair. All endpoints must be in the eligible visible model.
+
+QuadraticBezierCurve3 paths track the actual moving record positions. Curves call `updateArcLengths()` before rebuilding TubeGeometry; omitting that invalidates moving geometry. Authored tubes are white (.085 radius); strong supported tubes .065; tentative .03. Opacity and labels also distinguish these classes. Authored intention is not a claim of measured strength. Invisible line hit targets use a .45 world-unit raycast tolerance; visible DOM connection buttons are the keyboard alternative. At most two active highlights move, for five seconds. Label projection suppresses colliding secondary labels and tries three positions along a path while avoiding record faces; search remains available for hidden titles.
+
+Adjust appearance safely in this order: CSS dock/toolbar spacing → pure position/radius constants with tests → camera distances and movement coefficients → curve thickness/labels. Preserve disposal, owner-filtered inputs, source callbacks, motion checks and stable IDs. Do not infer relationships from proximity.
+
+## Environment
+
+The original eight-second portrait MP4 is unchanged; source SHA256:
+`1ec093b5a382f99e8287b03d66929231aa82c49efe7f6b5339b9b41b0bbc1d0a`.
+
+CSS crops it to the whole stage with `object-fit: cover`, soft opacity and gradients. Do not restore the rejected portrait-poster plus side-column layout.
+
+ImpossibleEnvironment sets defaultPlaybackRate/playbackRate to 1, muted/playsInline/loop. After first playback the video stays mounted while paused, hidden behind the poster, retaining currentTime. Initial reduced-motion/lightweight mode can stay poster-only. Visibility and intersection observers suspend playback. Playback failure retains the poster. Original first/last frames were inspected; they are close, but perfect frame-level seamlessness is not guaranteed. No artificial speed increase was found.
+
+## Playback and persistence boundaries
+
+`useIntelligenceAudition` fetches fresh `SONG_LAB_SOURCE` per song, uses `creativeAudition` authorization/source checks and a cancellation token, then invokes MusicPlayerProvider's existing queue. Do not add another audio element/player or coerce missing Realm to 0. Scene selection itself need not interrupt currently playing music; explicit audition updates the shared queue.
+
+Existing operations in `graphql/intelligence.ts`: `INTELLIGENCE_SOURCES`, `SONG_LAB_SOURCE`, `SAVE_CREATIVE_PATH`, `REMOVE_CREATIVE_PATH`, `SAVE_CREATIVE_DIRECTION`, `RESET_CREATIVE_DIRECTIONS`. Paths use `myCreativePaths`, `saveCreativePath(input)`, `removeCreativePath(id)`. Directions/preferences remain separate from authored Paths and existing hypothesis feedback.
+
+Backend reference files: `backend/models/CreativePath.js`, `backend/lib/creativePaths.js`, existing schemas/resolvers. Owner authorization, eligible endpoints, normalized undirected pair and uniqueness protection remain authoritative. Browser fixtures do not prove database persistence. Session experiments are not saved projects. There is no new persistent hide/archive preference in Stage B.
+
+## Validation at this checkpoint
+
+Passed: 49 focused frontend tests, TypeScript, changed-file lint (existing img warning remains), `git diff --check`. No backend behavior changed in Stage B, so backend tests were not rerun. No production build performed in this bounded pass.
+
+From `frontend`:
+
+```sh
+node --test tests/livingUniverse.test.cjs tests/creativeCompass.test.cjs tests/audioFeatures.test.cjs tests/intelligenceWorkbench.test.cjs tests/catalogIntelligence.test.cjs tests/creativeFingerprint.test.cjs
+./node_modules/.bin/tsc --noEmit --incremental false
+./node_modules/.bin/next lint --file src/components/intelligence/UniverseScene.tsx --file src/components/intelligence/LivingIntelligence.tsx --file src/lib/livingUniverse.ts
+```
+
+From root:
+
+```sh
+git diff --check
+# Only if changing these backend behaviors:
+node --test backend/tests/creativePaths.test.js backend/tests/creativeDirection.test.js
+```
+
+Browser acceptance used `/tmp/cosmic-weekly-fixture` on localhost:3107: actual Workbench, Creator rail, MiniPlayer, MusicPlayerProvider and audition hook, 12 fictional songs and generated tone audio. Apollo responses and Path writes are mocked/in memory. No real account/catalog mutation or live database check occurred. Temporary fixture setup required correcting its auth refetch and mocked telemetry response; these were fixture defects, not product changes.
+
+Verified: Universe drag/orbit and wheel zoom; InterSiddhi → Return Address focus; visible catalog connections and paired playback; Back to Realm; disposable Return Address ↔ Little Orbit Path with custom meaning; scene Path audition; session-only experiment with those songs; 390px lightweight cards/search/actions and shared MiniPlayer; keyboard result activation; paused video at rate 1; simulated reduced-motion media preference (poster only, disabled motion control, immediate scene transitions). Real OS/device reduced-motion checks remain recommended. Final fixture screenshot: `/tmp/cosmic-v36-weekly-focus.png`.
+
+Limitations / outstanding visual constraints:
+- Close zoom and oblique orbit can overlap or clip records; Reframe and search recover navigation. Labels hide when colliding rather than displacing objects.
+- Focus retains context, but some distant neighbors can lie outside the focused framing. This is a navigable 3D view, not a guarantee every node is always visible.
+- No artwork-heavy large real catalog GPU benchmark, real-auth Mongo persistence verification or production build this pass.
+- Path creation and deeper experiments still use their existing panels; no new inline editor/sequence system was built.
+- No new backend behavior or dependencies; no backend tests needed for this frontend-only pass.
+
+## Safe edit sequence and dependencies
+
+1. Make a file backup; adjust CSS spacing only, check desktop and 390px.
+2. For density/placement, edit livingUniverse + its test together. Both LivingIntelligence and UniverseScene consume its inferred return type.
+3. For geometry/camera, edit UniverseScene; preserve cleanup, context fallback, labels and motion behavior.
+4. For navigation/search, edit LivingIntelligence; preserve parent-owned selection and callback contracts.
+5. For media behavior, edit ImpossibleEnvironment; retest pause, reduced-motion, offscreen and denied playback.
+6. Only then touch Workbench/CreativeCompass/CreatorPaths when necessary. Player/auth/GraphQL/backend are outside routine frontend polish.
+
+Change one concern at a time. Request complete replacement files only when needed; otherwise use small patches against the exact current file. Never apply a patch based on an older handoff's source snapshot.
+
+## Safe rollback
+
+HEAD is NOT the current accepted dirty baseline. Do not use reset, checkout, restore, clean or stash as a rollback shortcut. Before each manual patch, copy the exact target file to a dated backup outside the repository (preserve relative paths). Restore only that pre-patch copy if the patch fails. New files should be backed up too. `git diff --binary` captures tracked changes only, not untracked files; it is not a complete backup. A selected-source ZIP is a sharing snapshot, not a whole-repository backup. Never extract it over the working tree indiscriminately.
+
+## Real-data manual acceptance (no destructive setup)
+
+1. Sign in as the existing creator; open Intelligence. Confirm only authorized eligible songs appear and existing Creator shell remains.
+2. Visit each Realm, especially InterSiddhi (0); verify titles against Library. An empty Realm should be honest, not filled with unassigned songs.
+3. Browse Universe pages; search a distinctive title; Tab to its result and Enter. Confirm focused record plus meaningful neighbors and quieter page context.
+4. Select a supported line and an authored Path; inspect their different meanings. Audition the pair and verify MiniPlayer title/order/actual Realm. Pause via the shared player.
+5. If desired, explicitly create a disposable authored Path with a harmless note, reload to verify persistence, then remove only that test Path. Do not modify real projects or publication states. Check existing direction feedback separately.
+6. Try a pair in the session experiment; ensure Library/project order is unchanged.
+7. Pause/resume environment and enable OS reduced motion. Check mobile 390px, desktop, and lightweight mode. Search, listening and rail/player should remain reachable without horizontal overflow.
+8. Verify empty/minimal catalog and failed artwork/video use safe fallbacks. Do not remove real songs to create this state; use fixtures.
+
+Next manual patch: inspect a dense real Realm with artwork, then tune only label collision spacing and camera fit constants in UniverseScene. Keep the stable coordinates and shared player contracts intact; use Reframe after orbit/zoom. Review desktop and 390px before accepting the patch.

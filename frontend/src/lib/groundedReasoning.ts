@@ -4,7 +4,7 @@ export const REASONING_VERSION = 'grounded-v1';
 export const LyricsSchema = z.object({ text:z.string().max(30000),status:z.enum(['DRAFT','PARTIAL','COMPLETE']),updatedAt:z.string().nullish() });
 export type Lyrics = z.infer<typeof LyricsSchema>;
 export const EvidenceItemSchema=z.object({
- id:z.string(),type:z.enum(['CREATOR_MEANING','CREATOR_CONTEXT','CREATOR_ROLE','CREATOR_LYRIC','CREATOR_MOMENT','HOOK','FINGERPRINT_SIGNAL','REALM','TRACK_RELATIONSHIP','PROJECT_POSITION','PROJECT_STORY','PUBLICATION_STATE']),subjectId:z.string(),
+ id:z.string(),type:z.enum(['CREATOR_MEANING','CREATOR_CONTEXT','CREATOR_ROLE','CREATOR_LYRIC','CREATOR_MOMENT','HOOK','FINGERPRINT_SIGNAL','REALM','TRACK_RELATIONSHIP','PROJECT_POSITION','PROJECT_STORY','PUBLICATION_STATE','AUDIO_MEASUREMENT']),subjectId:z.string(),
  source:z.enum(['CREATOR','STORED_FACT','DERIVED']),summary:z.string().max(2000),sourcePath:z.string(),
  provenance:z.object({engineVersion:z.string(),inputHash:z.string()}),timeSeconds:z.number().nullish(),line:z.number().int().positive().nullish(),
 });
@@ -12,7 +12,7 @@ export type EvidenceItem=z.infer<typeof EvidenceItemSchema>;
 export const ClaimSchema=z.object({id:z.string(),subjectType:z.enum(['track','world','transition']),subjectId:z.string(),claimType:z.string().max(80),statement:z.string().min(1).max(1200),confidence:z.enum(['SUPPORTED','TENTATIVE','LOW_EVIDENCE']),evidenceIds:z.array(z.string()).min(1).max(30),unknowns:z.array(z.string().max(500)).max(10),sourceMode:z.enum(['DETERMINISTIC','MODEL_ASSISTED']),engineVersion:z.string(),inputHash:z.string(),generatedAt:z.string()});
 export type IntelligenceClaim=z.infer<typeof ClaimSchema>;
 export function evidenceHash(value:unknown){let a=2166136261,b=5381;for(const c of JSON.stringify(value)){a=Math.imul(a^c.charCodeAt(0),16777619);b=Math.imul(b,33)^c.charCodeAt(0);}return `${(a>>>0).toString(16)}${(b>>>0).toString(16)}`;}
-function evidence(type:EvidenceItem['type'],subjectId:string,source:EvidenceItem['source'],summary:string,sourcePath:string,extra:Partial<EvidenceItem>={}):EvidenceItem{
+export function evidence(type:EvidenceItem['type'],subjectId:string,source:EvidenceItem['source'],summary:string,sourcePath:string,extra:Partial<EvidenceItem>={}):EvidenceItem{
  const inputHash=evidenceHash({type,subjectId,source,summary,sourcePath,...extra});
  return EvidenceItemSchema.parse({id:`ev-${inputHash}`,type,subjectId,source,summary:summary.slice(0,2000),sourcePath,provenance:{engineVersion:REASONING_VERSION,inputHash},...extra});
 }
@@ -24,7 +24,7 @@ export function trackEvidence(song:SongIntelligenceProfile,lyrics?:Lyrics|null):
  add('HOOK',t.hook,'hook');add('CREATOR_CONTEXT',t.notes,'notes');add('CREATOR_CONTEXT',t.mood,'mood');
  for(const e of song.derived.evidence)result.push(evidence('FINGERPRINT_SIGNAL',t.id,e.source==='CREATOR_TAG'?'CREATOR':'DERIVED',`${e.signal} · ${e.source==='CREATOR_TAG'?'explicit creator tag':`vocabulary match (${e.source})`}`,`signals.${e.signal}`));
  result.push(evidence('REALM',t.id,'STORED_FACT',t.realmId==null?'Realm undecided':`Assigned Realm ${t.realmId}`,'realmId'));
- if(t.releaseWorldId)result.push(evidence('PROJECT_POSITION',t.id,'STORED_FACT',`Project ${t.releaseWorldId}, position ${t.trackNumber??'unknown'}`,'releaseWorldId/trackNumber'));
+ if(t.releaseWorldId)result.push(evidence('PROJECT_POSITION',t.id,'STORED_FACT',`Project position ${t.trackNumber??'unknown'}`,'releaseWorldId/trackNumber'));
  for(const m of t.songMoments??[]){result.push(evidence('CREATOR_MOMENT',t.id,'CREATOR',`You marked ${m.type} at ${m.timeSeconds}s. ${m.label??''} ${m.note??''}`.slice(0,2000),`songMoments.${m.id}`,{timeSeconds:m.timeSeconds}));if(m.lyricExcerpt)result.push(evidence('CREATOR_LYRIC',t.id,'CREATOR',m.lyricExcerpt,`songMoments.${m.id}.lyricExcerpt`,{timeSeconds:m.timeSeconds}));}
  if(lyrics)lyrics.text.split('\n').forEach((line,i)=>{if(line.trim()&&result.filter(e=>e.line).length<200)result.push(evidence('CREATOR_LYRIC',t.id,'CREATOR',line.slice(0,2000),`lyrics.line.${i+1}`,{line:i+1}));});
  return result;
@@ -43,7 +43,7 @@ export function validateClaim(raw:unknown,ledger:EvidenceItem[]):IntelligenceCla
  if(claim.evidenceIds.some(id=>!ids.has(id)))throw new Error('Claim references evidence outside its snapshot.');
  return claim;
 }
-function claim(subjectType:IntelligenceClaim['subjectType'],subjectId:string,type:string,statement:string,items:EvidenceItem[],confidence:IntelligenceClaim['confidence'],unknowns:string[]=[]):IntelligenceClaim{
+export function claim(subjectType:IntelligenceClaim['subjectType'],subjectId:string,type:string,statement:string,items:EvidenceItem[],confidence:IntelligenceClaim['confidence'],unknowns:string[]=[]):IntelligenceClaim{
  const inputHash=evidenceHash(items.map(e=>e.id));
  return validateClaim({id:`claim-${evidenceHash({subjectId,type,inputHash,statement})}`,subjectType,subjectId,claimType:type,statement,confidence,evidenceIds:items.slice(0,30).map(e=>e.id),unknowns,sourceMode:'DETERMINISTIC',engineVersion:REASONING_VERSION,inputHash,generatedAt:new Date().toISOString()},items);
 }
