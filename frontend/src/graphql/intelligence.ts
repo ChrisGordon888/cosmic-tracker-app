@@ -2,6 +2,7 @@ import { gql } from '@apollo/client';
 // Existing authenticated owner queries only. No audio or rights documents are fetched.
 export const INTELLIGENCE_SOURCES=gql`
  query IntelligenceSources {
+  myIntelligenceHiddenTrackIds
   myCreativePaths { id a b note }
   myCreativeDirections { targetId value }
   myAudioProfiles { trackId sourceIdentity analysisVersion rmsDbfs durationSeconds }
@@ -57,3 +58,5 @@ export const RESET_CREATIVE_DIRECTIONS=gql`mutation ResetCreativeDirections{rese
 
 export const SAVE_CREATIVE_PATH=gql`mutation SaveCreativePath($input:CreativePathInput!){saveCreativePath(input:$input){id a b note}}`;
 export const REMOVE_CREATIVE_PATH=gql`mutation RemoveCreativePath($id:ID!){removeCreativePath(id:$id){id a b note}}`;
+
+export const SET_INTELLIGENCE_INCLUSION=gql`mutation SetIntelligenceInclusion($trackId:ID!,$included:Boolean!){setIntelligenceInclusion(trackId:$trackId,included:$included)}`;

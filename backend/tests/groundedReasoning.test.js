@@ -2,6 +2,7 @@ const test=require('node:test'),assert=require('node:assert/strict');
 const resolvers=require('../resolvers'),Track=require('../models/ReleaseTrack'),World=require('../models/ReleaseWorld'),Run=require('../models/IntelligenceRun'),Feedback=require('../models/HypothesisFeedback');
 const provider=require('../lib/groundedProvider'),service=require('../lib/songReasoning'),{lyricsInput}=require('../lib/lyricsContext');
 const Audio=require('../models/AudioFeatureProfile');
+const collection=require('../lib/intelligenceCollection');
 const originalAudioFind=Audio.findOne;
 test.before(()=>{Audio.findOne=()=>({lean:async()=>null});});
 test.after(()=>{Audio.findOne=originalAudioFind;});
@@ -32,11 +33,12 @@ test('Provider is opt-in; validates complete output, references, refusal and fai
  await assert.rejects(()=>provider.reasonAboutSong(snapshot,{config:{available:false},fetchImpl:async()=>{assert.fail('must not call');}}));
 });
 test('Server snapshots exclude foreign/Vault/test, cache current results, detect stale evidence and discard failed output',async()=>{
+ const previousHidden=collection.listHidden,previousAudio=Audio.findOne;collection.listHidden=async()=>['ffffffffffffffffffffffff'];Audio.findOne=()=>({lean:async()=>null});
  const originals=[Track.findOne,Track.find,World.findOne,Run.findOne,Run.findOneAndUpdate,Run.updateOne,provider.configuration,provider.reasonAboutSong];
  let record=null,calls=0,track={_id:id,title:'Fictional song',realmId:0,creativeSignals:['memory','dreamy'],lyrics:{text:'fictional lyric'},songMoments:[],updatedAt:new Date(0)};
  const chain=value=>({select(){return this;},sort(){return this;},limit(){return this;},lean:async()=>value});
  Track.findOne=q=>{assert.deepEqual(q.catalogTreatment,{$nin:['vault','test']});assert.equal(q.status.$ne,'archived');return chain(q.ownerId===user.id?track:null);};
- Track.find=q=>{assert.equal(q.ownerId,user.id);assert.deepEqual(q.catalogTreatment,{$nin:['vault','test']});return chain([]);};
+ Track.find=q=>{assert.ok(q._id.$nin.includes('ffffffffffffffffffffffff'));assert.equal(q.ownerId,user.id);assert.deepEqual(q.catalogTreatment,{$nin:['vault','test']});return chain([]);};
  World.findOne=()=>{assert.fail('no project');};
  Run.findOne=q=>{assert.equal(q.ownerId,user.id);return chain(record);};
  const doc=()=>({...record,toObject:()=>({...record})});
@@ -53,7 +55,7 @@ test('Server snapshots exclude foreign/Vault/test, cache current results, detect
   track={...track,lyrics:{text:'changed'},updatedAt:new Date(1000)};current=await service.get(user.id,id);assert.equal(current.status,'STALE');assert.equal(current.claims.length,0);
   provider.reasonAboutSong=async()=>{throw Error('fixture failure');};result=await service.reflect(user.id,id,current.inputHash);assert.equal(result.status,'FAILED');assert.equal(result.claims.length,0);
   provider.reasonAboutSong=async()=>{track={...track,title:'changed while running'};return {claims:[],questions:[]};};result=await service.reflect(user.id,id,current.inputHash);assert.equal(result.status,'STALE');
- }finally{[Track.findOne,Track.find,World.findOne,Run.findOne,Run.findOneAndUpdate,Run.updateOne,provider.configuration,provider.reasonAboutSong]=originals;}
+ }finally{collection.listHidden=previousHidden;Audio.findOne=previousAudio;[Track.findOne,Track.find,World.findOne,Run.findOne,Run.findOneAndUpdate,Run.updateOne,provider.configuration,provider.reasonAboutSong]=originals;}
 });
 test('Feedback records bounded response history and evidence versions with owner isolation',async()=>{
  const originals=[Track.exists,Feedback.findOneAndUpdate];const events=[];
@@ -68,10 +70,11 @@ test('Provider aborts on timeout and rejects refusal/incomplete responses',async
  for(const body of [{status:'incomplete',output:[]},{status:'completed',output:[{type:'message',content:[{type:'refusal'}]}]}])await assert.rejects(()=>provider.reasonAboutSong(snapshot,{config,fetchImpl:async()=>({ok:true,json:async()=>body})}));
 });
 test('Bounded retrieval includes only owned project and related summaries, not unrelated private context',async()=>{
+ const previousHidden=collection.listHidden,previousAudio=Audio.findOne;collection.listHidden=async()=>['ffffffffffffffffffffffff'];Audio.findOne=()=>({lean:async()=>null});
  const originals=[Track.findOne,Track.find,World.findOne];
  const chain=value=>({select(){return this;},sort(){return this;},limit(n){assert.equal(n,60);return this;},lean:async()=>value});
  Track.findOne=q=>{assert.equal(q.ownerId,user.id);return chain({_id:id,title:'Fixture',realmId:null,releaseWorldId:id,trackNumber:1,creativeSignals:['memory','dreamy'],lyrics:{text:'x'.repeat(30000)},songMoments:[{_id:'moment',type:'TURN',timeSeconds:74,note:'Marked turn'}]});};
- Track.find=q=>{assert.equal(q.ownerId,user.id);return chain(Array.from({length:10},(_,i)=>({_id:String(i),title:'Related fixture',creativeSignals:['memory','dreamy'],creatorContext:{meaning:'DO NOT SEND RELATED PRIVATE CONTEXT'}})));};
+ Track.find=q=>{assert.ok(q._id.$nin.includes('ffffffffffffffffffffffff'));assert.equal(q.ownerId,user.id);return chain(Array.from({length:10},(_,i)=>({_id:String(i),title:'Related fixture',creativeSignals:['memory','dreamy'],creatorContext:{meaning:'DO NOT SEND RELATED PRIVATE CONTEXT'}})));};
  World.findOne=q=>{assert.equal(q.ownerId,user.id);return chain({_id:id,title:'Owned project',story:'Creator story'});};
- try{const s=await service.snapshot(user.id,id);assert.ok(s.evidence.length<=240);assert.ok(s.evidence.reduce((n,e)=>n+e.summary.length,0)<=36000);assert.equal(s.evidence.filter(e=>e.type==='TRACK_RELATIONSHIP').length,3);assert.ok(s.evidence.some(e=>e.type==='CREATOR_MOMENT'));assert.ok(s.evidence.some(e=>e.type==='PROJECT_STORY'));assert.equal(JSON.stringify(s.evidence).includes('DO NOT SEND'),false);assert.equal(s.evidence.find(e=>e.type==='REALM').summary,'Realm undecided');}finally{[Track.findOne,Track.find,World.findOne]=originals;}
+ try{const s=await service.snapshot(user.id,id);assert.ok(s.evidence.length<=240);assert.ok(s.evidence.reduce((n,e)=>n+e.summary.length,0)<=36000);assert.equal(s.evidence.filter(e=>e.type==='TRACK_RELATIONSHIP').length,3);assert.ok(s.evidence.some(e=>e.type==='CREATOR_MOMENT'));assert.ok(s.evidence.some(e=>e.type==='PROJECT_STORY'));assert.equal(JSON.stringify(s.evidence).includes('DO NOT SEND'),false);assert.equal(s.evidence.find(e=>e.type==='REALM').summary,'Realm undecided');}finally{collection.listHidden=previousHidden;Audio.findOne=previousAudio;[Track.findOne,Track.find,World.findOne]=originals;}
 });

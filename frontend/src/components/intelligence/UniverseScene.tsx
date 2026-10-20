@@ -5,7 +5,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import type { livingUniverse } from '@/lib/livingUniverse';
 type Universe = ReturnType<typeof livingUniverse>;
-type Props = { universe: Universe; selectedId: string; onSelect: (id: string) => void; onFailure: () => void; reduced: boolean; overview: number; onPath?: (a: string, b: string) => void };
+type Props = { universe: Universe; selectedId: string; onSelect: (id: string) => void; onFailure: () => void; reduced: boolean; overview: number; onPath?: (a: string, b: string) => void; onRealm?: (id: number | null) => void };
 
 /** One renderer per mount. Data reconciliation never replaces the camera or controls. */
 export default function UniverseScene(props: Props) {
@@ -26,7 +26,7 @@ export default function UniverseScene(props: Props) {
         const camera = new THREE.PerspectiveCamera(42, 1, .1, 200); camera.position.set(0, 4, 40);
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = false; controls.enablePan = false; controls.enableZoom = true;
-        controls.minDistance = 9; controls.maxDistance = 75; controls.minPolarAngle = .3; controls.maxPolarAngle = Math.PI - .3;
+        controls.minDistance = 9; controls.maxDistance = 110; controls.minPolarAngle = .3; controls.maxPolarAngle = Math.PI - .3;
         controls.rotateSpeed = .65; controls.zoomSpeed = .7;
         scene.add(new THREE.HemisphereLight(0xdcefff, 0x142644, 3));
         const key = new THREE.DirectionalLight(0xc7e8ff, 5); key.position.set(4, 12, 10); scene.add(key);
@@ -34,6 +34,7 @@ export default function UniverseScene(props: Props) {
         const layer = document.createElement('div'); layer.className = 'universe-label-layer'; element.appendChild(layer);
         type Node = { group: THREE.Group; base: THREE.Vector3; target: THREE.Vector3; face: THREE.MeshStandardMaterial; halo: THREE.MeshBasicMaterial; label: HTMLButtonElement; artwork?: string | null; texture: THREE.Texture; source: Universe['nodes'][number] };
         const nodes = new Map<string, Node>();
+        const regionLabels = new Map<string, HTMLButtonElement>();
         type Path = { edge: Universe['edges'][number]; curve: THREE.QuadraticBezierCurve3; mesh: THREE.Mesh<THREE.TubeGeometry, THREE.MeshBasicMaterial>; hit: THREE.Line<THREE.BufferGeometry, THREE.LineBasicMaterial>; spark: THREE.Mesh; label: HTMLButtonElement; lastA: THREE.Vector3; lastB: THREE.Vector3 };
         let paths: Path[] = [], model: Universe | null = null, pathKey = '', lastFocus = '', lastScale = '', lastContext = '', lastQuiet = false, activated = 0;
         let lastOverview = current.current.overview;
@@ -49,6 +50,11 @@ export default function UniverseScene(props: Props) {
             const texture = new THREE.CanvasTexture(c); texture.colorSpace = THREE.SRGBColorSpace; return texture;
         };
         function reconcile(next: Universe) {
+            for (const region of next.regions) {
+                const key = String(region.id); let label = regionLabels.get(key);
+                if (!label) { label = document.createElement('button'); label.type = 'button'; label.className = 'universe-region-label'; label.onclick = () => current.current.onRealm?.(region.id); layer.appendChild(label); regionLabels.set(key, label); }
+                label.textContent = `${region.name} · ${region.count}`; label.style.borderColor = region.color;
+            }
             const ids = new Set(next.nodes.map(n => n.id));
             for (const [id, n] of nodes) if (!ids.has(id)) { scene.remove(n.group); free(n.group); n.texture.dispose(); n.label.remove(); nodes.delete(id); }
             for (const source of next.nodes) {
@@ -93,10 +99,13 @@ export default function UniverseScene(props: Props) {
             model = next; dirty = true;
         }
         function frameView() {
-            const bounds = new THREE.Box3(); nodes.forEach(n => bounds.expandByPoint(n.base));
-            const center = nodes.size ? bounds.getCenter(new THREE.Vector3()) : new THREE.Vector3();
-            const size = nodes.size ? bounds.getSize(new THREE.Vector3()) : new THREE.Vector3(12, 8, 8);
-            const distance = Math.min(65, Math.max(20, Math.max(size.y + 7, (size.x + 7) / Math.max(.5, camera.aspect)) / .7 + size.z / 2));
+            const bounds = new THREE.Box3(); const view = current.current.universe;
+            const members = [...nodes.values()].filter(n => view.scale !== 'realm' || (n.source.realmId ?? null) === (view.realmId ?? null));
+            members.forEach(n => bounds.expandByPoint(n.base));
+            const region = view.regions.find(r => r.id === (view.realmId ?? null));
+            const center = members.length ? bounds.getCenter(new THREE.Vector3()) : view.scale === 'realm' && region ? new THREE.Vector3(...region.position) : new THREE.Vector3();
+            const size = members.length ? bounds.getSize(new THREE.Vector3()) : new THREE.Vector3(12, 8, 8);
+            const distance = Math.min(100, Math.max(20, Math.max(size.y + 7, (size.x + 7) / Math.max(.5, camera.aspect)) / .7 + size.z / 2));
             return { position: center.clone().add(new THREE.Vector3(0, 3, distance)), target: center };
         }
         const resize = () => { const { width, height } = element.getBoundingClientRect(); renderer.setSize(width, height); camera.aspect = width / Math.max(1, height); camera.updateProjectionMatrix(); dirty = true; };
@@ -138,12 +147,12 @@ export default function UniverseScene(props: Props) {
             controls.update();
             const related = new Set(universe.focusIds);
             nodes.forEach((n, id) => {
-                const active = focused && id === selectedId, near = related.has(id);
+                const active = focused && id === selectedId, near = related.has(id), wide = universe.scale === 'universe';
                 n.target.copy(n.base); if (active) n.target.add(focusOffset);
                 n.group.position.lerp(n.target, reduced ? 1 : .12); n.group.lookAt(camera.position);
                 n.group.scale.lerp(new THREE.Vector3().setScalar(active ? 1.7 : 1), reduced ? 1 : .12);
-                n.halo.opacity = active ? 1 : !focused || near ? .65 : .18; n.face.emissiveIntensity = active ? .35 : !focused || near ? .13 : .025;
-                n.label.style.opacity = !focused || near ? '1' : '.38'; n.label.dataset.selected = String(active); n.label.setAttribute('aria-pressed', String(active));
+                n.halo.opacity = active ? 1 : wide || near ? .65 : .12; n.face.emissiveIntensity = active ? .35 : wide || near ? .13 : .015;
+                n.label.style.opacity = wide || near ? '1' : '.25'; n.label.dataset.selected = String(active); n.label.setAttribute('aria-pressed', String(active));
             });
             let sparks = 0;
             paths.forEach(p => {
@@ -153,8 +162,8 @@ export default function UniverseScene(props: Props) {
                     p.mesh.geometry.dispose(); p.mesh.geometry = new THREE.TubeGeometry(p.curve, 32, p.edge.kind === 'authored' ? .085 : p.edge.strong ? .065 : .03, 5, false);
                     p.hit.geometry.dispose(); p.hit.geometry = new THREE.BufferGeometry().setFromPoints(p.curve.getPoints(32)); p.lastA.copy(a); p.lastB.copy(b);
                 }
-                const active = p.edge.a === selectedId || p.edge.b === selectedId;
-                p.mesh.material.opacity = focused && !active ? .08 : p.edge.kind === 'authored' ? .95 : p.edge.strong ? .8 : .38;
+                const active = focused ? p.edge.a === selectedId || p.edge.b === selectedId : universe.scale === 'realm' ? related.has(p.edge.a) || related.has(p.edge.b) : true;
+                p.mesh.material.opacity = !active ? .06 : p.edge.kind === 'authored' ? .95 : p.edge.strong ? .8 : .38;
                 p.spark.visible = active && sparks++ < 2 && !reduced && time - activated < 5000;
                 if (p.spark.visible) p.spark.position.copy(p.curve.getPoint(((time - activated) * .00015) % 1));
             });
@@ -169,9 +178,19 @@ export default function UniverseScene(props: Props) {
                 if (!outside && !overlap) occupied.push({ x, y, w, h });
                 return !outside && !overlap;
             };
-            [...nodes.entries()].sort(([a], [b]) => Number(b === selectedId) - Number(a === selectedId)).forEach(([id, n]) => {
-                const below = new THREE.Vector3(0, -(focused && id === selectedId ? 2.5 : 1.5), 0).applyQuaternion(camera.quaternion);
-                place(n.label, n.group.position.clone().add(below), id === selectedId);
+            for (const region of universe.regions) {
+                const label = regionLabels.get(String(region.id))!;
+                const location = new THREE.Vector3(...region.position); location.y += region.spread[1] + 2;
+                for (const offset of [0, 3, -3, 6]) if (place(label, location.clone().add(new THREE.Vector3(0, offset, 0)))) break;
+            }
+            let labelCount = 0;
+            [...nodes.entries()].sort(([a, n], [b, m]) => Number(b === selectedId) - Number(a === selectedId) || Number(related.has(b)) - Number(related.has(a)) || n.group.position.distanceToSquared(camera.position) - m.group.position.distanceToSquared(camera.position)).forEach(([id, n]) => {
+                const active = focused && id === selectedId;
+                const relevant = universe.scale === 'universe' || related.has(id);
+                const distance = camera.position.distanceTo(n.group.position);
+                if (!active && (!relevant || labelCount >= 18 || distance > 65)) { n.label.style.visibility = 'hidden'; return; }
+                const below = new THREE.Vector3(0, -(active ? 2.5 : 1.5), 0).applyQuaternion(camera.quaternion);
+                if (place(n.label, n.group.position.clone().add(below), active)) labelCount++;
             });
             // Connection labels must not cover the musical objects themselves.
             nodes.forEach(n => {

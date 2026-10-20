@@ -760,6 +760,7 @@ const typeDefs = gql`
   # 📖 Queries
   type Query {
     myCreativePaths: [CreativePath!]!
+    myIntelligenceHiddenTrackIds: [ID!]!
     myCreativeDirections: [CreativeDirection!]!
     myAudioProfiles: [AudioFeatureProfile!]!
     songAudioState(trackId: ID!): SongAudioState!
@@ -847,6 +848,7 @@ const typeDefs = gql`
   type Mutation {
     saveCreativePath(input: CreativePathInput!): [CreativePath!]!
     removeCreativePath(id: ID!): [CreativePath!]!
+    setIntelligenceInclusion(trackId: ID!, included: Boolean!): [ID!]!
     saveCreativeDirection(input: CreativeDirectionInput!): [CreativeDirection!]!
     resetCreativeDirections: [CreativeDirection!]!
     saveSongAudioMeasurements(trackId: ID!, sourceIdentity: String!, input: AudioMeasurementInput!): SongAudioState!

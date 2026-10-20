@@ -41,8 +41,10 @@ export function scopedSources(rawTracks:unknown[],rawWorlds:unknown[],ownerId:st
 }
 export function sourceHash(rawTracks:unknown[],rawWorlds:unknown[],ownerId:string){return digest({version:ANALYSIS_VERSION,ownerId,...scopedSources(rawTracks,rawWorlds,ownerId)});}
 export function isAnalysisStale(profile:SongIntelligenceProfile,tracks:unknown[],worlds:unknown[],ownerId:string){return profile.ownerId!==ownerId||profile.provenance.analysisVersion!==ANALYSIS_VERSION||profile.provenance.inputHash!==sourceHash(tracks,worlds,ownerId);}
-export function buildIntelligence(rawTracks:unknown[],rawWorlds:unknown[],ownerId:string,generatedAt=new Date().toISOString()){
-  const {tracks,worlds}=scopedSources(rawTracks,rawWorlds,ownerId);
+export function buildIntelligence(rawTracks:unknown[],rawWorlds:unknown[],ownerId:string,generatedAt=new Date().toISOString(),excludedTrackIds:string[]=[]){
+  const {tracks:eligibleTracks,worlds}=scopedSources(rawTracks,rawWorlds,ownerId);
+  const excluded=new Set(excludedTrackIds);
+  const tracks=eligibleTracks.filter(t=>!excluded.has(t.id));
   const catalog=analyzeCatalog(tracks.map(t=>({...t,notes:[t.notes,contextText(t)].filter(Boolean).join('\n'),status:t.status??undefined})),ownerId);
   const inputHash=sourceHash(tracks,worlds,ownerId);
   const songs=tracks.map(t=>{

@@ -1,5 +1,43 @@
 # COSMIC V3.6 manual development handoff
 
+## Current checkpoint: 2026-10-19 — V3.7 Whole Universe
+
+Started from clean committed V3.6 `065a0e2` on `feat/cosmic-intelligence-v3`. All changes remain uncommitted. No real catalog mutations, new dependencies, model calls, publishing changes or player replacement.
+
+Universe is now the default without an arbitrary selected song. Valid `?song=ID` / `?trackId=ID` and `?realm=ID` / `?realm=unassigned` retain intentional navigation. All eligible, non-hidden nodes coexist in every 3D view; Realm selection changes camera framing and emphasis, not membership. Six unequal anchors/spreads live in `frontend/src/lib/universeLayout.ts`; adjust this file for later art direction. Track-ID hashing keeps positions stable across selection, refresh and hide/restore. Realm 0 and the neutral unassigned holding area are distinct.
+
+Collection inclusion reuses owner-scoped CreativeDirection preferences under `inclusion:<trackId>` with value `HIDDEN`. New `myIntelligenceHiddenTrackIds` query and `setIntelligenceInclusion` mutation require a creator. Both hide and restore prove track ownership. Ordinary creative-direction list/reset exclude this namespace. No ReleaseTrack writes occur. Manage collection restores hidden songs; active analysis and server related-song candidate queries omit hidden IDs. Explicit Library/Song Lab access remains available.
+
+V3.7 verification: 51 frontend tests, 12 backend tests, TypeScript, changed-file lint and backend syntax pass; lint retains one image-optimization warning plus tool/workspace warnings. Browser fixture expanded to 56 fictional songs (eight in each Realm plus eight unassigned), actual shared player and a cross-Realm authored Path. Verified default Universe, 56 mounted song objects, orbit/zoom, Realm 0 versus unassigned, selection, Hear together and next-track handoff, hide → refresh (55) → restore (56), and 390px lightweight Realm/song/back navigation with no horizontal document overflow. Browser inclusion persistence uses fixture-only owner-keyed localStorage; production Mongo persistence is service-tested with mocks, not against a real account/database. No FPS benchmark or production build was run for this pass.
+
+Next manual improvement: tune anchor spread and distance-based artwork/title sizing against the creator's real collection. At full-Universe distance records are deliberately small, and overlapping labels are culled; zoom/Realm focus/search reveals details. Keep all nodes and the renderer lifecycle intact.
+
+### V3.7 file inventory
+
+- `backend/lib/creativeDirection.js`
+- `backend/lib/songReasoning.js`
+- `backend/models/CreativeDirection.js`
+- `backend/resolvers/index.js`
+- `backend/schemas/index.js`
+- `backend/tests/groundedReasoning.test.js`
+- `frontend/src/app/creator/intelligence/page.tsx`
+- `frontend/src/components/intelligence/IntelligenceWorkbench.tsx`
+- `frontend/src/components/intelligence/LivingIntelligence.tsx`
+- `frontend/src/components/intelligence/UniverseScene.tsx`
+- `frontend/src/graphql/intelligence.ts`
+- `frontend/src/lib/intelligenceWorkbench.ts`
+- `frontend/src/lib/livingUniverse.ts`
+- `frontend/src/styles/intelligenceWorkbench.css`
+- `frontend/tests/livingUniverse.test.cjs`
+- `backend/lib/intelligenceCollection.js`
+- `backend/tests/intelligenceCollection.test.js`
+- `frontend/src/components/intelligence/IntelligenceCollection.tsx`
+- `frontend/src/lib/intelligenceNavigation.ts`
+- `frontend/src/lib/universeLayout.ts`
+- This existing handoff document.
+
+### Historical V3.6 checkpoint (superseded where noted above)
+
 ## Checkpoint: 2026-10-18 — final weekly pass
 
 Branch: `feat/cosmic-intelligence-v3`. Nothing committed, merged or deployed in this pass. The starting tree already contained 17 modified tracked files and extensive untracked V3.3–V3.6 source, tests, documentation and approved environment media. Preserve all of it. `git status --short` is the authoritative current inventory; untracked does not mean disposable.
@@ -47,19 +85,19 @@ Workbench also retains the optional deeper desk, Song Lab and `CreativeCompass`.
 
 Workbench owns the selected song ID. LivingIntelligence owns `UniverseView`, search, motion/fallback and selected connection. A Song view retains its originating Realm/Universe page in `view.context`; the Back button restores it. Search and record selection close transient results. Escape closes search, connection and Path editor; clicking outside search closes results. Inspect and Experiment reuse the existing deeper workspace; Connect still uses the existing Path editor below the scene rather than adding another relationship form.
 
-`livingUniverse` computes owner-eligible scene data only. Realm/Universe pages contain at most 12 records. Song mode retains that page and adds the selected song plus up to three relevant neighbors (maximum 16), quieting background records instead of erasing their context. Realm 0 remains explicitly valid; unassigned songs have a separate neutral neighborhood. Search matches title substrings and shows up to eight results with project/Realm context.
+`livingUniverse` computes owner-eligible scene data only. V3.7 retains every eligible node in all 3D modes; Song mode emphasizes selected/connected records while keeping the surrounding collection. Realm 0 remains explicitly valid; unassigned songs have a separate neutral neighborhood. Search matches title substrings and shows up to eight results with project/Realm context.
 
 ## Scene and camera ownership
 
 UniverseScene owns a single renderer/camera/OrbitControls per mount. `current` receives fresh props. `reconcile()` adds/removes records and updates path resources; changing selection does not destroy the renderer or camera. `draw(time)` reads current selection/scale, transitions objects and camera, updates curves/labels and renders. Cleanup disposes all owned resources and observers. Lightweight mode intentionally unmounts Three.js; returning from lightweight creates a new camera session.
 
-Orbit has full azimuth, bounded polar angle (.3 to PI-.3), no panning, and zoom distance 9–75. Drag/zoom cancels an automatic camera transition. `cameras` stores wider-view position/target by context key (scale, Realm, page). Entering Song saves the outgoing wider camera; Back restores it. Reframe deliberately fits the current context again. There is no database/local-storage camera persistence. Resizing updates aspect, not the user's angle; use Reframe after a large viewport change.
+Orbit has full azimuth, bounded polar angle (.3 to PI-.3), no panning, and zoom distance 9–110. Drag/zoom cancels an automatic camera transition. `cameras` stores wider-view position/target by context key (scale, Realm). Entering Song saves the outgoing wider camera; Back restores it. Reframe deliberately fits the current context again. There is no database/local-storage camera persistence. Resizing updates aspect, not the user's angle; use Reframe after a large viewport change.
 
 Selected records move four world units toward the viewing direction plus .8 elevation, grow to 1.7×, and gain their existing Realm halo. Camera focuses at distance 25. Other records keep their base coordinates. Returning interpolates the record home and restores the wider camera. Reduced/paused motion applies final transforms immediately and disables highlight animation. User orbit is still available because it is deliberate input.
 
 ## Placement and relationship geometry
 
-`positionFor()` hashes immutable track ID with avalanche mixing, giving stable offsets around authoritative Realm centers. X/Y/Z all vary. Positions do not depend on selected song or page order. These are navigation coordinates, NOT measured acoustic distance or creative confidence. Realm configuration itself is unchanged.
+`songPosition()` in `universeLayout.ts` hashes immutable track ID with avalanche mixing, giving stable offsets around authoritative Realm centers. X/Y/Z all vary. Positions do not depend on selected song or page order. These are navigation coordinates, NOT measured acoustic distance or creative confidence. Realm configuration itself is unchanged.
 
 Broad views select up to 12 supported edges with a maximum degree of three per node; Song view prioritizes edges incident to selection. Up to six authored Paths are added, suppressing duplicate inferred lines for a pair. All endpoints must be in the eligible visible model.
 
@@ -134,7 +172,7 @@ HEAD is NOT the current accepted dirty baseline. Do not use reset, checkout, res
 
 1. Sign in as the existing creator; open Intelligence. Confirm only authorized eligible songs appear and existing Creator shell remains.
 2. Visit each Realm, especially InterSiddhi (0); verify titles against Library. An empty Realm should be honest, not filled with unassigned songs.
-3. Browse Universe pages; search a distinctive title; Tab to its result and Enter. Confirm focused record plus meaningful neighbors and quieter page context.
+3. Orbit the complete Universe; search a distinctive title; Tab to its result and Enter. Confirm focused record plus meaningful neighbors and quieter page context.
 4. Select a supported line and an authored Path; inspect their different meanings. Audition the pair and verify MiniPlayer title/order/actual Realm. Pause via the shared player.
 5. If desired, explicitly create a disposable authored Path with a harmless note, reload to verify persistence, then remove only that test Path. Do not modify real projects or publication states. Check existing direction feedback separately.
 6. Try a pair in the session experiment; ensure Library/project order is unchanged.

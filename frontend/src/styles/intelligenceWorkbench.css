@@ -2012,3 +2012,15 @@
 .living-universe .universe-canvas canvas { touch-action: none; cursor: grab; }
 .living-universe .universe-canvas canvas:active { cursor: grabbing; }
 .living-universe .universe-path-label { padding: 5px 8px; font-size: 10px; max-width: 130px; }
+
+/* Realm neighborhood markers name regions without adding navigable architecture. */
+.universe-region-label { position:absolute; left:0; top:0; pointer-events:auto; border:1px solid; border-radius:8px; background:#09101ce8; color:#e4edf5; padding:6px 10px; font-size:11px; letter-spacing:.04em; white-space:nowrap; }
+.intelligence-collection-body { padding:16px; }
+.intelligence-collection-body > p { max-width:65ch; color:#b8c8d6; font-size:13px; }
+.intelligence-collection-body label { display:grid; gap:6px; font-size:12px; }
+.intelligence-collection-body ul { list-style:none; margin:12px 0; padding:0; max-height:320px; overflow:auto; }
+.intelligence-collection-body li { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid #c4d8e51c; }
+.intelligence-collection-body li small { display:block; color:#8ea6b9; font-size:11px; }
+.intelligence-collection-body li button { flex-shrink:0; }
+@media(max-width:640px) { .intelligence-collection-body li { align-items:flex-start; flex-direction:column; } }
+.intelligence-workbench .universe-region-label { min-height:0; padding:5px 8px; font-size:10px; line-height:1.2; border-radius:8px; background:#09101ce8; }

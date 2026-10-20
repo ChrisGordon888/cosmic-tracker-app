@@ -11,7 +11,8 @@ async function snapshot(ownerId,trackId){
  const track=await Track.findOne({_id:trackId,...eligible(ownerId)}).select('title realmId creativeSignals creatorContext hook mood notes lyrics songMoments releaseWorldId trackNumber updatedAt audioUrl audioContentHash sourceFileSize').lean();
  if(!track)throw new Error('Song not found.');
  const world=track.releaseWorldId?await World.findOne({_id:track.releaseWorldId,ownerId,status:{$ne:'archived'}}).select('title story updatedAt').lean():null;
- const related=(track.creativeSignals||[]).length?await Track.find({...eligible(ownerId),_id:{$ne:track._id},creativeSignals:{$in:track.creativeSignals}}).select('title creativeSignals').sort({_id:1}).limit(60).lean():[];
+ const hidden=await require('./intelligenceCollection').listHidden(ownerId);
+ const related=(track.creativeSignals||[]).length?await Track.find({...eligible(ownerId),_id:{$nin:[track._id,...hidden]},creativeSignals:{$in:track.creativeSignals}}).select('title creativeSignals').sort({_id:1}).limit(60).lean():[];
  const ranked=related.map(t=>({id:String(t._id),title:t.title,shared:(t.creativeSignals||[]).filter(s=>track.creativeSignals.includes(s))})).filter(t=>t.shared.length>=2).sort((a,b)=>b.shared.length-a.shared.length||a.id.localeCompare(b.id)).slice(0,3);
  const audio=currentProfile(track,await Audio.findOne({ownerId,trackId}).lean());
  const evidence=[];let characters=0;

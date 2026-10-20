@@ -1630,6 +1630,7 @@ module.exports = {
     },
     Query: {
         myCreativePaths: async (_, args, { user }) => { requireCreator(user); return (await require("../lib/creativePaths").list(user.id)).map(p=>({...p,id:String(p._id)})); },
+        myIntelligenceHiddenTrackIds: async (_, args, { user }) => { requireCreator(user); return require("../lib/intelligenceCollection").listHidden(user.id); },
         myCreativeDirections: async (_, args, { user }) => { requireCreator(user); return require("../lib/creativeDirection").list(user.id); },
         myAudioProfiles: async (_, args, { user }) => { requireCreator(user); return require("../lib/audioFeatures").list(user.id); },
         songAudioState: async (_, { trackId }, { user }) => { requireCreator(user); return require("../lib/audioFeatures").state(user.id, trackId); },
@@ -2348,6 +2349,7 @@ module.exports = {
     Mutation: {
         saveCreativePath: async (_, { input }, { user }) => { requireCreator(user); return (await require("../lib/creativePaths").save(user.id,input)).map(p=>({...p,id:String(p._id)})); },
         removeCreativePath: async (_, { id }, { user }) => { requireCreator(user); return (await require("../lib/creativePaths").remove(user.id,id)).map(p=>({...p,id:String(p._id)})); },
+        setIntelligenceInclusion: async (_, { trackId, included }, { user }) => { requireCreator(user); return require("../lib/intelligenceCollection").setIncluded(user.id, { trackId, included }); },
         saveCreativeDirection: async (_, { input }, { user }) => { requireCreator(user); return require("../lib/creativeDirection").save(user.id, input); },
         resetCreativeDirections: async (_, args, { user }) => { requireCreator(user); return require("../lib/creativeDirection").reset(user.id); },
         saveSongAudioMeasurements: async (_, { trackId, sourceIdentity, input }, { user }) => { requireCreator(user); return require("../lib/audioFeatures").save(user.id, trackId, sourceIdentity, input); },

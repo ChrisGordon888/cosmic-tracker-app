@@ -1,6 +1,7 @@
 'use client';
 import '@xyflow/react/dist/style.css';
 import type {CreatorPath,PathSave} from './CreatorPaths';
+import IntelligenceCollection from './IntelligenceCollection';
 import LivingIntelligence from './LivingIntelligence';
 import {useIntelligenceAudition} from './useIntelligenceAudition';
 import CreativeCompass, {type DirectionSave} from './CreativeCompass';
@@ -13,15 +14,19 @@ import { ProjectReading, RelationshipEvidence } from './EvidenceClaims';
 import CreatorContextEditor, { type ContextSave } from './CreatorContextEditor';
 import HypothesisResponse, { type FeedbackSave } from './HypothesisResponse';
 import type { Feedback, HypothesisIdentity } from '@/lib/creatorContext';
-import { useMemo, useState, useRef } from 'react';
+import { useMemo, useState, useRef, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { buildIntelligence } from '@/lib/intelligenceWorkbench';
+import { intelligenceNavigation } from '@/lib/intelligenceNavigation';
 import { realmName } from '@/lib/creativeFingerprint';
 const SongLab=dynamic(()=>import('./SongLab'),{ssr:false,loading:()=> <p>Opening Song Lab…</p>});
 const Constellation=dynamic(()=>import('./Constellation'),{ssr:false,loading:()=> <p>Opening the map…</p>});
-export default function IntelligenceWorkbench({paths=[],onSavePath,onRemovePath,directions=[],onDirection,onResetDirections,audioProfiles=[],ownerId,tracks,worlds,onRefresh,refreshing=false,feedback=[],onSaveContext,onRespond,onSourcesChanged}:{paths?:CreatorPath[];onSavePath?:PathSave;onRemovePath?:(id:string)=>Promise<void>;directions?:Direction[];onDirection?:DirectionSave;onResetDirections?:()=>Promise<void>;audioProfiles?:AudioSummary[];onSourcesChanged?:()=>Promise<void>;feedback?:Feedback[];onSaveContext?:ContextSave;onRespond?:FeedbackSave;ownerId:string;tracks:unknown[];worlds:unknown[];onRefresh:()=>void;refreshing?:boolean}){
- const analysis=useMemo(()=>buildIntelligence(tracks,worlds,ownerId),[tracks,worlds,ownerId]);
+export default function IntelligenceWorkbench({hiddenTrackIds=[],onInclusion,paths=[],onSavePath,onRemovePath,directions=[],onDirection,onResetDirections,audioProfiles=[],ownerId,tracks,worlds,onRefresh,refreshing=false,feedback=[],onSaveContext,onRespond,onSourcesChanged}:{hiddenTrackIds?:string[];onInclusion?:(id:string,included:boolean)=>Promise<void>;paths?:CreatorPath[];onSavePath?:PathSave;onRemovePath?:(id:string)=>Promise<void>;directions?:Direction[];onDirection?:DirectionSave;onResetDirections?:()=>Promise<void>;audioProfiles?:AudioSummary[];onSourcesChanged?:()=>Promise<void>;feedback?:Feedback[];onSaveContext?:ContextSave;onRespond?:FeedbackSave;ownerId:string;tracks:unknown[];worlds:unknown[];onRefresh:()=>void;refreshing?:boolean}){
+ const catalog=useMemo(()=>buildIntelligence(tracks,worlds,ownerId),[tracks,worlds,ownerId]);
+ const analysis=useMemo(()=>hiddenTrackIds.length?buildIntelligence(tracks,worlds,ownerId,undefined,hiddenTrackIds):catalog,[tracks,worlds,ownerId,hiddenTrackIds,catalog]);
+ const [inclusionBusy,setInclusionBusy]=useState(false),[inclusionMessage,setInclusionMessage]=useState('');
+ async function changeInclusion(id:string,included:boolean){if(!onInclusion||inclusionBusy)return;setInclusionBusy(true);setInclusionMessage('');try{await onInclusion(id,included);if(!included&&id===selectedId)setSelectedId('');setInclusionMessage(included?'Shown in Intelligence.':'Hidden from Intelligence. Your Library song is unchanged.');}catch{setInclusionMessage('Collection change could not be confirmed. Please retry.');}finally{setInclusionBusy(false);}}
  const listening=useIntelligenceAudition(analysis);
  const [seedRequest,setSeedRequest]=useState<{ids:string[];nonce:number}>();
  const [desk,setDesk]=useState<string|null>(null);
@@ -33,7 +38,9 @@ export default function IntelligenceWorkbench({paths=[],onSavePath,onRemovePath,
  const [labTrackId,setLabTrackId]=useState('');
  const [evidenceSeek,setEvidenceSeek]=useState<number|null>(null);
  const [selectedId,setSelectedId]=useState(''),[worldId,setWorldId]=useState(''),[showMap,setShowMap]=useState(false),[search,setSearch]=useState('');
- const song=analysis.songs.find(s=>s.trackId===selectedId)??analysis.songs.find(s=>s.trackId===analysis.catalog.edges[0]?.a)??analysis.songs[0];
+ const navigationRead=useRef(false);
+ useEffect(()=>{if(!navigationRead.current){navigationRead.current=true;setSelectedId(intelligenceNavigation(window.location.search,analysis.songs.map(s=>s.trackId)).songId);}},[analysis]);
+ const song=analysis.songs.find(s=>s.trackId===selectedId);
  const project=analysis.projects.find(p=>p.world.id===worldId)??analysis.projects.find(p=>p.world.slug==='sirens-in-neverland')??analysis.projects[0];
  const ownedProject=analysis.projects.find(p=>p.world.id===song?.sourceFacts.releaseWorldId);
  const responseFor=(identity:HypothesisIdentity)=>feedback.find(f=>f.hypothesisKey===identity.hypothesisKey);
@@ -46,7 +53,9 @@ export default function IntelligenceWorkbench({paths=[],onSavePath,onRemovePath,
  const title=(id:string)=>analysis.songs.find(s=>s.trackId===id)?.sourceFacts.title??'Song';
  const related=analysis.catalog.edges.filter(e=>e.a===song?.trackId||e.b===song?.trackId);
  return <main className="intelligence-workbench"><header className="intelligence-header"><div><p className="intelligence-eyebrow">Intelligence</p><h1>Your impossible universe.</h1></div><button onClick={onRefresh} disabled={refreshing}>{refreshing?'Refreshing…':'Refresh sources'}</button></header>
- <LivingIntelligence paths={paths} onSavePath={onSavePath} onRemovePath={onRemovePath} discovery={focusedHypothesis&&<details><summary>A possible direction · your take</summary><p>{focusedHypothesis.text}</p><p>{focusedHypothesis.why}</p>{focusedHypothesis.identity&&feedbackControl({...focusedHypothesis.identity,statement:focusedHypothesis.text})}</details>} analysis={analysis} selectedId={song?.trackId??''} onSelect={id=>selectSong(id,false)} listening={listening} directions={directions} onDirection={onDirection} onShape={ids=>{setSeedRequest({ids,nonce:Date.now()});setDesk('experiments');requestAnimationFrame(()=>compassRef.current?.scrollIntoView({block:'start',behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'}));}} onInspect={()=>{setDesk('song');requestAnimationFrame(()=>inspector.current?.scrollIntoView({block:'start'}));}}/>
+ <LivingIntelligence onHide={onInclusion?()=>void changeInclusion(selectedId,false):undefined} inclusionBusy={inclusionBusy} paths={paths} onSavePath={onSavePath} onRemovePath={onRemovePath} discovery={focusedHypothesis&&<details><summary>A possible direction · your take</summary><p>{focusedHypothesis.text}</p><p>{focusedHypothesis.why}</p>{focusedHypothesis.identity&&feedbackControl({...focusedHypothesis.identity,statement:focusedHypothesis.text})}</details>} analysis={analysis} selectedId={song?.trackId??''} onSelect={id=>selectSong(id,false)} listening={listening} directions={directions} onDirection={onDirection} onShape={ids=>{setSeedRequest({ids,nonce:Date.now()});setDesk('experiments');requestAnimationFrame(()=>compassRef.current?.scrollIntoView({block:'start',behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'}));}} onInspect={()=>{setDesk('song');requestAnimationFrame(()=>inspector.current?.scrollIntoView({block:'start'}));}}/>
+ {onInclusion&&<IntelligenceCollection catalog={catalog} hiddenIds={hiddenTrackIds} onChange={changeInclusion} busy={inclusionBusy}/>}
+ {inclusionMessage&&<p role="status">{inclusionMessage}</p>}
  {analysis.invalidCount>0&&<p role="status">{analysis.invalidCount} records could not be validated and were left out.</p>}
  <nav className="universe-desk-nav" aria-label="Explore your music">{[['experiments','Try an experiment'],['song','Inside this song'],['observations','Other connections'],['project','Project perspective'],['responses','Your responses']].map(([id,label])=><button key={id} aria-expanded={desk===id} aria-controls={`universe-desk-${id}`} onClick={()=>setDesk(desk===id?null:id)}>{label}</button>)}</nav>
  <div id="universe-desk-experiments" hidden={desk!=='experiments'} className="universe-depth"><div ref={compassRef} tabIndex={-1} id="creative-compass" className="compass-focus"><CreativeCompass seedRequest={seedRequest} listening={listening} key={ownerId} analysis={analysis} selectedId={song?.trackId??''} onSelect={selectSong} onMap={()=>{setShowMap(true);requestAnimationFrame(()=>mapRef.current?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'}));}} directions={directions} onDirection={onDirection} onReset={onResetDirections} audioProfiles={audioProfiles}/></div></div><div id="universe-desk-observations" hidden={desk!=='observations'} className="intelligence-panel"><p className="intelligence-eyebrow">COSMIC noticed</p>{visibleObservations.length?visibleObservations.map(o=><article className="intelligence-observation" key={o.id}><small>{o.kind==='hypothesis'?'Possible connection':'Observed relationship'}</small><h2>{o.text}</h2><details><summary>Why this surfaced</summary><p>{o.why}</p><p>Evidence: {o.confidence}. Inspect the supplied signals before treating this as creative direction.</p><div className="intelligence-chips">{[...new Set(o.trackIds)].map(id=><button key={id} onClick={()=>selectSong(id)}>{title(id)}</button>)}</div></details>{o.identity&&<details><summary>Your take</summary>{feedbackControl({...o.identity,statement:o.text})}</details>}</article>):<p>Your catalog is ready to explore. Choose a song to see its place in your work, or Listen for a first measured audio read. No preparation needed.</p>}{dismissed.length>0&&<details><summary>Set aside ({dismissed.length})</summary>{dismissed.map(o=><article key={o.id}><p>{o.text}</p>{o.identity&&<details><summary>Your take</summary>{feedbackControl({...o.identity,statement:o.text})}</details>}</article>)}</details>}</div>
