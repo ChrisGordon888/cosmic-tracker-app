@@ -1629,6 +1629,7 @@ module.exports = {
         recordedAt: (result) => result.recordedAt.toISOString(),
     },
     Query: {
+        myCreativeExperiments: async (_, args, { user }) => { requireCreator(user); return require("../lib/creativeExperiments").list(user.id); },
         myCreativePaths: async (_, args, { user }) => { requireCreator(user); return (await require("../lib/creativePaths").list(user.id)).map(p=>({...p,id:String(p._id)})); },
         myIntelligenceHiddenTrackIds: async (_, args, { user }) => { requireCreator(user); return require("../lib/intelligenceCollection").listHidden(user.id); },
         myCreativeDirections: async (_, args, { user }) => { requireCreator(user); return require("../lib/creativeDirection").list(user.id); },
@@ -2347,6 +2348,8 @@ module.exports = {
     },
 
     Mutation: {
+        saveCreativeExperiment: async (_, { input }, { user }) => { requireCreator(user); return require("../lib/creativeExperiments").save(user.id, input); },
+        deleteCreativeExperiment: async (_, { id }, { user }) => { requireCreator(user); return require("../lib/creativeExperiments").remove(user.id, id); },
         saveCreativePath: async (_, { input }, { user }) => { requireCreator(user); return (await require("../lib/creativePaths").save(user.id,input)).map(p=>({...p,id:String(p._id)})); },
         removeCreativePath: async (_, { id }, { user }) => { requireCreator(user); return (await require("../lib/creativePaths").remove(user.id,id)).map(p=>({...p,id:String(p._id)})); },
         setIntelligenceInclusion: async (_, { trackId, included }, { user }) => { requireCreator(user); return require("../lib/intelligenceCollection").setIncluded(user.id, { trackId, included }); },

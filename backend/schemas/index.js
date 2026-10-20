@@ -336,6 +336,9 @@ const typeDefs = gql`
   input SongCreatorContextInput { meaning: String emotionalStart: String emotionalEnd: String referenceNotes: String creatorRole: String hook: String }
   enum HypothesisResponse { RESONATES INTERESTING NOT_REALLY }
   type HypothesisResponseEvent { response: HypothesisResponse! note: String at: String! }
+  type ExperimentSlot { index: Int! trackId: ID available: Boolean! }
+  type CreativeExperiment { id: ID! title: String! note: String! slots: [ExperimentSlot!]! provenance: String! createdAt: String! updatedAt: String! }
+  input CreativeExperimentInput { id: ID title: String note: String trackIds: [ID!]! }
   type CreativePath { id: ID! a: ID! b: ID! note: String! }
   input CreativePathInput { a: ID! b: ID! note: String }
   type CreativeDirection { targetId: String! value: String! }
@@ -759,6 +762,7 @@ const typeDefs = gql`
 
   # 📖 Queries
   type Query {
+    myCreativeExperiments: [CreativeExperiment!]!
     myCreativePaths: [CreativePath!]!
     myIntelligenceHiddenTrackIds: [ID!]!
     myCreativeDirections: [CreativeDirection!]!
@@ -846,6 +850,8 @@ const typeDefs = gql`
 
   # 🛠️ Mutations
   type Mutation {
+    saveCreativeExperiment(input: CreativeExperimentInput!): CreativeExperiment!
+    deleteCreativeExperiment(id: ID!): Boolean!
     saveCreativePath(input: CreativePathInput!): [CreativePath!]!
     removeCreativePath(id: ID!): [CreativePath!]!
     setIntelligenceInclusion(trackId: ID!, included: Boolean!): [ID!]!

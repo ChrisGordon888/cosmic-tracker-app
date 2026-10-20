@@ -1,6 +1,48 @@
 # COSMIC V3.6 manual development handoff
 
-## Current checkpoint: 2026-10-19 — V3.7 Whole Universe
+## Current checkpoint: 2026-10-19 — V3.8/V3.9 connections and experiment memory
+
+Started from clean V3.7 `6a57df2` on `feat/cosmic-intelligence-v3`. No commit, merge, deployment or real catalog mutations. V3.7 scene/camera/Realm layout remains unchanged.
+
+Direct workflow: select A → Connect → select B in scene/lightweight cards/search → Hear connection → Save/Update Path (optional reason) → Experiment with pair. The contextual ConnectionComposer reuses existing Path mutations and shows authored intent separately from supported/ tentative catalog edges. Source support, supplied meaning, Realm and moment counts appear under Why these two. Full lyric citations/reflections remain in the existing Song Lab; measured RMS comparisons remain in experiment transitions. No new audio/model analysis.
+
+CreativeCompass remains the only sequence editor and uses the same shared audition hook. It now saves/resumes up to six ordered songs, optional title/note and timestamps. A small Saved experiments disclosure and saved count in the existing workspace navigation provide return access. New pairs add to the current draft; replacing a dirty draft asks before discarding. Explicit Save persists; Close only hides the editor. Save failures preserve edits. Deletion has a separate confirm/cancel step.
+
+Persistence: new owner-indexed CreativeExperiment is a private draft, never a ReleaseWorld. `myCreativeExperiments`, `saveCreativeExperiment`, `deleteCreativeExperiment` require creator authentication. Save validates every song against current ownership, non-archived/non-vault/test eligibility and Intelligence inclusion. Update/delete filter both draft ID and owner. Missing/hidden/inaccessible tracks are returned as anonymous unavailable slots (no foreign title/ID), while original references remain stored. The editor retains those places and blocks save until restored/reopened or explicitly removed. No catalog/publication writes exist in this service. Ordinary last-write-wins editing; no collaborative conflict resolution or revision history.
+
+Provenance: inferred edges retain existing evidence; unordered Paths retain explicit creator intent; successfully requested auditions have session-local `SESSION_AUDITION` metadata, never preference inference; saved ordered drafts have `CREATOR_SAVED_SEQUENCE`. Audition history is not durable, and nothing claims behavioral learning. V4 can evaluate explicit Paths, sequence intent/order and existing hypothesis feedback without conflating these sources.
+
+Verification: 56-song isolated browser fixture exercised direct search pairing, Path edit/remove/recreate, hearing through the real MiniPlayer, adding C, reorder, save, refresh/reopen, revised save, injected save failure/retry, fixture owner remount, deletion cancellation, and 390px keyboard reorder/save plus direct lightweight pairing. Mobile dock clipping was found and corrected; recheck showed scrollWidth equal to clientWidth. A temporary JSX compilation error during contextual evidence editing was corrected before final checks. Browser persistence is fixture-local storage; production Mongo services are tested with mocks, not a live authenticated database. Missing-track slots/ownership denial are automated service tests, not live account tests. No production build requested/run.
+
+Manual acceptance on a disposable test account:
+1. Choose A in Universe; Connect then choose B directly or by search. Hear, save a reason, edit it, remove/recreate the Path.
+2. Experiment with pair; add C, reorder, audition and use Next. Save a title/note.
+3. Refresh; open Experiments → Saved experiments; reopen, edit and save again.
+4. Hide a member from Intelligence, refresh/reopen: unnamed unavailable place survives; save is disabled until restoration/reopen or explicit removal. Confirm Library/project/public state unchanged.
+5. Sign out/switch accounts: prior drafts/selection must disappear. Attempts to update/delete another account's draft must fail.
+6. At 390px and with keyboard, repeat pairing/save. Check offline save preserves edits; cancel deletion, then delete only a disposable draft.
+
+Remaining limits: real authenticated Mongo round-trip and real-account switching still need manual acceptance; no conflict-resolution/history UI, durable audition log, automatic learning, or expanded lyric/audio comparison panel. Next improvement should follow creator testing of the connection-to-experiment handoff, not change the Universe.
+
+V3.8/V3.9 files:
+- `backend/resolvers/index.js`
+- `backend/schemas/index.js`
+- `frontend/src/app/creator/intelligence/page.tsx`
+- `frontend/src/components/intelligence/CreativeCompass.tsx`
+- `frontend/src/components/intelligence/IntelligenceWorkbench.tsx`
+- `frontend/src/components/intelligence/LivingIntelligence.tsx`
+- `frontend/src/components/intelligence/useIntelligenceAudition.ts`
+- `frontend/src/graphql/intelligence.ts`
+- `frontend/src/styles/intelligenceWorkbench.css`
+- `backend/lib/creativeExperiments.js`
+- `backend/models/CreativeExperiment.js`
+- `backend/tests/creativeExperiments.test.js`
+- `frontend/src/components/intelligence/ConnectionComposer.tsx`
+- `frontend/src/lib/creativeExperiments.ts`
+- `frontend/tests/creativeExperiments.test.cjs`
+- This existing handoff document.
+
+## Previous checkpoint: 2026-10-19 — V3.7 Whole Universe
 
 Started from clean committed V3.6 `065a0e2` on `feat/cosmic-intelligence-v3`. All changes remain uncommitted. No real catalog mutations, new dependencies, model calls, publishing changes or player replacement.
 

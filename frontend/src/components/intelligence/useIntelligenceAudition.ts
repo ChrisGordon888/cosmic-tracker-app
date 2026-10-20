@@ -7,6 +7,7 @@ import {resolveAudition} from '@/lib/creativeAudition';
 import type {Workbench} from '@/lib/intelligenceWorkbench';
 export function useIntelligenceAudition(analysis:Workbench){
  const client=useApolloClient(),player=useMusicPlayer(),request=useRef(0);
+ const [lastAudition,setLastAudition]=useState<{trackIds:string[];at:string;provenance:'SESSION_AUDITION'}|null>(null);
  const [busy,setBusy]=useState(false),[error,setError]=useState('');
  useEffect(()=>()=>{request.current++;},[analysis.ownerId]);
  async function audition(ids:string[]){
@@ -18,9 +19,10 @@ export function useIntelligenceAudition(analysis:Workbench){
    });
    if(token!==request.current)return;
    await player.playTrack(sources[0],sources,{source:'catalog',label:sources.length>1?'World Seed · private experiment':'Creative Compass'});
+   if(token===request.current)setLastAudition({trackIds:[...ids],at:new Date().toISOString(),provenance:'SESSION_AUDITION'});
   }catch(e){if(token===request.current)setError(e instanceof Error?e.message:'Could not audition this selection.');}
   finally{if(token===request.current)setBusy(false);}
  }
- return {audition,busy,error};
+ return {audition,busy,error,lastAudition};
 }
 export type IntelligenceAudition=ReturnType<typeof useIntelligenceAudition>;

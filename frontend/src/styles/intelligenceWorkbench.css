@@ -2024,3 +2024,22 @@
 .intelligence-collection-body li button { flex-shrink:0; }
 @media(max-width:640px) { .intelligence-collection-body li { align-items:flex-start; flex-direction:column; } }
 .intelligence-workbench .universe-region-label { min-height:0; padding:5px 8px; font-size:10px; line-height:1.2; border-radius:8px; background:#09101ce8; }
+/* Direct authoring stays in the existing contextual dock. */
+.universe-path-dock label{display:flex;gap:.5rem;align-items:center;font-size:.75rem}
+.universe-path-dock input{min-width:0;max-width:24rem;width:100%}
+.universe-path-dock details{font-size:.75rem;max-width:38rem}
+.universe-path-dock p{margin:.35rem 0}
+.compass-seed>label{display:flex;flex-direction:column;gap:.35rem;margin:.7rem 0}
+.compass-seed fieldset{border:0;padding:0;min-width:0}
+.experiment-memory{margin-bottom:1rem}
+@media(max-width:640px){.universe-path-dock label{align-items:stretch;flex-direction:column}}
+.universe-path-dock{flex-wrap:wrap;max-height:260px;overflow:auto}
+.universe-path-dock>.universe-dock-copy{flex:1 1 260px}
+.universe-path-dock>small,.universe-path-dock>p{flex-basis:100%;font-size:11px}
+.universe-path-dock details[open]{max-height:110px;overflow:auto}
+@media(max-width:780px){
+ .universe-path-dock{flex-wrap:nowrap;max-height:280px;overflow-x:hidden}
+ .universe-path-dock>.universe-dock-copy{flex:0 0 auto;width:100%}
+ .universe-path-dock>.universe-dock-actions{flex:0 0 auto;width:100%;min-width:0;flex-wrap:wrap}
+ .universe-path-dock>small,.universe-path-dock>p{flex:0 0 auto}
+}

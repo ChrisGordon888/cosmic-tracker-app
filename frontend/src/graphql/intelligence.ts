@@ -3,6 +3,7 @@ import { gql } from '@apollo/client';
 export const INTELLIGENCE_SOURCES=gql`
  query IntelligenceSources {
   myIntelligenceHiddenTrackIds
+  myCreativeExperiments { id title note provenance createdAt updatedAt slots { index trackId available } }
   myCreativePaths { id a b note }
   myCreativeDirections { targetId value }
   myAudioProfiles { trackId sourceIdentity analysisVersion rmsDbfs durationSeconds }
@@ -60,3 +61,6 @@ export const SAVE_CREATIVE_PATH=gql`mutation SaveCreativePath($input:CreativePat
 export const REMOVE_CREATIVE_PATH=gql`mutation RemoveCreativePath($id:ID!){removeCreativePath(id:$id){id a b note}}`;
 
 export const SET_INTELLIGENCE_INCLUSION=gql`mutation SetIntelligenceInclusion($trackId:ID!,$included:Boolean!){setIntelligenceInclusion(trackId:$trackId,included:$included)}`;
+
+export const SAVE_CREATIVE_EXPERIMENT=gql`mutation SaveCreativeExperiment($input:CreativeExperimentInput!){saveCreativeExperiment(input:$input){id title note provenance createdAt updatedAt slots {index trackId available}}}`;
+export const DELETE_CREATIVE_EXPERIMENT=gql`mutation DeleteCreativeExperiment($id:ID!){deleteCreativeExperiment(id:$id)}`;
