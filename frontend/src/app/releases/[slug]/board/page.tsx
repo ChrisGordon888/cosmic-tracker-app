@@ -1,5 +1,8 @@
 "use client";
 
+import { publicWorldHref } from '@/lib/releaseSharing';
+import MediaStorageNotice from '@/components/creator/MediaStorageNotice';
+
 import type { DragEvent, PointerEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
@@ -1425,7 +1428,8 @@ export default function DynamicReleaseSignalBoardPage() {
         if (isCreatingNewTrack) return;
 
         if (!selectedTrackId && releaseTracks.length > 0) {
-            const firstTrack = releaseTracks[0];
+            const requestedTrack = new URLSearchParams(window.location.search).get('track');
+            const firstTrack = releaseTracks.find(track => track.id === requestedTrack) ?? releaseTracks[0];
             setSelectedTrackId(firstTrack.id);
             setTrackForm(getTrackFormFromReleaseTrack(firstTrack));
             setTrackMessage(
@@ -2511,7 +2515,7 @@ export default function DynamicReleaseSignalBoardPage() {
             >
                 <div className="signal-board-command-left">
                     <Link href="/creator/projects">All Projects</Link>
-                    <Link href={`/releases/${slug}`}>Preview Release</Link>
+                    <Link href={publicWorldHref(slug, releaseWorldId)}>Preview Release</Link>
                 </div>
 
                 <div className="signal-board-command-title">
@@ -2527,10 +2531,12 @@ export default function DynamicReleaseSignalBoardPage() {
                 </div>
 
                 <div className="signal-board-command-actions">
+                    {selectedTrackId && <Link href={`/creator/intelligence?song=${encodeURIComponent(selectedTrackId)}`}>Explore song connections →</Link>}
                     <Link data-workspace-tour="prepare" className="signal-board-prepare-release" href={`/creator/releases/${slug}/publish`}>Prepare Release →</Link>
                 </div>
             </header>
 
+            <MediaStorageNotice/>
             <WorkspaceTour ready={Boolean(releaseWorldId)} activePanel={activePanel} onSelectPanel={setActivePanel} />
 
             <section
@@ -2751,7 +2757,7 @@ export default function DynamicReleaseSignalBoardPage() {
                                         </p>
                                         <h2>Release page copy</h2>
                                     </div>
-                                    <Link href={`/releases/${slug}`}>Open Page</Link>
+                                    <Link href={publicWorldHref(slug, releaseWorldId)}>Open Page</Link>
                                 </div>
 
                                 <p className="signal-board-panel-message">{portalMessage}</p>
@@ -2774,7 +2780,7 @@ export default function DynamicReleaseSignalBoardPage() {
                                             ))}
                                         </div>
 
-                                        <Link href={`/releases/${slug}`}>Preview Portal</Link>
+                                        <Link href={publicWorldHref(slug, releaseWorldId)}>Preview Portal</Link>
                                     </aside>
 
                                 </details>

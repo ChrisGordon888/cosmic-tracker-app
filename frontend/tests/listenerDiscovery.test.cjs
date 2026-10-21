@@ -69,7 +69,7 @@ function renderPage(relative, responses, auth = false, stateOverrides) {
     if(name==='@apollo/client')return {...actualApollo,useQuery(doc){const key=doc.definitions.find(d=>d.kind==='OperationDefinition')?.name?.value;return {data:responses[key],loading:false};},useMutation:()=>[async()=>({})]};
     if(name==='next-auth/react')return {useSession:()=>({data:auth?{user:{name:'Listener'}}:null,status:auth?'authenticated':'unauthenticated'}),signIn:()=>{}};
     if(name==='@/context/PlatformAccessProvider')return {usePlatformAccess:()=>({isAuthenticated:auth,canAccessCreatorOS:typeof auth==='object'&&auth.creator})};
-    if(name==='next/navigation')return {useParams:()=>({slug:'other-world'})};
+    if(name==='next/navigation')return {useParams:()=>({slug:'other-world'}),useSearchParams:()=>new URLSearchParams(auth?.worldId ? {world:auth.worldId} : {})};
     if(name==='@/context/CreatorViewProvider')return {useCreatorView:()=>({isCreatorView:typeof auth==='object'&&auth.creator})};
     if(name==='@/hooks/useMusicPlayer')return {useMusicPlayer:()=>({playOrToggleTrack:()=>{},currentTrack:null,isPlaying:false})};
     if(name==='next/link')return {__esModule:true,default:({children,...props})=>React.createElement('a',props,children)};
@@ -91,7 +91,7 @@ test('Actual Nexus renders the chosen single title, artist and world URL; an emp
   const html=renderPage('app/nexus/page.tsx',{
     GetPublicFeaturedSignal:{getPublicFeaturedSignal:track},GetPublicFeaturedReleaseWorld:{getPublicFeaturedReleaseWorld:world},GetPublicFeaturedReleaseTracks:{getPublicReleaseTracks:[track]},GetPublicNexusTracks:{getPublicNexusTracks:[track]},
   });
-  assert.match(html,/Play Fictional Song/);assert.match(html,/Fictional World/);assert.match(html,/Fictional Artist/);assert.match(html,/href="\/releases\/fictional-world"/);
+  assert.match(html,/Play Fictional Song/);assert.match(html,/Fictional World/);assert.match(html,/Fictional Artist/);assert.match(html,/href="\/releases\/fictional-world\?world=fictional-world"/);
   assert.doesNotMatch(html,/Play Siren|Look to the light, the fire inside/);
   const empty=renderPage('app/nexus/page.tsx',{});
   assert.doesNotMatch(empty,/nexus-latest-signal fade-in|id="current-release"/);
@@ -159,4 +159,13 @@ test('All six canonical Realm pages render signed out without the former whole-p
   assert.match(html,/Optional (Realm|Source) Path/);
   assert.ok(!html.includes('Sign in to enter'));
  }
+});
+
+test('Explicit World identity cannot be replaced by an owned World with the same slug',()=>{
+ const html=renderPage('app/releases/[slug]/page.tsx',{
+  GetMyReleaseWorldBySlug:{getMyReleaseWorldBySlug:{id:'owned',slug:'other-world',title:'Owned draft',story:'PRIVATE OWNER STORY'}},
+  GetPublicReleaseWorldBySlug:{getPublicReleaseWorldBySlug:{id:'other',slug:'other-world',title:'Other artist',visibility:'public',story:'PUBLIC OTHER STORY'}},
+  GetReleasePagePublicData:{getPublicReleaseTracks:[],getPublicBoardArtifacts:[]},
+ },{creator:true,worldId:'other'});
+ assert.match(html,/PUBLIC OTHER STORY/);assert.doesNotMatch(html,/PRIVATE OWNER STORY/);
 });

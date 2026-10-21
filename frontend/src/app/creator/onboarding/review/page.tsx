@@ -1,5 +1,6 @@
 "use client";
 
+import { publicWorldHref } from '@/lib/releaseSharing';
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery } from "@apollo/client";
@@ -226,7 +227,7 @@ export default function CreatorOnboardingReviewPage() {
                                 label="Release URL"
                                 value={
                                     release?.slug
-                                        ? `/releases/${release.slug}`
+                                        ? publicWorldHref(release.slug, release.id)
                                         : null
                                 }
                             />

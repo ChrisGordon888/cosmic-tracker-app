@@ -1,3 +1,4 @@
+import { publicWorldHref } from './releaseSharing';
 import { getMusicAvailability } from './musicAvailability';
 import type { RuntimeMusicTrack } from './publicMusicCatalog';
 import type { PublicProject } from './publicProjects';
@@ -7,8 +8,8 @@ export function listenerRealmPath(realmId:number,catalog:RuntimeMusicTrack[],pro
  const playable=candidates.find(t=>getMusicAvailability(t,{isCreatorView:false,isSignedIn:signedIn}).isPlayable);
  if(playable)return {href:destination,label:'Explore Realm music',state:'active'};
  const project=projects.find(p=>p.realmId===realmId&&p.tracks.some(t=>getMusicAvailability(t,{isCreatorView:false,isSignedIn:signedIn,releaseVisibility:'public'}).isPlayable));
- if(project)return {href:`/releases/${project.world.slug}`,label:'Explore World',state:'project'};
+ if(project)return {href:publicWorldHref(project.world.slug, project.world.id),label:'Explore World',state:'project'};
  const memberProject=projects.find(p=>p.realmId===realmId&&p.tracks.some(t=>t.accessTier==='signup'));
- if(!signedIn&&(candidates.some(t=>t.accessTier==='signup'||t.visibility==='signup')||memberProject))return {href:`/auth?callbackUrl=${encodeURIComponent(memberProject?`/releases/${memberProject.world.slug}`:destination)}`,label:'Sign in for member music',state:'member'};
+ if(!signedIn&&(candidates.some(t=>t.accessTier==='signup'||t.visibility==='signup')||memberProject))return {href:`/auth?callbackUrl=${encodeURIComponent(memberProject?publicWorldHref(memberProject.world.slug, memberProject.world.id):destination)}`,label:'Sign in for member music',state:'member'};
  return {href:destination,label:'Explore Realm · no current playable signal',state:'quiet'};
 }

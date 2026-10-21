@@ -1,5 +1,6 @@
 "use client";
 
+import { publicWorldHref } from '@/lib/releaseSharing';
 import { activeCreatorProjects } from "@/lib/creatorNavigation";
 
 import ProjectCanonControl from "@/components/creator/ProjectCanonControl";
@@ -718,13 +719,13 @@ export default function CreatorProjectsPage() {
 
                   <div className="creator-projects-release-card-actions creator-projects-release-card-actions-v2">
                     <Link href={`/releases/${world.slug}/board`} className="creator-projects-primary-button">Open Workshop</Link>
-                    {world.visibility === "public" && <Link href={`/releases/${world.slug}`} className="creator-projects-secondary-button">View Portal</Link>}
+                    {world.visibility === "public" && <Link href={publicWorldHref(world.slug, world.id)} className="creator-projects-secondary-button">View Portal</Link>}
                   </div>
                   <ProjectCanonControl world={world} onSaved={refetch} />
                   <details className="creator-project-details">
                     <summary>Project details &amp; publishing</summary>
                     <p className="creator-projects-release-card-slug">/{world.slug}</p>
-                    {world.visibility !== "public" && <Link href={`/releases/${world.slug}`}>Preview Portal</Link>}
+                    {world.visibility !== "public" && <Link href={publicWorldHref(world.slug, world.id)}>Preview Portal</Link>}
                     <Link href="/nexus" className="creator-projects-secondary-button">View Nexus</Link>
                   <div className="creator-project-readiness-panel">
                     <div className="creator-project-readiness-header">

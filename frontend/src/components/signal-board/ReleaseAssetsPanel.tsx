@@ -1,4 +1,5 @@
 "use client";
+import { publicWorldHref } from '@/lib/releaseSharing';
 import Link from "next/link";
 import type { ApolloError } from "@apollo/client";
 import type { ReleaseWorld, ReleaseTrack, ReleaseAsset, AssetForm } from "./types";
@@ -67,7 +68,7 @@ export default function ReleaseAssetsPanel({
                     <p className="signal-board-panel-kicker">Asset Manager</p>
                     <h2>Cover, audio, and references</h2>
                 </div>
-                <Link href={`/releases/${slug}`}>View Page</Link>
+                <Link href={publicWorldHref(slug, releaseWorldId)}>View Page</Link>
             </div>
 
             <p className="signal-board-panel-message">

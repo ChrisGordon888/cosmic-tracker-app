@@ -452,6 +452,16 @@ async function evaluateReleasePublishingReadiness(releaseWorld, userId) {
     const warnings = [];
     const completedChecks = [];
 
+    if (releaseWorld.status === "archived") {
+        blockingIssues.push(createReadinessIssue(
+            "RELEASE_ARCHIVED",
+            "Restore this Release World before publishing.",
+            "blocking",
+            "status",
+            `/creator/releases/${releaseWorld.slug}/publish`
+        ));
+    }
+
     const profile = await CreativeProfile.findOne({
         _id: releaseWorld.creativeProfileId,
         ownerId: userId,
@@ -896,7 +906,7 @@ async function processDueScheduledReleaseWorlds() {
 
             if (!readiness.ready) continue;
 
-            await applyDroppedReleaseState(
+            await applyPublishedReleaseState(
                 releaseWorld,
                 releaseWorld.ownerId
             );
@@ -2057,14 +2067,20 @@ module.exports = {
             return await getPublicFeaturedReleaseWorld();
         },
 
-        getPublicReleaseWorldBySlug: async (_, { slug }) => {
+        getPublicReleaseWorldBySlug: async (_, { slug, worldId }) => {
             await processDueScheduledReleaseWorlds();
 
-            return await ReleaseWorld.findOne({
+            const query = {
                 slug: normalizeSlug(slug),
                 visibility: "public",
                 status: { $ne: "archived" },
-            });
+            };
+            if (worldId) return await ReleaseWorld.findOne({ ...query, _id: worldId });
+            const matches = await ReleaseWorld.find(query).limit(2);
+            if (matches.length > 1) {
+                throw new Error("This World link is ambiguous. Ask the creator for a new Share Release link.");
+            }
+            return matches[0] || null;
         },
 
         nexusReviewQueue: async (_, { status }, { user }) => {
@@ -3390,6 +3406,10 @@ module.exports = {
                 throw new Error(
                     "Restore the release before scheduling it."
                 );
+            }
+
+            if (releaseWorld.visibility === "public") {
+                throw new Error("Unpublish this World explicitly before scheduling it.");
             }
 
             const scheduledAt = new Date(publishAt);

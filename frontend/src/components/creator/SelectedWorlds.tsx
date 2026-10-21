@@ -1,5 +1,6 @@
 'use client';
 
+import { publicWorldHref } from '@/lib/releaseSharing';
 import Link from 'next/link';
 import { useQuery } from '@apollo/client';
 import { PUBLIC_PROJECTS } from '@/graphql/publicProjects';
@@ -21,7 +22,7 @@ export function PublicWorlds({realmId, selectedOnly = false}:{realmId?:number;se
             {projects.map(p => {
                 const state = projectPlayback(p,isAuthenticated);
                 return <article key={p.world.id} className={`public-world-tile${p.isSelected ? ' public-world-tile-selected' : ''}`}>
-                    {p.world.coverArtUrl && <Link href={`/releases/${p.world.slug}`} tabIndex={-1} aria-hidden="true"><img src={p.world.coverArtUrl} alt="" loading="lazy" width={160} height={160}/></Link>}
+                    {p.world.coverArtUrl && <Link href={publicWorldHref(p.world.slug, p.world.id)} tabIndex={-1} aria-hidden="true"><img src={p.world.coverArtUrl} alt="" loading="lazy" width={160} height={160}/></Link>}
                     <div className="public-world-tile-copy">
                         {p.isSelected && <span className="public-world-label">Nexus selected</span>}
                         <h3>{p.world.title}</h3>
@@ -29,7 +30,7 @@ export function PublicWorlds({realmId, selectedOnly = false}:{realmId?:number;se
                         <p>{p.realmId == null ? 'Mixed / undecided Realm' : realmName(p.realmId)} · {state.total} tracks</p>
                         <p>{state.available} playable now{state.member ? ` · ${state.member} require sign-in` : ''}</p>
                         <div className="public-world-actions">
-                            <Link href={`/releases/${p.world.slug}`}>Enter World →</Link>
+                            <Link href={publicWorldHref(p.world.slug, p.world.id)}>Enter World →</Link>
                             {state.lead && <button type="button" onClick={() => playOrToggleTrack(state.lead!, state.queue, {source: 'release', label: `${p.world.title} release`})} aria-label={`Play or pause ${state.lead.trackTitle}`}>{currentTrack?.id === state.lead.id && isPlaying ? 'Pause' : 'Play'}</button>}
                         </div>
                     </div>

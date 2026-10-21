@@ -1,5 +1,6 @@
 'use client';
 
+import { publicWorldHref } from '@/lib/releaseSharing';
 import Link from 'next/link';
 import { gql, useMutation, useQuery } from '@apollo/client';
 import { useSession } from 'next-auth/react';
@@ -485,7 +486,7 @@ export default function CreatorDashboardPage() {
 
                         <div className="creator-feature-copy">
                             {featuredProject ? (
-                                <Link href={featuredProject.visibility === 'public' ? `/releases/${featuredProject.slug}` : `/releases/${featuredProject.slug}/board`} className="creator-feature-title-link">
+                                <Link href={featuredProject.visibility === 'public' ? publicWorldHref(featuredProject.slug, featuredProject.id) : `/releases/${featuredProject.slug}/board`} className="creator-feature-title-link">
                                     {featuredProject.title}
                                 </Link>
                             ) : (
@@ -610,7 +611,7 @@ export default function CreatorDashboardPage() {
 
                                             <div className="creator-project-card-actions">
                                                 <Link href={`/releases/${project.slug}/board`}>Open Workshop</Link>
-                                                {project.visibility === 'public' && <Link href={`/releases/${project.slug}`}>View Portal</Link>}
+                                                {project.visibility === 'public' && <Link href={publicWorldHref(project.slug, project.id)}>View Portal</Link>}
                                                 <button
                                                     type="button"
                                                     disabled={isSettingFeatured || project.id === featuredProject?.id}

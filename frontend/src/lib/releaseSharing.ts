@@ -4,8 +4,12 @@ type ShareBrowser = {
   clipboard?: { writeText: (text: string) => Promise<void> };
 };
 
-export function releaseShareUrl(origin: string, slug: string) {
-  return new URL(`/releases/${encodeURIComponent(slug)}`, origin).href;
+export function publicWorldHref(slug: string, worldId?: string) {
+  return `/releases/${encodeURIComponent(slug)}${worldId ? `?world=${encodeURIComponent(worldId)}` : ''}`;
+}
+
+export function releaseShareUrl(origin: string, slug: string, worldId?: string) {
+  return new URL(publicWorldHref(slug, worldId), origin).href;
 }
 
 export async function shareRelease(data: ReleaseShareData, browser: ShareBrowser): Promise<'shared' | 'copied' | 'cancelled' | 'manual'> {

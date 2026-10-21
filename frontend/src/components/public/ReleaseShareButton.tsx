@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { releaseShareUrl, shareRelease } from '@/lib/releaseSharing';
 
-export default function ReleaseShareButton({ title, description, slug }: { title: string; description?: string; slug: string }) {
+export default function ReleaseShareButton({ title, description, slug, worldId }: { title: string; description?: string; slug: string; worldId?: string }) {
   const [supportsShare, setSupportsShare] = useState(true);
   useEffect(() => { setSupportsShare(typeof navigator.share === 'function'); }, []);
   const [busy, setBusy] = useState(false);
@@ -14,7 +14,7 @@ export default function ReleaseShareButton({ title, description, slug }: { title
     setMessage('');
     setManualUrl('');
     try {
-      const url = releaseShareUrl(window.location.origin, slug);
+      const url = releaseShareUrl(window.location.origin, slug, worldId);
       const result = await shareRelease({ title, text: description, url }, navigator);
       if (result === 'copied') setMessage('Link copied');
       if (result === 'manual') { setManualUrl(url); setMessage('Copy this release link:'); }

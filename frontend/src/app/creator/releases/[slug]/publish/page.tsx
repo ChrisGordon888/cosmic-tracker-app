@@ -1,5 +1,6 @@
 "use client";
 
+import { publicWorldHref } from '@/lib/releaseSharing';
 import {reviewLabels,sourceLabels,type RightsInfo} from "@/lib/trackVault";
 import ProjectCanonControl from "@/components/creator/ProjectCanonControl";
 import Link from "next/link";
@@ -310,7 +311,7 @@ export default function PublishingReadinessPage() {
                         Open Workshop
                     </Link>
                     <Link
-                        href={`/releases/${slug}`}
+                        href={publicWorldHref(slug, release?.id)}
                         className="text-xs font-medium uppercase tracking-[0.16em] text-white/45 transition hover:text-[#F4D982]"
                     >
                         View Release Page
@@ -558,10 +559,11 @@ export default function PublishingReadinessPage() {
                                 </div>
 
                                 <p className="mt-4 text-xs leading-5 text-white/35">
-                                    Readiness is checked when the schedule is
-                                    saved and again when publication becomes
-                                    due. The release will only publish if its
-                                    required configuration still passes review.
+                                    Publishes the World page only; private tracks stay private.
+                                    Readiness is checked again before publication. Due schedules
+                                    run when public catalog pages are requested, so publication
+                                    may occur after the chosen time. For a timed demonstration,
+                                    publish manually and verify the public page.
                                 </p>
 
                                 {release?.status === "scheduled" &&
