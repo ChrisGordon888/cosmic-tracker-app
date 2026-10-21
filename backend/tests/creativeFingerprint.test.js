@@ -54,6 +54,7 @@ test('Real Realm update preserves owner guard and appends bounded calibration at
   Track.findOneAndUpdate=async(q,update)=>{assert.equal(q.ownerId,user.id);saved=update;return {...track,...update};};
   await resolvers.Mutation.updateReleaseTrack(null,{id:'song',input:{realmId:303,creativeDecision:{action:'accepted',suggestedRealmId:303}}},{user});
   assert.equal(saved.realmId,303);assert.equal(saved.creativeDecision,undefined);
+  for(const field of ['audioUrl','title','visibility','accessTier','playbackStatus','publicCanon','releaseWorldId','bpm','creativeSignals'])assert.equal(Object.hasOwn(saved,field),false,field+' must not be overwritten by Realm assignment');
   assert.equal(saved.$push.creativeDecisions.$slice,-20);
   assert.equal(saved.$push.creativeDecisions.$each[0].action,'accepted');
   Track.findOne=async()=>null;

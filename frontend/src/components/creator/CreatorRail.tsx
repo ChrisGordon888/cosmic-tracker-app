@@ -8,6 +8,7 @@ const links = [
   { label: 'Home', href: CREATOR_LINKS.home, mark: '⌂' },
   { label: 'Library', href: CREATOR_LINKS.catalog, mark: '♫' },
   { label: 'Projects', href: CREATOR_LINKS.projects, mark: '▤' },
+  { label: 'Intelligence', href: CREATOR_LINKS.intelligence, mark: '✦' },
   { label: 'Profile', href: CREATOR_LINKS.profile, mark: '○' },
 ];
 

@@ -23,6 +23,7 @@ test('Smart Sort renders a neutral Realm selection with insufficient evidence',(
  const file=path.join(__dirname,'../src/components/creator/SmartSortPanel.tsx');const module={exports:{}};
  const code=ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;
  vm.runInNewContext(`(function(require,module,exports){${code}\n})`)(name=>{
+  if(name.endsWith('.css'))return {};
   if(name==='@/lib/catalogSorting')return load('catalogSorting');
   if(name==='@/lib/libraryCleanup')return load('libraryCleanup');
   if(name==='./CatalogPlacementSuggestion')return {default:()=>null};

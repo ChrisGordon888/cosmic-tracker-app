@@ -1,0 +1,2054 @@
+.intelligence-workbench {
+    max-width: 1200px;
+    margin: auto;
+    padding: 32px 24px 120px;
+    color: #e4e9ef
+}
+
+.intelligence-workbench h1 {
+    font-size: clamp(28px, 4vw, 42px);
+    letter-spacing: -.04em;
+    margin: 6px 0 12px
+}
+
+.intelligence-workbench h2 {
+    font-size: 21px;
+    line-height: 1.4
+}
+
+.intelligence-workbench h3 {
+    font-size: 22px;
+    margin: 18px 0 12px
+}
+
+.intelligence-workbench h4 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #dcba5c;
+    margin: 24px 0 8px
+}
+
+.intelligence-workbench p {
+    color: #aab6c5;
+    font-size: 14px;
+    line-height: 1.7;
+    margin: 10px 0
+}
+
+.intelligence-header,
+.intelligence-section-title {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    align-items: center
+}
+
+.intelligence-eyebrow {
+    color: #dcba5c !important;
+    font-size: 11px !important;
+    letter-spacing: .15em;
+    text-transform: uppercase
+}
+
+.intelligence-panel {
+    background: #101724;
+    border: 1px solid #283244;
+    border-radius: 20px;
+    padding: 24px;
+    margin: 20px 0;
+    min-width: 0
+}
+
+.intelligence-workbench button,
+.intelligence-workbench select,
+.intelligence-workbench input[type=search] {
+    border: 1px solid #3b4658;
+    background: #172232;
+    color: #eef1f5;
+    border-radius: 10px;
+    padding: 10px 13px;
+    font: inherit;
+    font-size: 13px;
+    min-height: 42px;
+    max-width: 100%
+}
+
+.intelligence-workbench button {
+    cursor: pointer
+}
+
+.intelligence-workbench button:hover,
+.intelligence-workbench button[aria-pressed=true] {
+    border-color: #dcba5c;
+    background: #2a2930
+}
+
+.intelligence-workbench button:disabled {
+    opacity: .5;
+    cursor: wait
+}
+
+.intelligence-workbench :focus-visible {
+    outline: 2px solid #dcba5c;
+    outline-offset: 3px
+}
+
+.intelligence-workbench a {
+    color: #e3c982;
+    text-underline-offset: 4px;
+    text-decoration: underline
+}
+
+.intelligence-workbench label {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    font-size: 13px;
+    color: #bac4d2
+}
+
+.intelligence-workbench summary {
+    cursor: pointer;
+    padding: 10px 0;
+    color: #d3dbe5;
+    font-size: 14px
+}
+
+.intelligence-observation {
+    border-top: 1px solid #293143;
+    padding: 18px 0
+}
+
+.intelligence-observation small {
+    color: #91a5ba
+}
+
+.intelligence-observation h2 {
+    font-size: 18px;
+    margin: 7px 0
+}
+
+.intelligence-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px
+}
+
+.intelligence-chips span {
+    font-size: 12px;
+    padding: 6px 9px;
+    border: 1px solid #344155;
+    border-radius: 20px
+}
+
+.intelligence-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    margin: 18px 0
+}
+
+.intelligence-graph {
+    height: 520px;
+    background: #090f1a;
+    border-radius: 14px;
+    overflow: hidden
+}
+
+.intelligence-star {
+    width: 150px;
+    padding: 14px;
+    background: #172132;
+    border: 1px solid #43516a;
+    border-radius: 22px;
+    text-align: center
+}
+
+.intelligence-star>span {
+    display: block;
+    color: #dcba5c;
+    font-size: 24px
+}
+
+.intelligence-star strong,
+.intelligence-star small {
+    display: block
+}
+
+.intelligence-star strong {
+    font-size: 13px
+}
+
+.intelligence-star small {
+    font-size: 10px;
+    color: #abb9c8;
+    margin-top: 5px
+}
+
+.intelligence-star .react-flow__handle {
+    opacity: 0
+}
+
+.intelligence-graph .selected .intelligence-star {
+    border-color: #f4d376;
+    background: #35313b
+}
+
+.intelligence-graph .in-project .intelligence-star {
+    box-shadow: 0 0 0 3px #617a9b55
+}
+
+.intelligence-graph .is-neighbor .intelligence-star {
+    border-color: #a99565
+}
+
+.intelligence-graph .react-flow__controls-button {
+    min-height: 26px;
+    border-radius: 0;
+    background: #e1e5ed;
+    color: #101724
+}
+
+.intelligence-inspector-grid {
+    display: grid;
+    grid-template-columns: 230px minmax(0, 1fr);
+    gap: 30px;
+    margin-top: 20px
+}
+
+.intelligence-song-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 540px;
+    overflow: auto
+}
+
+.intelligence-song-list button {
+    text-align: left;
+    flex-shrink: 0
+}
+
+.intelligence-sequence {
+    list-style: decimal;
+    padding-left: 24px
+}
+
+.intelligence-sequence li {
+    padding: 12px 0;
+    border-bottom: 1px solid #283244
+}
+
+.intelligence-sequence li>span,
+.intelligence-sequence li>small {
+    display: block;
+    font-size: 12px;
+    color: #aab6c5;
+    margin-top: 8px
+}
+
+.intelligence-preserve {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere
+}
+
+.intelligence-evidence {
+    padding: 14px;
+    border-left: 2px solid #dcba5c;
+    margin-top: 16px
+}
+
+.intelligence-evidence button {
+    margin-right: 8px
+}
+
+.intelligence-mobile-map {
+    display: none
+}
+
+.intelligence-map-toggle {
+    width: 100%;
+    text-align: left
+}
+
+.intelligence-scope {
+    max-width: 850px
+}
+
+.intelligence-inspector article {
+    min-width: 0;
+    overflow-wrap: anywhere
+}
+
+@media(max-width:640px) {
+    .intelligence-workbench {
+        padding: 24px 14px 100px
+    }
+
+    .intelligence-header,
+    .intelligence-section-title {
+        align-items: stretch;
+        flex-direction: column
+    }
+
+    .intelligence-panel {
+        padding: 18px 14px
+    }
+
+    .intelligence-inspector-grid {
+        grid-template-columns: 1fr;
+        gap: 18px
+    }
+
+    .intelligence-song-list {
+        max-height: 220px
+    }
+
+    .intelligence-graph,
+    .intelligence-graph-list {
+        display: none
+    }
+
+    .intelligence-mobile-map {
+        display: block
+    }
+
+    .intelligence-workbench label {
+        flex-wrap: wrap
+    }
+
+    .intelligence-section-title select {
+        width: 100%
+    }
+
+    .intelligence-workbench h2 {
+        font-size: 19px
+    }
+}
+
+@media(prefers-reduced-motion:reduce) {
+    .intelligence-workbench * {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important
+    }
+}
+
+.intelligence-graph .react-flow__controls-button {
+    color: #182232;
+    background: #d9e0e9;
+    padding: 5px;
+    min-width: 26px
+}
+
+.intelligence-graph .react-flow__controls-button svg {
+    fill: currentColor
+}
+
+.intelligence-graph .react-flow__attribution {
+    background: #172232
+}
+
+.intelligence-graph .react-flow__attribution a {
+    color: #bac4d2
+}
+
+.intelligence-context label {
+    display: block;
+    margin: 14px 0
+}
+
+.intelligence-workbench textarea {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    padding: 12px;
+    background: #090f1a;
+    color: #e4e9ef;
+    border: 1px solid #43516a;
+    border-radius: 10px;
+    font: inherit;
+    resize: vertical
+}
+
+.intelligence-workbench fieldset {
+    border: 0;
+    padding: 0;
+    min-width: 0
+}
+
+.intelligence-feedback {
+    margin: 16px 0
+}
+
+.intelligence-feedback small {
+    display: block;
+    margin-bottom: 10px
+}
+
+.intelligence-song-lab {
+    margin: 20px 0;
+    padding: 16px;
+    border: 1px solid #344155;
+    border-radius: 12px;
+    min-width: 0
+}
+
+.intelligence-song-lab input {
+    max-width: 100%;
+    box-sizing: border-box
+}
+
+.intelligence-song-lab label {
+    display: block;
+    margin: 12px 0
+}
+
+.intelligence-moment-strip {
+    position: relative;
+    height: 38px;
+    margin: 0 18px
+}
+
+.intelligence-moment-strip button {
+    position: absolute;
+    transform: translateX(-50%);
+    min-height: 32px;
+    padding: 5px;
+    border: 0;
+    background: transparent
+}
+
+.intelligence-song-lab input[type=range] {
+    width: 100%
+}
+
+.intelligence-reasoning {
+    min-width: 0;
+    margin-block: 1.25rem;
+}
+
+.intelligence-reasoning textarea {
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+.intelligence-reasoning blockquote,
+.intelligence-workbench blockquote {
+    margin-inline: 0;
+    padding-left: .75rem;
+    border-left: 2px solid #6b7999;
+    overflow-wrap: anywhere;
+}
+
+.intelligence-reasoning small,
+.intelligence-workbench .intelligence-panel article {
+    overflow-wrap: anywhere;
+}
+
+/* State changes clarify selection; reduced motion remains authoritative. */
+.intelligence-focus {
+    scroll-margin-top: 90px;
+    animation: intelligence-arrive 180ms ease-out;
+    outline: none
+}
+
+.intelligence-focus:focus-visible {
+    outline: 2px solid #b9a874;
+    outline-offset: 8px
+}
+
+.intelligence-depth {
+    margin-block: 18px;
+    padding-block: 12px;
+    border-top: 1px solid #293143
+}
+
+.intelligence-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 14px 0
+}
+
+.cosmic-read {
+    padding: 8px 0 18px;
+    min-width: 0
+}
+
+.cosmic-read .cosmic-read-statement {
+    font-size: 18px;
+    line-height: 1.65;
+    color: #e4e9ef
+}
+
+.intelligence-audio {
+    min-width: 0;
+    margin-top: 18px
+}
+
+.intelligence-arrival,
+.intelligence-depth[open]> :not(summary) {
+    animation: intelligence-arrive 180ms ease-out
+}
+
+.intelligence-workbench button {
+    transition: background-color 140ms ease, border-color 140ms ease
+}
+
+.intelligence-listening {
+    border-left: 2px solid #dcba5c;
+    padding-left: 12px
+}
+
+.intelligence-audio-flow {
+    display: block;
+    width: 100%;
+    max-width: 480px;
+    height: 72px;
+    color: #b9a874
+}
+
+.intelligence-inspector {
+    background: linear-gradient(130deg, #141d2b, #101724 65%)
+}
+
+@keyframes intelligence-arrive {
+    from {
+        opacity: .55;
+        transform: translateY(5px)
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0)
+    }
+}
+
+@media(prefers-reduced-motion:reduce) {
+    .intelligence-workbench * {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important
+    }
+}
+
+.intelligence-audio-sequence {
+    padding-left: 20px
+}
+
+.intelligence-audio-sequence li {
+    padding: 12px 0
+}
+
+.intelligence-audio-sequence span,
+.intelligence-audio-sequence small {
+    display: block
+}
+
+.intelligence-audio-sequence meter {
+    width: 100%;
+    max-width: 320px
+}
+
+/* V3.4: one creative object, with tools at its edges. */
+.creative-compass {
+    padding: clamp(18px, 3vw, 36px);
+    border-radius: 24px;
+    background: radial-gradient(ellipse at 92% 0%, #32475b66, transparent 60%), linear-gradient(145deg, #182534, #111b28);
+    margin: 24px 0;
+    color: #e4eaf2;
+    min-width: 0
+}
+
+.compass-intro h2 {
+    font-size: clamp(26px, 4vw, 42px);
+    letter-spacing: -.03em;
+    margin: 8px 0
+}
+
+.compass-threads {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap
+}
+
+.compass-threads article {
+    flex: 1;
+    min-width: 170px;
+    padding: 12px 0
+}
+
+.compass-threads h4 {
+    font-size: 23px;
+    margin: 8px 0;
+    text-transform: capitalize
+}
+
+.compass-signature {
+    border-bottom: 1px solid #91a7bc30;
+    padding-bottom: 24px
+}
+
+.compass-discovery {
+    padding-top: 28px
+}
+
+.compass-song-object {
+    display: flex;
+    gap: 20px;
+    align-items: center
+}
+
+.compass-song-object>img,
+.compass-song-object>span {
+    width: 92px;
+    height: 92px;
+    object-fit: cover;
+    border-radius: 18px;
+    box-shadow: 0 12px 28px #0005;
+    flex-shrink: 0
+}
+
+.compass-song-object>span {
+    display: grid;
+    place-items: center;
+    font-size: 40px;
+    background: linear-gradient(135deg, #6c879e, #273a51);
+    color: #f1f6ff
+}
+
+.compass-song-object h3 {
+    font-size: 26px;
+    margin: 8px 0
+}
+
+.compass-pair {
+    padding: 20px 0
+}
+
+.compass-pair>p {
+    max-width: 750px;
+    line-height: 1.7
+}
+
+.compass-orientation {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap
+}
+
+.creative-compass details {
+    margin: 14px 0
+}
+
+.creative-compass summary {
+    cursor: pointer;
+    color: #c3d6e8
+}
+
+.creative-compass button {
+    min-height: 38px
+}
+
+.compass-seed {
+    padding: 24px 0;
+    border-top: 1px solid #91a7bc40
+}
+
+.compass-seed li {
+    padding: 8px 0
+}
+
+.creative-compass select {
+    max-width: 100%;
+    min-width: 0
+}
+
+.creative-compass p,
+.creative-compass h3 {
+    overflow-wrap: anywhere
+}
+
+.intelligence-graph {
+    background: radial-gradient(ellipse at 20% 15%, #99b7ce20, transparent 50%), radial-gradient(ellipse at 80% 90%, #7197aa22, transparent 50%), #0f1926;
+    border-radius: 24px;
+    box-shadow: inset 0 0 100px #16283b
+}
+
+.intelligence-star {
+    width: 166px;
+    min-height: 120px;
+    padding: 12px !important;
+    border-radius: 16px !important;
+    background: linear-gradient(145deg, #33465b, #152333) !important;
+    box-shadow: 0 12px 28px #0006;
+    border: 1px solid #9bb7d050 !important;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    transform: perspective(700px) rotateY(-5deg);
+    transition: transform 180ms, box-shadow 180ms
+}
+
+.intelligence-star img,
+.intelligence-star .track-monogram {
+    width: 58px;
+    height: 58px;
+    border-radius: 10px;
+    object-fit: cover
+}
+
+.intelligence-star .track-monogram {
+    display: grid;
+    place-items: center;
+    font-size: 26px;
+    background: linear-gradient(140deg, #8caac4, #31425d);
+    color: #fff
+}
+
+.intelligence-star small {
+    font-size: 10px
+}
+
+.react-flow__node.selected .intelligence-star {
+    transform: perspective(700px) rotateY(0deg) translateY(-4px);
+    box-shadow: 0 16px 35px #0008, 0 0 0 2px #b8d2e7
+}
+
+.react-flow__node.in-project .intelligence-star {
+    border-bottom: 3px solid #bbcedd !important
+}
+
+@media(max-width:640px) {
+    .compass-threads {
+        gap: 8px
+    }
+
+    .compass-threads article {
+        min-width: 100%;
+        padding: 4px 0
+    }
+
+    .compass-song-object {
+        gap: 12px
+    }
+
+    .compass-song-object>img,
+    .compass-song-object>span {
+        width: 64px;
+        height: 64px
+    }
+
+    .compass-song-object h3 {
+        font-size: 21px
+    }
+
+    .compass-seed ol {
+        padding-left: 20px
+    }
+}
+
+@media(prefers-reduced-motion:reduce) {
+
+    .intelligence-star,
+    .react-flow__node.selected .intelligence-star {
+        transform: none !important
+    }
+}
+
+.compass-focus {
+    scroll-margin-top: 80px;
+    outline: none
+}
+
+.compass-focus:focus-visible {
+    outline: 2px solid #a6c1d8;
+    outline-offset: 6px
+}
+
+@media(min-width:900px) {
+    .creative-compass {
+        display: grid;
+        grid-template-columns: minmax(220px, .7fr) minmax(0, 1.3fr);
+        gap: 20px 36px
+    }
+
+    .compass-intro {
+        grid-column: 1/-1;
+        display: flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: 10px 20px
+    }
+
+    .compass-intro .intelligence-eyebrow {
+        width: 100%;
+        margin: 0
+    }
+
+    .compass-intro h2 {
+        font-size: 28px;
+        margin: 0
+    }
+
+    .compass-intro>p:last-child {
+        margin: 0
+    }
+
+    .compass-signature {
+        border-bottom: 0;
+        border-right: 1px solid #91a7bc30;
+        padding-right: 24px
+    }
+
+    .compass-discovery {
+        padding-top: 0
+    }
+
+    .creative-compass>.compass-seed,
+    .creative-compass>details,
+    .creative-compass>[role] {
+        grid-column: 1/-1
+    }
+
+    .compass-signature h3 {
+        margin-top: 0
+    }
+}
+
+@media(max-width:899px) {
+    .compass-intro h2 {
+        font-size: 25px
+    }
+
+    .compass-intro>p:last-child {
+        margin-bottom: 12px
+    }
+
+    .compass-signature h3 {
+        font-size: 16px;
+        margin: 12px 0 4px
+    }
+
+    .compass-threads article {
+        padding: 0
+    }
+
+    .compass-threads h4 {
+        margin: 4px 0
+    }
+
+    .compass-signature {
+        padding-bottom: 8px
+    }
+
+    .compass-discovery {
+        padding-top: 16px
+    }
+
+    .creative-compass details {
+        margin: 8px 0
+    }
+}
+
+/* V3.5 — the scene is the instrument; the detail is optional. */
+.living-universe {
+    position: relative;
+    isolation: isolate;
+    background: radial-gradient(ellipse at 50% 20%, #24435c70, transparent 65%), linear-gradient(160deg, #07101d, #122b40 58%, #091321);
+    border-radius: 28px;
+    overflow: hidden;
+    color: #ecf5ff;
+    box-shadow: 0 24px 80px #0004;
+    margin: 0 0 24px;
+    border: 1px solid #9dbbd123
+}
+
+.universe-heading {
+    position: absolute;
+    top: 25px;
+    left: 30px;
+    right: 30px;
+    z-index: 3;
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    pointer-events: none
+}
+
+.universe-heading p {
+    font-size: 10px;
+    letter-spacing: .2em;
+    color: #b5d5e7;
+    margin: 0 0 8px
+}
+
+.universe-heading h2 {
+    font-size: clamp(18px, 2.1vw, 28px);
+    font-weight: 400;
+    letter-spacing: -.025em;
+    margin: 0
+}
+
+.universe-heading>span {
+    font-size: 11px;
+    color: #97b8ce
+}
+
+.universe-stage {
+    position: relative;
+    height: clamp(480px, 61vh, 700px);
+    background: radial-gradient(ellipse at 50% 80%, #8bb6d520, transparent 60%)
+}
+
+.universe-canvas {
+    position: absolute;
+    inset: 0
+}
+
+.universe-canvas canvas {
+    display: block;
+    touch-action: pan-y
+}
+
+.universe-label-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden
+}
+
+.universe-label-layer .universe-song-label {
+    position: absolute;
+    left: 0;
+    top: 0;
+    pointer-events: auto;
+    background: #0c1b2acc;
+    border: 1px solid #b7d4e333;
+    padding: 5px 10px;
+    border-radius: 20px;
+    color: #d8e8f4;
+    font-size: 11px;
+    max-width: 170px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 28px
+}
+
+.universe-song-label[data-selected=true] {
+    border-color: #d6edff !important;
+    color: white !important;
+    background: #294963ee !important
+}
+
+.universe-world-label {
+    position: absolute;
+    color: #8cb1cc;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: .17em;
+    white-space: nowrap
+}
+
+.universe-tools {
+    position: absolute;
+    left: 28px;
+    right: 28px;
+    bottom: 34px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    z-index: 3;
+    flex-wrap: wrap
+}
+
+.universe-tools select {
+    max-width: 220px;
+    background: #11253ddd;
+    border: 1px solid #85a9c544;
+    color: #e5f1fa;
+    border-radius: 20px;
+    padding: 9px 15px
+}
+
+.universe-tools button {
+    font-size: 11px !important;
+    background: #11253ddd !important;
+    border: 1px solid #85a9c533 !important;
+    border-radius: 20px !important;
+    color: #c3d8e8 !important;
+    padding: 8px 12px !important
+}
+
+.universe-stage-caption {
+    position: absolute;
+    bottom: 12px;
+    left: 30px;
+    right: 30px;
+    font-size: 10px;
+    color: #91aec2;
+    pointer-events: none
+}
+
+.universe-discovery {
+    display: grid;
+    grid-template-columns: .85fr 1.15fr;
+    gap: 36px;
+    padding: 26px 32px 30px;
+    background: linear-gradient(180deg, #0b1a2b55, #08121eee);
+    border-top: 1px solid #b5d7e322
+}
+
+.universe-discovery small {
+    font-size: 9px;
+    letter-spacing: .18em;
+    color: #92b8d0
+}
+
+.universe-discovery h3 {
+    font-size: clamp(21px, 2.4vw, 32px);
+    letter-spacing: -.03em;
+    line-height: 1.2;
+    margin: 9px 0 16px
+}
+
+.universe-discovery button {
+    background: transparent;
+    border: 1px solid #accce044;
+    color: #dceefb;
+    border-radius: 22px;
+    padding: 9px 15px;
+    margin: 0 8px 8px 0;
+    min-height: 38px
+}
+
+.universe-connection h3 button {
+    border: 0;
+    padding: 0;
+    font-size: inherit;
+    border-radius: 0;
+    margin: 0;
+    text-align: left
+}
+
+.universe-connection p {
+    font-size: 13px;
+    line-height: 1.55;
+    color: #adc5d8;
+    margin: 9px 0 14px
+}
+
+.universe-actions button:first-child,
+.universe-selected>button:first-of-type {
+    background: #d1e7f4;
+    color: #132638;
+    border-color: transparent
+}
+
+.universe-responses button {
+    border: 0;
+    font-size: 11px;
+    color: #a2bfd4;
+    padding: 6px 0;
+    margin: 8px 18px 0 0
+}
+
+.universe-discovery summary {
+    font-size: 12px;
+    color: #b9d1e1;
+    cursor: pointer
+}
+
+.universe-status {
+    padding: 0 30px 20px;
+    color: #c7e0f2;
+    font-size: 13px
+}
+
+.universe-path-editor { scroll-margin-top: 90px; }
+
+.universe-depth {
+    padding: 18px 0;
+    border-bottom: 1px solid #accce026;
+    margin-bottom: 10px
+}
+
+.universe-depth>summary {
+    color: #aec9db;
+    font-size: 14px;
+    cursor: pointer
+}
+
+.universe-loading,
+.universe-empty {
+    position: absolute;
+    top: 45%;
+    left: 20%;
+    right: 20%;
+    text-align: center;
+    color: #b8d3e5
+}
+
+.universe-fallback {
+    position: absolute;
+    inset: 100px 20px 100px;
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    align-items: center;
+    scroll-snap-type: x proximity
+}
+
+.universe-fallback>button {
+    flex: 0 0 150px;
+    min-height: 200px;
+    scroll-snap-align: center;
+    background: linear-gradient(145deg, #29455b88, #0a172866);
+    border: 1px solid #8aaabd33;
+    border-radius: 90px 90px 24px 24px;
+    padding: 20px 12px;
+    color: #cee2ef;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px
+}
+
+.universe-fallback>button[aria-pressed=true] {
+    border-color: #d9edfa;
+    background: #35567166
+}
+
+.universe-mini-record {
+    display: grid;
+    place-items: center;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: repeating-radial-gradient(circle, #294157 0, #294157 3px, #94b5ca 4px, #294157 5px);
+    box-shadow: 0 12px 30px #0006;
+    font-size: 38px;
+    font-family: serif;
+    overflow: hidden
+}
+
+.universe-mini-record img {
+    width: 70px;
+    height: 70px;
+    object-fit: cover
+}
+
+.universe-fallback small {
+    font-size: 10px;
+    color: #91aec1
+}
+
+@media(max-width:640px) {
+    .living-universe {
+        border-radius: 18px
+    }
+
+    .universe-heading {
+        left: 20px;
+        right: 20px;
+        top: 20px
+    }
+
+    .universe-heading>span {
+        display: none
+    }
+
+    .universe-stage {
+        height: 440px
+    }
+
+    .universe-tools {
+        left: 18px;
+        right: 18px;
+        bottom: 42px
+    }
+
+    .universe-tools select {
+        max-width: 190px
+    }
+
+    .universe-stage-caption {
+        left: 20px;
+        bottom: 17px
+    }
+
+    .universe-discovery {
+        grid-template-columns: 1fr;
+        gap: 22px;
+        padding: 22px 20px
+    }
+
+    .universe-selected h3 {
+        margin-bottom: 10px
+    }
+
+    .universe-connection {
+        border-top: 1px solid #8aaabd33;
+        padding-top: 20px
+    }
+
+    .universe-fallback {
+        inset: 80px 16px 110px
+    }
+}
+
+@media(prefers-reduced-motion:no-preference) {
+    .universe-discovery {
+        animation: intelligence-arrive 220ms ease-out
+    }
+}
+
+@media(min-width:641px) {
+    .universe-stage {
+        height: clamp(540px, 66vh, 740px)
+    }
+
+    .universe-canvas {
+        inset: 60px 0 86px
+    }
+}
+
+/* One optional listening desk, kept mounted so experiments survive navigation. */
+.universe-desk-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 18px 0;
+    border-bottom: 1px solid #b8d9ef20;
+    margin-bottom: 16px
+}
+
+.universe-desk-nav button[aria-expanded="true"] {
+    background: #bcdced;
+    color: #0b2030;
+    border-color: #d7edfa
+}
+
+.intelligence-workbench [hidden] {
+    display: none !important
+}
+
+.universe-tools .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap
+}
+
+.universe-grounded-response {
+    padding: 16px 32px;
+    border-top: 1px solid #b8d9ef16;
+    background: #091523
+}
+
+@media(max-width:640px) {
+    .universe-grounded-response {
+        padding: 16px 20px
+    }
+}
+
+/* V3.6: a portrait architectural installation, with music at its edges. */
+.living-universe {
+    background: #08090b;
+    border-color: #c9c9c929;
+    box-shadow: none
+}
+
+.impossible-installation {
+    position: absolute;
+    inset: 100px 0 95px;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+    overflow: hidden
+}
+
+.impossible-installation img,
+.impossible-installation video {
+    position: absolute;
+    height: 100%;
+    width: auto;
+    max-width: 48%;
+    object-fit: contain;
+    opacity: .88;
+    mask-image: linear-gradient(transparent, #000 8%, #000 90%, transparent)
+}
+
+.universe-canvas {
+    z-index: 1
+}
+
+.universe-world-label {
+    display: none !important
+}
+
+.universe-heading {
+    z-index: 3
+}
+
+.universe-realms {
+    position: absolute;
+    top: 82px;
+    left: 24px;
+    right: 24px;
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    z-index: 2
+}
+
+.universe-realms span {
+    font-size: 10px;
+    border-bottom: 1px solid;
+    padding: 3px 0
+}
+
+.universe-realms small {
+    opacity: .6
+}
+
+.universe-discovery {
+    background: #101114;
+    border-color: #ffffff18
+}
+
+.universe-tools select,
+.universe-tools button {
+    background: #141619ee !important;
+    color: #e0e0e0 !important;
+    border-color: #ffffff26 !important
+}
+
+.universe-song-label {
+    background: #111318ee !important
+}
+
+.universe-grounded-response {
+    background: #101114
+}
+
+.creator-paths,
+.universe-path-inspect {
+    padding: 24px 32px;
+    border-top: 1px solid #ffffff26;
+    background: #111215
+}
+
+.creator-paths fieldset {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: end;
+    border: 0;
+    padding: 0
+}
+
+.creator-paths label {
+    display: flex;
+    flex: 1;
+    min-width: 180px;
+    flex-direction: column;
+    gap: 8px
+}
+
+.creator-paths textarea,
+.creator-paths select {
+    width: 100%;
+    box-sizing: border-box;
+    background: #1b1d21;
+    color: #eee;
+    border: 1px solid #ffffff30;
+    padding: 10px;
+    border-radius: 8px
+}
+
+.creator-paths article {
+    padding: 18px 0;
+    border-top: 1px solid #ffffff20;
+    margin-top: 18px
+}
+
+.creator-paths p {
+    font-size: 13px;
+    line-height: 1.6
+}
+
+@media(min-width:641px) {
+    .universe-stage {
+        height: clamp(620px, 76vh, 820px)
+    }
+
+    .universe-canvas {
+        inset: 120px 0 100px
+    }
+}
+
+@media(max-width:640px) {
+    .universe-stage {
+        height: 580px
+    }
+
+    .universe-realms {
+        top: 90px;
+        gap: 8px
+    }
+
+    .impossible-installation {
+        inset: 145px 0 100px
+    }
+
+    .impossible-installation img,
+    .impossible-installation video {
+        max-width: 90%;
+        opacity: .5
+    }
+
+    .universe-fallback {
+        inset: 220px 16px 110px;
+        z-index: 2
+    }
+
+    .universe-fallback>button {
+        background: #111318eb;
+        min-height: 170px
+    }
+
+    .creator-paths,
+    .universe-path-inspect {
+        padding: 20px
+    }
+}
+
+@media(min-width:1100px) {
+    .living-universe {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 300px
+    }
+
+    .universe-stage {
+        grid-column: 1;
+        grid-row: 1;
+        height: 650px
+    }
+
+    .universe-heading {
+        right: 324px
+    }
+
+    .universe-discovery {
+        grid-column: 2;
+        grid-row: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 24px;
+        padding: 26px 24px;
+        border-top: 0;
+        border-left: 1px solid #ffffff18
+    }
+
+    .universe-discovery h3 {
+        font-size: 25px
+    }
+
+    .universe-connection {
+        border-top: 1px solid #ffffff20;
+        padding-top: 24px
+    }
+
+    .universe-realms {
+        gap: 8px;
+        top: 90px
+    }
+
+    .universe-grounded-response,
+    .universe-status,
+    .creator-paths,
+    .universe-path-inspect {
+        grid-column: 1/-1
+    }
+}
+
+.universe-catalog-review {
+    grid-column: 1/-1;
+    padding: 12px 24px;
+    font-size: 12px !important
+}
+
+.universe-path-label {
+    position: absolute;
+    pointer-events: auto;
+    white-space: nowrap;
+    border: 1px dashed #e6e6e677 !important;
+    border-radius: 14px !important;
+    background: #121315ed !important;
+    color: #ddd !important;
+    font-size: 10px !important;
+    padding: 5px 9px !important
+}
+
+/* Reserve the existing compact player plus its narrow-screen dock offset. */
+@media(max-width:899px) {
+    .intelligence-workbench {
+        padding-bottom: calc(280px + env(safe-area-inset-bottom))
+    }
+}
+
+/* Stage A review: one immersive surface, with a focused musical constellation. */
+.living-universe {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    isolation: isolate
+}
+
+.universe-stage {
+    grid-area: 1/1;
+    height: 780px;
+    overflow: hidden
+}
+
+.impossible-installation {
+    inset: 0;
+    display: block
+}
+
+.impossible-installation img,
+.impossible-installation video {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    object-fit: cover;
+    object-position: 50% 45%;
+    opacity: .5;
+    mask-image: none
+}
+
+.impossible-installation::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, #07090ed9, transparent 24%, #06090f44 48%, #06090ff2 88%), linear-gradient(90deg, #07090e88, transparent 35%, transparent 75%, #07090e77)
+}
+
+.universe-heading {
+    right: 30px;
+    top: 28px
+}
+
+.universe-heading h2 {
+    text-shadow: 0 2px 15px #000
+}
+
+.universe-realms {
+    top: 90px;
+    justify-content: flex-start;
+    left: 30px;
+    gap: 12px
+}
+
+.universe-canvas {
+    inset: 110px 0 235px
+}
+
+.universe-discovery {
+    grid-area: 1/1;
+    align-self: end;
+    z-index: 2;
+    margin: 0 28px 94px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    padding: 18px 22px;
+    border: 1px solid #ffffff24;
+    border-radius: 20px;
+    background: #0a0e16b8;
+    backdrop-filter: blur(12px)
+}
+
+.universe-discovery h3 {
+    font-size: 24px;
+    margin: 6px 0 12px
+}
+
+.universe-connection {
+    border: 0;
+    padding: 0
+}
+
+.universe-discovery small {
+    color: #c2cbd4
+}
+
+.universe-connection p {
+    font-size: 12px;
+    margin: 6px 0 10px
+}
+
+.universe-responses {
+    display: none
+}
+
+.universe-discovery button {
+    padding: 7px 12px;
+    margin-bottom: 4px
+}
+
+.universe-discovery details {
+    margin: 4px 0 0
+}
+
+.universe-tools {
+    bottom: 38px;
+    left: 30px;
+    right: 30px;
+    z-index: 3
+}
+
+.universe-stage-caption {
+    bottom: 17px
+}
+
+.universe-grounded-response,
+.universe-status,
+.creator-paths,
+.universe-path-inspect,
+.universe-catalog-review {
+    grid-column: 1;
+    grid-row: auto
+}
+
+.universe-song-label {
+    box-shadow: 0 4px 20px #0009
+}
+
+.universe-path-label {
+    box-shadow: 0 4px 15px #0009
+}
+
+@media(max-width:640px) {
+    .universe-stage {
+        height: 910px
+    }
+
+    .universe-heading {
+        right: 20px;
+        left: 20px
+    }
+
+    .universe-realms {
+        left: 20px;
+        right: 20px;
+        gap: 8px
+    }
+
+    .impossible-installation img,
+    .impossible-installation video {
+        max-width: none;
+        opacity: .45;
+        object-position: 52% 35%
+    }
+
+    .universe-fallback {
+        inset: 160px 16px 450px
+    }
+
+    .universe-discovery {
+        margin: 0 14px 126px;
+        padding: 16px;
+        grid-template-columns: 1fr;
+        gap: 16px
+    }
+
+    .universe-discovery h3 {
+        font-size: 21px
+    }
+
+    .universe-tools {
+        bottom: 40px;
+        left: 18px;
+        right: 18px
+    }
+
+    .universe-stage-caption {
+        bottom: 14px
+    }
+
+    .universe-connection {
+        border-top: 1px solid #ffffff20;
+        padding-top: 12px
+    }
+}
+
+/* Stage B navigation remains in the accepted stage, not a separate dashboard. */
+.universe-realms button {
+    font-size: 10px !important;
+    border: 0 !important;
+    border-bottom: 1px solid currentColor !important;
+    border-radius: 0 !important;
+    background: #080b1088 !important;
+    padding: 4px 2px !important;
+    cursor: pointer
+}
+
+.universe-realms button[aria-pressed=true] {
+    box-shadow: 0 2px currentColor;
+    background: #202632dd !important
+}
+
+.universe-search {
+    position: relative;
+    min-width: 170px
+}
+
+.universe-search input {
+    width: 190px;
+    max-width: 100%;
+    border: 1px solid #ffffff35;
+    border-radius: 20px;
+    background: #111722ed;
+    color: #eef3fa;
+    padding: 9px 14px
+}
+
+.universe-search-results {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 0;
+    width: min(340px, 75vw);
+    max-height: 330px;
+    overflow: auto;
+    background: #101720f5;
+    border: 1px solid #ffffff35;
+    border-radius: 16px;
+    padding: 10px;
+    box-shadow: 0 10px 40px #0009;
+    backdrop-filter: blur(14px)
+}
+
+.universe-tools .universe-search-results button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    margin: 4px 0;
+    border-radius: 9px !important
+}
+
+.universe-search-results strong,
+.universe-search-results small {
+    display: block
+}
+
+.universe-search-results small {
+    font-size: 10px;
+    opacity: .65;
+    margin-top: 4px
+}
+
+.universe-tools button[aria-pressed=true] {
+    border-color: #d4e4f5 !important
+}
+
+.impossible-installation video[hidden] {
+    display: none
+}
+
+@media(max-width:640px) {
+    .universe-tools {
+        gap: 5px
+    }
+
+    .universe-search input {
+        width: 150px
+    }
+
+    .universe-tools button {
+        padding: 7px 9px !important
+    }
+}
+
+/* V3.6 MANUAL 01 — clear the stage; keep actions and discovery accessible. */
+.living-universe {
+    display: block;
+}
+
+.living-universe .universe-stage {
+    height: clamp(565px, 70vh, 720px);
+    grid-area: auto;
+}
+
+.living-universe .universe-canvas {
+    inset: 148px 0 122px;
+}
+
+.universe-focus-dock {
+    position: absolute;
+    z-index: 3;
+    left: clamp(12px, 2.4vw, 30px);
+    right: clamp(12px, 2.4vw, 30px);
+    bottom: 19px;
+    min-height: 72px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    justify-content: space-between;
+    border: 1px solid #c3d4e52b;
+    border-radius: 17px;
+    background: #09101cdb;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 10px 35px #0005;
+}
+
+.universe-dock-copy {
+    min-width: 0;
+    display: grid;
+    gap: 3px;
+}
+
+.universe-dock-copy small {
+    color: #abc6d9;
+    font-size: 10px;
+    letter-spacing: .16em;
+}
+
+.universe-dock-copy strong {
+    font-size: clamp(15px, 1.55vw, 20px);
+    font-weight: 500;
+    overflow-wrap: anywhere;
+}
+
+.universe-dock-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 7px;
+}
+
+.intelligence-workbench .universe-dock-actions button {
+    min-height: 36px;
+    border-radius: 22px;
+    background: #172538eb;
+    border-color: #b2cde03c;
+    padding: 6px 12px;
+    white-space: nowrap;
+}
+
+.intelligence-workbench .universe-dock-actions button:first-child {
+    background: #d1e8f5;
+    color: #102234;
+    border-color: #d1e8f5;
+}
+
+.universe-dock-evidence {
+    color: #a8bfd0;
+    font-size: 11px;
+    line-height: 1.35;
+    max-width: 390px;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+}
+
+/* Navigation is in the document flow, no longer over interactive songs. */
+.living-universe .universe-tools {
+    position: relative;
+    inset: auto;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 13px clamp(12px, 2.4vw, 30px);
+    border-top: 1px solid #a8c5da27;
+    background: #0b111b;
+    z-index: 4;
+}
+
+.living-universe .universe-search-results {
+    top: calc(100% + 8px);
+    bottom: auto;
+    z-index: 8;
+}
+
+/* The stage caption is explanatory text, not another floating toolbar. */
+.living-universe .universe-stage-caption {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Full song context stays available, but does not block the musical map. */
+.universe-path-editor { scroll-margin-top: 90px; }
+
+.universe-depth {
+    margin: 0 clamp(12px, 2.4vw, 30px) 18px;
+    border: 1px solid #acc9df31;
+    border-radius: 15px;
+    background: #0a111be8;
+}
+
+.universe-depth > summary {
+    list-style: none;
+    padding: 14px 18px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #d6e9f7;
+}
+
+.universe-depth > summary::-webkit-details-marker { display: none; }
+.universe-depth > summary::before { content: '›'; display: inline-block; margin-right: 10px; }
+.universe-depth[open] > summary::before { transform: rotate(90deg); }
+.universe-depth > summary span { color: #90a9bb; font-size: 12px; }
+
+.universe-depth .universe-discovery {
+    display: grid;
+    position: static;
+    grid-area: auto;
+    align-self: auto;
+    grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+    margin: 0;
+    padding: 16px 18px 20px;
+    border: 0;
+    border-top: 1px solid #acc9df22;
+    border-radius: 0 0 15px 15px;
+    background: none;
+    backdrop-filter: none;
+}
+
+/* Lightweight mode: a navigable musical collection, not tall 3D placeholders. */
+.living-universe .universe-fallback {
+    inset: 155px 18px 124px;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0,1fr));
+    grid-auto-rows: minmax(102px, auto);
+    align-content: start;
+    align-items: stretch;
+    gap: 10px;
+    padding: 4px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-snap-type: none;
+}
+
+.living-universe .universe-fallback > button {
+    flex: none;
+    width: 100%;
+    min-width: 0;
+    min-height: 106px;
+    padding: 10px 7px;
+    border-radius: 15px;
+    gap: 5px;
+    background: #101a28d9;
+    backdrop-filter: blur(8px);
+}
+
+.living-universe .universe-fallback .universe-mini-record {
+    width: 44px;
+    height: 44px;
+    font-size: 19px;
+}
+
+.living-universe .universe-fallback .universe-mini-record img {
+    width: 40px;
+    height: 40px;
+}
+
+.living-universe .universe-fallback > button strong {
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+
+.living-universe .universe-fallback > button small { font-size: 10px; }
+
+@media (max-width: 780px) {
+    .living-universe .universe-stage { height: 680px; }
+    .living-universe .universe-fallback { grid-template-columns: repeat(3,minmax(0,1fr)); }
+    .universe-focus-dock { flex-direction: column; align-items: stretch; gap: 8px; }
+    .universe-dock-actions { justify-content: flex-start; }
+}
+
+@media (max-width: 640px) {
+    .living-universe .universe-stage { height: 760px; }
+    .living-universe .universe-fallback {
+        inset: 172px 12px 170px;
+        grid-template-columns: repeat(2,minmax(0,1fr));
+        grid-auto-rows: minmax(100px,auto);
+    }
+    .living-universe .universe-canvas { inset: 150px 0 180px; }
+    .universe-focus-dock { bottom: 16px; padding: 10px 12px; }
+    .intelligence-workbench .universe-dock-actions button { min-height: 34px; padding: 5px 9px; font-size: 12px; }
+    .universe-depth .universe-discovery { grid-template-columns: minmax(0,1fr); gap: 15px; }
+    .universe-depth > summary span { display: block; margin-left: 19px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .universe-depth > summary::before { transition: none; }
+}
+
+/* Weekly spatial pass: orbit owns canvas gestures; compact controls remain below it. */
+.living-universe .universe-canvas canvas { touch-action: none; cursor: grab; }
+.living-universe .universe-canvas canvas:active { cursor: grabbing; }
+.living-universe .universe-path-label { padding: 5px 8px; font-size: 10px; max-width: 130px; }
+
+/* Realm neighborhood markers name regions without adding navigable architecture. */
+.universe-region-label { position:absolute; left:0; top:0; pointer-events:auto; border:1px solid; border-radius:8px; background:#09101ce8; color:#e4edf5; padding:6px 10px; font-size:11px; letter-spacing:.04em; white-space:nowrap; }
+.intelligence-collection-body { padding:16px; }
+.intelligence-collection-body > p { max-width:65ch; color:#b8c8d6; font-size:13px; }
+.intelligence-collection-body label { display:grid; gap:6px; font-size:12px; }
+.intelligence-collection-body ul { list-style:none; margin:12px 0; padding:0; max-height:320px; overflow:auto; }
+.intelligence-collection-body li { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid #c4d8e51c; }
+.intelligence-collection-body li small { display:block; color:#8ea6b9; font-size:11px; }
+.intelligence-collection-body li button { flex-shrink:0; }
+@media(max-width:640px) { .intelligence-collection-body li { align-items:flex-start; flex-direction:column; } }
+.intelligence-workbench .universe-region-label { min-height:0; padding:5px 8px; font-size:10px; line-height:1.2; border-radius:8px; background:#09101ce8; }
+/* Direct authoring stays in the existing contextual dock. */
+.universe-path-dock label{display:flex;gap:.5rem;align-items:center;font-size:.75rem}
+.universe-path-dock input{min-width:0;max-width:24rem;width:100%}
+.universe-path-dock details{font-size:.75rem;max-width:38rem}
+.universe-path-dock p{margin:.35rem 0}
+.compass-seed>label{display:flex;flex-direction:column;gap:.35rem;margin:.7rem 0}
+.compass-seed fieldset{border:0;padding:0;min-width:0}
+.experiment-memory{margin-bottom:1rem}
+@media(max-width:640px){.universe-path-dock label{align-items:stretch;flex-direction:column}}
+.universe-path-dock{flex-wrap:wrap;max-height:260px;overflow:auto}
+.universe-path-dock>.universe-dock-copy{flex:1 1 260px}
+.universe-path-dock>small,.universe-path-dock>p{flex-basis:100%;font-size:11px}
+.universe-path-dock details[open]{max-height:110px;overflow:auto}
+@media(max-width:780px){
+ .universe-path-dock{flex-wrap:nowrap;max-height:280px;overflow-x:hidden}
+ .universe-path-dock>.universe-dock-copy{flex:0 0 auto;width:100%}
+ .universe-path-dock>.universe-dock-actions{flex:0 0 auto;width:100%;min-width:0;flex-wrap:wrap}
+ .universe-path-dock>small,.universe-path-dock>p{flex:0 0 auto}
+}
+.mini-universe{color-scheme:dark;scrollbar-width:thin;position:absolute;inset:160px 18px 190px;overflow:auto;z-index:2}
+.mini-universe svg{width:100%;height:170px;display:block}
+.mini-realm-actions,.mini-song-actions{display:flex;flex-wrap:wrap;gap:8px}
+.intelligence-workbench .mini-universe button{min-height:44px;padding:8px 10px;font-size:12px;background:#0b1425dc}
+.mini-song-actions{margin-top:12px}
+.mini-universe p{font-size:12px;color:#bac5d5}
+.is-lightweight:has(.universe-path-dock) .mini-universe{bottom:300px}
+.is-lightweight .universe-realms{display:none}
+.is-lightweight .mini-universe{top:115px;background:linear-gradient(#08101b44,#08101bd9);border-radius:18px;padding:8px}

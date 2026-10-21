@@ -311,7 +311,47 @@ const typeDefs = gql`
   }
   type CreativeRealmDecision { realmId: Int! suggestedRealmId: Int action: String! engineVersion: String! signals: [String!]! at: String! }
   input CreativeRealmDecisionInput { suggestedRealmId: Int action: String! }
+  type AudioChange { timeSeconds: Float! deltaDb: Float! }
+  input AudioChangeInput { timeSeconds: Float! deltaDb: Float! }
+  type AudioFeatureProfile {
+    trackId: ID! sourceIdentity: String! audioHash: String! analysisVersion: String! generatedAt: String! toolchain: String! measurementOrigin: String!
+    spectralCentroidHz: Float highBandRatio: Float activityRisesPerSecond: Float spectralFrames: Int!
+    durationSeconds: Float! sampleRate: Int! channelCount: Int! rmsDbfs: Float! peakDbfs: Float! variationDb: Float! binSeconds: Float!
+    rmsEnvelope: [Float!]! peaks: [Float!]! changeCandidates: [AudioChange!]!
+  }
+  input AudioMeasurementInput {
+    spectralCentroidHz: Float highBandRatio: Float activityRisesPerSecond: Float spectralFrames: Int!
+    audioHash: String! analysisVersion: String! durationSeconds: Float! sampleRate: Int! channelCount: Int! rmsDbfs: Float! peakDbfs: Float! variationDb: Float! binSeconds: Float!
+    rmsEnvelope: [Float!]! peaks: [Float!]! changeCandidates: [AudioChangeInput!]!
+  }
+  type SongAudioState { source: ReleaseTrack sourceIdentity: String! status: String! profile: AudioFeatureProfile }
+  type IntelligenceEvidenceProvenance { engineVersion: String! inputHash: String! }
+  type IntelligenceEvidence { id: ID! type: String! subjectId: ID! source: String! summary: String! sourcePath: String! provenance: IntelligenceEvidenceProvenance! timeSeconds: Float line: Int }
+  type IntelligenceClaim { id: ID! subjectType: String! subjectId: ID! claimType: String! statement: String! confidence: String! evidenceIds: [String!]! unknowns: [String!]! sourceMode: String! engineVersion: String! inputHash: String! generatedAt: String! }
+  type SongReflection { available: Boolean! provider: String! model: String! status: String! inputHash: String! engineVersion: String! promptVersion: String! claims: [IntelligenceClaim!]! evidence: [IntelligenceEvidence!]! questions: [String!]! generatedAt: String errorMessage: String }
+  enum LyricsStatus { DRAFT PARTIAL COMPLETE }
+  type SongLyrics { text: String! status: LyricsStatus! updatedAt: String }
+  input SongLyricsInput { text: String! status: LyricsStatus! }
+  type SongMoment { id: ID! timeSeconds: Float! endTimeSeconds: Float type: String! label: String note: String lyricExcerpt: String createdAt: String! updatedAt: String! }
+  input SongMomentInput { timeSeconds: Float! endTimeSeconds: Float type: String! label: String note: String lyricExcerpt: String }
+  type SongCreatorContext { meaning: String emotionalStart: String emotionalEnd: String referenceNotes: String creatorRole: String }
+  input SongCreatorContextInput { meaning: String emotionalStart: String emotionalEnd: String referenceNotes: String creatorRole: String hook: String }
+  enum HypothesisResponse { RESONATES INTERESTING NOT_REALLY }
+  type HypothesisResponseEvent { response: HypothesisResponse! note: String at: String! }
+  type ExperimentSlot { index: Int! trackId: ID available: Boolean! }
+  type CreativeExperiment { id: ID! title: String! note: String! slots: [ExperimentSlot!]! provenance: String! createdAt: String! updatedAt: String! }
+  input CreativeExperimentInput { id: ID title: String note: String trackIds: [ID!]! }
+  type CreativePath { id: ID! a: ID! b: ID! note: String! }
+  input CreativePathInput { a: ID! b: ID! note: String }
+  type CreativeDirection { targetId: String! value: String! }
+  input CreativeDirectionInput { targetId: String! value: String }
+  type HypothesisFeedback { statement: String history: [HypothesisResponseEvent!]  id: ID! hypothesisKey: String! subjectType: String! subjectId: ID! hypothesisType: String! engineVersion: String! evidenceHash: String! response: HypothesisResponse! note: String createdAt: String! updatedAt: String! }
+  input HypothesisFeedbackInput { statement: String  subjectType: String! subjectId: ID! hypothesisType: String! engineVersion: String! evidenceHash: String! response: HypothesisResponse note: String }
   type ReleaseTrack {
+    lyrics: SongLyrics
+    lyricsUpdatedAt: String
+    songMoments: [SongMoment!]
+    creatorContext: SongCreatorContext
     publicCanon: Boolean
     creativeSignals: [String!]
     creativeDecisions: [CreativeRealmDecision!]
@@ -724,6 +764,16 @@ const typeDefs = gql`
 
   # 📖 Queries
   type Query {
+    myCreativeExperiments: [CreativeExperiment!]!
+    myCreativePaths: [CreativePath!]!
+    myIntelligenceHiddenTrackIds: [ID!]!
+    myCreativeDirections: [CreativeDirection!]!
+    myAudioProfiles: [AudioFeatureProfile!]!
+    songAudioState(trackId: ID!): SongAudioState!
+    songReflection(trackId: ID!): SongReflection!
+    songReasoningSources(trackId: ID!): ReleaseTrack
+    songLabTrack(trackId: ID!): ReleaseTrack
+    myHypothesisFeedback: [HypothesisFeedback!]!
     getShareableTrack(id: ID!): ReleaseTrack
     unavailableRegistryTrackIds: [String!]!
     myOpportunities: [Opportunity!]!
@@ -802,6 +852,20 @@ const typeDefs = gql`
 
   # 🛠️ Mutations
   type Mutation {
+    saveCreativeExperiment(input: CreativeExperimentInput!): CreativeExperiment!
+    deleteCreativeExperiment(id: ID!): Boolean!
+    saveCreativePath(input: CreativePathInput!): [CreativePath!]!
+    removeCreativePath(id: ID!): [CreativePath!]!
+    setIntelligenceInclusion(trackId: ID!, included: Boolean!): [ID!]!
+    saveCreativeDirection(input: CreativeDirectionInput!): [CreativeDirection!]!
+    resetCreativeDirections: [CreativeDirection!]!
+    saveSongAudioMeasurements(trackId: ID!, sourceIdentity: String!, input: AudioMeasurementInput!): SongAudioState!
+    reflectOnSong(trackId: ID!, expectedInputHash: String!): SongReflection!
+    saveSongLyrics(trackId: ID!, input: SongLyricsInput!): ReleaseTrack!
+    saveSongMoment(trackId: ID!, momentId: ID, input: SongMomentInput!): ReleaseTrack!
+    deleteSongMoment(trackId: ID!, momentId: ID!): ReleaseTrack!
+    saveSongContext(trackId: ID!, input: SongCreatorContextInput!): ReleaseTrack!
+    respondToHypothesis(input: HypothesisFeedbackInput!): HypothesisFeedback
     curatePublicTrack(id: ID!, expectedUpdatedAt: String!, choice: String!, confirmImpact: Boolean!): ReleaseTrack!
     curatePublicWorld(id: ID!, expectedUpdatedAt: String!, selected: Boolean!): ReleaseWorld!
     updateTrackVault(id: ID!, expectedUpdatedAt: String!, input: TrackVaultInput!): ReleaseTrack!
