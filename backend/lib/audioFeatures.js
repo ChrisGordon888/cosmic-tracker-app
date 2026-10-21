@@ -2,9 +2,10 @@ const {z}=require('zod');
 const crypto=require('node:crypto');
 const Track=require('../models/ReleaseTrack');
 const Profile=require('../models/AudioFeatureProfile');
-const VERSION='pcm-level-v1';
+const VERSION='pcm-perception-v2';
 const db=z.number().finite().min(-120).max(12);
 const MeasurementSchema=z.object({
+ spectralCentroidHz:z.number().finite().min(0).max(8000).nullable(),highBandRatio:z.number().finite().min(0).max(1).nullable(),activityRisesPerSecond:z.number().finite().min(0).max(10).nullable(),spectralFrames:z.number().int().min(0).max(2400),
  audioHash:z.string().regex(/^[a-f0-9]{64}$/),analysisVersion:z.literal(VERSION),
  durationSeconds:z.number().positive().max(600),sampleRate:z.literal(16000),channelCount:z.number().int().min(1).max(2),
  rmsDbfs:db,peakDbfs:db,variationDb:z.number().finite().min(0).max(132),

@@ -44,3 +44,11 @@ test('Six fictional project recordings preserve order and gaps; audio never beco
  for(const meaning of ['It gradually opens up.','This becomes quiet.']){const result=audioReading(strong,[],meaning);assert.ok(result.claims.every(c=>!c.statement.includes('creator is wrong')));assert.match(result.claims.find(c=>c.claimType==='CONTEXT_AND_RECORDING').statement,/separate observations/);}
  const ui=fs.readFileSync('src/components/intelligence/ProjectAudioFlow.tsx','utf8');assert.match(ui,/gap preserved/);assert.match(ui,/project.members.map/);
 });
+test('perception distinguishes known spectral and amplitude activity; silence has no spectrum',()=>{
+ const low=audio.measurePCM([tone(3)],rate,hash),high=audio.measurePCM([Float32Array.from({length:rate*3},(_,i)=>.5*Math.sin(2*Math.PI*4000*i/rate))],rate,hash);
+ assert.ok(Math.abs(low.spectralCentroidHz-400)<20);assert.ok(Math.abs(high.spectralCentroidHz-4000)<20);assert.ok(low.highBandRatio<.01);assert.ok(high.highBandRatio>.99);
+ const pulses=tone(4);for(let i=0;i<pulses.length;i++)if(Math.floor(i/(rate/5))%2===0)pulses[i]=0;
+ const busy=audio.measurePCM([pulses],rate,hash);assert.ok(busy.activityRisesPerSecond>2);assert.equal(low.activityRisesPerSecond,0);
+ const silence=audio.measurePCM([new Float32Array(rate)],rate,hash);assert.equal(silence.spectralCentroidHz,null);assert.equal(silence.highBandRatio,null);
+ const contrast=lib('acousticPerception').comparePerception(low,high);assert.ok(contrast[0].includes('above 2 kHz'));
+});

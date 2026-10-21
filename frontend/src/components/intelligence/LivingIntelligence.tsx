@@ -1,8 +1,10 @@
 'use client';
+import type {AudioSummary} from '@/lib/audioFeatures';
 import Link from 'next/link';
 import { intelligenceNavigation } from '@/lib/intelligenceNavigation';
 import ImpossibleEnvironment from './ImpossibleEnvironment';
 import type { CreatorPath, PathSave } from './CreatorPaths';
+import MiniUniverse from './MiniUniverse';
 import ConnectionComposer from './ConnectionComposer';
 import { REALM_ORDER, REALM_COLORS, REALM_NAMES } from '@/lib/musicRegistry';
 import { Component, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
@@ -14,7 +16,7 @@ import type { IntelligenceAudition } from './useIntelligenceAudition';
 import type { DirectionSave } from './CreativeCompass';
 const Scene = dynamic(() => import('./UniverseScene'), { ssr: false, loading: () => <p className="universe-loading" role="status">Opening your universe…</p> });
 class SceneBoundary extends Component<{ children: ReactNode; onFailure: () => void }, { failed: boolean }> { state = { failed: false }; static getDerivedStateFromError() { return { failed: true }; } componentDidCatch() { this.props.onFailure(); } render() { return this.state.failed ? null : this.props.children; } }
-export default function LivingIntelligence({ onHide, inclusionBusy=false, analysis, selectedId, onSelect, listening, directions, onDirection, onShape, onInspect, discovery, paths = [], onSavePath, onRemovePath }: { onHide?:()=>void; inclusionBusy?:boolean; paths?: CreatorPath[]; onSavePath?: PathSave; onRemovePath?: (id: string) => Promise<void>; discovery?: ReactNode; analysis: Workbench; selectedId: string; onSelect: (id: string) => void; listening: IntelligenceAudition; directions: Direction[]; onDirection?: DirectionSave; onShape: (ids: string[]) => void; onInspect: () => void }) {
+export default function LivingIntelligence({ onFindRealm,audioProfiles=[],onHide, inclusionBusy=false, analysis, selectedId, onSelect, listening, directions, onDirection, onShape, onInspect, discovery, paths = [], onSavePath, onRemovePath }: { onFindRealm?:()=>void;audioProfiles?:AudioSummary[];onHide?:()=>void; inclusionBusy?:boolean; paths?: CreatorPath[]; onSavePath?: PathSave; onRemovePath?: (id: string) => Promise<void>; discovery?: ReactNode; analysis: Workbench; selectedId: string; onSelect: (id: string) => void; listening: IntelligenceAudition; directions: Direction[]; onDirection?: DirectionSave; onShape: (ids: string[]) => void; onInspect: () => void }) {
     const [view, setView] = useState<UniverseView>({ scale: 'universe' }), [search, setSearch] = useState(''), [searchOpen, setSearchOpen] = useState(false);
     const universe = useMemo(() => livingUniverse(analysis, selectedId, paths, view), [analysis, selectedId, paths, view]);
     const [connecting,setConnecting]=useState(false);
@@ -41,16 +43,16 @@ export default function LivingIntelligence({ onHide, inclusionBusy=false, analys
         <div className="universe-stage"><ImpossibleEnvironment paused={reduced || quiet || fallback} />
             <div className="universe-realms" aria-label="Your six Realms">{REALM_ORDER.map(id => <button key={id} aria-pressed={view.scale === 'realm' && view.realmId === id} onClick={() => { setView({ scale: 'realm', realmId: id }); setPathPair(null); }} style={{ borderColor: REALM_COLORS[id], color: REALM_COLORS[id] }}>{REALM_NAMES[id]} <small>{analysis.songs.filter(s => s.sourceFacts.realmId === id).length}</small></button>)}</div>
             {!fallback && <SceneBoundary onFailure={fail}><Scene universe={universe} selectedId={selectedId} onSelect={choose} onFailure={fail} reduced={reduced || quiet} overview={overview} onPath={(a, b) => setPathPair([a, b])} onRealm={id => { setView({ scale: 'realm', realmId: id }); setPathPair(null); }} /></SceneBoundary>}
-            {fallback && <div className="universe-fallback" aria-label="Lightweight song universe">{universe.nodes.filter(n => view.scale !== 'realm' || (n.realmId ?? null) === (view.realmId ?? null)).map(n => <button key={n.id} onClick={() => choose(n.id)} aria-pressed={n.id === selectedId}><span className="universe-mini-record">{n.artwork ? <img src={n.artwork} alt="" loading="lazy" /> : n.title.slice(0, 1)}</span><strong>{n.title}</strong><small style={{ color: n.color }}>{n.realmName}</small></button>)}</div>}
+            {fallback && <MiniUniverse universe={universe} selectedId={selectedId} onSelect={choose} onRealm={id=>{setView({scale:'realm',realmId:id});setPathPair(null);}}/>}
             {pathPair ? (
-                <ConnectionComposer auditioned={listening.lastAudition?.trackIds.join(':')===pathPair.join(':')} key={pathPair.join(':')} pair={pathPair} analysis={analysis} path={selectedAuthoredPath} onSave={onSavePath} onRemove={onRemovePath} onHear={()=>void listening.audition(pathPair)} onTry={()=>onShape(pathPair)} onClose={()=>setPathPair(null)}/>
+                <ConnectionComposer audioProfiles={audioProfiles} auditioned={listening.lastAudition?.trackIds.join(':')===pathPair.join(':')} key={pathPair.join(':')} pair={pathPair} analysis={analysis} path={selectedAuthoredPath} onSave={onSavePath} onRemove={onRemovePath} onHear={()=>void listening.audition(pathPair)} onTry={()=>onShape(pathPair)} onClose={()=>setPathPair(null)}/>
             ) : view.scale === 'song' && song ? (
                 <div className="universe-focus-dock" role="region" aria-label="Selected song actions">
                     <div className="universe-dock-copy"><small>{connecting?'CONNECT · SELECT ANOTHER SONG OR SEARCH':'IN FOCUS'}</small><strong>{song.sourceFacts.title}</strong>{related && connection && <span className="universe-dock-evidence">Connected to {related.sourceFacts.title}</span>}</div>
                     <div className="universe-dock-actions">
                         <button disabled={listening.busy} onClick={() => void listening.audition([selectedId])}>▶ Listen</button>
                         {related && connection && <button disabled={listening.busy} onClick={() => void listening.audition([selectedId, related.trackId])}>Hear together</button>}
-                        <button onClick={onInspect}>Inspect</button><button onClick={() => onShape(related && connection ? [selectedId, related.trackId] : [selectedId])}>Experiment</button>
+                        <button onClick={onInspect}>Inspect</button>{onFindRealm&&<button onClick={onFindRealm}>Find its Realm</button>}<button onClick={() => onShape(related && connection ? [selectedId, related.trackId] : [selectedId])}>Experiment</button>
                         <button onClick={() => {setConnecting(!connecting);setPathPair(null);}} aria-pressed={connecting}>Connect</button>{onHide&&<button disabled={inclusionBusy} onClick={onHide}>Hide from Intelligence</button>}
                     </div>
                 </div>

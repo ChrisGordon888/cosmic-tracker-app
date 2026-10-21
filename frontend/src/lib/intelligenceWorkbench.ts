@@ -6,13 +6,15 @@ import { fingerprint, ENGINE_VERSION as FINGERPRINT_VERSION } from './creativeFi
 export const ANALYSIS_VERSION = `workbench-v3.2:${FINGERPRINT_VERSION}:catalog-v1`;
 const text = z.string().nullish();
 const realm = z.union([z.literal(303),z.literal(202),z.literal(101),z.literal(55),z.literal(44),z.literal(0)]).nullable();
+// Explicit fields strip Apollo transport metadata such as nested __typename.
 export const SongSourceSchema = z.object({
+  slug:z.string().default(''),nexusReviewStatus:text,
   lyricsUpdatedAt:z.string().nullish(),
   creatorContext:CreatorContextSchema.nullish(),
   songMoments:z.array(SongMomentSchema).max(200).nullish(),
   artworkUrl:text,id:z.string().min(1),ownerId:z.string().min(1),title:z.string(),releaseWorldId:text,
   trackNumber:z.number().nullish(),realmId:realm.optional(),creativeSignals:z.array(z.string()).nullish(),
-  realmFinderSignals:z.array(z.string()).nullish(),mood:text,hook:text,notes:text,bpm:z.number().nullish(),keySignature:text,
+  realmFinderScores:z.object({realm303:z.number().nullish(),realm202:z.number().nullish(),realm101:z.number().nullish(),realm55:z.number().nullish(),realm44:z.number().nullish(),realm0:z.number().nullish()}).nullish(),realmFinderSuggestedRealmId:z.number().nullish(),realmFinderSecondaryRealmId:z.number().nullish(),realmFinderSignals:z.array(z.string()).nullish(),mood:text,hook:text,notes:text,bpm:z.number().nullish(),keySignature:text,
   role:text,isFocusTrack:z.boolean().nullish(),visibility:text,publicCanon:z.boolean().nullish(),
   status:text,catalogTreatment:text,updatedAt:text,
 });
@@ -86,6 +88,12 @@ export function buildIntelligence(rawTracks:unknown[],rawWorlds:unknown[],ownerI
   return {ownerId,songs,projects,catalog,observations:hypotheses,inputHash,generatedAt,invalidCount:rawTracks.filter(t=>typeof t==='object'&&t!==null&&'ownerId' in t&&t.ownerId===ownerId&&!SongSourceSchema.safeParse(t).success).length};
 }
 export type Workbench=ReturnType<typeof buildIntelligence>;
+export function intelligenceEmptyMessage(rawCount:number,catalog:Workbench,analysis:Workbench){
+ if(analysis.songs.length)return null;
+ if(analysis.invalidCount)return 'The catalog could not be fully interpreted. This is not an empty-catalog result.';
+ if(catalog.songs.length)return 'All eligible songs are hidden from Intelligence. Use Manage collection below to show them again.';
+ return rawCount===0?'Your catalog is empty. Add a song in Creator Library to begin.':'No eligible songs are available. Archived, Vault and test records stay outside Intelligence.';
+}
 export function constellationGraph(workbench:Workbench,filters:{realm?:string;worldId?:string;canonOnly?:boolean}={}){
   const candidates=workbench.songs.filter(s=>(filters.realm==null||filters.realm==='all'||String(s.sourceFacts.realmId??'unknown')===filters.realm)&&(!filters.worldId||s.sourceFacts.releaseWorldId===filters.worldId)&&(!filters.canonOnly||(s.sourceFacts.publicCanon===true&&s.sourceFacts.visibility==='public')));
   const visible=candidates.slice(0,80),ids=new Set(visible.map(s=>s.trackId));

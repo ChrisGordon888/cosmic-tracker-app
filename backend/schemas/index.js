@@ -315,10 +315,12 @@ const typeDefs = gql`
   input AudioChangeInput { timeSeconds: Float! deltaDb: Float! }
   type AudioFeatureProfile {
     trackId: ID! sourceIdentity: String! audioHash: String! analysisVersion: String! generatedAt: String! toolchain: String! measurementOrigin: String!
+    spectralCentroidHz: Float highBandRatio: Float activityRisesPerSecond: Float spectralFrames: Int!
     durationSeconds: Float! sampleRate: Int! channelCount: Int! rmsDbfs: Float! peakDbfs: Float! variationDb: Float! binSeconds: Float!
     rmsEnvelope: [Float!]! peaks: [Float!]! changeCandidates: [AudioChange!]!
   }
   input AudioMeasurementInput {
+    spectralCentroidHz: Float highBandRatio: Float activityRisesPerSecond: Float spectralFrames: Int!
     audioHash: String! analysisVersion: String! durationSeconds: Float! sampleRate: Int! channelCount: Int! rmsDbfs: Float! peakDbfs: Float! variationDb: Float! binSeconds: Float!
     rmsEnvelope: [Float!]! peaks: [Float!]! changeCandidates: [AudioChangeInput!]!
   }

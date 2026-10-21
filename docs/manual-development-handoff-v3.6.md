@@ -1,5 +1,85 @@
 # COSMIC V3.6 manual development handoff
 
+## V4.0 catalog regression correction — 2026-10-20
+
+The prior fixture acceptance missed an actual transport-shape regression. V4 added realmFinderScores to IntelligenceSources, while SongSourceSchema used a numeric z.record. Apollo automatically adds nested __typename: "RealmFinderScores"; the record validator treated that string as a score and rejected the entire song. scopedSources silently discarded each failed song; both livingUniverse and MiniUniverse consequently received zero songs. This is frontend normalization, not deleted data, a Realm0 problem, changed owner eligibility, or audio-version filtering. The backend owner-scoped catalog query and accepted V3.9 exclusion policy are unchanged.
+
+Correction: use an explicit six-field score object schema that strips transport metadata while preserving nullable scores. Separate optional myAudioProfiles into IntelligenceAudioProfiles: its loading/error/stale-version data cannot gate catalog loading. Refetch after measurement still refreshes both queries. Show distinct access-loading, catalog-loading, source error/incomplete response, invalid-record, empty-catalog, ineligible-catalog and fully hidden collection states; collection management remains reachable. Audio errors offer a separate retry without hiding songs. No automatic unhide or catalog mutation.
+
+New intelligenceCatalogRegression.test.cjs executes the actual catalog query (Apollo addTypenameToDocument) against the repository GraphQL schema and a realistic fictional 50-song response. It proves nested typenames are present, all 50 eligible songs survive normalization, desktop scene has 50 nodes, mobile Realm lists render those same 50 songs, Realm0 and Unassigned remain distinct, private owner songs stay included, and foreign/vault/archived/explicitly hidden songs stay excluded. Authored Paths remain represented. Separate page rendering tests cover absent/loading/failed/stale optional audio, API errors, incomplete responses and loading. Empty/excluded/invalid-state explanations are tested. These are schema execution and mocked authenticated-hook tests, not a live database run.
+
+Final correction checks: frontend 44/44, backend 12/12, TypeScript, changed-source lint and diff-check passed. Backend suites cover creator authorization/source ownership, audio version/source rejection, Paths, experiments and collection exclusion. Environment Node/npm support and pyenv warnings remain as above; no new lint errors. No commits/deployment/data mutations.
+
+Live-account requirement: refresh /creator/intelligence with current frontend and backend, confirm the approximately 50 expected eligible songs and per-Realm totals on desktop and at 390px; check private songs, explicit exclusions, Paths and saved experiments. Measurements may be absent/stale and should not affect song counts. No claim is made that the real account was queried or its exact count verified in this correction.
+
+Correction files: frontend/src/lib/intelligenceWorkbench.ts; frontend/src/graphql/intelligence.ts; frontend/src/app/creator/intelligence/page.tsx; frontend/src/components/intelligence/IntelligenceWorkbench.tsx; frontend/tests/intelligenceCatalogRegression.test.cjs; this handoff. These extend the preserved uncommitted V4 work, not replace it.
+
+## Current checkpoint: 2026-10-20 — V4.0 Creative Perception, verification complete
+
+Branch `feat/cosmic-intelligence-v3`, based on accepted V3.9 `25fe163`. All work is uncommitted. No merge, deployment, real creator-data mutation or external model call performed. Earlier handoffs below are historical; preserve this implementation when continuing.
+
+### Implemented
+
+- Existing owner-browser audio worker now derives sampled spectral centroid, fraction of spectral energy above 2 kHz, and abrupt amplitude rises per second. FFT uses 1024-sample Hann windows every 250 ms at 16 kHz; channel powers combine without antiphase cancellation. Activity uses 100 ms amplitude windows, a 6 dB rise and -60 dBFS floor. This is not BPM, beat detection, emotion, instrumentation, mastering advice or sonic compatibility. Existing limits remain 16 MiB encoded audio, two channels and 600 seconds. Silence has null spectral values; recordings below one second have null activity. Very short/sub-64-ms recordings have no sampled spectrum. Sparse spectral sampling can miss brief events; edits, silence and compression influence activity. Synthetic validation is not perceptual validation on a representative music corpus.
+- `pcm-perception-v2` is shared by worker validation and backend validation. Old `pcm-level-v1` profiles are returned as STALE/null; summary lists exclude them. Existing source identity and content-hash checks remain. No migration rewrites are performed; explicitly Measure again. New scalar fields extend AudioFeatureProfile and existing GraphQL input/output; no new model/collection or dependency.
+- ConnectionComposer displays measured contrasts separately from supplied catalog evidence, creator-authored Paths/context and tentative hypotheses. Only differences >=10 percentage points high-band power or >=0.5 amplitude rises/second produce contrast text. This threshold is a transparent display rule, not a validated preference model. Hear connection still uses useIntelligenceAudition and MusicPlayerProvider. Experiment with pair uses the existing private ordered sequence editor.
+- Intelligence opens the existing SmartSortPanel through ContextualRealmDiscovery. Library retains the same panel and classifier. Shared styles moved into realmDiscovery.css. Intelligence now requests saved Realm Finder scores, suggestion/secondary IDs and review status, preserving classifier inputs and warning behavior. Confirmation submits only realmId plus creativeDecision through updateReleaseTrack. Existing backend timestamps/audit and Nexus review invalidation may still apply; this is not a bypass. No title/audio/access/publication fields are sent. Unassigned remains null; InterSiddhi remains 0. No acoustic-to-Realm inference added. The Board's existing question-based Realm Finder remains unchanged.
+- Mobile/low-capability fallback is MiniUniverse: six authoritative colored neighborhoods plus Unassigned, 44px controls, song selection and existing connection/actions. Desktop Three.js remains intact. Narrow-screen fallback pauses atmosphere; SVG is static and keyboard controls remain available. Changing Realm closes the previous pair dock, matching desktop. The map is scrollable above the actions, with a thin dark scrollbar. Map curves are decorative, not inferred relationships; relationship evidence remains in the connection dock.
+
+### Verification actually performed
+
+- Frontend focused tests: **40/40 passed** (`audioFeatures`, `catalogSorting`, `creativeExperiments`, `livingUniverse`, `intelligenceWorkbench`). Known low/high tones, pulsed amplitude, silence/antiphase, bounded measurements, metadata/ownership filtering, Realm placeholder/zero handling, sequence behavior and hidden-track exclusion covered.
+- Backend focused tests: **16/16 passed** (`audioFeatures`, `creativeFingerprint`, `creativePaths`, `creativeExperiments`, `intelligenceCollection`). Includes foreign-owner and signed-out rejection, source/version invalidation, invalid payloads, owner-scoped writes, excluded slots and bounded audit records. Added assertions that Realm assignment does not write unrelated music fields. These use mocks, not a live database.
+- `npx tsc --noEmit`: passed. Changed frontend source ESLint: passed, no lint diagnostics. Backend syntax and `git diff --check`: passed. Production build not run/requested for this closure.
+- Environment warnings: local Node 19.8.1 is outside npm 11.1.0's supported range; pyenv cannot rehash its read-only shims. Neither caused these checks to fail. Use the project's supported runtime for a release build.
+- Browser fixture at `http://127.0.0.1:3107` (`/tmp/cosmic-weekly-fixture`) imports real components/player/worker with fictional songs and mock Apollo writes. Actual browser decoding/worker analysis ran on original synthetic recordings; comparison showed the expected 100 percentage-point high-band difference. No model involved. Explicit Intelligence assignment of an unassigned fixture song to InterSiddhi changed counts from 8/8 to 9/7 (Realm0/Unassigned), using the shared panel.
+- At 390px: six Realms and Unassigned visible; choose Realm → song → Connect → second song → Hear connection. MiniPlayer displayed Paper Lantern / Fractured Frontier, then Next displayed Halfway Home / The Veil. Experiment saved as “V4 measured contrast” and reopened with both ordered songs. MiniPlayer did not block experiment Save/Audition controls. Inner width 390, client/scroll width both 375 (15px browser scrollbar): no horizontal overflow. Realm navigation closes stale connection dock after the small verification fix.
+- Browser saved Path/experiment persistence is **fixture local storage only**. Audio measurements/Realm assignments use fixture memory and reset on fixture module reload. Backend ownership assertions are mocked resolver/service tests. Do not claim authenticated Mongo persistence or real cross-account browser verification.
+- Screenshot: `/tmp/cosmic-v4-mobile-experiment.png` (temporary local acceptance artifact). Desktop preserved rendering was checked during implementation; no new desktop scene layout.
+
+### Manual acceptance on disposable authorized test accounts
+
+1. Start backend/frontend together with the new schema. Use two owned recordings with obviously different frequency balance; Inspect → Measure recording for each. Why should identify owner-browser measurement/version, with no emotion or compatibility claim. Old profiles should request remeasurement rather than appear current. Replace a disposable audio source and confirm stale status.
+2. Connect those songs; inspect Why these two, Hear connection, then Next. Confirm shared MiniPlayer track/title/actual Realm changes. Save a Path and an experiment, refresh, reopen and check sequence order. Repeat with unavailable audio/missing lyrics and a failed network save: no invented acoustic comparison; retain unsaved input for retry.
+3. From Library Smart Sort and then Intelligence Find its Realm, choose unassigned disposable songs. Confirm neutral placeholder, explicit suggestion/manual selection, and choose InterSiddhi (0) once. Check backend stored realmId/audit and unchanged title, audio, visibility, access and project association. Approved Nexus tracks retain the existing withdrawal warning/semantics.
+4. On a physical phone at ~390px, explore all six Realms and Unassigned, select song, Connect, audition, open/reorder/save experiment. Scroll map and page, minimize/expand MiniPlayer, and confirm all actions reachable. Test keyboard-only and OS reduced motion; no autoplay atmosphere in the lightweight view. Desktop reduced motion should retain selection without camera/ambient animation.
+5. Hide a song and confirm it leaves map/pair candidates; reopen experiments containing excluded songs and verify unavailable slots. Sign in as another disposable account: private analysis, Paths and experiments must not leak; attempts to update another owner's Realm must fail. Do not use real creator records for mutation tests.
+
+### Remaining / next safe continuation
+
+Ready for creator review of this bounded implementation, not a production-readiness claim. Real authenticated Library/Intelligence parity, persisted Mongo saves, cross-account browser checks, physical low-end device performance, keyboard/screen-reader depth and OS reduced-motion testing remain. Fixture browser success does not replace them. No new adaptive ranking: existing explicit direction/feedback logic retained; no evaluated creator-feedback set justifies learning claims. Tempo/chroma/transcription, automatic emotional/Realm assignment and deeper audio model analysis deferred. No package added.
+
+Next milestone: run the disposable-account acceptance above and a small creator-led listening comparison to learn whether these measured contrasts help choose a sequence. Continue from these files; do not recreate the worker, Realm panel, mini-Universe or experiment editor.
+
+### Complete V4.0 file inventory
+
+- `frontend/src/app/creator/intelligence/page.tsx`
+- `frontend/tests/intelligenceCatalogRegression.test.cjs`
+- `backend/lib/audioFeatures.js`
+- `backend/models/AudioFeatureProfile.js`
+- `backend/schemas/index.js`
+- `backend/tests/audioFeatures.test.js`
+- `backend/tests/creativeFingerprint.test.js`
+- `docs/manual-development-handoff-v3.6.md`
+- `frontend/src/components/creator/ContextualRealmDiscovery.tsx`
+- `frontend/src/components/creator/SmartSortPanel.tsx`
+- `frontend/src/components/intelligence/ConnectionComposer.tsx`
+- `frontend/src/components/intelligence/IntelligenceWorkbench.tsx`
+- `frontend/src/components/intelligence/LivingIntelligence.tsx`
+- `frontend/src/components/intelligence/MiniUniverse.tsx`
+- `frontend/src/graphql/intelligence.ts`
+- `frontend/src/lib/acousticPerception.ts`
+- `frontend/src/lib/audioFeatures.ts`
+- `frontend/src/lib/cosmicRead.ts`
+- `frontend/src/lib/intelligenceWorkbench.ts`
+- `frontend/src/styles/creatorLibrary.css`
+- `frontend/src/styles/intelligenceWorkbench.css`
+- `frontend/src/styles/realmDiscovery.css`
+- `frontend/tests/audioFeatures.test.cjs`
+- `frontend/tests/catalogSorting.test.cjs`
+
+---
+
 ## Current checkpoint: 2026-10-19 — V3.8/V3.9 connections and experiment memory
 
 Started from clean V3.7 `6a57df2` on `feat/cosmic-intelligence-v3`. No commit, merge, deployment or real catalog mutations. V3.7 scene/camera/Realm layout remains unchanged.

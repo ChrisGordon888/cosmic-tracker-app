@@ -1,0 +1,8 @@
+.library-cleanup { margin:auto; width:min(660px,calc(100vw - 2rem)); max-height:90dvh; overflow:auto; padding:1.5rem; background:#111a25; color:#ece9df; border:1px solid #ffffff30; border-radius:18px; }
+.library-cleanup::backdrop { background:#000b; }
+.library-cleanup h2 { font-size:1.5rem; margin:.5rem 0; }
+.library-cleanup button,.cleanup-suggestion button { padding:.6rem .8rem; margin:.4rem; border:1px solid #ffffff50; border-radius:6px; cursor:pointer; }
+.library-cleanup button:disabled { opacity:.5; cursor:wait; }
+.cleanup-suggestion { padding:.8rem; border:1px solid #b8cba050; margin-block:.6rem; }
+.library-cleanup p { font-size:.85rem; line-height:1.6; margin:.5rem 0; }
+.library-cleanup select { max-width:100%; background:#202c39; color:#ece9df; padding:.5rem; border:1px solid #ffffff30; }

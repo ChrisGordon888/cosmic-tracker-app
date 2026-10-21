@@ -6,9 +6,8 @@ export const INTELLIGENCE_SOURCES=gql`
   myCreativeExperiments { id title note provenance createdAt updatedAt slots { index trackId available } }
   myCreativePaths { id a b note }
   myCreativeDirections { targetId value }
-  myAudioProfiles { trackId sourceIdentity analysisVersion rmsDbfs durationSeconds }
   myHypothesisFeedback { hypothesisKey response note statement engineVersion evidenceHash updatedAt history { response note at } }
-  myCatalogTracks { lyricsUpdatedAt songMoments { id timeSeconds endTimeSeconds type label note lyricExcerpt createdAt updatedAt } creatorContext { meaning emotionalStart emotionalEnd referenceNotes creatorRole } id ownerId title artworkUrl releaseWorldId trackNumber realmId creativeSignals realmFinderSignals mood hook notes bpm keySignature role isFocusTrack visibility publicCanon status catalogTreatment updatedAt }
+  myCatalogTracks { slug nexusReviewStatus realmFinderScores { realm303 realm202 realm101 realm55 realm44 realm0 } realmFinderSuggestedRealmId realmFinderSecondaryRealmId lyricsUpdatedAt songMoments { id timeSeconds endTimeSeconds type label note lyricExcerpt createdAt updatedAt } creatorContext { meaning emotionalStart emotionalEnd referenceNotes creatorRole } id ownerId title artworkUrl releaseWorldId trackNumber realmId creativeSignals realmFinderSignals mood hook notes bpm keySignature role isFocusTrack visibility publicCanon status catalogTreatment updatedAt }
   myReleaseWorlds { id ownerId title slug story oneLineSummary status updatedAt }
  }
 `;
@@ -45,13 +44,13 @@ export const REFLECT_ON_SONG=gql`
 `;
 
 export const SONG_AUDIO_STATE=gql`
- query SongAudioState($trackId:ID!){songAudioState(trackId:$trackId){sourceIdentity status profile { trackId sourceIdentity audioHash analysisVersion generatedAt toolchain measurementOrigin durationSeconds sampleRate channelCount rmsDbfs peakDbfs variationDb binSeconds rmsEnvelope peaks changeCandidates {timeSeconds deltaDb} }}}
+ query SongAudioState($trackId:ID!){songAudioState(trackId:$trackId){sourceIdentity status profile { trackId sourceIdentity audioHash analysisVersion generatedAt toolchain measurementOrigin spectralCentroidHz highBandRatio activityRisesPerSecond spectralFrames durationSeconds sampleRate channelCount rmsDbfs peakDbfs variationDb binSeconds rmsEnvelope peaks changeCandidates {timeSeconds deltaDb} }}}
 `;
 export const AUDIO_ANALYSIS_SOURCE=gql`
  query AudioAnalysisSource($trackId:ID!){songAudioState(trackId:$trackId){sourceIdentity status source {id ownerId audioUrl audioContentHash sourceFileSize canAccessAudio}}}
 `;
 export const SAVE_AUDIO_MEASUREMENTS=gql`
- mutation SaveAudioMeasurements($trackId:ID!,$sourceIdentity:String!,$input:AudioMeasurementInput!){saveSongAudioMeasurements(trackId:$trackId,sourceIdentity:$sourceIdentity,input:$input){sourceIdentity status profile {trackId sourceIdentity audioHash analysisVersion generatedAt toolchain measurementOrigin durationSeconds sampleRate channelCount rmsDbfs peakDbfs variationDb binSeconds rmsEnvelope peaks changeCandidates {timeSeconds deltaDb}}}}
+ mutation SaveAudioMeasurements($trackId:ID!,$sourceIdentity:String!,$input:AudioMeasurementInput!){saveSongAudioMeasurements(trackId:$trackId,sourceIdentity:$sourceIdentity,input:$input){sourceIdentity status profile {trackId sourceIdentity audioHash analysisVersion generatedAt toolchain measurementOrigin spectralCentroidHz highBandRatio activityRisesPerSecond spectralFrames durationSeconds sampleRate channelCount rmsDbfs peakDbfs variationDb binSeconds rmsEnvelope peaks changeCandidates {timeSeconds deltaDb}}}}
 `;
 
 export const SAVE_CREATIVE_DIRECTION=gql`mutation SaveCreativeDirection($input:CreativeDirectionInput!){saveCreativeDirection(input:$input){targetId value}}`;
@@ -64,3 +63,6 @@ export const SET_INTELLIGENCE_INCLUSION=gql`mutation SetIntelligenceInclusion($t
 
 export const SAVE_CREATIVE_EXPERIMENT=gql`mutation SaveCreativeExperiment($input:CreativeExperimentInput!){saveCreativeExperiment(input:$input){id title note provenance createdAt updatedAt slots {index trackId available}}}`;
 export const DELETE_CREATIVE_EXPERIMENT=gql`mutation DeleteCreativeExperiment($id:ID!){deleteCreativeExperiment(id:$id)}`;
+
+// Optional measurements must never block the owner catalog.
+export const INTELLIGENCE_AUDIO_PROFILES=gql`query IntelligenceAudioProfiles { myAudioProfiles { trackId sourceIdentity analysisVersion rmsDbfs durationSeconds spectralCentroidHz highBandRatio activityRisesPerSecond spectralFrames } }`;
