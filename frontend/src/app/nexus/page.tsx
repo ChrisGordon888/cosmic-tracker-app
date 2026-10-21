@@ -1,5 +1,6 @@
 'use client';
 
+import { publicWorldHref } from '@/lib/releaseSharing';
 import PublicAtmosphere from '@/components/public/PublicAtmosphere';
 
 import "@/styles/realmDormant.css";
@@ -430,6 +431,7 @@ function toPlayerTrack(
         artist: releaseTrack.artistName || 'Independent creator',
         ownerId: releaseTrack.ownerId,
         releaseSlug: releaseWorld?.slug,
+        releaseWorldId: releaseWorld?.id,
         accessTier: releaseTrack.accessTier,
         playbackStatus: releaseTrack.playbackStatus,
         previewAudioUrl: releaseTrack.previewAudioUrl,
@@ -539,7 +541,7 @@ export default function CosmicNexusHub() {
     const creatorFeaturedRelease = publicFeaturedReleaseData?.getPublicFeaturedReleaseWorld as NexusFeaturedReleaseWorld | null | undefined;
 
     const creatorFeaturedPortalHref = creatorFeaturedRelease?.slug
-        ? `/releases/${creatorFeaturedRelease.slug}`
+        ? publicWorldHref(creatorFeaturedRelease.slug, creatorFeaturedRelease.id)
         : null;
 
     const creatorFeaturedArtworkUrl = creatorFeaturedRelease?.coverArtUrl?.trim() || null;
@@ -746,7 +748,7 @@ export default function CosmicNexusHub() {
     const flagshipUnlockLabel = flagshipTrack ? getTrackUnlockLabel(flagshipTrack) : null;
     const flagshipIsCurrent = Boolean(flagshipTrack && currentTrack?.id === flagshipTrack.id);
     const flagshipRealmHref = flagshipTrack?.releaseSlug
-        ? `/releases/${flagshipTrack.releaseSlug}` : flagshipTrack ? `/realms/${flagshipTrack.realmId}` : '/nexus';
+        ? publicWorldHref(flagshipTrack.releaseSlug, flagshipTrack.releaseWorldId) : flagshipTrack ? `/realms/${flagshipTrack.realmId}` : '/nexus';
     // Track-specific artwork is preferred. The parent release cover remains
     // the stable fallback, preserving existing projects without track art.
     const featuredSignalArtwork =

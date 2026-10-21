@@ -28,7 +28,7 @@ const ReleaseWorldSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["draft", "active", "released", "archived"],
+      enum: ["draft", "scheduled", "active", "released", "archived"],
       default: "draft",
       index: true,
     },

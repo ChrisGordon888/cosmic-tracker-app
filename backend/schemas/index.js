@@ -829,7 +829,7 @@ const typeDefs = gql`
     getMyReleaseWorldBySlug(slug: String!): ReleaseWorld
     getMyFeaturedReleaseWorld: ReleaseWorld
     getPublicFeaturedReleaseWorld: ReleaseWorld
-    getPublicReleaseWorldBySlug(slug: String!): ReleaseWorld
+    getPublicReleaseWorldBySlug(slug: String!, worldId: ID): ReleaseWorld
 
     nexusReviewQueue(status: String): [NexusReviewItem!]!
     publicProjects(selectedOnly: Boolean = false): [PublicProject!]!

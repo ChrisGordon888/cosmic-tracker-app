@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import ReleaseShareButton from '@/components/public/ReleaseShareButton';
-import { useMemo } from 'react';
-import { useParams } from 'next/navigation';
+import { Suspense, useMemo } from 'react';
+import { useParams, useSearchParams } from 'next/navigation';
 import { gql, useQuery } from '@apollo/client';
 import { useSession } from 'next-auth/react';
 import { useMusicPlayer } from '@/hooks/useMusicPlayer';
@@ -98,8 +98,8 @@ const GET_MY_RELEASE_WORLD_BY_SLUG = gql`
 
 const GET_PUBLIC_RELEASE_WORLD_BY_SLUG = gql`
   ${RELEASE_WORLD_FIELDS}
-  query GetPublicReleaseWorldBySlug($slug: String!) {
-    getPublicReleaseWorldBySlug(slug: $slug) {
+  query GetPublicReleaseWorldBySlug($slug: String!, $worldId: ID) {
+    getPublicReleaseWorldBySlug(slug: $slug, worldId: $worldId) {
       ...ReleaseWorldFields
     }
   }
@@ -370,6 +370,11 @@ function getSectionArtifacts(
 }
 
 export default function DynamicReleasePage() {
+    return <Suspense fallback={<p role="status">Loading World…</p>}><ReleasePageContent /></Suspense>;
+}
+
+function ReleasePageContent() {
+    const worldId = useSearchParams()?.get('world') || undefined;
     const params = useParams<{ slug?: string | string[] }>();
     const { status } = useSession();
     const { playOrToggleTrack, currentTrack, isPlaying } = useMusicPlayer();
@@ -393,14 +398,14 @@ export default function DynamicReleasePage() {
 
     // Creator preview applies only when the owned-world query resolves this slug.
     // A creator visiting another artist remains an ordinary public listener.
-    const isCreatorView = wantsCreatorView && Boolean(creatorWorldData?.getMyReleaseWorldBySlug);
+    const isCreatorView = wantsCreatorView && Boolean(creatorWorldData?.getMyReleaseWorldBySlug) && (!worldId || creatorWorldData?.getMyReleaseWorldBySlug?.id === worldId);
 
     const {
         data: publicWorldData,
         loading: publicWorldLoading,
         error: publicWorldError,
     } = useQuery(GET_PUBLIC_RELEASE_WORLD_BY_SLUG, {
-        variables: { slug },
+        variables: { slug, worldId },
         skip: !slug || isCreatorView,
         fetchPolicy: 'cache-and-network',
     });
@@ -506,6 +511,7 @@ export default function DynamicReleasePage() {
             artist: track.artistName || 'Independent creator',
             ownerId: track.ownerId,
             releaseSlug: world.slug,
+            releaseWorldId: world.id,
             ...playerRealm(track.realmId),
             visibility: track.visibility ?? (track.isPublic ? 'public' : 'private'),
             accessTier: track.accessTier ?? 'public',
@@ -564,7 +570,7 @@ export default function DynamicReleasePage() {
                 }}
                 navigation={<>
                     <Link href="/nexus">Explore Nexus</Link>
-                    {world.visibility === 'public' && <ReleaseShareButton title={world.title} description={world.oneLineSummary?.trim() || undefined} slug={world.slug} />}
+                    {world.visibility === 'public' && <ReleaseShareButton title={world.title} description={world.oneLineSummary?.trim() || undefined} slug={world.slug} worldId={world.id} />}
                     {isCreatorView && <>
                         <Link href={`/releases/${world.slug}/board`}>Open Workshop</Link>
                         <Link href={`/creator/releases/${world.slug}/publish`}>Prepare Release →</Link>

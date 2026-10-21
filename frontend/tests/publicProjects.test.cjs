@@ -7,7 +7,7 @@ test('Project counts and lead come from contextual tracks, not standalone discov
 test('Listener routing covers active, contextual project, member and quiet destinations',()=>{
  const active={...t,trackUrl:'/fixture.wav',releaseSlug:'fixture'};
  assert.equal(listenerRealmPath(202,[active],[],false).state,'active');
- assert.equal(listenerRealmPath(202,[],[p],false).href,'/releases/fixture');
+ assert.equal(listenerRealmPath(202,[],[p],false).href,'/releases/fixture?world=world');
  const member={...active,accessTier:'signup'};assert.equal(listenerRealmPath(202,[member],[],false).state,'member');assert.ok(listenerRealmPath(202,[member],[],false).href.includes('callbackUrl='));
  assert.equal(listenerRealmPath(44,[],[],false).href,'/realms/44');assert.equal(listenerRealmPath(44,[],[],false).state,'quiet');
 });

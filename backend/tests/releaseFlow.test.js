@@ -41,5 +41,6 @@ function checkRoute(href){if(!href)return;const [route,section]=href.split('#');
 test('Every readiness destination uses a current route and a supported workspace panel',()=>{
  const source=fs.readFileSync(path.join(__dirname,'../resolvers/index.js'),'utf8').split('async function evaluateReleasePublishingReadiness')[1].split('async function applyPublishedReleaseState')[0];
  for(const match of source.matchAll(/["`]((?:\/creator|\/releases)\/[^"`]+)["`]/g))checkRoute(match[1].replace('${releaseWorld.slug}','fictional-single'));
- assert.ok(!source.includes('/creator/releases/'));
+ assert.ok(source.includes('/creator/releases/${releaseWorld.slug}/publish'));
+ assert.ok(!source.includes('/creator/releases/${releaseWorld.slug}/board'));
 });

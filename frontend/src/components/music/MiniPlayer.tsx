@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { publicWorldHref } from '@/lib/releaseSharing';
 import { useEffect, useState } from 'react';
 import { useCreatorTour } from '@/components/creator/CreatorTourProvider';
 import { adaptPlayer, choosePlayer, readPlayerDock, playerDock, PLAYER_DOCK_KEY, type PlayerDock, type PlayerPresentation, type PlayerMode } from '@/lib/playerPresentation';
@@ -116,7 +117,7 @@ export default function MiniPlayer() {
                         <p className="text-xs text-white/70 truncate">
                             {currentTrack.artist || 'Independent creator'}{currentTrack.realmId != null && currentTrack.realmName ? ` • ${currentTrack.realmName}` : ''}
                         </p>
-                        {isExpanded && currentTrack.releaseSlug && <Link href={`/releases/${currentTrack.releaseSlug}`} className="text-xs text-white/70 hover:text-white">Enter World →</Link>}
+                        {isExpanded && currentTrack.releaseSlug && <Link href={publicWorldHref(currentTrack.releaseSlug, currentTrack.releaseWorldId ?? undefined)} className="text-xs text-white/70 hover:text-white">Enter World →</Link>}
                     </div>
 
                     <button

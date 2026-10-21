@@ -1,5 +1,6 @@
 "use client";
 
+import { publicWorldHref } from '@/lib/releaseSharing';
 import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "@apollo/client";
 import Link from "next/link";
@@ -225,7 +226,7 @@ export default function NexusReviewPage() {
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <Link href={`/releases/${item.releaseWorld.slug}/board`} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70">Open Board</Link>
-                      <Link href={`/releases/${item.releaseWorld.slug}`} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70">Portal</Link>
+                      <Link href={publicWorldHref(item.releaseWorld.slug, item.releaseWorld.id)} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70">Portal</Link>
                     </div>
                   </div>
 

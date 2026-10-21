@@ -13,6 +13,7 @@ export function projectPlayback(project:PublicProject,signedIn:boolean){
   visibility:track.visibility,accessTier:track.accessTier,playbackStatus:track.playbackStatus,
   audioUrl:track.audioUrl,previewAudioUrl:track.previewAudioUrl,unlockDate:track.unlockDate,dropDate:track.dropDate,
   releaseSlug:project.world.slug,
+  releaseWorldId:project.world.id,
  }));
  const focusIndex=playable.findIndex(t=>t.track.isFocusTrack);
  return {total:tracks.length,available:queue.length,member:tracks.filter(t=>t.track.accessTier==='signup'&&!t.availability.isPlayable).length,

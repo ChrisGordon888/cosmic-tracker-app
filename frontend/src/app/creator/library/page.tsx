@@ -1,5 +1,6 @@
 "use client";
 
+import { publicWorldHref } from '@/lib/releaseSharing';
 import MediaStorageNotice from '@/components/creator/MediaStorageNotice';
 
 import PublicCurationReview from '@/components/creator/PublicCurationReview';
@@ -402,6 +403,15 @@ export default function CreatorLibraryPage() {
 
   const releases = useMemo<ReleaseWorld[]>(() => data?.myReleaseWorlds ?? [], [data?.myReleaseWorlds]);
   const tracks = useMemo<ReleaseTrack[]>(() => data?.myCatalogTracks ?? [], [data?.myCatalogTracks]);
+  const arrivalHandled = useRef(false);
+  useEffect(() => {
+    if (arrivalHandled.current || loading || !data?.myCatalogTracks) return;
+    arrivalHandled.current = true;
+    const requestedId = new URLSearchParams(window.location.search).get('track');
+    const requested = tracks.find(track => track.id === requestedId);
+    if (requested) setSearch(requested.title);
+  }, [data?.myCatalogTracks, tracks, loading]);
+
 
   const signalScan = useMemo(()=>scanCatalog(tracks.filter(t=>t.realmId==null),tracks),[tracks]);
 
@@ -1176,6 +1186,7 @@ export default function CreatorLibraryPage() {
                     <p>{track.nexusSortOrder === 999 ? "Auto sort" : `Sort ${track.nexusSortOrder}`}</p>
                   </div>
                   <div className="creator-library-row-actions">
+                    <Link href={`/creator/intelligence?song=${encodeURIComponent(track.id)}`}>Explore connections →</Link>
                     <button type="button" onClick={()=>{setSmartQueue([{...track}]);setSmartIndex(0);}}>Suggest placement</button>
                     <CatalogCleanupActions treatment={track.catalogTreatment} status={track.status} onSave={async input=>{
                       if(!track.updatedAt)throw new Error('Reload Library before updating this track.');
@@ -1184,7 +1195,7 @@ export default function CreatorLibraryPage() {
                     }}/>
 
                     {release ? (
-                      <Link className="is-primary" href={`/releases/${release.slug}/board`}>Open Workshop</Link>
+                      <Link className="is-primary" href={`/releases/${release.slug}/board?track=${encodeURIComponent(track.id)}`}>Open Workshop</Link>
                     ) : track.releaseWorldId ? (
                       <button type="button" disabled={loading || !!error || busyTrackId === track.id} onClick={async () => {
                         if (!window.confirm('Repair this broken project link as standalone? The server will verify that no owned Release World exists. Only the invalid project reference will be cleared.')) return;
@@ -1237,7 +1248,7 @@ export default function CreatorLibraryPage() {
                             : "Play"}
                       </button>
                     )}
-                    {release && <Link href={`/releases/${release.slug}`}>Portal</Link>}
+                    {release && <Link href={publicWorldHref(release.slug, release.id)}>Portal</Link>}
                     {realm && <Link href={`/realms/${realm.id}`}>Realm</Link>}
                     {track.showInNexus && <Link href="/nexus">Nexus</Link>}
                   </div>
@@ -1274,7 +1285,7 @@ export default function CreatorLibraryPage() {
                       try{await archiveRelease({variables:{id:release.id}});await refetch();setLibraryActionMessage(`Archived ${release.title}. Music and assets preserved.`);}catch(e){setLibraryActionMessage(e instanceof Error?e.message:'Could not archive.');}
                     }}>Archive project</button>
                     <Link href={`/releases/${release.slug}/board`}>Workshop</Link>
-                    <Link href={`/releases/${release.slug}`}>Portal</Link>
+                    <Link href={publicWorldHref(release.slug, release.id)}>Portal</Link>
                   </div>
                 </article>
               );

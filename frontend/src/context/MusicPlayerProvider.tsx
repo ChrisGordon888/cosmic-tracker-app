@@ -36,6 +36,7 @@ export interface MusicTrack {
     accessTier?: string | null;
     ownerId?: string | null;
     releaseSlug?: string | null;
+    releaseWorldId?: string | null;
 }
 
 export type MusicQueueSource =
