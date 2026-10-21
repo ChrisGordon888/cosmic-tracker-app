@@ -1,5 +1,7 @@
 "use client";
 
+import MediaStorageNotice from '@/components/creator/MediaStorageNotice';
+
 import Link from "next/link";
 import {
     DragEvent,
@@ -269,6 +271,7 @@ export default function CreatorOnboardingArtworkPage() {
                     </p>
                 </section>
 
+                <MediaStorageNotice/>
                 {loading && !artwork ? (
                     <div className="mt-6 rounded-3xl border border-white/10 bg-white/[0.03] p-8 text-center text-sm text-white/50">
                         Loading release artwork…

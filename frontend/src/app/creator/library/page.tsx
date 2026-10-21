@@ -1,5 +1,7 @@
 "use client";
 
+import MediaStorageNotice from '@/components/creator/MediaStorageNotice';
+
 import PublicCurationReview from '@/components/creator/PublicCurationReview';
 import CatalogIntelligencePanel from '@/components/creator/CatalogIntelligencePanel';
 import CatalogCleanupActions from '@/components/creator/CatalogCleanupActions';
@@ -987,6 +989,7 @@ export default function CreatorLibraryPage() {
                 ))}
               </div>
 
+              <MediaStorageNotice/>
               <CatalogIntakePreflight files={selectedAudioFiles} catalog={intakeCatalog} disabled={isUploadingSongs} onChange={setIntakeApproval}/>
               <div className="creator-library-upload-queue-actions">
                 <button

@@ -1,62 +1,36 @@
-import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
-import { NextResponse } from "next/server";
+import {handleUpload,type HandleUploadBody} from '@vercel/blob/client';
+import {NextResponse,type NextRequest} from 'next/server';
+import {authorizeCreatorUpload,uploadConstraints,UploadPolicyError} from '@/server/creatorUpload';
+export const runtime='nodejs';
 
-export const runtime = "nodejs";
-
-const allowedContentTypes = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-  "audio/mpeg",
-  "audio/mp3",
-  "audio/wav",
-  "audio/x-wav",
-  "audio/mp4",
-  "audio/aac",
-  "audio/flac",
-  "video/mp4",
-  "application/pdf",
-];
-
-export async function POST(request: Request): Promise<NextResponse> {
-  try {
-    if (!process.env.BLOB_READ_WRITE_TOKEN) {
-      return NextResponse.json(
-        {
-          error:
-            "Missing BLOB_READ_WRITE_TOKEN in server environment. Check Vercel Project Settings → Environment Variables and redeploy.",
-        },
-        { status: 500 },
-      );
-    }
-
-    const body = (await request.json()) as HandleUploadBody;
-
-    const jsonResponse = await handleUpload({
-      body,
-      request,
-      onBeforeGenerateToken: async (_pathname, clientPayload) => {
-        return {
-          allowedContentTypes,
-          addRandomSuffix: true,
-          tokenPayload: clientPayload ?? "",
-        };
-      },
-      onUploadCompleted: async ({ blob, tokenPayload }) => {
-        console.log("Blob upload completed:", {
-          pathname: blob.pathname,
-          url: blob.url,
-          tokenPayload,
-        });
-      },
-    });
-
-    return NextResponse.json(jsonResponse);
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Unknown upload error.";
-
-    return NextResponse.json({ error: message }, { status: 400 });
+// The callback is authenticated by Blob's SDK signature, not by a browser cookie.
+export async function POST(request:NextRequest):Promise<NextResponse>{
+ try{
+  const reader=request.body?.getReader();if(!reader)throw new UploadPolicyError(400,'Missing upload request.');
+  const chunks:Uint8Array[]=[];let bytes=0;
+  while(true){const {done,value}=await reader.read();if(done)break;bytes+=value.byteLength;if(bytes>16384){await reader.cancel();throw new UploadPolicyError(413,'Upload request is too large.');}chunks.push(value);}
+  const body=JSON.parse(Buffer.concat(chunks).toString('utf8')) as HandleUploadBody;
+  if(!body||!['blob.generate-client-token','blob.upload-completed'].includes(body.type))throw new UploadPolicyError(400,'Invalid upload request.');
+  let ownerId:string|undefined;
+  if(body.type==='blob.generate-client-token'){
+   const origin=request.headers.get('origin');
+   if(origin&&origin!==new URL(request.url).origin)throw new UploadPolicyError(403,'Upload origin is not allowed.');
+   ownerId=await authorizeCreatorUpload(request);
+   uploadConstraints(body.payload?.pathname);
+   // Do not let clients redirect signed completion metadata to another destination.
+   if(body.payload.callbackUrl!==new URL('/api/upload',request.url).href)throw new UploadPolicyError(400,'Invalid upload callback.');
   }
+  if(!process.env.BLOB_READ_WRITE_TOKEN)throw new UploadPolicyError(503,'Media uploads are not configured.');
+  const result=await handleUpload({body,request,
+   onBeforeGenerateToken:async pathname=>{
+    if(!ownerId)throw new UploadPolicyError(401,'Creator authorization required.');
+    return {...uploadConstraints(pathname),tokenPayload:JSON.stringify({ownerId,purpose:'creator-media'})};
+   },
+   // SDK verifies x-vercel-signature first. No catalog writes or sensitive logging.
+   onUploadCompleted:async()=>{},
+  });
+  return NextResponse.json(result);
+ }catch(error){
+  return NextResponse.json({error:error instanceof UploadPolicyError?error.message:'Upload request could not be verified.'},{status:error instanceof UploadPolicyError?error.status:400});
+ }
 }

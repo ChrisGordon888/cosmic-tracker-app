@@ -1,5 +1,7 @@
 "use client";
 
+import MediaStorageNotice from '@/components/creator/MediaStorageNotice';
+
 import type { DragEvent, PointerEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
@@ -2531,6 +2533,7 @@ export default function DynamicReleaseSignalBoardPage() {
                 </div>
             </header>
 
+            <MediaStorageNotice/>
             <WorkspaceTour ready={Boolean(releaseWorldId)} activePanel={activePanel} onSelectPanel={setActivePanel} />
 
             <section
