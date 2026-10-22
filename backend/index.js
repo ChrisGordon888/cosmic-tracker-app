@@ -94,6 +94,8 @@ async function startServer() {
         process.exit(1);
     }
 
+    app.use("/services", require("./routes/services"));
+
     const server = new ApolloServer({
         typeDefs,
         resolvers,

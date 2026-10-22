@@ -7,7 +7,7 @@ test('Missing transport and provider failures never claim success',async()=>{ass
 test('Configured transport uses business destination and visitor Reply-To; acceptance requires provider ID',async()=>{const r=await sendInquiry(validateInquiry(good),{key:'fixture',from:'sender@example.com',to:'inbox@example.com'},async(url,options)=>{assert.equal(url,'https://api.resend.com/emails');const body=JSON.parse(options.body);assert.equal(body.reply_to,good.email);assert.equal(body.to[0],'inbox@example.com');assert.ok(body.text.includes('INQUIRY ONLY'));return {ok:true,json:async()=>({id:'fake'})};});assert.equal(r.ok,true);});
 test('Actual API rejects bad methods/origins, validates input and returns honest unconfigured state',async()=>{
  const api={exports:{}};const code=ts.transpileModule(fs.readFileSync('src/pages/api/services-inquiry.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText;
- vm.runInNewContext(`(function(require,module,exports){${code}})`,{process:{env:{}},URL})(()=>({validateInquiry,sendInquiry}),api,api.exports);
+ vm.runInNewContext(`(function(require,module,exports){${code}})`,{process:{env:{}},URL})(()=>({validateInquiry,sendInquiry,persistEngagement:async()=>{}}),api,api.exports);
  async function request(req){const res={code:0,body:null,setHeader(){},status(n){this.code=n;return this;},json(body){this.body=body;return this;}};await api.exports.default({headers:{host:'example.com'},...req},res);return res;}
  assert.equal((await request({method:'GET'})).code,405);
  assert.equal((await request({method:'POST',headers:{host:'example.com',origin:'https://other.example'},body:good})).code,403);

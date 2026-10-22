@@ -1,6 +1,14 @@
 const mongoose = require("mongoose");
 
 const OpportunitySchema = new mongoose.Schema({
+    engagement: { type: new mongoose.Schema({
+        inquiryId: String, fingerprint: String, name: String, email: String, offer: String,
+        context: String, links: String, timeline: String, notification: String,
+        approval: String, scope: String, agreement: String, amountCents: Number, approvedAt: Date,
+        attemptAt: { type: Date, default: null }, sessionId: { type: String, default: null }, checkoutUrl: String,
+        revision: { type: Number, default: 0 }, paymentStatus: String, paymentIntentId: String, invoiceId: String, checkedAt: { type: Date, default: null },
+        scheduling: String, delivery: String, followUpNote: String,
+    }, { _id: false }), default: undefined },
     ownerId: { type: String, required: true, index: true },
     title: { type: String, required: true, trim: true, maxlength: 160 },
     desiredOutcome: { type: String, required: true, trim: true, maxlength: 500 },
@@ -19,4 +27,6 @@ const OpportunitySchema = new mongoose.Schema({
 }, { timestamps: true });
 
 OpportunitySchema.index({ ownerId: 1, status: 1, followUpOn: 1 });
+OpportunitySchema.index({ ownerId: 1, 'engagement.inquiryId': 1 }, { unique: true, partialFilterExpression: { 'engagement.inquiryId': { $type: 'string' } } });
+OpportunitySchema.index({ 'engagement.sessionId': 1 }, { unique: true, partialFilterExpression: { 'engagement.sessionId': { $type: 'string' } } });
 module.exports = mongoose.model("Opportunity", OpportunitySchema);

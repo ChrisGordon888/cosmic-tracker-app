@@ -182,7 +182,7 @@ function InquiryForm() {
                     </div>
 
                     <label>
-                        Links to music / socials / website / project
+                        Project references / music / social or profile links
                         <textarea
                             maxLength={3000} value={links}
                             onChange={(event) => setLinks(event.target.value)}
@@ -224,7 +224,7 @@ function InquiryForm() {
                     <div className="services-inquire-note">
                         <strong>Before you send:</strong>
                         <p>
-                            Your name, email, context and links go to the COSMIC business inbox for a reply. Share only material you are comfortable sending by email; no confidential masters or payment details. This is an inquiry, not a booking or payment.
+                            Your name, email, context and links go to the COSMIC business inbox and, when commercial intake is enabled, a private engagement record for follow-up. Share only material you are comfortable sending by email; no confidential masters or payment details. This is an inquiry, not a booking or payment.
                         </p>
                     </div>
 

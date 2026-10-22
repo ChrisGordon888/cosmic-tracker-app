@@ -509,7 +509,8 @@ export default function CreatorDashboardPage() {
                 <CreatorHomeTour ready={!loading} projectSlug={activeProject?.slug} />
 
                 <BlockerAssist featuredSelection={activeProfile?.featuredReleaseWorldId ?? projects.find((project) => project.isFeatured)?.id ?? null} />
-                <OpportunitySection releases={projects} />
+                <Link href="/creator/engagements">Service engagements (operator access) →</Link>
+            <OpportunitySection releases={projects} />
 
                 <section className="creator-console-topline" aria-label="Creator stats">
                     <article>
