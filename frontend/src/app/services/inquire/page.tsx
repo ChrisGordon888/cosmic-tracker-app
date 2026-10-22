@@ -1,54 +1,14 @@
 // src/app/services/inquire/page.tsx
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import "@/styles/servicesInquiry.css";
 import CosmicBackground from "@/components/CosmicBackground";
 import "@/styles/servicesBackgroundReveal.css";
 
-type OfferOption = {
-    slug: string;
-    label: string;
-    category: string;
-    price: string;
-    short: string;
-    bestFor: string;
-    outcome?: string;
-    sendPrompt?: string;
-    messagePrompt?: string;
-};
-
-const OFFER_OPTIONS: OfferOption[] = [
-    {
-        slug: "not-sure", label: "Not sure yet / help me choose", category: "Question", price: "Open inquiry",
-        short: "Share the music and context you have. We’ll identify a useful next step.",
-        bestFor: "Artists who want to discuss where to begin.",
-    },
-    {
-        slug: "creative-direction-session", label: "Creative-development pilot session", category: "Session", price: "Pilot session · ~$150",
-        short: "A focused session with Christopher to develop one song and sharpen its next direction.",
-        bestFor: "One song in any shape: a beat, rough demo, hook, verse, voice memo or lyrics.",
-        sendPrompt: "Share your song, lyrics, visual references or creative notes, if you have them.",
-        messagePrompt: "What do you want to develop in this song, and what would you like to leave with?",
-    },
-    {
-        slug: "song-project-development-pack", label: "Song / Project Development", category: "Multiple sessions", price: "Scoped separately",
-        short: "Repeated feedback on demos, lyrics, hooks, melody, arrangement and project direction.",
-        bestFor: "Artists who want to develop unfinished work over several sessions.",
-    },
-    {
-        slug: "music-daw-workflow-lesson", label: "Music / DAW Workflow Support", category: "Workflow", price: "Scoped separately",
-        short: "Practical Pro Tools / Ableton support with recording, session setup, organization and production process.",
-        bestFor: "Artists who want help working with their sessions.",
-    },
-    {
-        slug: "artist-world-audit", label: "Artist-World / Release Development", category: "Release", price: "Scoped separately",
-        short: "Develop story, visual direction, listener pathway and the release world around your music.",
-        bestFor: "Artists ready to explore a separately scoped extension of their music.",
-    },
-];
+import { SERVICE_OFFERS as OFFER_OPTIONS } from '@/lib/serviceOffers';
 
 const INTENT_OPTIONS = [
     { slug: "question", label: "I have a question" },
@@ -103,11 +63,21 @@ function InquiryForm() {
     const [website,setWebsite]=useState('');
     const [sending,setSending]=useState(false);
     const [feedback,setFeedback]=useState('');
+    const [receipt,setReceipt]=useState('');
+    const attempt=useRef<{payload:string;id:string}|null>(null);
+    const inFlight=useRef(false);
     async function submit(event:React.FormEvent){
-        event.preventDefault();if(sending)return;setSending(true);setFeedback('');
-        try{const response=await fetch('/api/services-inquiry',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,offer,intent,message,links,timeline,contactPreference,website})});const result=await response.json();setFeedback(result.message||'Inquiry not sent. Please try again.');}
-        catch{setFeedback('Could not confirm sending. Your entries are still here; please try again later.');}
-        finally{setSending(false);}
+        event.preventDefault();if(inFlight.current||receipt)return;
+        inFlight.current=true;setSending(true);setFeedback('');
+        try {
+            const payload=JSON.stringify({name,email,offer,intent,message,links,timeline,contactPreference,website});
+            if(attempt.current?.payload!==payload)attempt.current={payload,id:crypto.randomUUID()};
+            const response=await fetch('/api/services-inquiry',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...JSON.parse(payload),inquiryId:attempt.current.id})});
+            const result=await response.json();
+            if(response.ok&&result.ok&&typeof result.reference==='string')setReceipt(result.reference);
+            setFeedback(result.message||'Inquiry not sent. Please try again.');
+        } catch {setFeedback('Could not confirm sending. Your entries are still here. Retry without changing them to avoid a duplicate.');}
+        finally {inFlight.current=false;setSending(false);}
     }
 
     return (
@@ -168,6 +138,7 @@ function InquiryForm() {
                 </aside>
 
                 <form className="services-inquire-form services-inquire-form-v2" onSubmit={submit}>
+                    <fieldset disabled={sending||Boolean(receipt)} style={{border:0,padding:0,margin:0,minWidth:0,display:'grid',gap:'1.25rem'}}>
                     <label hidden aria-hidden="true" style={{display:"none"}}>Website<input tabIndex={-1} autoComplete="off" value={website} onChange={e=>setWebsite(e.target.value)}/></label>
                     <div className="services-inquire-grid">
                         <label>
@@ -253,7 +224,7 @@ function InquiryForm() {
                     <div className="services-inquire-note">
                         <strong>Before you send:</strong>
                         <p>
-                            Your inquiry will be sent to the configured business inbox when you submit. This is a conversation, not a booking or payment.
+                            Your name, email, context and links go to the COSMIC business inbox for a reply. Share only material you are comfortable sending by email; no confidential masters or payment details. This is an inquiry, not a booking or payment.
                         </p>
                     </div>
 
@@ -261,7 +232,11 @@ function InquiryForm() {
                         <button type="submit" disabled={sending}>{sending ? "Sending…" : "Send inquiry"}</button>
                         <Link href="/services">Back to Services</Link>
                     </div>
-                    <p role="status" aria-live="polite">{feedback}</p>
+                    </fieldset>
+                    <div role="status" aria-live="polite">
+                        <p>{feedback}</p>
+                        {receipt && <><h2>Context sent. Let’s confirm the fit.</h2><p>Inquiry reference: <strong>{receipt}</strong></p><p>Keep this reference for follow-up. Christopher can reply to the email you supplied to discuss scope, timing and price. A booking is confirmed separately; no payment has been taken.</p><Link href="/services">Explore the studio →</Link></>}
+                    </div>
                 </form>
             </div>
         </section>
