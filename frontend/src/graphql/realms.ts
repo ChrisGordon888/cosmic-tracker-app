@@ -148,6 +148,8 @@ export const GET_PUBLIC_NEXUS_TRACKS = gql`
       legacyRegistryId
       releaseWorldId
       title
+      artworkUrl
+      releaseCoverArtUrl
       slug
       trackNumber
       role

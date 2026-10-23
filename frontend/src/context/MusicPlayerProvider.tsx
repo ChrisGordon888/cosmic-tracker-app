@@ -16,6 +16,7 @@ import { usePlatformAccess } from '@/context/PlatformAccessProvider';
 import { getMusicAvailability } from '@/lib/musicAvailability';
 
 export interface MusicTrack {
+    artworkUrl?: string;
     id: string;
     trackUrl: string;
     trackTitle: string;
@@ -54,6 +55,8 @@ export interface MusicQueueOptions {
 }
 
 interface MusicPlayerContextValue {
+    /** Read-only analysis tap; playback remains owned by this provider. */
+    getAudioElement: () => HTMLAudioElement | null;
     currentTrack: MusicTrack | null;
     isPlaying: boolean;
     currentTime: number;
@@ -176,6 +179,7 @@ export function MusicPlayerProvider({
     children: React.ReactNode;
 }) {
     const audioRef = useRef<HTMLAudioElement | null>(null);
+    const getAudioElement = useCallback(() => audioRef.current, []);
     const { isCreatorView: selectedCreatorView } = useCreatorView();
     const { isAuthenticated, canAccessCreatorOS, user } = usePlatformAccess();
     const isCreatorView = canAccessCreatorOS && selectedCreatorView;
@@ -716,6 +720,7 @@ export function MusicPlayerProvider({
 
     const value = useMemo(
         () => ({
+            getAudioElement,
             currentTrack,
             isPlaying,
             currentTime,
@@ -750,6 +755,7 @@ export function MusicPlayerProvider({
             toggleExpanded,
         }),
         [
+            getAudioElement,
             currentTrack,
             isPlaying,
             currentTime,

@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { useQuery } from '@apollo/client';
+import RealmResonance from '@/components/music/RealmResonance';
 import RealmOrbitCard from '@/components/music/RealmOrbitCard';
 import { GET_PUBLIC_NEXUS_TRACKS } from '@/graphql/realms';
 import {
@@ -175,6 +176,7 @@ export default function RealmSoundstage({
                 {supportText && <p className="text-sm text-muted max-w-3xl">{supportText}</p>}
             </div>
 
+            <RealmResonance trackIds={realmTracks.map(track => track.id)} color={realmColor} realmName={realmName}>
             <RealmOrbitCard
                 realmId={realmId}
                 realmName={realmName}
@@ -196,6 +198,7 @@ export default function RealmSoundstage({
                 flowSource="realm"
                 flowLabel={`${realmName} flow`}
             />
+            </RealmResonance>
 
             <div
                 className="mt-5 rounded-2xl border p-4 md:p-5"

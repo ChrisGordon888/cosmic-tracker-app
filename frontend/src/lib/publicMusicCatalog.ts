@@ -6,6 +6,8 @@ export interface PublicNexusReleaseTrack {
     id: string;
     ownerId?: string | null;
     artistName?: string | null;
+    artworkUrl?: string | null;
+    releaseCoverArtUrl?: string | null;
     releaseSlug?: string | null;
     accessTier?: string | null;
     legacyRegistryId?: string | null;
@@ -41,6 +43,7 @@ export interface PublicNexusReleaseTrack {
 }
 
 export interface RuntimeMusicTrack extends MusicTrack {
+    artworkUrl?: string;
     source?: 'registry' | 'creator';
     publicCanon?: boolean | null;
     accessTier?: string | null;
@@ -143,6 +146,7 @@ export function mapReleaseTrackToMusicTrack(
         isRealmAnchor: Boolean(track.publicCanon === true && (track.isRealmAnchor || track.nexusRole === 'anchor')),
         isPublicPick: Boolean(track.publicCanon === true && track.isPublicPick),
         sortOrder: track.nexusSortOrder ?? 999,
+        artworkUrl: track.artworkUrl || track.releaseCoverArtUrl || undefined,
         source: 'creator',
         releaseWorldId: track.releaseWorldId ?? undefined,
         releaseTrackId: track.id,

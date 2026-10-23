@@ -49,6 +49,11 @@ test('Compact renders usable transport and seek; Expanded retains Shuffle and Fl
   const component={exports:{}};
   const code=ts.transpileModule(fs.readFileSync('src/components/music/MiniPlayer.tsx','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true}}).outputText;
   const imports=name=>{
+    if(name==='@/lib/releaseSharing') {
+      const sharing={exports:{}};
+      vm.runInNewContext(ts.transpileModule(fs.readFileSync('src/lib/releaseSharing.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText,{exports:sharing.exports,URL});
+      return sharing.exports;
+    }
     if(name==='next/link') return {__esModule:true,default:'a'};
     if(name==='next/navigation') return {usePathname:()=>'/creator'};
     if(name.includes('CreatorTourProvider')) return {useCreatorTour:()=>({guidanceVisible:false})};
