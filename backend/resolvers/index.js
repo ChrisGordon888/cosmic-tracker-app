@@ -1751,13 +1751,15 @@ module.exports = {
         },
 
         getLeaderboard: async (_, { limit = 50 }) => {
+            if (!Number.isInteger(limit) || limit < 1) throw new Error("Leaderboard limit must be a positive integer.");
             const users = await User.find()
-                .sort({ level: -1, xp: -1 })
-                .limit(limit);
+                .select("_id name image level xp")
+                .sort({ level: -1, xp: -1, _id: 1 })
+                .limit(Math.min(limit, 100));
 
             return users.map((user, index) => ({
                 rank: index + 1,
-                user,
+                user: { id: String(user._id), name: user.name, image: user.image, level: user.level, xp: user.xp },
             }));
         },
 

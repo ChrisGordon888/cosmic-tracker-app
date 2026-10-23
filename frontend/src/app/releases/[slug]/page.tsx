@@ -11,6 +11,9 @@ import { useCreatorView } from '@/context/CreatorViewProvider';
 import { usePlatformAccess } from '@/context/PlatformAccessProvider';
 import { getMusicAvailability } from '@/lib/musicAvailability';
 import { playerRealm } from '@/lib/playerRealm';
+import WorldProof from '@/components/world/WorldProof';
+import { isWorldProof } from '@/lib/worldProof';
+import { safeWorldLink } from '@/lib/worldExperience';
 import WorldSurface from '@/components/world/WorldSurface';
 import '@/styles/releaseWorld.css';
 
@@ -561,7 +564,7 @@ function ReleasePageContent() {
                         playable: availability.isPlayable && Boolean(availability.href), actionLabel: availability.label,
                     };
                 })}
-                fragments={publicArtifacts}
+                fragments={publicArtifacts.filter(item => !isWorldProof(item))}
                 playingTrackId={releaseTracks.find((track) => `release-${track.id}` === currentTrack?.id)?.id ?? null}
                 isPlaying={isPlaying}
                 onPlay={(id) => {
@@ -682,7 +685,9 @@ function ReleasePageContent() {
                 )}
             </section>
 
-            {publicArtifacts.length > 0 && (
+            <WorldProof key={world.id} items={publicArtifacts} />
+
+            {publicArtifacts.filter(item => !isWorldProof(item)).length > 0 && (
                 <section className="release-world-board-section">
                     <div className="release-world-section-heading release-world-section-heading-split">
                         <div>
@@ -690,14 +695,14 @@ function ReleasePageContent() {
                             <h2>Pieces left inside the world.</h2>
                         </div>
                         <p>
-                            {publicArtifacts.length} fragment
-                            {publicArtifacts.length === 1 ? '' : 's'} from the release world.
+                            {publicArtifacts.filter(item => !isWorldProof(item)).length} fragment
+                            {publicArtifacts.filter(item => !isWorldProof(item)).length === 1 ? '' : 's'} from the release world.
                         </p>
                     </div>
 
                     <div className="release-world-board-section-list">
                         {artifactSections.map((section) => {
-                            const artifacts = getSectionArtifacts(publicArtifacts, section.key);
+                            const artifacts = getSectionArtifacts(publicArtifacts.filter(item => !isWorldProof(item)), section.key);
 
                             if (artifacts.length === 0) return null;
 
@@ -724,8 +729,8 @@ function ReleasePageContent() {
                                                         <span>{artifact.connectedTrackSlug}</span>
                                                     )}
                                                 </div>
-                                                {artifact.href && (
-                                                    <Link href={artifact.href}>Enter fragment</Link>
+                                                {safeWorldLink(artifact.href) && (
+                                                    <Link href={safeWorldLink(artifact.href)!}>Enter fragment</Link>
                                                 )}
                                             </article>
                                         ))}
@@ -745,6 +750,7 @@ function ReleasePageContent() {
                         This page holds one release. The Nexus holds the wider map — the realms, signals, and songs still unfolding.
                     </p>
                     <Link href="/nexus">Return to the Nexus</Link>
+                    <p>Developing your own project? <Link href="/services">Explore creative services with COSMIC →</Link></p>
                 </div>
             </section>
 

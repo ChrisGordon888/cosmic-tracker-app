@@ -25,7 +25,7 @@ export function uploadConstraints(pathname:string){
  if(!types.length)throw new UploadPolicyError(400,'Unsupported file type for this upload.');
  return {allowedContentTypes:types,maximumSizeInBytes:Math.min(rule.bytes,types.some(t=>image.includes(t)||t==='application/pdf')?20*1024*1024:rule.bytes),addRandomSuffix:true,allowOverwrite:false,validUntil:Date.now()+10*60*1000};
 }
-export async function authorizeCreatorUpload(request:NextRequest){
+export async function authorizeCreatorUpload(request:NextRequest, pathname?:string){
  const session=await getToken({req:request,secret:process.env.NEXTAUTH_SECRET});
  if(!session||typeof session.accessToken!=='string')throw new UploadPolicyError(401,'Sign in to upload creator media.');
  let user:{id?:string;role?:string;creatorStatus?:string}|undefined;
@@ -33,6 +33,8 @@ export async function authorizeCreatorUpload(request:NextRequest){
   const response=await fetch(process.env.NEXT_PUBLIC_GRAPHQL_URL||'http://localhost:4000/graphql',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${session.accessToken}`},body:JSON.stringify({query:'query CreatorUploadAccess { me { id role creatorStatus } }'}),cache:'no-store',signal:AbortSignal.timeout(8000)});
   const result=await response.json();if(!response.ok||result.errors)throw Error('Permission lookup failed');user=result.data?.me;
  }catch{throw new UploadPolicyError(503,'Upload permissions could not be verified. Please retry.');}
- if(!user?.id||user.creatorStatus==='suspended'||!(['admin','owner'].includes(user.role??'')||(user.role==='creator'&&user.creatorStatus==='active')))throw new UploadPolicyError(403,'Active creator access is required to upload.');
+ const onboardingArtwork=user?.role==='creator'&&user.creatorStatus==='invited'&&typeof pathname==='string'&&/^release-covers\/onboarding\/[^/]+$/.test(pathname);
+ if(onboardingArtwork)uploadConstraints(pathname!);
+ if(!user?.id||user.creatorStatus==='suspended'||!(['admin','owner'].includes(user.role??'')||(user.role==='creator'&&user.creatorStatus==='active')||onboardingArtwork))throw new UploadPolicyError(403,'Active creator access is required to upload.');
  return user.id;
 }

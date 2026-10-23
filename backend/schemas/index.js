@@ -130,9 +130,17 @@ const typeDefs = gql`
     totalLogins: Int!
   }
 
+  type PublicLeaderboardIdentity {
+    id: ID!
+    name: String
+    image: String
+    level: Int!
+    xp: Int!
+  }
+
   type LeaderboardEntry {
     rank: Int!
-    user: User!
+    user: PublicLeaderboardIdentity!
   }
 
   type XPGainResponse {

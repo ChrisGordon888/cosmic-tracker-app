@@ -1,0 +1,4 @@
+.world-proof-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:20px}
+.world-proof-card{min-width:0;padding:24px;border:1px solid #ffffff20;border-radius:20px;background:#10162180;overflow-wrap:anywhere}
+.world-proof-card h3{font-size:1.35rem;margin:8px 0}.world-proof-card p{white-space:pre-wrap}.world-proof-card strong{color:#d9c49b}.world-proof-card a{display:inline-block;margin-top:16px;text-decoration:underline;text-underline-offset:4px}
+.world-proof-card button{padding:12px 18px;margin:12px 0;border:1px solid #ffffff50;border-radius:12px;background:#ffffff10;color:inherit;cursor:pointer}.world-proof-card small{display:block;color:#c3c7d0}.world-proof-video iframe{display:block;width:100%;aspect-ratio:16/9;border:0;border-radius:12px}.world-proof-card :focus-visible{outline:2px solid #efd7a6;outline-offset:4px}

@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
-import jwt from "jsonwebtoken";
+import { backendAccessToken } from "@/server/backendAccessToken";
 
 const nextAuthSecret = process.env.NEXTAUTH_SECRET;
 
@@ -34,20 +34,7 @@ export default NextAuth({
 
   callbacks: {
     async jwt({ token }) {
-      if (!token.accessToken) {
-        const customJwt = jwt.sign(
-          {
-            sub: token.sub,
-            email: token.email,
-            name: token.name,
-            picture: token.picture,
-          },
-          nextAuthSecret,
-          { expiresIn: "24h" }
-        );
-
-        token.accessToken = customJwt;
-      }
+      token.accessToken = backendAccessToken(token, nextAuthSecret);
 
       return token;
     },

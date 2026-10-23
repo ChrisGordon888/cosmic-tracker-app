@@ -377,6 +377,19 @@ export default function StudioBoardWorkspace({
                         <details className="signal-board-workspace-disclosure signal-board-artifact-publication">
                             <summary>Release page placement</summary>
                             <div className="signal-board-artifact-publication-fields">
+                                <label>Presentation
+                                    <select value={['Credit','Process'].includes(selectedArtifact.eyebrow || '') ? selectedArtifact.eyebrow : 'Fragment'} onChange={event => updateArtifact(selectedArtifact.id, { eyebrow: event.target.value === 'Fragment' ? '' : event.target.value })}>
+                                        <option value="Fragment">World fragment</option><option value="Credit">Collaborator credit</option><option value="Process">Process / session reference</option>
+                                    </select>
+                                </label>
+                                {['Credit','Process'].includes(selectedArtifact.eyebrow || '') && <>
+                                    <p className="signal-board-field-note">Only publish names and material you have permission to share. Unlisted videos are not private storage. Save the Studio Board after editing; hidden cards stay private.</p>
+                                    <label>Name / title<input maxLength={160} value={selectedArtifact.title} onChange={event=>updateArtifact(selectedArtifact.id,{title:event.target.value})}/></label>
+                                    <label>Role / credit<input maxLength={200} value={selectedArtifact.meta || ''} onChange={event=>updateArtifact(selectedArtifact.id,{meta:event.target.value})}/></label>
+                                    <label>Short context<textarea maxLength={2000} value={selectedArtifact.body || ''} onChange={event=>updateArtifact(selectedArtifact.id,{body:event.target.value})}/></label>
+                                    <label>HTTPS profile or approved video link<input type="url" value={selectedArtifact.href || ''} onChange={event=>updateArtifact(selectedArtifact.id,{href:event.target.value})}/></label>
+                                </>}
+
                                 <label className="signal-board-public-toggle">
                                     Publish to Portal
                                     <button

@@ -16,6 +16,11 @@ test('Real session decoding and SDK issuance enforce fresh creator permissions a
   assert.equal((await POST(request(body()))).status,401);assert.equal(calls,0);
   assert.equal((await POST(request(body(),'invalid-cookie'))).status,401);
   for(const pair of [['listener','none'],['creator','invited'],['creator','none'],['creator','suspended'],['owner','suspended']]){[role,creatorStatus]=pair;assert.equal((await POST(request(body(),cookie))).status,403);}
+  role='creator';creatorStatus='invited';
+  const invited=await POST(request(body('release-covers/onboarding/123-cover.png'),cookie));assert.equal(invited.status,200);
+  assert.equal(getPayloadFromClientToken((await invited.json()).clientToken).maximumSizeInBytes,20*1024*1024);
+  for(const path of ['release-covers/other/cover.png','release-assets/onboarding/file.png','release-covers/onboarding/file.wav','catalog-audio/file.wav'])assert.notEqual((await POST(request(body(path),cookie))).status,200);
+  for(const pair of [['listener','none'],['creator','suspended']]){[role,creatorStatus]=pair;assert.equal((await POST(request(body('release-covers/onboarding/cover.png'),cookie))).status,403);}
   for(const pair of [['creator','active'],['admin','none'],['owner','none']]){[role,creatorStatus]=pair;const response=await POST(request(body(),cookie));assert.equal(response.status,200);const token=getPayloadFromClientToken((await response.json()).clientToken);assert.equal(token.maximumSizeInBytes,100*1024*1024);assert.deepEqual(token.allowedContentTypes,['audio/wav','audio/x-wav']);assert.equal(token.allowOverwrite,false);assert.equal(token.addRandomSuffix,true);assert.equal(token.pathname,'catalog-audio/123-fixture.wav');assert.ok(token.validUntil<=Date.now()+600000);assert.equal(JSON.parse(token.onUploadCompleted.tokenPayload).ownerId,'server-owner');}
   for(const path of ['other/file.wav','catalog-audio/../secret.wav','catalog-audio/%2e%2e/x.wav','catalog-audio/file.svg','release-covers/world/file.wav','/catalog-audio/a.wav'])assert.equal((await POST(request(body(path),cookie))).status,400);
   const image=await POST(request(body('release-covers/onboarding/123-cover.png'),cookie));assert.equal(image.status,200);assert.equal(getPayloadFromClientToken((await image.json()).clientToken).maximumSizeInBytes,20*1024*1024);

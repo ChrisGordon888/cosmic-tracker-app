@@ -15,7 +15,7 @@ export async function POST(request:NextRequest):Promise<NextResponse>{
   if(body.type==='blob.generate-client-token'){
    const origin=request.headers.get('origin');
    if(origin&&origin!==new URL(request.url).origin)throw new UploadPolicyError(403,'Upload origin is not allowed.');
-   ownerId=await authorizeCreatorUpload(request);
+   ownerId=await authorizeCreatorUpload(request,body.payload?.pathname);
    uploadConstraints(body.payload?.pathname);
    // Do not let clients redirect signed completion metadata to another destination.
    if(body.payload.callbackUrl!==new URL('/api/upload',request.url).href)throw new UploadPolicyError(400,'Invalid upload callback.');
