@@ -26,7 +26,7 @@ import {
     findRealmRecommendation,
     type PublicNexusReleaseTrack,
 } from '@/lib/publicMusicCatalog';
-import RealmOrbitCard from '@/components/music/RealmOrbitCard';
+import NexusRealmSampler from '@/components/music/NexusRealmSampler';
 import '@/styles/realmShared.css';
 import '@/styles/nexus.css';
 
@@ -613,10 +613,6 @@ export default function CosmicNexusHub() {
 
     const isRealmUnlocked = (realmId: number): boolean => unlockedRealms.includes(realmId);
 
-    const getRealmTrackCountLabel = (count: number) => {
-        return `${count} soundtrack track${count === 1 ? '' : 's'}`;
-    };
-
     const isTrackCatalogVisible = (track: any) => {
         if (!track) return false;
         return getTrackAvailability(track).isVisible;
@@ -720,17 +716,6 @@ export default function CosmicNexusHub() {
     const guidanceRealmTint = getRealmTint(guidanceRealmId);
     const moonRealmId = getRealmIdFromAlignmentName(realmAlignment?.primaryRealm);
     const moonRealmTint = getRealmTint(moonRealmId);
-
-    const handlePlayOrbitTrack = (track: { id: string }) => {
-        const fullTrack = runtimeMusicCatalog.find((musicTrack) => musicTrack.id === track.id);
-
-        if (!fullTrack) {
-            console.warn('Track not found in runtime Nexus catalog:', track.id);
-            return;
-        }
-
-        tryPlayTrack(fullTrack);
-    };
 
     // Global editorial selection is independent of the signed-in creator's project preview.
     const featuredSignalRecord = publicFeaturedSignalData?.getPublicFeaturedSignal as NexusFeaturedReleaseTrack | null | undefined;
@@ -1689,44 +1674,13 @@ export default function CosmicNexusHub() {
                                 }}
                             >
                                 {groupedTracks.map((realmGroup) => {
-                                    const realmId = parseInt(realmGroup.id);
-                                    const pathUnlocked = isRealmUnlocked(realmId);
-                                    const soundtrackPathLabel = realmGroup.tracks.length === 0 ? "Realm quiet · no current signal" : isSignedIn
-                                        ? pathUnlocked
-                                            ? getRealmTrackCountLabel(realmGroup.tracks.length)
-                                            : `${getRealmTrackCountLabel(realmGroup.tracks.length)} • Realm Locked`
-                                        : `${getRealmTrackCountLabel(realmGroup.tracks.length)} • Join to save`;
-
                                     return (
                                         <div
                                             key={realmGroup.id}
                                             id={`realm-${realmGroup.id}`}
                                             className="realm-carousel-item"
                                         >
-                                            {realmGroup.tracks.length === 0 ? <article className={`realm-dormant realm-dormant-${realmGroup.id}`}><span className="realm-dormant-glyph" aria-hidden="true">{realmGroup.icon}</span><p className="text-xs uppercase tracking-widest">Sampler awaiting curation</p><h3 className="text-2xl font-display">{realmGroup.name}</h3><p className="mt-3">No Nexus sampler selected yet. The full Realm may have more music.</p><p>{realmGroup.description}</p><Link className="btn-secondary mt-4" href={`/realms/${realmGroup.id}`}>Enter the Realm →</Link></article> : <RealmOrbitCard
-                                                realmId={realmGroup.id}
-                                                realmName={realmGroup.name}
-                                                realmIcon={realmGroup.icon}
-                                                realmColor={realmGroup.tracks[0]?.realmColor || '#7FDBFF'}
-                                                preserveOrder
-                                                tracks={realmGroup.tracks}
-                                                currentTrackId={currentTrack?.id ?? null}
-                                                isPlaying={isPlaying}
-                                                onPlayTrack={handlePlayOrbitTrack}
-                                                progress={realmGroup.progress}
-                                                isUnlocked={true}
-                                                realmRoute={`/realms/${realmGroup.id}`}
-                                                isCurrentRealm={isSignedIn && realmId === user?.currentRealm}
-                                                isRecommended={guidanceRealmId !== null && realmId === guidanceRealmId}
-                                                compactOnMobile
-                                                carouselMode
-                                                isTrackLocked={isTrackLocked}
-                                                getTrackLockLabel={getTrackLockLabel}
-                                                pathLabel={soundtrackPathLabel}
-                                                flowTracks={nexusPlayableFlowTracks}
-                                                flowSource="nexus"
-                                                flowLabel="Nexus flow"
-                                            />}
+                                            {realmGroup.tracks.length === 0 ? <article className={`realm-dormant realm-dormant-${realmGroup.id}`}><span className="realm-dormant-glyph" aria-hidden="true">{realmGroup.icon}</span><p className="text-xs uppercase tracking-widest">Sampler awaiting curation</p><h3 className="text-2xl font-display">{realmGroup.name}</h3><p className="mt-3">No Nexus sampler selected yet. The full Realm may have more music.</p><p>{realmGroup.description}</p><Link className="btn-secondary mt-4" href={`/realms/${realmGroup.id}`}>Enter the Realm →</Link></article> : <NexusRealmSampler realmId={realmGroup.id} realmName={realmGroup.name} realmIcon={realmGroup.icon} color={realmGroup.tracks[0]?.realmColor || '#7FDBFF'} tracks={realmGroup.tracks} />}
                                         </div>
                                     );
                                 })}

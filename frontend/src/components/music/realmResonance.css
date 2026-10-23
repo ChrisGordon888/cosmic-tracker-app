@@ -1,28 +1,54 @@
-.realm-resonance { border:1px solid color-mix(in srgb,var(--resonance),transparent 65%); border-radius:28px; overflow:hidden; background:radial-gradient(ellipse at 12% 25%,color-mix(in srgb,var(--resonance),transparent 78%),transparent 55%),radial-gradient(ellipse at 90% 70%,#40345155,transparent 50%),#090d17; }
-.resonance-stage { position:relative; isolation:isolate; }
-.resonance-stage canvas { position:absolute; top:100px; left:0; width:100%; height:380px; pointer-events:none; z-index:2; }
-.resonance-orbit { position:relative; }
-.resonance-orbit .realm-orbit-card { background:transparent!important; border-color:transparent!important; box-shadow:none!important; }
-.resonance-console { position:relative; padding:20px; border-top:1px solid #ffffff1a; background:#080b15d9; display:grid; grid-template-columns:1fr auto; gap:16px; }
-.resonance-identity { display:flex; align-items:center; gap:12px; min-width:0; }
-.resonance-identity img { border-radius:12px; object-fit:cover; }
-.resonance-identity h3 { margin:3px 0; overflow-wrap:anywhere; font-size:18px; }
-.resonance-identity small { font-size:10px; letter-spacing:2px; color:var(--resonance); }
-.resonance-identity p,.resonance-options p { font-size:12px; color:#c1c8d6; }
-.resonance-transport { display:flex; align-items:center; gap:8px; }
-.realm-resonance button { min-height:44px; }
-.resonance-console button { border:1px solid #ffffff30; border-radius:22px; padding:8px 14px; background:#ffffff08; color:inherit; }
-.resonance-console button:disabled { opacity:.4; }
-.resonance-console button:focus-visible,.resonance-seek input:focus-visible { outline:2px solid var(--resonance); outline-offset:3px; }
-.resonance-seek { grid-column:1/-1; font-size:12px; display:grid; gap:6px; }
-.resonance-seek input { width:100%; accent-color:var(--resonance); min-height:32px; }
-.resonance-seek span { justify-self:end; font-variant-numeric:tabular-nums; }
-.resonance-options { grid-column:1/-1; display:flex; align-items:center; flex-wrap:wrap; gap:12px; }
-@media(max-width:480px) { .resonance-console { padding:14px; grid-template-columns:1fr; } .resonance-transport { justify-content:center; } }
-@media(prefers-reduced-motion:reduce) { .realm-resonance *, .realm-resonance *::before,.realm-resonance *::after { animation:none!important; transition:none!important; } }
-/* The legacy orbit stays recognizable; motion here comes only from captured sound. */
-.realm-resonance .orbit-node-idle,.realm-resonance .orbit-node-active,.realm-resonance .orbit-ring-slow,.realm-resonance .orbit-ring-reverse,.realm-resonance .realm-core-pulse { animation:none!important; }
-
-@media(max-width:480px) { .resonance-stage canvas { top:100px; height:290px; } }
-/* Keep the final seek/visual controls scrollable above the compact mobile dock. */
-@media(max-width:480px) { .realm-resonance { margin-bottom:150px; } }
+.realm-resonance { --energy:0; position:relative; isolation:isolate; border:1px solid color-mix(in srgb,var(--resonance),transparent 72%); border-radius:32px; overflow:hidden; color:#f0eaf3; background:#070b13; box-shadow:0 30px 80px #0005; }
+.resonance-stage { position:relative; isolation:isolate; height:670px; overflow:hidden; background:radial-gradient(ellipse at 50% 45%,color-mix(in srgb,var(--resonance),transparent 90%),transparent 65%); }
+.resonance-nebula { position:absolute; inset:-30%; z-index:-1; transform:rotate(-28deg); opacity:.85; background:radial-gradient(ellipse at 45% 35%,color-mix(in srgb,var(--resonance),transparent 60%),transparent 23%),radial-gradient(ellipse at 57% 65%,color-mix(in srgb,var(--resonance),transparent 45%),transparent 17%),radial-gradient(ellipse at 36% 54%,#59628a66,transparent 26%),radial-gradient(ellipse at 65% 40%,#cab4a325,transparent 20%),linear-gradient(100deg,transparent 43%,#060911 48%,transparent 53%); filter:blur(22px); }
+.resonance-heading { position:absolute; top:26px; left:28px; z-index:4; }
+.resonance-heading small,.resonance-selected small { letter-spacing:.22em; font-size:10px; color:var(--resonance); }
+.resonance-heading p { font-size:12px; color:#c5c3d0; margin-top:8px; }
+.resonance-plane { position:absolute; width:580px; height:580px; top:18px; left:50%; transform:translateX(-50%); }
+.resonance-paths,.resonance-plane canvas { position:absolute; inset:0; width:100%; height:100%; color:var(--resonance); opacity:.75; pointer-events:none; }
+.resonance-plane canvas { opacity:.9; }
+.resonance-core { position:absolute; inset:35%; border-radius:50%; display:flex; flex-direction:column; gap:7px; align-items:center; justify-content:center; text-align:center; padding:16px; background:radial-gradient(circle at 30% 25%,color-mix(in srgb,var(--resonance),#151121 55%),#0b0e19 74%); border:1px solid color-mix(in srgb,var(--resonance),transparent 45%); box-shadow:0 0 calc(25px + var(--energy)*45px) color-mix(in srgb,var(--resonance),transparent 65%),inset 0 0 30px #ffffff06; }
+.resonance-core>span { font-size:26px; }
+.resonance-core strong { font-size:15px; line-height:1.25; font-weight:500; }
+.resonance-core small { font-size:7px; letter-spacing:.18em; opacity:.7; }
+.resonance-node { position:absolute; transform:translate(-50%,-50%); width:52px; height:52px; padding:0; border-radius:50%; display:grid; place-items:center; border:1px solid color-mix(in srgb,var(--resonance),transparent 35%); background:radial-gradient(circle at 30% 30%,var(--resonance),#101523 80%); box-shadow:0 0 16px color-mix(in srgb,var(--resonance),transparent 80%); color:#fff; cursor:pointer; z-index:3; }
+.resonance-node.is-selected { outline:1px solid color-mix(in srgb,var(--resonance),white 40%); outline-offset:6px; box-shadow:0 0 calc(22px + var(--energy)*35px) color-mix(in srgb,var(--resonance),transparent 40%); }
+.resonance-node img { width:100%; height:100%; border-radius:50%; object-fit:cover; }
+.resonance-node-label { position:absolute; top:calc(100% + 12px); left:50%; transform:translateX(-50%); width:118px; font-size:10px; line-height:1.3; text-align:center; text-shadow:0 2px 5px #000; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+.resonance-selected { position:absolute; bottom:23px; left:18px; right:18px; text-align:center; z-index:4; }
+.resonance-selected h3 { margin:9px 0 3px; font-size:clamp(20px,3vw,28px); font-weight:500; line-height:1.2; overflow-wrap:anywhere; }
+.resonance-selected p { font-size:13px; color:#cbc5ce; }
+.resonance-selected a { display:inline-block; margin-top:10px; font-size:11px; color:var(--resonance); }
+.resonance-console { padding:14px 28px 20px; background:linear-gradient(#070b1300,#070b13); display:grid; gap:12px; }
+.resonance-transport { display:flex; justify-content:center; gap:12px; align-items:center; }
+.resonance-console button,.resonance-library nav button { border:1px solid #ffffff28; border-radius:24px; padding:10px 18px; min-height:44px; background:#ffffff07; color:inherit; cursor:pointer; }
+.resonance-transport button:nth-child(2) { min-width:130px; border-color:var(--resonance); }
+.realm-resonance button:disabled { opacity:.4; cursor:default; }
+.realm-resonance button:focus-visible,.realm-resonance input:focus-visible,.realm-resonance a:focus-visible { outline:2px solid var(--resonance); outline-offset:4px; }
+.resonance-seek { display:grid; gap:2px; font-size:11px; }
+.resonance-seek input { width:100%; min-height:32px; accent-color:var(--resonance); }
+.resonance-seek>span:last-child { justify-self:end; font-variant-numeric:tabular-nums; color:#c5c3d0; }
+.resonance-options { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:10px; }
+.resonance-options button { font-size:11px; padding:6px 12px; }
+.resonance-options p { font-size:10px; color:#b8b9ca; }
+.resonance-library { padding:20px 28px 26px; border-top:1px solid #ffffff10; display:grid; grid-template-columns:1fr auto; gap:18px; }
+.resonance-library label { font-size:11px; display:flex; align-items:center; gap:12px; }
+.resonance-library input { min-width:0; width:100%; border:1px solid #ffffff20; border-radius:18px; background:#ffffff05; padding:10px 14px; color:inherit; }
+.resonance-library nav { display:flex; align-items:center; gap:10px; font-size:11px; }
+.resonance-tracklist { grid-column:1/-1; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+.resonance-tracklist button { text-align:left; border:1px solid transparent; border-radius:12px; background:#ffffff03; padding:10px 14px; min-height:48px; color:inherit; }
+.resonance-tracklist button[aria-pressed=true] { border-color:color-mix(in srgb,var(--resonance),transparent 55%); background:color-mix(in srgb,var(--resonance),transparent 92%); }
+.resonance-tracklist span,.resonance-tracklist small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; }
+.resonance-tracklist small { color:#acafbd; font-size:10px; margin-top:3px; }
+@media(max-width:600px) {
+ .realm-resonance { border-radius:24px; margin-bottom:140px; }
+ .resonance-stage { height:calc(100vw + 150px); min-height:490px; }
+ .resonance-heading { top:22px; left:20px; }
+ .resonance-plane { top:78px; width:100%; height:auto; aspect-ratio:1; }
+ .resonance-core { padding:8px; gap:4px; } .resonance-core strong { font-size:11px; } .resonance-core>span { font-size:18px; } .resonance-core small { font-size:5px; }
+ .resonance-node { width:44px; height:44px; } .resonance-node-label { width:80px; font-size:8px; top:calc(100% + 9px); }
+ .resonance-selected { bottom:10px; }
+ .resonance-console,.resonance-library { padding:16px; }
+ .resonance-library { grid-template-columns:1fr; gap:10px; } .resonance-library nav { justify-content:center; }
+}
+@media(prefers-reduced-motion:reduce) { .realm-resonance * { animation:none!important; transition:none!important; } }

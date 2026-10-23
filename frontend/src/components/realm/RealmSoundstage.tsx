@@ -3,7 +3,6 @@
 import { useMemo } from 'react';
 import { useQuery } from '@apollo/client';
 import RealmResonance from '@/components/music/RealmResonance';
-import RealmOrbitCard from '@/components/music/RealmOrbitCard';
 import { GET_PUBLIC_NEXUS_TRACKS } from '@/graphql/realms';
 import {
     getRuntimeTracksForRealm,
@@ -12,7 +11,6 @@ import {
     type PublicNexusReleaseTrack,
 } from '@/lib/publicMusicCatalog';
 import type { RealmId } from '@/lib/realmStateMap';
-import { useMusicPlayer } from '@/hooks/useMusicPlayer';
 import { usePlatformAccess } from '@/context/PlatformAccessProvider';
 import { getMusicAvailability } from '@/lib/musicAvailability';
 
@@ -46,14 +44,7 @@ export default function RealmSoundstage({
     realmColor,
     intro,
     supportText,
-    progress = 0,
-    isUnlocked = true,
-    realmRoute,
-    isCurrentRealm = false,
-    isRecommended = false,
-    compactOnMobile = false,
 }: RealmSoundstageProps) {
-    const { playOrToggleTrack, currentTrack, isPlaying } = useMusicPlayer();
     const { isAuthenticated } = usePlatformAccess();
     const isSignedInForMusic = isAuthenticated;
     const { data: publicNexusTrackData, loading, error } = useQuery(GET_PUBLIC_NEXUS_TRACKS, {
@@ -107,57 +98,6 @@ export default function RealmSoundstage({
         return !availability?.isPlayable;
     };
 
-    const getTrackLockLabel = (track: { id: string }) => {
-        const availability = getTrackAvailability(track);
-
-        if (!availability || availability.isPlayable) return null;
-
-        return availability.label;
-    };
-
-    const playableRealmTracks = realmTracks.filter(
-        (track) => !isTrackLocked(track) && Boolean(track.trackUrl)
-    );
-
-    const realmFlowOptions = {
-        source: 'realm' as const,
-        label: `${realmName} flow`,
-    };
-
-    const featuredTrack =
-        realmTracks.find((track) => !isTrackLocked(track) && track.publicCanon === true) ??
-        realmTracks.find((track) => !isTrackLocked(track) && track.isRealmAnchor) ??
-        realmTracks.find((track) => !isTrackLocked(track) && track.isPublicPick) ??
-        realmTracks.find((track) => !isTrackLocked(track)) ??
-        realmTracks[0];
-
-    const featuredTrackLocked = isTrackLocked(featuredTrack);
-    const featuredTrackLockLabel = getTrackLockLabel(featuredTrack);
-    const isFeaturedSelected = currentTrack?.id === featuredTrack.id;
-
-    const handlePlayOrbitTrack = (track: { id: string }) => {
-        const fullTrack = realmTracks.find((musicTrack) => musicTrack.id === track.id);
-
-        if (!fullTrack) {
-            console.warn('Track not found in runtime realm catalog:', track.id);
-            return;
-        }
-
-        if (isTrackLocked(fullTrack)) {
-            return;
-        }
-
-        const queue = playableRealmTracks.length > 0 ? playableRealmTracks : [fullTrack];
-        void playOrToggleTrack(fullTrack, queue, realmFlowOptions);
-    };
-
-    const handlePlayFeaturedTrack = () => {
-        if (featuredTrackLocked) return;
-
-        const queue = playableRealmTracks.length > 0 ? playableRealmTracks : [featuredTrack];
-        void playOrToggleTrack(featuredTrack, queue, realmFlowOptions);
-    };
-
     return (
         <div className="glass-card p-4 md:p-6 mb-8">
             <div className="mb-5">
@@ -176,120 +116,7 @@ export default function RealmSoundstage({
                 {supportText && <p className="text-sm text-muted max-w-3xl">{supportText}</p>}
             </div>
 
-            <RealmResonance trackIds={realmTracks.map(track => track.id)} color={realmColor} realmName={realmName}>
-            <RealmOrbitCard
-                realmId={realmId}
-                realmName={realmName}
-                realmIcon={realmIcon}
-                realmColor={realmColor}
-                tracks={realmTracks}
-                currentTrackId={currentTrack?.id ?? null}
-                isPlaying={isPlaying}
-                onPlayTrack={handlePlayOrbitTrack}
-                progress={progress}
-                isUnlocked={isUnlocked}
-                realmRoute={realmRoute}
-                isCurrentRealm={isCurrentRealm}
-                isRecommended={isRecommended}
-                compactOnMobile={compactOnMobile}
-                isTrackLocked={isTrackLocked}
-                getTrackLockLabel={getTrackLockLabel}
-                flowTracks={playableRealmTracks}
-                flowSource="realm"
-                flowLabel={`${realmName} flow`}
-            />
-            </RealmResonance>
-
-            <div
-                className="mt-5 rounded-2xl border p-4 md:p-5"
-                style={{
-                    borderColor: `${realmColor}33`,
-                    background: `linear-gradient(135deg, ${realmColor}10, rgba(255,255,255,0.02))`,
-                    boxShadow: `0 0 18px ${realmColor}10`,
-                }}
-            >
-                <div className="flex flex-col lg:flex-row lg:items-center gap-4">
-                    <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-2 mb-2">
-                            <p className="text-xs uppercase tracking-[0.18em] text-white/60">
-                                {featuredTrack.publicCanon === true ? 'Canon entry' : 'From the public catalog'}
-                            </p>
-
-                            {featuredTrackLocked && (
-                                <span className="px-2.5 py-1 rounded-full text-[10px] uppercase tracking-[0.14em] bg-white/5 border border-white/10 text-white/55">
-                                    {featuredTrackLockLabel ?? 'Locked'}
-                                </span>
-                            )}
-                        </div>
-
-                        <div className="flex items-center gap-3 mb-2">
-                            <div
-                                className="w-10 h-10 rounded-full flex items-center justify-center text-lg shrink-0"
-                                style={{
-                                    background: `radial-gradient(circle, ${realmColor}66, ${realmColor}22)`,
-                                    border: `1px solid ${realmColor}55`,
-                                    boxShadow: `0 0 12px ${realmColor}22`,
-                                    opacity: featuredTrackLocked ? 0.52 : 1,
-                                }}
-                            >
-                                {featuredTrackLocked ? '🔒' : '✦'}
-                            </div>
-
-                            <div className="min-w-0">
-                                <p
-                                    className="font-display text-lg truncate"
-                                    style={{
-                                        color: featuredTrackLocked
-                                            ? 'rgba(255,255,255,0.55)'
-                                            : realmColor,
-                                    }}
-                                >
-                                    {featuredTrack.trackTitle}
-                                </p>
-                                <p className="text-sm text-secondary truncate">
-                                    {featuredTrack.artist}
-                                </p>
-                            </div>
-                        </div>
-
-                        <p className="text-sm text-secondary max-w-2xl">
-                            Start here for the clearest first entry into{' '}
-                            <span style={{ color: realmColor }}>{realmName}</span>. The full
-                            realm soundtrack can still be explored through the tracklist.
-                        </p>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-3 shrink-0">
-                        <button
-                            className="btn-secondary"
-                            onClick={handlePlayFeaturedTrack}
-                            disabled={featuredTrackLocked}
-                            style={{
-                                opacity: featuredTrackLocked ? 0.55 : 1,
-                                cursor: featuredTrackLocked ? 'not-allowed' : 'pointer',
-                            }}
-                        >
-                            {featuredTrackLocked
-                                ? featuredTrackLockLabel ?? 'Locked'
-                                : isFeaturedSelected
-                                  ? isPlaying
-                                      ? 'Pause Track'
-                                      : 'Resume Track'
-                                  : '▶ Play Track'}
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div className="quest-card mt-4">
-                <p className="text-xs uppercase tracking-[0.18em] text-white/60 mb-2">
-                    Listening Intention
-                </p>
-                <p className="text-sm text-secondary">
-                    Let the music tell you whether this realm matches your current inner state
-                    before going deeper.
-                </p>
-            </div>
+            <RealmResonance tracks={realmTracks} color={realmColor} realmName={realmName} realmIcon={realmIcon} isTrackLocked={isTrackLocked} />
         </div>
     );
 }
