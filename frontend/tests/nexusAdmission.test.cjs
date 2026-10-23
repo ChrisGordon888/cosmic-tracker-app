@@ -9,7 +9,7 @@ test('Featured release mapping preserves each track Realm, unknown stays null, g
  assert.equal(lib('realmTheme').getRealmTheme(null).realmId,null);
 });
 test('Nexus soundtracks use public music while Worlds stay selected-only and registry bypass stays closed',()=>{
- const s=fs.readFileSync('src/app/nexus/page.tsx','utf8');assert.match(s,/variables: \{ nexusOnly: true \}/);assert.match(s,/mergeMusicCatalogs\(\[\], creatorTracks\)/);assert.match(s,/<PublicWorlds selectedOnly \/>/);
+ const s=fs.readFileSync('src/app/nexus/page.tsx','utf8');assert.match(s,/variables: \{ samplerOnly: true \}/);assert.ok(s.includes('creatorTracks.map((track, index)'));assert.match(s,/<PublicWorlds selectedOnly \/>/);
  const realm=fs.readFileSync('src/components/realm/RealmSoundstage.tsx','utf8');assert.ok(!realm.includes('nexusOnly: true'));
  const world=fs.readFileSync('src/app/releases/[slug]/page.tsx','utf8');assert.match(world,/playerRealm\(track.realmId\)/);assert.match(world,/fragment ReleaseTrackFields on ReleaseTrack \{\s+realmId/);
 });

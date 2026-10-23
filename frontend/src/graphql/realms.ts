@@ -137,9 +137,9 @@ export const LOG_DAILY_LOGIN = gql`
 `;
 
 export const GET_PUBLIC_NEXUS_TRACKS = gql`
-  query GetPublicNexusTracks($realmId: Int, $nexusOnly: Boolean = false) {
+  query GetPublicNexusTracks($realmId: Int, $nexusOnly: Boolean = false, $samplerOnly: Boolean = false) {
     unavailableRegistryTrackIds
-    getPublicNexusTracks(realmId: $realmId, nexusOnly: $nexusOnly) {
+    getPublicNexusTracks(realmId: $realmId, nexusOnly: $nexusOnly, samplerOnly: $samplerOnly) {
       id
       ownerId
       artistName

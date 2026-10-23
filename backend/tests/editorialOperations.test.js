@@ -29,5 +29,5 @@ test('Read-only evidence is submission, owner, World and published-text scoped; 
 test('Editorial UI GraphQL documents validate against actual schema',()=>{
  const {makeExecutableSchema}=require('@graphql-tools/schema'),{parse,validate}=require('graphql'),fs=require('fs');
  const schema=makeExecutableSchema({typeDefs:require('../schemas'),resolvers:r});
- for(const file of ['../frontend/src/graphql/nexusReview.ts','../frontend/src/components/admin/EditorialPlacementControls.tsx'])for(const match of fs.readFileSync(file,'utf8').matchAll(/gql`([\s\S]*?)`/g))assert.deepEqual(validate(schema,parse(match[1])).map(e=>e.message),[]);
+ for(const file of ['../frontend/src/graphql/nexusReview.ts','../frontend/src/components/admin/EditorialPlacementControls.tsx','../frontend/src/components/admin/NexusSamplerControls.tsx'])for(const match of fs.readFileSync(file,'utf8').matchAll(/gql`([\s\S]*?)`/g))assert.deepEqual(validate(schema,parse(match[1])).map(e=>e.message),[]);
 });

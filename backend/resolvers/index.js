@@ -236,8 +236,8 @@ async function requireEditorialSource(track, requireReady = true) {
     return world;
 }
 
-function placementAudit(user, destination, id, selected, realmId) {
-    return {placementHistory:{$each:[{actorId:String(user.id),destination,sourceId:String(id),selected,realmId,at:new Date()}],$slice:-200}};
+function placementAudit(user, destination, id, selected, realmId, action = selected ? "select" : "withdraw") {
+    return {placementHistory:{$each:[{actorId:String(user.id),action,destination,sourceId:String(id),selected,realmId,at:new Date()}],$slice:-200}};
 }
 
 function canManageCreatorContent(user, creatorOwnerId) {
@@ -2250,7 +2250,8 @@ module.exports = {
             });
         },
 
-        getPublicNexusTracks: async (_, { realmId, nexusOnly = false }) => {
+        getPublicNexusTracks: async (_, { realmId, nexusOnly = false, samplerOnly = false }) => {
+            if (nexusOnly && samplerOnly) throw new Error("Choose one editorial source.");
             await processDueScheduledReleaseWorlds();
 
             const publicWorlds = await ReleaseWorld.find({
@@ -2297,7 +2298,10 @@ module.exports = {
                 createdAt: 1,
             });
             const eligible = await Promise.all(tracks.map(async track => await User.exists({_id:track.ownerId,...realmEditorial.ownerEligibility}) ? track : null));
-            return eligible.filter(Boolean);
+            const result=eligible.filter(Boolean);
+            if (!samplerOnly) return result;
+            const ids=require('../lib/realmSampler').samplerIds(config,realmId);
+            return ids.map(id=>result.find(t=>String(t._id)===id)).filter(t=>t&&canAccessTrackAudio(t,null)&&Boolean(t.playbackStatus==='preview'?t.previewAudioUrl:t.audioUrl||t.previewAudioUrl));
         },
 
         getMyFeaturedSignal: async (_, __, { user }) => {
@@ -4611,6 +4615,23 @@ module.exports = {
             return track;
         },
 
+        setNexusRealmSampler: async (_, {realmId,trackIds,expectedRevision}, {user}) => {
+            requireNexusEditorial(user);
+            const config=await getOrCreateNexusEditorialConfig();
+            if ((config.samplerRevision||0)!==expectedRevision) throw new Error('Sampler changed. Reload before saving.');
+            const eligible=await module.exports.Query.getPublicNexusTracks(null,{realmId});
+            const playable=eligible.filter(t=>canAccessTrackAudio(t,null)&&Boolean(t.playbackStatus==='preview'?t.previewAudioUrl:t.audioUrl||t.previewAudioUrl));
+            const ids=require('../lib/realmSampler').validateSampler(realmId,trackIds,playable);
+            const samplers=(config.nexusRealmSamplers||[]).filter(s=>s.realmId!==realmId).map(s=>({realmId:s.realmId,trackIds:s.trackIds}));
+            samplers.push({realmId,trackIds:ids});
+            const version=expectedRevision===0?{$or:[{samplerRevision:0},{samplerRevision:{$exists:false}}]}:{samplerRevision:expectedRevision};
+            const saved=await NexusEditorialConfig.findOneAndUpdate({_id:config._id,...version},{
+                $set:{nexusRealmSamplers:samplers,updatedBy:user.id},$inc:{samplerRevision:1},
+                $push:placementAudit(user,'nexus-realm-sampler',ids.join(','),ids.length>0,realmId,'replace-order')
+            },{new:true,runValidators:true});
+            if (!saved) throw new Error('Sampler changed. Reload before saving.');
+            return saved;
+        },
         setRealmDiscovery: async (_, {worldId, realmId, selected}, {user}) => {
             requireNexusEditorial(user);
             if (!realmEditorial.REALMS.includes(realmId)) throw new Error('Choose a valid Realm.');

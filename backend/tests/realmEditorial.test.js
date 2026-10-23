@@ -16,8 +16,12 @@ test('Explicit independent Realm admission, exact soundtrack tuple, withdrawal, 
  assert.deepEqual(await music(),[]);assert.deepEqual(await r.Query.publicProjects(null,{discoveryOnly:true,realmId:0}),[]);
  await r.Mutation.setRealmDiscovery(null,{worldId:world._id,realmId:0,selected:true},{user:editor});assert.equal((await r.Query.publicProjects(null,{discoveryOnly:true,realmId:0})).length,1);assert.deepEqual(await music(),[]);
  await assert.rejects(r.Mutation.setRealmSoundtrack(null,{trackId:track._id,realmId:0,selected:true},{user:editor}),/Approve/);track.nexusReviewStatus='approved';
- for(let i=0;i<2;i++)await r.Mutation.setRealmSoundtrack(null,{trackId:track._id,realmId:0,selected:true},{user:editor});assert.equal(config.realmSoundtracks.length,1);assert.equal((await music()).length,1);assert.deepEqual(await music(true),[]);assert.equal(track.nexusReviewStatus,'approved');assert.equal(world.publicCanon,false);
+ for(let i=0;i<2;i++)await r.Mutation.setRealmSoundtrack(null,{trackId:track._id,realmId:0,selected:true},{user:editor});assert.equal(config.realmSoundtracks.length,1);
+ assert.equal((await r.Query.getPublicNexusTracks(null,{realmId:0,samplerOnly:true})).length,0);
+ config.nexusRealmSamplers=[{realmId:0,trackIds:[track._id]}];
+ assert.equal((await r.Query.getPublicNexusTracks(null,{realmId:0,samplerOnly:true})).length,1);
+assert.equal((await music()).length,1);assert.deepEqual(await music(true),[]);assert.equal(track.nexusReviewStatus,'approved');assert.equal(world.publicCanon,false);
  track.realmId=303;assert.deepEqual(await music(),[]);track.realmId=0;suspended=true;assert.deepEqual(await music(),[]);assert.deepEqual(await r.Query.publicProjects(null,{discoveryOnly:true,realmId:0}),[]);suspended=false;world.visibility='private';assert.deepEqual(await music(),[]);world.visibility='public';
- await r.Mutation.setRealmSoundtrack(null,{trackId:track._id,realmId:0,selected:false},{user:editor});assert.deepEqual(await music(),[]);config.soundtrackWithdrawnTrackIds=[];track.showInNexus=true;track.nexusReviewStatus='published';assert.equal((await music()).length,0);assert.equal((await music(true)).length,1);
+ await r.Mutation.setRealmSoundtrack(null,{trackId:track._id,realmId:0,selected:false},{user:editor});assert.deepEqual(await music(),[]);assert.equal((await r.Query.getPublicNexusTracks(null,{realmId:0,samplerOnly:true})).length,0);config.soundtrackWithdrawnTrackIds=[];track.showInNexus=true;track.nexusReviewStatus='published';assert.equal((await music()).length,0);assert.equal((await music(true)).length,1);
  }finally{[W.find,W.findOne,T.find,T.findOne,C.findOne,C.findOneAndUpdate,U.exists,P.findOne]=old;}
 });

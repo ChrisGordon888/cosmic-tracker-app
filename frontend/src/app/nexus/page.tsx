@@ -24,7 +24,6 @@ import { getRealmTheme } from '@/lib/realmTheme';
 import {
     mapReleaseTracksToMusicTracks,
     findRealmRecommendation,
-    mergeMusicCatalogs,
     type PublicNexusReleaseTrack,
 } from '@/lib/publicMusicCatalog';
 import RealmOrbitCard from '@/components/music/RealmOrbitCard';
@@ -463,7 +462,7 @@ export default function CosmicNexusHub() {
     });
 
     const { data: publicNexusTrackData, loading: catalogLoading, error: catalogError } = useQuery(GET_PUBLIC_NEXUS_TRACKS, {
-        variables: { nexusOnly: true },
+        variables: { samplerOnly: true },
         fetchPolicy: 'network-only',
     });
 
@@ -630,7 +629,7 @@ export default function CosmicNexusHub() {
             | undefined
         );
 
-        return mergeMusicCatalogs([], creatorTracks);
+        return creatorTracks.map((track, index) => ({ ...track, sortOrder: index }));
     }, [publicNexusTrackData]);
 
     const nexusVisibleTracks = useMemo(() => {
@@ -645,8 +644,6 @@ export default function CosmicNexusHub() {
                 };
             })
             .sort((a, b) => {
-                const canonPriority = Number(b.publicCanon === true) - Number(a.publicCanon === true);
-                if (canonPriority) return canonPriority;
                 const aOrder = a.sortOrder ?? 999;
                 const bOrder = b.sortOrder ?? 999;
 
@@ -674,8 +671,6 @@ export default function CosmicNexusHub() {
                     return safeARealmIndex - safeBRealmIndex;
                 }
 
-                const canonPriority = Number(b.publicCanon === true) - Number(a.publicCanon === true);
-                if (canonPriority) return canonPriority;
                 const aOrder = a.sortOrder ?? 999;
                 const bOrder = b.sortOrder ?? 999;
 
@@ -1708,11 +1703,12 @@ export default function CosmicNexusHub() {
                                             id={`realm-${realmGroup.id}`}
                                             className="realm-carousel-item"
                                         >
-                                            {realmGroup.tracks.length === 0 ? <article className={`realm-dormant realm-dormant-${realmGroup.id}`}><span className="realm-dormant-glyph" aria-hidden="true">{realmGroup.icon}</span><p className="text-xs uppercase tracking-widest">Realm quiet</p><h3 className="text-2xl font-display">{realmGroup.name}</h3><p className="mt-3">No public soundtrack yet.</p><p>{realmGroup.description}</p><Link className="btn-secondary mt-4" href={`/realms/${realmGroup.id}`}>Enter the Realm →</Link></article> : <RealmOrbitCard
+                                            {realmGroup.tracks.length === 0 ? <article className={`realm-dormant realm-dormant-${realmGroup.id}`}><span className="realm-dormant-glyph" aria-hidden="true">{realmGroup.icon}</span><p className="text-xs uppercase tracking-widest">Sampler awaiting curation</p><h3 className="text-2xl font-display">{realmGroup.name}</h3><p className="mt-3">No Nexus sampler selected yet. The full Realm may have more music.</p><p>{realmGroup.description}</p><Link className="btn-secondary mt-4" href={`/realms/${realmGroup.id}`}>Enter the Realm →</Link></article> : <RealmOrbitCard
                                                 realmId={realmGroup.id}
                                                 realmName={realmGroup.name}
                                                 realmIcon={realmGroup.icon}
                                                 realmColor={realmGroup.tracks[0]?.realmColor || '#7FDBFF'}
+                                                preserveOrder
                                                 tracks={realmGroup.tracks}
                                                 currentTrackId={currentTrack?.id ?? null}
                                                 isPlaying={isPlaying}

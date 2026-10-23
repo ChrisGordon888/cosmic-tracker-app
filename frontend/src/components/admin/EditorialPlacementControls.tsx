@@ -1,4 +1,5 @@
 'use client';
+import NexusSamplerControls from './NexusSamplerControls';
 import { gql, useMutation, useQuery } from '@apollo/client';
 import { useState } from 'react';
 const CONFIG=gql`query ReviewPlacements { nexusEditorialConfig { id selectedWorldIds realmDiscovery { worldId realmId } realmSoundtracks { trackId worldId realmId } } }`;
@@ -39,6 +40,7 @@ export default function EditorialPlacementControls({world,track,canPlace}:{
    <div><p>Nexus Canon World: {selected?'Selected':'Not selected'}</p><button className="mt-2 min-h-11 rounded-xl border border-white/20 px-3 py-2 text-sm disabled:opacity-40" disabled={blocked||(!selected&&(!publicWorld||world.publicCanon!==true))} onClick={()=>void save('world',!selected)}>{selected?'Withdraw Nexus World':'Select Nexus World'}</button>{world.publicCanon!==true&&<p className="text-xs">Requires creator Canon and a public World.</p>}</div>
   </div>}
   <p role="status" className="text-sm my-2">{message}</p>
+  <NexusSamplerControls key={String(soundtrack)} trackId={track.id} realmId={realm} canPlace={canPlace} />
   <details><summary>Creator-published process evidence</summary><p className="text-xs text-white/60">Only published text fragments for this World/submitted song. Private notes, attachment URLs and other songs’ workspace materials are excluded.</p>
    {evidence.loading?<p>Loading evidence…</p>:evidence.error?<p role="alert">Evidence unavailable: {evidence.error.message}</p>:evidence.data?.nexusReviewEvidence?.length?evidence.data.nexusReviewEvidence.map((item:{id:string;title:string;body?:string;meta?:string})=><article className="my-3" key={item.id}><h5>{item.title}</h5><p>{item.body}</p><small>{item.meta}</small></article>):<p>No creator-published process evidence. Nothing private has been requested.</p>}
   </details>

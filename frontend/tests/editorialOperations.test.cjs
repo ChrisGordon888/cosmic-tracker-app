@@ -3,7 +3,7 @@ const walk=n=>Array.isArray(n)?n.flatMap(walk):n&&typeof n==='object'?[n,...walk
 function component(canPlace,status='approved',selected=false){
  const calls=[],refetches=[];const m={exports:{}};
  const code=ts.transpileModule(fs.readFileSync('src/components/admin/EditorialPlacementControls.tsx','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;
- const imports=name=>name==='react'?{...React,useState:x=>[x,()=>{}]}:name==='@apollo/client'?{
+ const imports=name=>name==='./NexusSamplerControls'?{default:()=>null}:name==='react'?{...React,useState:x=>[x,()=>{}]}:name==='@apollo/client'?{
  gql:s=>s[0],useQuery:q=>({data:q.includes('ReviewEvidence')?{nexusReviewEvidence:[]}:{nexusEditorialConfig:{selectedWorldIds:selected?['w']:[],realmDiscovery:[],realmSoundtracks:selected?[{trackId:'t',worldId:'w',realmId:0}]:[]}},refetch:async()=>refetches.push(q)}),useMutation:q=>[async variables=>calls.push({q,...variables})]
  }:require(name);
  vm.runInNewContext(code,{exports:m.exports,require:imports});

@@ -24,6 +24,7 @@ type OrbitTrack = Pick<
 > & { publicCanon?: boolean | null };
 
 interface RealmOrbitCardProps {
+    preserveOrder?: boolean;
     realmId?: string | number;
     realmName: string;
     realmIcon: string;
@@ -111,6 +112,7 @@ function getCompactPathLabel(pathLabel?: string) {
 }
 
 export default function RealmOrbitCard({
+    preserveOrder = false,
     realmId,
     realmName,
     realmIcon,
@@ -136,6 +138,7 @@ export default function RealmOrbitCard({
     const { playOrToggleTrack } = useMusicPlayer();
 
     const sortedTracks = useMemo(() => {
+        if (preserveOrder) return tracks;
         return [...tracks].sort((a, b) => {
             const canonPriority = Number(b.publicCanon === true) - Number(a.publicCanon === true);
             if (canonPriority) return canonPriority;
@@ -146,7 +149,7 @@ export default function RealmOrbitCard({
 
             return a.trackTitle.localeCompare(b.trackTitle);
         });
-    }, [tracks]);
+    }, [tracks, preserveOrder]);
 
     const trackIsLocked = useCallback(
         (track?: OrbitTrack | null) => {

@@ -264,6 +264,8 @@ const typeDefs = gql`
   type RealmDiscoverySelection { realmId: Int! worldId: ID! }
   type RealmSoundtrackSelection { realmId: Int! worldId: ID! trackId: ID! }
   type NexusEditorialConfig {
+    nexusRealmSamplers: [NexusRealmOrderConfig!]!
+    samplerRevision: Int
     soundtrackWithdrawnTrackIds: [ID!]
     realmDiscovery: [RealmDiscoverySelection!]
     realmSoundtracks: [RealmSoundtrackSelection!]
@@ -854,7 +856,7 @@ const typeDefs = gql`
     nexusPublishedSignals(realmId: Int): [NexusReviewItem!]!
     getReleaseTracks(releaseWorldId: ID!): [ReleaseTrack!]!
     getPublicReleaseTracks(releaseWorldId: ID!): [ReleaseTrack!]!
-    getPublicNexusTracks(realmId: Int, nexusOnly: Boolean = false): [ReleaseTrack!]!
+    getPublicNexusTracks(realmId: Int, nexusOnly: Boolean = false, samplerOnly: Boolean = false): [ReleaseTrack!]!
     getMyFeaturedSignal: ReleaseTrack
     getPublicFeaturedSignal: ReleaseTrack
     getReleaseTrack(id: ID!): ReleaseTrack
@@ -1018,6 +1020,7 @@ const typeDefs = gql`
     ): ReleaseTrack!
     publishTrackToNexus(trackId: ID!): ReleaseTrack!
     unpublishTrackFromNexus(trackId: ID!, notes: String): ReleaseTrack!
+    setNexusRealmSampler(realmId: Int!, trackIds: [ID!]!, expectedRevision: Int!): NexusEditorialConfig!
     setRealmDiscovery(worldId: ID!, realmId: Int!, selected: Boolean!): NexusEditorialConfig!
     setRealmSoundtrack(trackId: ID!, realmId: Int!, selected: Boolean!): NexusEditorialConfig!
     setNexusProjectSelection(worldId: ID!, selected: Boolean!): NexusEditorialConfig!
