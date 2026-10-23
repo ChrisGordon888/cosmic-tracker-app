@@ -7,7 +7,7 @@ export const NEXUS_REVIEW_QUEUE_QUERY = gql`
     nexusReviewQueue(status: $status) {
       releaseTrackCount
       track {
-        id title slug ownerId trackNumber role status bpm keySignature mood hook notes
+        id title slug ownerId trackNumber role status bpm keySignature mood hook
         audioUrl previewAudioUrl platformUrl artworkUrl releaseCoverArtUrl
         realmId nexusReviewStatus nexusSubmittedAt nexusReviewedAt nexusReviewedBy nexusReviewNotes
         nexusPublishedAt nexusPublishedBy nexusUnpublishedAt nexusUnpublishedBy
@@ -18,7 +18,7 @@ export const NEXUS_REVIEW_QUEUE_QUERY = gql`
         realmFinderVersion
       }
       releaseWorld {
-        id title slug releaseType visibility status coverArtUrl fullDropDate
+        id title slug publicCanon releaseType visibility status coverArtUrl fullDropDate
       }
       creativeProfile { id artistName slug displayName }
     }
@@ -28,6 +28,7 @@ export const NEXUS_REVIEW_QUEUE_QUERY = gql`
 export const NEXUS_REVIEW_ME_QUERY = gql`
   query NexusReviewMe {
     me { id role platformPermissions }
+    nexusEditorialAccess { canReview canPublish canPlace }
   }
 `;
 

@@ -1,5 +1,6 @@
 "use client";
 
+import EditorialPlacementControls from '@/components/admin/EditorialPlacementControls';
 import { publicWorldHref } from '@/lib/releaseSharing';
 import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "@apollo/client";
@@ -44,7 +45,7 @@ type ReviewItem = {
   };
   releaseWorld: {
     id: string; title: string; slug: string; releaseType: string; visibility: string; status: string;
-    coverArtUrl?: string | null; fullDropDate?: string | null;
+    publicCanon?: boolean | null; coverArtUrl?: string | null; fullDropDate?: string | null;
   };
   creativeProfile?: { id: string; artistName: string; slug: string; displayName?: string | null } | null;
 };
@@ -85,14 +86,14 @@ export default function NexusReviewPage() {
     variables: { status: status === "all" ? null : status },
     fetchPolicy: "cache-and-network",
   });
-  const { data: meData } = useQuery(NEXUS_REVIEW_ME_QUERY);
+  const { data: meData, error: accessError, loading: accessLoading } = useQuery(NEXUS_REVIEW_ME_QUERY, { fetchPolicy: "network-only" });
   const [reviewSubmission] = useMutation(REVIEW_NEXUS_SUBMISSION_MUTATION);
   const [publishTrack] = useMutation(PUBLISH_TRACK_TO_NEXUS_MUTATION);
   const [unpublishTrack] = useMutation(UNPUBLISH_TRACK_FROM_NEXUS_MUTATION);
 
   const items = (data?.nexusReviewQueue ?? []) as ReviewItem[];
-  const me = meData?.me;
-  const canPublish = me?.role === "owner" || (me?.platformPermissions ?? []).includes("nexus.publish");
+  const canPublish = meData?.nexusEditorialAccess?.canPublish === true;
+  const canPlace = meData?.nexusEditorialAccess?.canPlace === true;
 
   const filteredItems = useMemo(() => {
     const needle = search.trim().toLowerCase();
@@ -194,7 +195,7 @@ export default function NexusReviewPage() {
       <section className="mt-6 grid gap-5">
         {filteredItems.map((item) => {
           const track = item.track;
-          const realmValue = realms[track.id] ?? track.realmId ?? 202;
+          const realmValue = realms[track.id] ?? track.realmId ?? "";
           const audioSource = track.previewAudioUrl || track.audioUrl || "";
           const artwork = track.artworkUrl || track.releaseCoverArtUrl || item.releaseWorld.coverArtUrl || "";
           const reviewNote = notes[track.id] ?? track.nexusReviewNotes ?? "";
@@ -225,11 +226,12 @@ export default function NexusReviewPage() {
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      <Link href={`/releases/${item.releaseWorld.slug}/board`} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70">Open Board</Link>
+                      <span className="text-xs text-white/50">Read-only submission review · creator workspace stays private</span>
                       <Link href={publicWorldHref(item.releaseWorld.slug, item.releaseWorld.id)} className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70">Portal</Link>
                     </div>
                   </div>
 
+                  <EditorialPlacementControls world={item.releaseWorld} track={track} canPlace={canPlace} />
                   <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                     <div className="rounded-2xl border border-white/10 bg-black/20 p-3"><span className="text-[9px] uppercase tracking-[0.16em] text-white/35">BPM</span><strong className="mt-1 block text-sm text-white/80">{track.bpm ?? "—"}</strong></div>
                     <div className="rounded-2xl border border-white/10 bg-black/20 p-3"><span className="text-[9px] uppercase tracking-[0.16em] text-white/35">Key</span><strong className="mt-1 block text-sm text-white/80">{track.keySignature || "—"}</strong></div>
@@ -261,7 +263,7 @@ export default function NexusReviewPage() {
                   </div>
 
                   <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,260px)_minmax(0,1fr)]">
-                    <label className="text-xs uppercase tracking-[0.16em] text-white/40">Final Realm<select value={realmValue} onChange={(event) => setRealms((current) => ({ ...current, [track.id]: Number(event.target.value) }))} disabled={track.nexusReviewStatus !== "in-review"} className="mt-2 w-full rounded-2xl border border-white/10 bg-[#090D17] px-3 py-3 text-sm normal-case tracking-normal text-white disabled:opacity-50">{REALMS.map((realm) => <option key={realm.id} value={realm.id}>{realm.label}</option>)}</select></label>
+                    <label className="text-xs uppercase tracking-[0.16em] text-white/40">Final Realm<select value={realmValue} onChange={(event) => setRealms((current) => ({ ...current, [track.id]: Number(event.target.value) }))} disabled={track.nexusReviewStatus !== "in-review"} className="mt-2 w-full rounded-2xl border border-white/10 bg-[#090D17] px-3 py-3 text-sm normal-case tracking-normal text-white disabled:opacity-50"><option value="">Choose a Realm</option>{REALMS.map((realm) => <option key={realm.id} value={realm.id}>{realm.label}</option>)}</select></label>
                     <label className="text-xs uppercase tracking-[0.16em] text-white/40">Editorial Notes<textarea value={reviewNote} onChange={(event) => setNotes((current) => ({ ...current, [track.id]: event.target.value }))} rows={4} placeholder="Feedback, editorial reasoning, or unpublish note" className="mt-2 w-full resize-y rounded-2xl border border-white/10 bg-[#090D17] px-3 py-3 text-sm normal-case tracking-normal text-white placeholder:text-white/25" /></label>
                   </div>
 
@@ -277,7 +279,7 @@ export default function NexusReviewPage() {
                       <button type="button" disabled={workingId === track.id} onClick={() => review(item, "needs-changes")} className="rounded-full border border-rose-300/20 bg-rose-300/[0.06] px-4 py-2 text-sm text-rose-100 disabled:opacity-50">Request Changes</button>
                       <button type="button" disabled={workingId === track.id} onClick={() => review(item, "approve")} className="rounded-full border border-[#DCBA5C]/30 bg-[#DCBA5C]/10 px-4 py-2 text-sm font-medium text-[#F4D982] disabled:opacity-50">Approve</button>
                     </>}
-                    {track.nexusReviewStatus === "approved" && (canPublish ? <button type="button" disabled={workingId === track.id} onClick={() => publish(item)} className="rounded-full border border-emerald-300/20 bg-emerald-300/[0.07] px-4 py-2 text-sm text-emerald-100 disabled:opacity-50">Publish to Nexus</button> : <span className="rounded-full border border-white/10 px-4 py-2 text-sm text-white/45">Awaiting publishing authority</span>)}
+                    {track.nexusReviewStatus === "approved" && (canPublish ? <button type="button" disabled={workingId === track.id} onClick={() => publish(item)} className="rounded-full border border-emerald-300/20 bg-emerald-300/[0.07] px-4 py-2 text-sm text-emerald-100 disabled:opacity-50">Publish to Nexus</button> : <span className="rounded-full border border-white/10 px-4 py-2 text-sm text-white/45">{accessError ? "Permission check unavailable; reload before publishing." : accessLoading ? "Checking publishing authority…" : "Publisher access required. An owner must explicitly grant nexus.publish to this administrator; approval alone never publishes."}</span>)}
                     {track.nexusReviewStatus === "published" && <>{<span className="rounded-full border border-emerald-300/20 bg-emerald-300/[0.07] px-4 py-2 text-sm text-emerald-100">Live in Nexus</span>}{canPublish && <button type="button" disabled={workingId === track.id} onClick={() => unpublish(item)} className="rounded-full border border-amber-300/20 bg-amber-300/[0.06] px-4 py-2 text-sm text-amber-100 disabled:opacity-50">Unpublish</button>}</>}
                     {track.nexusReviewStatus === "needs-changes" && <span className="rounded-full border border-rose-300/20 bg-rose-300/[0.06] px-4 py-2 text-sm text-rose-100">Waiting on creator revision</span>}
                   </div>

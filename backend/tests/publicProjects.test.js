@@ -1,7 +1,7 @@
 const test = require('node:test'), assert = require('node:assert/strict');
 const { projectTrackFilter, projectRealm } = require('../lib/publicProjects');
 const r = require('../resolvers'), W = require('../models/ReleaseWorld'), T = require('../models/ReleaseTrack'), C = require('../models/NexusEditorialConfig'), U = require('../models/User'), P = require('../models/CreativeProfile');
-const owner = 'aaaaaaaaaaaaaaaaaaaaaaaa', editor = { id: 'editor', role: 'creator', platformPermissions: ['nexus.editorial'] };
+const owner = 'aaaaaaaaaaaaaaaaaaaaaaaa', editor = { id: 'editor', role: 'admin', platformPermissions: ['nexus.editorial'] };
 async function fixture(fn) {
  const originals = [W.find, W.findOne, T.find, C.findOne, C.findOneAndUpdate, U.exists, P.findOne];
  const state = { worlds: ['a','b','c'].map(id => ({ _id: id, ownerId: owner, creativeProfileId: 'profile', publicCanon: true, visibility: 'public', status: 'active' })), selected: ['b','a'], writes: [] };
@@ -31,9 +31,9 @@ test('Canon withdrawal, private/archive and invalid owner/profile cannot surface
 test('Ordinary creator cannot select or deselect; delegated editor and owner can persist references only',()=>fixture(async s=>{
  for(const selected of [true,false]) await assert.rejects(r.Mutation.setNexusProjectSelection(null,{worldId:'c',selected},{user:{id:owner,role:'creator',creatorStatus:'active'}}),/editorial/);
  await r.Mutation.setNexusProjectSelection(null,{worldId:'c',selected:true},{user:editor});
- assert.ok(s.selected.includes('c')); assert.deepEqual(s.writes[0],{$addToSet:{selectedWorldIds:'c'},$set:{updatedBy:'editor'}});
+ assert.ok(s.selected.includes('c')); assert.equal(s.writes[0].$addToSet.selectedWorldIds,'c');assert.equal(s.writes[0].$push.placementHistory.$each[0].actorId,'editor');
  await r.Mutation.setNexusProjectSelection(null,{worldId:'c',selected:false},{user:{id:'owner',role:'owner'}});
- assert.ok(!s.selected.includes('c')); assert.deepEqual(s.writes[1],{$pull:{selectedWorldIds:'c'},$set:{updatedBy:'owner'}}); assert.ok(s.worlds.every(w=>w.publicCanon));
+ assert.ok(!s.selected.includes('c')); assert.equal(s.writes[1].$pull.selectedWorldIds,'c'); assert.ok(s.worlds.every(w=>w.publicCanon));
  s.worlds[0].publicCanon=false; await r.Mutation.setNexusProjectSelection(null,{worldId:'a',selected:false},{user:editor}); assert.ok(!s.selected.includes('a'));
 }));
 test('Project Realm derives from focus or unanimous child context; protected children excluded',()=>{

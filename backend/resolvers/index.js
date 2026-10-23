@@ -103,14 +103,14 @@ async function syncLegacyEditorialFields(config) {
     }
 }
 
-async function removeTrackFromNexusEditorialConfig(trackId, userId = "") {
+async function removeTrackFromNexusEditorialConfig(trackId, userId = "", preserveSoundtrack = false) {
     const config = await NexusEditorialConfig.findOne({ key: "global" });
     if (!config) return;
 
     const normalizedTrackId = String(trackId);
     let changed = false;
     const remaining = (config.realmSoundtracks || []).filter(s => String(s.trackId) !== normalizedTrackId);
-    if (remaining.length !== (config.realmSoundtracks || []).length) { config.realmSoundtracks = remaining; config.markModified('realmSoundtracks'); changed = true; }
+    if (!preserveSoundtrack && remaining.length !== (config.realmSoundtracks || []).length) { config.realmSoundtracks = remaining; config.markModified('realmSoundtracks'); changed = true; }
     if (config.featuredTrackId && String(config.featuredTrackId) === normalizedTrackId) {
         config.featuredTrackId = null;
         changed = true;
@@ -218,15 +218,26 @@ function hasPlatformPermission(user, permission) {
 }
 
 function canReviewNexus(user) {
-    return isPlatformAdmin(user);
+    return user?.creatorStatus !== "suspended" && isPlatformAdmin(user);
 }
 
 function canPublishToNexus(user) {
-    return isPlatformOwner(user) || hasPlatformPermission(user, "nexus.publish");
+    return user?.creatorStatus !== "suspended" && isPlatformAdmin(user) && (isPlatformOwner(user) || hasPlatformPermission(user, "nexus.publish"));
 }
 
 function canManageNexusEditorial(user) {
-    return user?.creatorStatus !== "suspended" && (isPlatformOwner(user) || hasPlatformPermission(user, "nexus.editorial"));
+    return user?.creatorStatus !== "suspended" && isPlatformAdmin(user) && (isPlatformOwner(user) || hasPlatformPermission(user, "nexus.editorial"));
+}
+
+async function requireEditorialSource(track, requireReady = true) {
+    const world=track && await ReleaseWorld.findOne({_id:track.releaseWorldId,ownerId:track.ownerId,...realmEditorial.publicWorld});
+    if (!track || !['public','listed'].includes(track.visibility) || track.status==='archived' || ['vault','test'].includes(track.catalogTreatment) || !await publicProjectCreator(world)) throw new Error('The source must be an eligible public track in its active creator’s public World.');
+    if (requireReady) validateNexusPublication(getNexusPublicationCandidate(track,{showInNexus:true}),world);
+    return world;
+}
+
+function placementAudit(user, destination, id, selected, realmId) {
+    return {placementHistory:{$each:[{actorId:String(user.id),destination,sourceId:String(id),selected,realmId,at:new Date()}],$slice:-200}};
 }
 
 function canManageCreatorContent(user, creatorOwnerId) {
@@ -2092,6 +2103,19 @@ module.exports = {
             return matches[0] || null;
         },
 
+        nexusEditorialAccess: (_, __, {user}) => {
+            requireUser(user);
+            return {canReview:canReviewNexus(user),canPublish:canPublishToNexus(user),canPlace:canManageNexusEditorial(user)};
+        },
+        nexusReviewEvidence: async (_, {trackId}, {user}) => {
+            requireNexusReview(user);
+            const track=await ReleaseTrack.findById(trackId);
+            if (!track || !['in-review','needs-changes','approved','published'].includes(track.nexusReviewStatus)) throw new Error('Submission not found.');
+            await requireEditorialSource(track, false);
+            // Only creator-published text/process fragments, never private board or attachment URLs.
+            return BoardArtifact.find({ownerId:track.ownerId,releaseWorldId:track.releaseWorldId,isPublic:true,assetId:null,connectedTrackSlug:{$in:['',track.slug]}})
+                .select('title body meta kind').sort({pageOrder:1,createdAt:1});
+        },
         nexusReviewQueue: async (_, { status }, { user }) => {
             requireNexusReview(user);
 
@@ -2126,12 +2150,12 @@ module.exports = {
             return tracks
                 .map((track) => {
                     const releaseWorld = releaseMap.get(String(track.releaseWorldId));
-                    if (!releaseWorld) return null;
+                    if (!releaseWorld || String(releaseWorld.ownerId) !== String(track.ownerId)) return null;
 
                     return {
                         track,
                         releaseWorld,
-                        creativeProfile: profileMap.get(String(releaseWorld.creativeProfileId)) || null,
+                        creativeProfile: String(profileMap.get(String(releaseWorld.creativeProfileId))?.ownerId) === String(track.ownerId) ? profileMap.get(String(releaseWorld.creativeProfileId)) : null,
                         releaseTrackCount: trackCountMap.get(String(track.releaseWorldId)) || 0,
                     };
                 })
@@ -2139,7 +2163,7 @@ module.exports = {
         },
 
         nexusEditorialConfig: async (_, __, { user }) => {
-            requireNexusEditorial(user);
+            requireNexusReview(user);
             return await getOrCreateNexusEditorialConfig();
         },
 
@@ -2169,7 +2193,7 @@ module.exports = {
                 return {
                     track,
                     releaseWorld,
-                    creativeProfile: profileMap.get(String(releaseWorld.creativeProfileId)) || null,
+                    creativeProfile: String(profileMap.get(String(releaseWorld.creativeProfileId))?.ownerId) === String(track.ownerId) ? profileMap.get(String(releaseWorld.creativeProfileId)) : null,
                     releaseTrackCount: 0,
                 };
             }).filter(Boolean);
@@ -2261,10 +2285,9 @@ module.exports = {
             }
 
             const config = nexusOnly ? null : await NexusEditorialConfig.findOne({key:'global'});
-            if (!nexusOnly) query._id = { $nin: config?.soundtrackWithdrawnTrackIds || [] };
+            if (!nexusOnly) { query._id = { $nin: config?.soundtrackWithdrawnTrackIds || [] }; query.nexusReviewStatus = {$in:['approved','published']}; }
             if (!nexusOnly) query.$and.push({ $or: [
-                { showInNexus:true, nexusReviewStatus:'published' },
-                ...(config?.realmSoundtracks || []).map(s=>({_id:s.trackId,releaseWorldId:s.worldId,realmId:s.realmId})),
+                ...(config?.realmSoundtracks?.length ? config.realmSoundtracks.map(s=>({_id:s.trackId,releaseWorldId:s.worldId,realmId:s.realmId})) : [{_id:{$in:[]}}]),
             ] });
             const tracks = await ReleaseTrack.find(query).sort({
                 publicCanon: -1,
@@ -4530,6 +4553,8 @@ module.exports = {
                 throw new Error("Add a review note before requesting changes.");
             }
 
+            if (normalizedDecision === "approve") await requireEditorialSource(track);
+
             track.showInNexus = false;
             track.nexusReviewStatus = normalizedDecision === "approve" ? "approved" : "needs-changes";
             track.nexusReviewedAt = new Date();
@@ -4551,13 +4576,7 @@ module.exports = {
                 throw new Error("Approve this submission before publishing it to Nexus.");
             }
 
-            const releaseWorld = await ReleaseWorld.findById(track.releaseWorldId);
-            if (!releaseWorld) throw new Error("Release world not found.");
-
-            validateNexusPublication(
-                getNexusPublicationCandidate(track, { showInNexus: true }),
-                releaseWorld
-            );
+            await requireEditorialSource(track);
 
             track.showInNexus = true;
             track.nexusReviewStatus = "published";
@@ -4587,7 +4606,7 @@ module.exports = {
             if (normalizedNotes) track.nexusReviewNotes = normalizedNotes;
             track.lastOpenedAt = new Date();
             await track.save();
-            await removeTrackFromNexusEditorialConfig(track._id, user.id);
+            await removeTrackFromNexusEditorialConfig(track._id, user.id, true);
 
             return track;
         },
@@ -4601,8 +4620,8 @@ module.exports = {
             }
             const config=await getOrCreateNexusEditorialConfig();
             return NexusEditorialConfig.findOneAndUpdate({_id:config._id}, selected
-                ? {$addToSet:{realmDiscovery:{worldId,realmId}},$set:{updatedBy:user.id}}
-                : {$pull:{realmDiscovery:{worldId,realmId}},$set:{updatedBy:user.id}}, {new:true,runValidators:true});
+                ? {$addToSet:{realmDiscovery:{worldId,realmId}},$set:{updatedBy:user.id},$push:placementAudit(user,'realm-discovery',worldId,selected,realmId)}
+                : {$pull:{realmDiscovery:{worldId,realmId}},$set:{updatedBy:user.id},$push:placementAudit(user,'realm-discovery',worldId,selected,realmId)}, {new:true,runValidators:true});
         },
         setRealmSoundtrack: async (_, {trackId, realmId, selected}, {user}) => {
             requireNexusEditorial(user);
@@ -4612,12 +4631,13 @@ module.exports = {
                 track=await ReleaseTrack.findOne({_id:trackId,realmId,...realmEditorial.publicTrack});
                 const world=track && await ReleaseWorld.findOne({_id:track.releaseWorldId,ownerId:track.ownerId,...realmEditorial.publicWorld});
                 if (!track || !await publicProjectCreator(world)) throw new Error('Choose an eligible public track in this Realm and World.');
+                if (!['approved','published'].includes(track.nexusReviewStatus)) throw new Error('Approve the submission before soundtrack selection.');
                 validateNexusPublication(getNexusPublicationCandidate(track,{showInNexus:true}),world);
             }
             const config=await getOrCreateNexusEditorialConfig();
             return NexusEditorialConfig.findOneAndUpdate({_id:config._id}, selected
-                ? {$addToSet:{realmSoundtracks:{trackId,worldId:track.releaseWorldId,realmId}},$pull:{soundtrackWithdrawnTrackIds:trackId},$set:{updatedBy:user.id}}
-                : {$pull:{realmSoundtracks:{trackId,realmId}},$addToSet:{soundtrackWithdrawnTrackIds:trackId},$set:{updatedBy:user.id}}, {new:true,runValidators:true});
+                ? {$addToSet:{realmSoundtracks:{trackId,worldId:track.releaseWorldId,realmId}},$pull:{soundtrackWithdrawnTrackIds:trackId},$set:{updatedBy:user.id},$push:placementAudit(user,'realm-soundtrack',trackId,selected,realmId)}
+                : {$pull:{realmSoundtracks:{trackId,realmId}},$addToSet:{soundtrackWithdrawnTrackIds:trackId},$set:{updatedBy:user.id},$push:placementAudit(user,'realm-soundtrack',trackId,selected,realmId)}, {new:true,runValidators:true});
         },
         setNexusProjectSelection: async (_, { worldId, selected }, { user }) => {
             requireNexusEditorial(user);
@@ -4626,7 +4646,7 @@ module.exports = {
                 if (!await publicProjectCreator(world)) throw new Error('Select a public Canon Release World with a valid owner and profile.');
             }
             const config = await getOrCreateNexusEditorialConfig();
-            return NexusEditorialConfig.findOneAndUpdate({ _id: config._id }, { [selected ? '$addToSet' : '$pull']: { selectedWorldIds: worldId }, $set: { updatedBy: user.id } }, { new: true, runValidators: true });
+            return NexusEditorialConfig.findOneAndUpdate({ _id: config._id }, { [selected ? '$addToSet' : '$pull']: { selectedWorldIds: worldId }, $set: { updatedBy: user.id }, $push:placementAudit(user,'nexus-world',worldId,selected) }, { new: true, runValidators: true });
         },
         setNexusFeaturedSignal: async (_, { trackId }, { user }) => {
             requireNexusEditorial(user);

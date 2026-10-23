@@ -28,6 +28,7 @@ const NexusEditorialConfigSchema = new mongoose.Schema(
     featuredTrackId: { type: mongoose.Schema.Types.ObjectId, ref: "ReleaseTrack", default: null },
     realmAnchors: { type: [RealmAnchorSchema], default: () => REALM_IDS.map((realmId) => ({ realmId, trackId: null })) },
     realmOrders: { type: [RealmOrderSchema], default: () => REALM_IDS.map((realmId) => ({ realmId, trackIds: [] })) },
+    placementHistory: {type:[new mongoose.Schema({actorId:String,destination:String,sourceId:String,selected:Boolean,realmId:Number,at:Date},{_id:false})],default:[]},
     updatedBy: { type: String, default: "" },
   },
   { timestamps: true }

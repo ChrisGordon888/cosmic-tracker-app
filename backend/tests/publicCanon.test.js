@@ -64,9 +64,9 @@ test('Soundtrack query excludes unapproved public and Canon tracks and preserves
  W.find=()=>({sort:async()=>[],select:async()=>[{_id:'public',ownerId:'a'}]});
  T.find=q=>({sort:async()=>rows.filter(t=>matches(t,q)).sort((a,b)=>Number(b.publicCanon)-Number(a.publicCanon))});
  const result=await r.Query.getPublicNexusTracks(null,{realmId:44});
- assert.deepEqual(result.map(t=>t.id),['approved-canon','approved-listed']);
+ assert.deepEqual(result.map(t=>t.id),[]);
 
- assert.equal(r.ReleaseTrack.audioUrl(result[0],null,{}),'/a');
+ assert.equal(r.ReleaseTrack.audioUrl(rows[0],null,{}),'/a');
  const curated=await r.Query.getPublicNexusTracks(null,{realmId:44,nexusOnly:true});assert.deepEqual(curated.map(t=>t.id),['approved-canon','approved-listed']);
  }finally{[W.find,T.find,C.findOne,U.exists]=old;}
 });
@@ -74,6 +74,6 @@ test('Nexus discovery requires both editorial flags, preserves broader public ac
  const old=[W.find,T.find,C.findOne,U.exists];let query;
  try{C.findOne=async()=>({realmSoundtracks:[]});U.exists=async()=>({_id:"fixture"});W.find=()=>({sort:async()=>[],select:async()=>[]});T.find=q=>({sort:async order=>{query=q;assert.equal(order.publicCanon,-1);return [];}});
  await r.Query.getPublicNexusTracks(null,{nexusOnly:true});assert.equal(query.showInNexus,true);assert.equal(query.nexusReviewStatus,'published');assert.equal(query.publicCanon,undefined);
- await r.Query.getPublicNexusTracks(null,{nexusOnly:false});assert.equal(query.showInNexus,undefined);assert.equal(query.nexusReviewStatus,undefined);
+ await r.Query.getPublicNexusTracks(null,{nexusOnly:false});assert.equal(query.showInNexus,undefined);assert.deepEqual(query.nexusReviewStatus,{$in:['approved','published']});
  }finally{[W.find,T.find,C.findOne,U.exists]=old;}
 });

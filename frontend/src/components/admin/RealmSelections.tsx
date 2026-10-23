@@ -20,6 +20,6 @@ export default function RealmSelections(){
  {p.tracks.map(t=><div key={t.id} className="flex flex-wrap gap-3 py-2"><span>{t.title} · {t.realmId==null?'Unassigned':realmName(t.realmId)}</span><button disabled={busy||t.realmId==null} onClick={()=>void save('track',t.id,t.realmId!,true)}>Select official soundtrack</button><button disabled={busy||t.realmId==null} onClick={()=>void save('track',t.id,t.realmId!,false)}>Withdraw soundtrack</button></div>)}</article>})}
  <h3 className="mt-4">Stored discovery placements</h3>{(state?.realmDiscovery??[]).map((s:Selection)=><p key={`${s.worldId}-${s.realmId}`}>{s.worldId} · {realmName(s.realmId)} <button disabled={busy} onClick={()=>void save('world',s.worldId,s.realmId,false)}>Remove discovery placement</button></p>)}
  <h3 className="mt-4">Stored soundtrack placements</h3>{(state?.realmSoundtracks??[]).map((s:Selection)=><p key={`${s.trackId}-${s.realmId}`}>{s.trackId} · {realmName(s.realmId)} <button disabled={busy} onClick={()=>void save('track',s.trackId!,s.realmId,false)}>Remove soundtrack placement</button></p>)}
- <p>Existing explicitly published Nexus signals remain soundtrack-eligible unless withdrawn here. Stale/unpublished/suspended sources are filtered at read time.</p>
+ <p>Soundtracks require an approved submission and an explicit soundtrack selection. Nexus publication alone does not select a soundtrack. Stale/unpublished/suspended sources are filtered at read time.</p>
  </> }</section>;
 }

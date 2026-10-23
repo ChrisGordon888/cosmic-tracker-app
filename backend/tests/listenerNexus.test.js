@@ -53,11 +53,11 @@ test('Spotlight cannot bypass withdrawn World consent or stale unpublished track
  }finally{[T.findOne,W.find,W.findOne,C.findOne]=old;}
 });
 test('Intentionally approved Listed track can publish without changing Canon; private or foreign-parent tracks cannot',async()=>{
- const old=[T.findById,W.findById];
- const track={ownerId:'a',releaseWorldId:'w',publicCanon:false,visibility:'listed',realmId:101,status:'released',catalogTreatment:'current',playbackStatus:'playable',audioUrl:'/audio',nexusReviewStatus:'approved',showInNexus:false,save:async()=>{}};
- try{T.findById=async()=>track;W.findById=async()=>({ownerId:'a',visibility:'public',publicCanon:false,status:'active'});
+ const old=[T.findById,W.findOne,U.exists,P.findOne];
+ const track={ownerId:'aaaaaaaaaaaaaaaaaaaaaaaa',releaseWorldId:'w',publicCanon:false,visibility:'listed',realmId:101,status:'released',catalogTreatment:'current',playbackStatus:'playable',audioUrl:'/audio',nexusReviewStatus:'approved',showInNexus:false,save:async()=>{}};
+ try{T.findById=async()=>track;U.exists=async()=>({_id:'a'});P.findOne=async()=>({artistName:'Fixture'});W.findOne=async()=>({ownerId:'aaaaaaaaaaaaaaaaaaaaaaaa',visibility:'public',publicCanon:false,status:'active',creativeProfileId:'p'});
  const result=await r.Mutation.publishTrackToNexus(null,{trackId:'t'},{user:{id:'editor',role:'owner'}});assert.equal(result.publicCanon,false);assert.equal(result.showInNexus,true);assert.equal(result.nexusReviewStatus,'published');
- track.visibility='private';await assert.rejects(r.Mutation.publishTrackToNexus(null,{trackId:'t'},{user:{id:'editor',role:'owner'}}),/visibility/);
- track.visibility='listed';W.findById=async()=>({ownerId:'b',visibility:'public'});await assert.rejects(r.Mutation.publishTrackToNexus(null,{trackId:'t'},{user:{id:'editor',role:'owner'}}),/parent release/);
- }finally{[T.findById,W.findById]=old;}
+ track.visibility='private';await assert.rejects(r.Mutation.publishTrackToNexus(null,{trackId:'t'},{user:{id:'editor',role:'owner'}}),/eligible public/);
+ track.visibility='listed';W.findOne=async()=>null;await assert.rejects(r.Mutation.publishTrackToNexus(null,{trackId:'t'},{user:{id:'editor',role:'owner'}}),/eligible public/);
+ }finally{[T.findById,W.findOne,U.exists,P.findOne]=old;}
 });

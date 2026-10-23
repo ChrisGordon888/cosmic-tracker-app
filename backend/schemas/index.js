@@ -241,6 +241,8 @@ const typeDefs = gql`
     message: String!
   }
 
+  type NexusEditorialAccess { canReview: Boolean! canPublish: Boolean! canPlace: Boolean! }
+  type EditorialReviewEvidence { id: ID! title: String! body: String meta: String kind: String }
   type NexusReviewItem {
     track: ReleaseTrack!
     releaseWorld: ReleaseWorld!
@@ -844,6 +846,8 @@ const typeDefs = gql`
     getPublicFeaturedReleaseWorld: ReleaseWorld
     getPublicReleaseWorldBySlug(slug: String!, worldId: ID): ReleaseWorld
 
+    nexusEditorialAccess: NexusEditorialAccess!
+    nexusReviewEvidence(trackId: ID!): [EditorialReviewEvidence!]!
     nexusReviewQueue(status: String): [NexusReviewItem!]!
     publicProjects(selectedOnly: Boolean = false, discoveryOnly: Boolean = false, realmId: Int, includeNonCanon: Boolean = false): [PublicProject!]!
     nexusEditorialConfig: NexusEditorialConfig!
