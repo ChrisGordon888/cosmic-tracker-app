@@ -21,6 +21,9 @@ const RealmOrderSchema = new mongoose.Schema(
 const NexusEditorialConfigSchema = new mongoose.Schema(
   {
     key: { type: String, default: "global", unique: true, index: true },
+    soundtrackWithdrawnTrackIds: [{type:mongoose.Schema.Types.ObjectId,ref:'ReleaseTrack'}],
+    realmDiscovery: { type: [new mongoose.Schema({realmId:{type:Number,enum:REALM_IDS,required:true},worldId:{type:mongoose.Schema.Types.ObjectId,ref:'ReleaseWorld',required:true}}, {_id:false})], default: [] },
+    realmSoundtracks: { type: [new mongoose.Schema({realmId:{type:Number,enum:REALM_IDS,required:true},worldId:{type:mongoose.Schema.Types.ObjectId,ref:'ReleaseWorld',required:true},trackId:{type:mongoose.Schema.Types.ObjectId,ref:'ReleaseTrack',required:true}}, {_id:false})], default: [] },
     selectedWorldIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "ReleaseWorld" }],
     featuredTrackId: { type: mongoose.Schema.Types.ObjectId, ref: "ReleaseTrack", default: null },
     realmAnchors: { type: [RealmAnchorSchema], default: () => REALM_IDS.map((realmId) => ({ realmId, trackId: null })) },

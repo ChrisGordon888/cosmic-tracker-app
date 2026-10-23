@@ -1,5 +1,6 @@
 const test=require('node:test'),assert=require('node:assert/strict');
 const r=require('../resolvers'),T=require('../models/ReleaseTrack'),W=require('../models/ReleaseWorld'),C=require('../models/NexusEditorialConfig'),P=require('../models/CreativeProfile');
+const U=require('../models/User');
 const creator={id:'creator-a',role:'creator',creatorStatus:'active'};
 test('Audio field boundary blocks private, member, future, locked and full preview files for anonymous listeners',()=>{
  const track={ownerId:'creator-a',visibility:'public',playbackStatus:'playable',audioUrl:'/full',previewAudioUrl:'/preview',accessTier:'public'};
@@ -16,9 +17,10 @@ test('Normal creator and listener cannot self-approve, publish, unpublish or sel
  try{T.findOne=async query=>{assert.equal(query.ownerId,'creator-a');return null;};await assert.rejects(r.Mutation.submitTrackForNexusReview(null,{trackId:'creator-b-track'},{user:creator}),/not found/i);}finally{T.findOne=original;}
 });
 test('Spotlight selects the configured public track and its own parent; explicit empty config has no implicit Siren fallback',async()=>{
- const originals=[C.findOne,T.findOne,W.find,W.findOne];
- let selected='single';const tracks={single:{id:'single',releaseWorldId:'world-single',ownerId:'b'},siren:{id:'siren',releaseWorldId:'sirens',ownerId:'a'}};
+ const originals=[C.findOne,T.findOne,W.find,W.findOne,U.exists,P.findOne];
+ let selected='single';const tracks={single:{id:'single',releaseWorldId:'world-single',ownerId:'bbbbbbbbbbbbbbbbbbbbbbbb'},siren:{id:'siren',releaseWorldId:'sirens',ownerId:'aaaaaaaaaaaaaaaaaaaaaaaa'}};
  try{
+ U.exists=async()=>({_id:'fixture'});P.findOne=async()=>({artistName:'Fixture'});
  C.findOne=async()=>({featuredTrackId:selected});
  W.find=()=>({sort:async()=>[]});
  T.findOne=async q=>{assert.equal(q.showInNexus,true);assert.equal(q.nexusReviewStatus,'published');assert.ok(q.$or[1].visibility.$exists===false);return tracks[q._id]??null;};
@@ -26,7 +28,7 @@ test('Spotlight selects the configured public track and its own parent; explicit
  for(const id of ['single','siren']){selected=id;assert.equal((await r.Query.getPublicFeaturedSignal()).id,id);assert.equal((await r.Query.getPublicFeaturedReleaseWorld()).id,tracks[id].releaseWorldId);}
  selected=null;assert.equal(await r.Query.getPublicFeaturedSignal(),null);assert.equal(await r.Query.getPublicFeaturedReleaseWorld(),null);
  selected='deleted';assert.equal(await r.Query.getPublicFeaturedSignal(),null);
- }finally{[C.findOne,T.findOne,W.find,W.findOne]=originals;}
+ }finally{[C.findOne,T.findOne,W.find,W.findOne,U.exists,P.findOne]=originals;}
 });
 test('Editorial change only updates editorial fields, preserving project Featured Signal',async()=>{
  const originals=[C.findOne,T.findById,T.updateMany,T.findByIdAndUpdate,W.findOne];

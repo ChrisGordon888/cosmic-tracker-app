@@ -16,7 +16,6 @@ import { useMusicPlayer } from '@/hooks/useMusicPlayer';
 import { usePlatformAccess } from '@/context/PlatformAccessProvider';
 import { getMusicAvailability, listenerCatalogCounts } from '@/lib/musicAvailability';
 import {
-    MUSIC_REGISTRY,
     REALM_NAMES,
 } from '@/lib/musicRegistry';
 import { REALM_STATE_MAP, type ExperienceMode, type RealmId } from '@/lib/realmStateMap';
@@ -464,7 +463,7 @@ export default function CosmicNexusHub() {
     });
 
     const { data: publicNexusTrackData, loading: catalogLoading, error: catalogError } = useQuery(GET_PUBLIC_NEXUS_TRACKS, {
-        variables: { nexusOnly: false },
+        variables: { nexusOnly: true },
         fetchPolicy: 'network-only',
     });
 
@@ -719,7 +718,7 @@ export default function CosmicNexusHub() {
     const guidanceTrack = useMemo(() => {
         if (guidanceRealmId === null || !guidanceModeContent) return null;
 
-        return findRealmRecommendation(runtimeMusicCatalog, MUSIC_REGISTRY, guidanceRealmId, guidanceModeContent.recommendedTrack);
+        return findRealmRecommendation(runtimeMusicCatalog, [], guidanceRealmId, guidanceModeContent.recommendedTrack);
     }, [guidanceRealmId, guidanceModeContent, runtimeMusicCatalog]);
 
     const guidanceTrackLocked = guidanceTrack ? isTrackLocked(guidanceTrack) : false;

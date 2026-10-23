@@ -3,7 +3,6 @@
 import { useMemo } from 'react';
 import { useQuery } from '@apollo/client';
 import RealmOrbitCard from '@/components/music/RealmOrbitCard';
-import { MUSIC_REGISTRY } from '@/lib/musicRegistry';
 import { GET_PUBLIC_NEXUS_TRACKS } from '@/graphql/realms';
 import {
     getRuntimeTracksForRealm,
@@ -67,7 +66,7 @@ export default function RealmSoundstage({
                 | PublicNexusReleaseTrack[]
                 | undefined
         );
-        const runtimeCatalog = mergeMusicCatalogs(publicNexusTrackData ? MUSIC_REGISTRY : [], creatorTracks, publicNexusTrackData?.unavailableRegistryTrackIds);
+        const runtimeCatalog = mergeMusicCatalogs([], creatorTracks, publicNexusTrackData?.unavailableRegistryTrackIds);
 
         return getRuntimeTracksForRealm(runtimeCatalog, realmId)
             .map((track) => {
@@ -89,7 +88,7 @@ export default function RealmSoundstage({
         return (
             <div className="glass-card p-4 md:p-6 mb-8">
                 <h2 className="text-2xl font-display mb-3">🎵 Realm Soundstage</h2>
-                <p className="text-secondary">{loading ? 'Listening for current signals…' : error ? 'Music could not be loaded. Try again shortly.' : 'Realm quiet. No eligible public music here yet; this territory is still open. Explore its Worlds below, or follow the personal Realm path.'}</p>
+                <p className="text-secondary">{loading ? 'Listening for current signals…' : error ? 'Music could not be loaded. Try again shortly.' : 'Realm quiet. No official soundtrack selections here yet; this territory is still open. Explore its Worlds below, or follow the personal Realm path.'}</p>
             </div>
         );
     }

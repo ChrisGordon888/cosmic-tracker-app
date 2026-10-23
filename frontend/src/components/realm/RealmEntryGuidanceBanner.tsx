@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@apollo/client';
 import { useMusicPlayer } from '@/hooks/useMusicPlayer';
 import { REALM_RESULT_CONTENT } from '@/lib/realmResultContent';
-import { MUSIC_REGISTRY } from '@/lib/musicRegistry';
 import { GET_PUBLIC_NEXUS_TRACKS } from '@/graphql/realms';
 import {
   mapReleaseTracksToMusicTracks,
@@ -69,7 +68,7 @@ export default function RealmEntryGuidanceBanner({
       publicNexusTrackData?.getPublicNexusTracks as PublicNexusReleaseTrack[] | undefined
     );
 
-    return getRuntimeTracksForRealm(mergeMusicCatalogs(publicNexusTrackData ? MUSIC_REGISTRY : [], releaseTracks, publicNexusTrackData?.unavailableRegistryTrackIds), realmId)
+    return getRuntimeTracksForRealm(mergeMusicCatalogs([], releaseTracks, publicNexusTrackData?.unavailableRegistryTrackIds), realmId)
       .map((track) => {
         const availability = getMusicAvailability(track, {
           isCreatorView: false,
@@ -86,7 +85,7 @@ export default function RealmEntryGuidanceBanner({
 
   const suggestedTrack = useMemo(() => {
     if (!recommendedTrackTitle) return null;
-    const match = findRealmRecommendation(realmTracks, MUSIC_REGISTRY, realmId, recommendedTrackTitle);
+    const match = findRealmRecommendation(realmTracks, [], realmId, recommendedTrackTitle);
     return realmTracks.find(track => track.id === match?.id) ?? null;
   }, [recommendedTrackTitle, realmTracks, realmId]);
 

@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "@apollo/client";
 import Link from "next/link";
+import RealmSelections from '@/components/admin/RealmSelections';
 import ProjectSelections from '@/components/admin/ProjectSelections';
 import {
   NEXUS_EDITORIAL_QUERY,
@@ -147,6 +148,7 @@ export default function NexusEditorialPage() {
     <>
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10">
         <ProjectSelections />
+      <RealmSelections />
         <p className="mb-5 text-sm"><Link href="/admin/nexus">Track submissions / review / publication →</Link></p>
         <section className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.055] to-white/[0.02] p-5 sm:p-7">
           <p className="text-[10px] uppercase tracking-[0.24em] text-[#DCBA5C]/80">Nexus Editorial</p>

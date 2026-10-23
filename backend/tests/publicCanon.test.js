@@ -1,5 +1,6 @@
 const test=require('node:test'),assert=require('node:assert/strict');
 const {curationUpdate}=require('../lib/publicCanon');const r=require('../resolvers'),T=require('../models/ReleaseTrack'),W=require('../models/ReleaseWorld'),C=require('../models/NexusEditorialConfig');
+const U=require('../models/User');
 const user={id:'a',role:'creator',creatorStatus:'active'},stamp=new Date('2026-10-07');
 test('Canon is explicit; private archive preserves Current, lifecycle, projects and evidence',()=>{
  const t={catalogTreatment:'current',status:'demo'};
@@ -21,8 +22,9 @@ test('Atomic curation enforces owner, timestamp and confirmation, preserves orig
 test('Listed direct access remains subject to audio gates; private and Sandbox cannot play anonymously',async()=>{
  const old=T.findOne;try{T.findOne=async q=>{assert.deepEqual(q.visibility,{$in:['public','listed']});assert.deepEqual(q.catalogTreatment,{$nin:['vault','test']});return {visibility:'listed',audioUrl:'/audio',accessTier:'public',playbackStatus:'playable',ownerId:'a'};};const t=await r.Query.getShareableTrack(null,{id:'t'});assert.equal(r.ReleaseTrack.audioUrl(t,null,{}),'/audio');for(const other of [{...t,visibility:'private'},{...t,catalogTreatment:'test'},{...t,accessTier:'signup'}])assert.equal(r.ReleaseTrack.audioUrl(other,null,{}),null);}finally{T.findOne=old;}
 });
-test('Public discovery admits Canon and Listed without editorial flags and enforces parent ownership',async()=>{
- const old=[W.find,T.find];try{
+test('Soundtrack query retains public eligibility filters and requires editorial selection',async()=>{
+ const old=[W.find,T.find,C.findOne,U.exists];try{
+ C.findOne=async()=>({realmSoundtracks:[]});U.exists=async()=>({_id:"fixture"});
  W.find=q=>({sort:async()=>[],select:async()=>{assert.equal(q.publicCanon,undefined);assert.equal(q.visibility,'public');return [{_id:'world',ownerId:'a'}];}});
  T.find=q=>({sort:async order=>{
   assert.equal(q.publicCanon,undefined);assert.equal(q.showInNexus,undefined);
@@ -30,7 +32,7 @@ test('Public discovery admits Canon and Listed without editorial flags and enfor
   assert.deepEqual(q.$and[0],{$or:[{releaseWorldId:null},{releaseWorldId:'world',ownerId:'a'}]});
   assert.deepEqual(q.$and[1].$or[0],{visibility:{$in:['public','listed']}});assert.equal(order.publicCanon,-1);return [];
  }});await r.Query.getPublicNexusTracks(null,{});
- }finally{[W.find,T.find]=old;}
+ }finally{[W.find,T.find,C.findOne,U.exists]=old;}
 });
 test('Project selection changes only bounded presentation field with owner/concurrency guard',async()=>{const old=W.findOneAndUpdate;try{W.findOneAndUpdate=async(q,u)=>{assert.equal(q.ownerId,'a');assert.equal(q.updatedAt.getTime(),stamp.getTime());assert.deepEqual(u,{$set:{publicCanon:false}});return {id:'world'};};await r.Mutation.curatePublicWorld(null,{id:'world',expectedUpdatedAt:stamp.toISOString(),selected:false},{user});}finally{W.findOneAndUpdate=old;}});
 test('New frontend GraphQL documents match the executable schema',()=>{
@@ -45,8 +47,8 @@ test('Direct track links cannot bypass private or missing parent World',async()=
  const old=[T.findOne,W.findOne];try{T.findOne=async()=>({ownerId:'a',releaseWorldId:'world',visibility:'listed'});W.findOne=async q=>{assert.equal(q.ownerId,'a');assert.equal(q.visibility,'public');return null;};assert.equal(await r.Query.getShareableTrack(null,{id:'t'}),null);W.findOne=async()=>({id:'world',publicCanon:false,visibility:'public'});assert.equal((await r.Query.getShareableTrack(null,{id:'t'})).visibility,'listed');}finally{[T.findOne,W.findOne]=old;}
 });
 
-test('Catalog query returns standalone Listed and Canon, excludes hidden/broken/foreign parents and protected states',async()=>{
- const old=[W.find,T.find];
+test('Soundtrack query excludes unapproved public and Canon tracks and preserves published selections',async()=>{
+ const old=[W.find,T.find,C.findOne,U.exists];
  const matches=(record,query)=>Object.entries(query).every(([key,value])=>{
   if(key==='$and')return value.every(q=>matches(record,q));
   if(key==='$or')return value.some(q=>matches(record,q));
@@ -58,19 +60,20 @@ test('Catalog query returns standalone Listed and Canon, excludes hidden/broken/
  const base={ownerId:'a',realmId:44,status:'demo',visibility:'listed',publicCanon:false,showInNexus:false,catalogTreatment:'current',playbackStatus:'playable',audioUrl:'/a'};
  const rows=[{...base,id:'standalone'},{...base,id:'canon',publicCanon:true,visibility:'public'},{...base,id:'child',releaseWorldId:'public'},{...base,id:'private',visibility:'private'},{...base,id:'vault',catalogTreatment:'vault'},{...base,id:'sandbox',catalogTreatment:'test'},{...base,id:'archived',status:'archived'},{...base,id:'private-parent',releaseWorldId:'private'},{...base,id:'orphan',releaseWorldId:'missing'},{...base,id:'foreign-parent',releaseWorldId:'public',ownerId:'b'},{...base,id:'member',accessTier:'signup'},{...base,id:'approved-listed',showInNexus:true,nexusReviewStatus:'published'},{...base,id:'approved-canon',publicCanon:true,showInNexus:true,nexusReviewStatus:'published'},{...base,id:'approval-only',nexusReviewStatus:'approved'},{...base,id:'flag-without-publication',showInNexus:true,nexusReviewStatus:'draft'}];
  try{
+ C.findOne=async()=>({realmSoundtracks:[]});U.exists=async()=>({_id:"fixture"});
  W.find=()=>({sort:async()=>[],select:async()=>[{_id:'public',ownerId:'a'}]});
  T.find=q=>({sort:async()=>rows.filter(t=>matches(t,q)).sort((a,b)=>Number(b.publicCanon)-Number(a.publicCanon))});
  const result=await r.Query.getPublicNexusTracks(null,{realmId:44});
- assert.deepEqual(result.map(t=>t.id),['canon','approved-canon','standalone','child','member','approved-listed','approval-only','flag-without-publication']);
- assert.equal(r.ReleaseTrack.audioUrl(result.find(t=>t.id==='member'),null,{}),null);
+ assert.deepEqual(result.map(t=>t.id),['approved-canon','approved-listed']);
+
  assert.equal(r.ReleaseTrack.audioUrl(result[0],null,{}),'/a');
  const curated=await r.Query.getPublicNexusTracks(null,{realmId:44,nexusOnly:true});assert.deepEqual(curated.map(t=>t.id),['approved-canon','approved-listed']);
- }finally{[W.find,T.find]=old;}
+ }finally{[W.find,T.find,C.findOne,U.exists]=old;}
 });
 test('Nexus discovery requires both editorial flags, preserves broader public access, and ranks Canon first',async()=>{
- const old=[W.find,T.find];let query;
- try{W.find=()=>({sort:async()=>[],select:async()=>[]});T.find=q=>({sort:async order=>{query=q;assert.equal(order.publicCanon,-1);return [];}});
+ const old=[W.find,T.find,C.findOne,U.exists];let query;
+ try{C.findOne=async()=>({realmSoundtracks:[]});U.exists=async()=>({_id:"fixture"});W.find=()=>({sort:async()=>[],select:async()=>[]});T.find=q=>({sort:async order=>{query=q;assert.equal(order.publicCanon,-1);return [];}});
  await r.Query.getPublicNexusTracks(null,{nexusOnly:true});assert.equal(query.showInNexus,true);assert.equal(query.nexusReviewStatus,'published');assert.equal(query.publicCanon,undefined);
  await r.Query.getPublicNexusTracks(null,{nexusOnly:false});assert.equal(query.showInNexus,undefined);assert.equal(query.nexusReviewStatus,undefined);
- }finally{[W.find,T.find]=old;}
+ }finally{[W.find,T.find,C.findOne,U.exists]=old;}
 });
