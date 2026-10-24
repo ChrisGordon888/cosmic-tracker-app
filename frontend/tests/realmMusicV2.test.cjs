@@ -7,5 +7,26 @@ const tracks=Array.from({length:12},(_,i)=>({id:String(i),trackTitle:`Signal ${i
 function render(file,list=tracks,current=tracks[0]){const calls=[];const player={currentTrack:current,isPlaying:true,duration:60,currentTime:12,getAudioElement:()=>null,playOrToggleTrack:(...a)=>calls.push(a),seekTo:t=>calls.push(t)};const component=load(file,{'react':{...React,useState:v=>[v,()=>{}],useEffect:()=>{},useRef:()=>({current:null})},'next/link':{default:'a'},'@/lib/releaseSharing':{publicWorldHref:()=>'/world'},'@/lib/orbitGeometry':geometry,'@/lib/resonanceAnalysis':{},'@/hooks/useMusicPlayer':{useMusicPlayer:()=>player}}).default;
 return {calls,nodes:walk(component({tracks:list,realmId:'0',realmName:'InterSiddhi',realmIcon:'✦',color:'#fff'}))};}
 test('Full Realm pages the visual nodes but audition keeps all twelve tracks in shared queue',()=>{const {nodes,calls}=render('src/components/music/RealmResonance.tsx');assert.equal(nodes.filter(n=>n.props?.className?.startsWith('resonance-node ')).length,8);nodes.find(n=>n.props?.['aria-label']==='Play Signal 2').props.onClick();assert.equal(calls[0][0].id,'1');assert.equal(calls[0][1].length,12);assert.equal(calls[0][2].source,'realm');nodes.find(n=>n.type==='input'&&n.props.type==='range').props.onChange({target:{value:'31'}});assert.equal(calls[1],31);});
-test('Nexus sampler retains deliberate order, next wraps, and uses the same player with only its sampler',()=>{const ordered=[tracks[4],tracks[1],tracks[8]];const {nodes,calls}=render('src/components/music/NexusRealmSampler.tsx',ordered,tracks[8]);nodes.find(n=>n.props?.['aria-label']==='Next InterSiddhi sampler song').props.onClick();assert.equal(calls[0][0].id,'4');assert.deepEqual(calls[0][1],ordered);assert.equal(calls[0][2].source,'nexus');assert.equal(nodes.find(n=>n.props?.href).props.href,'/realms/0');});
-test('One-song sampler disables stepping',()=>{const {nodes}=render('src/components/music/NexusRealmSampler.tsx',[tracks[0]]);assert.equal(nodes.find(n=>n.props?.['aria-label']==='Next InterSiddhi sampler song').props.disabled,true);});
+test('Sampler adapter preserves editorial sequence, shared state and progress',()=>{
+ const Orbit=()=>null;const C=load('src/components/music/NexusRealmSampler.tsx',{'./RealmOrbitCard':{default:Orbit},'@/hooks/useMusicPlayer':{useMusicPlayer:()=>({currentTrack:tracks[8],isPlaying:true})}}).default;
+ const list=[tracks[4],tracks[1],tracks[8]],n=C({tracks:list,realmId:'0',realmName:'InterSiddhi',realmIcon:'✦',color:'#fff',progress:40});
+ assert.equal(n.type,Orbit);assert.equal(n.props.preserveOrder,true);assert.equal(n.props.flowTracks,list);assert.equal(n.props.currentTrackId,'8');assert.equal(n.props.flowSource,'nexus');assert.equal(n.props.realmRoute,'/realms/0');assert.equal(n.props.progress,40);assert.equal(n.props.isTrackLocked({trackUrl:''}),true);
+});
+function orbit(list){const calls=[];const C=load('src/components/music/RealmOrbitCard.tsx',{
+ react:{...React,useState:v=>[v,()=>{}],useEffect:()=>{},useMemo:f=>f(),useCallback:f=>f},'next/link':{default:'a'},'@/hooks/useMusicPlayer':{useMusicPlayer:()=>({playOrToggleTrack:(...args)=>calls.push(args)})},'@/lib/realmTheme':{getRealmTheme:()=>({accent:'#fff',soft:'#333',border:'#555',glow:'#777'})}
+}).default;return{calls,nodes:walk(C({tracks:list,preserveOrder:true,carouselMode:true,realmId:'0',realmName:'InterSiddhi',realmIcon:'✦',realmColor:'#fff',currentTrackId:list[0]?.id,isPlaying:true,onPlayTrack:()=>{},realmRoute:'/realms/0',flowTracks:list,flowSource:'nexus',progress:40}))};}
+test('Zero/one/five/nine selections render real nodes, all ordered pills, correct queue and Enter',()=>{
+ for(const count of [0,1,5,9]){const list=tracks.slice(0,count).reverse(),{nodes,calls}=orbit(list);
+ const pills=nodes.filter(n=>n.type==='button'&&n.props.className?.startsWith('shrink-0'));
+ const orbs=nodes.filter(n=>n.type==='button'&&n.props.className==='absolute rounded-full flex items-center justify-center text-[10px]');
+ assert.equal(orbs.length,Math.min(5,count));assert.deepEqual(pills.map(n=>n.props.children),list.map(t=>t.trackTitle));
+ assert.equal(nodes.find(n=>n.props?.role==='progressbar').props['aria-valuenow'],40);
+ const link=nodes.find(n=>n.props?.href==='/realms/0');assert.ok(link);assert.ok(!walk(link.props.children).some(n=>n.type==='button'));
+ if(count){pills[count-1].props.onClick();assert.equal(calls[0][0].id,list[count-1].id);assert.deepEqual(calls[0][1],list);assert.equal(calls[0][2].source,'nexus');orbs[0].props.onClick();assert.equal(calls[1][0].id,list[0].id);}
+ else assert.ok(nodes.some(n=>n.type==='button'&&n.props.disabled===true));
+ }
+});
+test('Sampler source and Worlds remain; console soundtrack precedes discovery',()=>{
+ const page=fs.readFileSync('src/app/nexus/page.tsx','utf8');assert.match(page,/samplerOnly: true/);assert.match(page,/<PublicWorlds selectedOnly \/>/);
+ const admin=fs.readFileSync('src/components/admin/EditorialPlacementControls.tsx','utf8');assert.ok(admin.indexOf('<div><p>Official soundtrack:')<admin.indexOf('<div><p>Realm discovery:'));
+});

@@ -72,3 +72,15 @@ Presentation checkpoint:
 - frontend/src/lib/orbitGeometry.ts
 - frontend/tests/realmMusicV2.test.cjs
 - docs/realm-music-v2.md
+
+## Bounded Nexus orbital restoration — 2026-10-24
+
+Supersedes only the compact text-list sampler presentation described above. `NexusRealmSampler` now adapts the existing `RealmOrbitCard` to the same server-selected ordered sampler, with `preserveOrder`, a sampler-only shared-player queue, five real visible nodes and all song pills. Realm progress is the existing progression percentage, not playback time. The main Realm Resonance player, public Realm order, backend authority, standalone publication and selected Worlds shelf are unchanged. Editorial controls now put Official Soundtrack before Discovery.
+
+Compact controls have explicit selected/disabled states, focus styling, a native Enter link (no nested button), 24px song nodes, reduced-motion CSS and a one-song pill. Zero-data playback is disabled; Nexus retains its existing curated-empty card. The unused text-list stylesheet was removed.
+
+Verification: 21 focused frontend tests and 13 backend regressions passed; TypeScript and diff checks passed. Changed-file lint has zero errors and five existing Nexus warnings. An initial backend test invocation used the wrong working directory; rerunning from backend passed. Isolated production build remains blocked fetching Geist/Geist Mono from Google Fonts (DNS), without touching staging build output. Local Node/npm compatibility warning remains.
+
+Actual components/shared provider were rendered with fictional audio and mocked API/authentication: 0/1/5/9 node/pill states, ninth-song overflow playback, orbital selection, keyboard Play, Enter destination, MiniPlayer pause synchronization, desktop and 390px iframe were inspected. Reduced-motion styling is present and the compact composition has no continuous animation; OS-level reduced-motion acceptance remains manual. No authenticated DB tests or editorial changes were performed.
+
+Manual acceptance: reload staged Nexus, confirm the existing curated order, play an orb and an overflow pill, pause in MiniPlayer, Enter the correct Realm, inspect 390px/keyboard/OS reduced motion, and confirm selected Worlds below remain unchanged. Review the console control order without changing placements. Five nodes are intentionally stable; songs six through nine remain available through pills and the shared queue. Full Realm visual changes are deferred to a separate founder-reviewed pass.

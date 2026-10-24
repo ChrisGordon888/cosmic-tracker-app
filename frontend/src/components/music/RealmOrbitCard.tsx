@@ -6,22 +6,9 @@ import { useMusicPlayer } from '@/hooks/useMusicPlayer';
 import { getRealmTheme } from '@/lib/realmTheme';
 import type { MusicTrack } from '@/lib/musicRegistry';
 
-type OrbitTrack = Pick<
-    MusicTrack,
-    | 'id'
-    | 'trackUrl'
-    | 'trackTitle'
-    | 'artist'
-    | 'realmName'
-    | 'realmColor'
-    | 'realmId'
-    | 'role'
-    | 'visibility'
-    | 'isRealmAnchor'
-    | 'isPublicPick'
-    | 'vibe'
-    | 'sortOrder'
-> & { publicCanon?: boolean | null };
+type OrbitTrack = import('@/context/MusicPlayerProvider').MusicTrack &
+    Partial<Pick<MusicTrack, 'role' | 'isRealmAnchor' | 'isPublicPick' | 'vibe'>> &
+    { publicCanon?: boolean | null };
 
 interface RealmOrbitCardProps {
     preserveOrder?: boolean;
@@ -202,7 +189,7 @@ export default function RealmOrbitCard({
             return;
         }
 
-        if (sortedTracks.length > 0 && !selectedTrackId) {
+        if (sortedTracks.length > 0 && !sortedTracks.some(track => track.id === selectedTrackId)) {
             setSelectedTrackId(playableTracks[0]?.id ?? sortedTracks[0].id);
         }
     }, [currentTrackId, sortedTracks, playableTracks, selectedTrackId]);
@@ -236,7 +223,7 @@ export default function RealmOrbitCard({
 
     const selectedTrackLocked = trackIsLocked(selectedTrack);
     const selectedTrackLockLabel = getLockLabel(selectedTrack);
-    const selectedIsCurrent = selectedTrack?.id === currentTrackId;
+    const selectedIsCurrent = Boolean(selectedTrack && selectedTrack.id === currentTrackId);
 
     const anchorTrack = sortedTracks.find(
         (track) => track.isRealmAnchor || track.role === 'anchor'
@@ -325,6 +312,8 @@ export default function RealmOrbitCard({
             <button
                 key={track.id}
                 onClick={() => handleTrackClick(track)}
+                aria-pressed={isSelected}
+                disabled={locked}
                 className="shrink-0 px-2.5 py-1.5 rounded-full text-[11px] border transition-all whitespace-nowrap"
                 style={{
                     borderColor:
@@ -379,7 +368,7 @@ export default function RealmOrbitCard({
                     background: `radial-gradient(circle at top left, ${realmSoft}, transparent 46%), linear-gradient(145deg, rgba(255,255,255,0.035), rgba(8,10,18,0.82))`,
                     boxShadow: `0 10px 28px ${realmGlow}, inset 0 1px 0 rgba(255,255,255,0.055)`,
                     minHeight: carouselMode ? '430px' : undefined,
-                    height: carouselMode ? '430px' : undefined,
+                    height: carouselMode ? 'auto' : undefined,
                 }}
             >
                 <div
@@ -415,6 +404,14 @@ export default function RealmOrbitCard({
                         margin-top: auto;
                     }
 
+                    .nexus-compact-orbit button:focus-visible,
+                    .nexus-compact-orbit a:focus-visible {
+                        outline: 2px solid ${realmColor};
+                        outline-offset: 3px;
+                    }
+                    @media (prefers-reduced-motion: reduce) {
+                        .nexus-compact-orbit * { animation: none !important; transition: none !important; }
+                    }
                     @media (max-width: 420px) {
                         .nexus-compact-orbit {
                             padding: 0.85rem !important;
@@ -526,7 +523,8 @@ export default function RealmOrbitCard({
                                             : `0 0 16px ${realmGlow}`,
                                         cursor: selectedTrackLocked ? 'not-allowed' : 'pointer',
                                     }}
-                                    aria-label={selectedTrack ? `Play ${selectedTrack.trackTitle}` : `Play ${realmName}`}
+                                    disabled={!selectedTrack || selectedTrackLocked}
+                                    aria-label={`${selectedIsCurrent && isPlaying ? 'Pause' : 'Play'} selected song in ${realmName}`}
                                 >
                                     {selectedTrackLocked
                                         ? 'LOCK'
@@ -546,8 +544,8 @@ export default function RealmOrbitCard({
                                             onClick={() => handleTrackClick(track)}
                                             className="absolute rounded-full flex items-center justify-center text-[10px]"
                                             style={{
-                                                width: '20px',
-                                                height: '20px',
+                                                width: '24px',
+                                                height: '24px',
                                                 left: `${track.x}px`,
                                                 top: `${track.y}px`,
                                                 transform: 'translate(-50%, -50%)',
@@ -573,6 +571,8 @@ export default function RealmOrbitCard({
                                                 cursor: locked ? 'not-allowed' : 'pointer',
                                             }}
                                             title={track.trackTitle}
+                                            disabled={locked}
+                                            aria-pressed={isSelected}
                                             aria-label={locked ? `${track.trackTitle} locked` : `Play ${track.trackTitle}`}
                                         >
                                             {locked ? 'L' : isCurrent && isPlaying ? 'II' : '•'}
@@ -653,11 +653,11 @@ export default function RealmOrbitCard({
 
                     <div className="mt-4">
                         <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.14em] text-white/50 mb-1.5">
-                            <span>Progress</span>
+                            <span>Realm progress</span>
                             <span>{clampedProgress}%</span>
                         </div>
 
-                        <div className="h-2 rounded-full overflow-hidden bg-white/10 border border-white/10">
+                        <div role="progressbar" aria-label={`${realmName} Realm progress`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={clampedProgress} className="h-2 rounded-full overflow-hidden bg-white/10 border border-white/10">
                             <div
                                 className="h-full rounded-full"
                                 style={{
@@ -673,7 +673,7 @@ export default function RealmOrbitCard({
                         <button
                             onClick={() => selectedTrack && handleTrackClick(selectedTrack)}
                             className="btn-secondary text-sm"
-                            disabled={selectedTrackLocked}
+                            disabled={!selectedTrack || selectedTrackLocked}
                             style={{
                                 minHeight: '50px',
                                 padding: '0.72rem 0.95rem',
@@ -692,17 +692,9 @@ export default function RealmOrbitCard({
                         </button>
 
                         {realmRoute && isUnlocked ? (
-                            <Link href={realmRoute} className="block">
-                                <button
-                                    className="btn-primary text-sm w-full"
-                                    style={{
-                                        minHeight: '50px',
-                                        padding: '0.72rem 0.95rem',
-                                        borderRadius: '999px',
-                                    }}
-                                >
-                                    Enter
-                                </button>
+                            <Link href={realmRoute} className="btn-primary text-sm w-full flex items-center justify-center"
+                                style={{ minHeight: '50px', padding: '0.72rem 0.95rem', borderRadius: '999px' }}>
+                                Enter
                             </Link>
                         ) : (
                             <div />
@@ -710,13 +702,13 @@ export default function RealmOrbitCard({
                     </div>
 
                     <div className="nexus-compact-pills relative mt-4 w-full rounded-2xl border border-white/10 bg-white/[0.025] px-2 py-2 overflow-hidden">
-                        {sortedTracks.length > 1 ? (
+                        {sortedTracks.length > 0 ? (
                             <div className="flex gap-2 overflow-x-auto pb-1 w-full">
                                 {sortedTracks.map(renderTrackPill)}
                             </div>
                         ) : (
                             <p className="px-1 text-[11px] uppercase tracking-[0.14em] text-white/38">
-                                Single signal
+                                Sampler awaiting curation
                             </p>
                         )}
                     </div>
