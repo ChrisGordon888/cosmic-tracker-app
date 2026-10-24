@@ -84,3 +84,69 @@ Verification: 21 focused frontend tests and 13 backend regressions passed; TypeS
 Actual components/shared provider were rendered with fictional audio and mocked API/authentication: 0/1/5/9 node/pill states, ninth-song overflow playback, orbital selection, keyboard Play, Enter destination, MiniPlayer pause synchronization, desktop and 390px iframe were inspected. Reduced-motion styling is present and the compact composition has no continuous animation; OS-level reduced-motion acceptance remains manual. No authenticated DB tests or editorial changes were performed.
 
 Manual acceptance: reload staged Nexus, confirm the existing curated order, play an orb and an overflow pill, pause in MiniPlayer, Enter the correct Realm, inspect 390px/keyboard/OS reduced motion, and confirm selected Worlds below remain unchanged. Review the console control order without changing placements. Five nodes are intentionally stable; songs six through nine remain available through pills and the shared queue. Full Realm visual changes are deferred to a separate founder-reviewed pass.
+
+## Targeted correction and scalable foundation — 2026-10-24
+
+Base checkpoint: c183b4c. No editorial contracts or records changed.
+
+### Corrections and evidence
+- The prior order correction touched submission review's EditorialPlacementControls.
+  The actual `/admin/nexus/editorial` console renders **RealmSelections**; its project
+  and stored-placement sections still put discovery first. Both now put soundtrack
+  first. Rendered actual component verified with fictional read-only Apollo data;
+  an authenticated console reload is still Christopher's acceptance step.
+- Full Realm restores every ordered song as an always-visible horizontal pill path.
+  Search/results are secondary disclosure. Selecting an overflow song updates the
+  bounded orbit page. Queue and transport stay with MusicPlayerProvider. A small
+  stage-height reservation prevents lower node labels colliding with selected-song
+  identity; long selected titles clamp visually to two lines, with full title tooltip.
+- In the in-app Chromium browser, the staging Jello song played but capture produced
+  no measurable signal. Read-only public media HEAD: audio/mpeg, byte ranges, ACAO `*`.
+  It is a public Blob origin. The shared element had no crossorigin attribute.
+  Requesting anonymous CORS **before src assignment**, only for HTTPS public Vercel
+  Blob hosts, changed that same song to **Live spectrum · measured audio**. This is
+  frontend request mode, not a storage/access-policy change. Other hosts retain their
+  delivery mode. No recording, URL, permissions, or uploaded object was changed.
+- Unsupported browser, security restriction, no captured track, and suspended audio
+  context now have separate safe messages. The original reported generic error may
+  also occur in browsers without captureStream; that browser-specific case is not
+  claimed fixed. We do not fake a spectrum or reroute audible output through analysis.
+
+### Reproducible foundation
+`frontend/dev/realm-music/README.md` documents the localhost-only standalone harness.
+It is outside the app/public route trees, production-guarded, uses production player
+components with generated tones and mocked non-writing API hooks, and needs no DB.
+Sampler counts 0/1/2/3/4/5/9 retain real-count geometry and five-node cap; all ordered
+pills remain. Full Realm counts 1/5/9/30/100 retain eight-node cap and uncapped queue.
+Same-Realm comparisons, existing color identities, long titles, and 390px frames are
+available. No new music, editorial selection or staging records are seeded.
+
+### Visual review gate / proposal only
+Current full-stage rings remain an unaccepted interim composition. Do not treat this
+foundation checkpoint as artistic acceptance. Next proposed pass, only after review:
+- Keep RealmResonance responsible for shared selection, queue, transport and pills.
+- Extract a pure OrbitStage receiving bounded visible songs, selected ID, theme and
+  measured energy. Retain accessible DOM buttons and one canvas; no new player.
+- Use slow intentional orbital motion (roughly one revolution per 90–120 seconds),
+  counter-rotate labels, and freeze targets on hover, focus-within or pointer interaction.
+  Reduced motion uses the same static geometry with no energy-driven motion.
+- Connect only the active song to the central Realm identity; do not draw relationships
+  between songs or claim creative meaning from geometry. A radial/audio response is
+  measured activity, not evidence of semantic relationships.
+- Keep at most 5–8 moving targets regardless of soundtrack length; draw at 30fps only
+  during playback/visible document; cancel RAF and close capture on teardown. All
+  100 pills may stay DOM (cheap, keyboard reachable); avoid 100 animated nodes, extra
+  canvases, Three.js, neural/Tesla effects or per-frame React state.
+
+### Verification / limitations
+- Focused frontend: 24 tests passed; backend editorial/sampler/access: 13 passed.
+- TypeScript passed; changed TypeScript lint: no errors, existing raw-image warning.
+- Browser: actual staging public song measured after scoped CORS fix, pause stills
+  visuals. Fictional shared-provider overflow selection, track switching measurement,
+  keyboard seeking, MiniPlayer pause; sampler count matrix; full count matrix; 390px
+  sampler/full layouts; simulated unsupported/reduced-motion paths.
+- No authenticated placement writes, multi-track staging selection, OS preference
+  change, Safari capture support, or physical mobile audio testing is claimed.
+- Isolated-copy production build remains blocked fetching Geist / Geist Mono from
+  fonts.googleapis.com. Staging servers and their build artifacts were not restarted
+  or overwritten. Production build success is not claimed.

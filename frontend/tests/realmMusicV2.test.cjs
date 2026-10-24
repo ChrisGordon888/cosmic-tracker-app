@@ -1,6 +1,6 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('fs'),vm=require('vm'),ts=require('typescript'),React=require('react');
 const walk=n=>Array.isArray(n)?n.flatMap(walk):n&&typeof n==='object'?[n,...walk(n.props?.children)]:[];
-function load(file,mocks={}){const m={exports:{}};vm.runInNewContext(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText,{exports:m.exports,require:n=>n.endsWith('.css')?{}:mocks[n]??require(n)});return m.exports;}
+function load(file,mocks={}){const m={exports:{}};vm.runInNewContext(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText,{exports:m.exports,URL,require:n=>n.endsWith('.css')?{}:mocks[n]??require(n)});return m.exports;}
 const geometry=load('src/lib/orbitGeometry.ts');
 test('One, two and eight song centers lie precisely on their declared concentric paths',()=>{for(const count of [1,2,8]){const points=geometry.orbitPositions(count);assert.equal(points.length,count);for(const p of points)assert.ok(Math.abs(Math.hypot(p.x-50,p.y-50)-p.radius)<.00001);assert.equal(new Set(points.map(p=>`${p.x},${p.y}`)).size,count);}});
 const tracks=Array.from({length:12},(_,i)=>({id:String(i),trackTitle:`Signal ${i+1}`,trackUrl:`/fiction-${i}.wav`,realmId:0}));
@@ -16,7 +16,7 @@ function orbit(list){const calls=[];const C=load('src/components/music/RealmOrbi
  react:{...React,useState:v=>[v,()=>{}],useEffect:()=>{},useMemo:f=>f(),useCallback:f=>f},'next/link':{default:'a'},'@/hooks/useMusicPlayer':{useMusicPlayer:()=>({playOrToggleTrack:(...args)=>calls.push(args)})},'@/lib/realmTheme':{getRealmTheme:()=>({accent:'#fff',soft:'#333',border:'#555',glow:'#777'})}
 }).default;return{calls,nodes:walk(C({tracks:list,preserveOrder:true,carouselMode:true,realmId:'0',realmName:'InterSiddhi',realmIcon:'✦',realmColor:'#fff',currentTrackId:list[0]?.id,isPlaying:true,onPlayTrack:()=>{},realmRoute:'/realms/0',flowTracks:list,flowSource:'nexus',progress:40}))};}
 test('Zero/one/five/nine selections render real nodes, all ordered pills, correct queue and Enter',()=>{
- for(const count of [0,1,5,9]){const list=tracks.slice(0,count).reverse(),{nodes,calls}=orbit(list);
+ for(const count of [0,1,2,3,4,5,9]){const list=tracks.slice(0,count).reverse(),{nodes,calls}=orbit(list);
  const pills=nodes.filter(n=>n.type==='button'&&n.props.className?.startsWith('shrink-0'));
  const orbs=nodes.filter(n=>n.type==='button'&&n.props.className==='absolute rounded-full flex items-center justify-center text-[10px]');
  assert.equal(orbs.length,Math.min(5,count));assert.deepEqual(pills.map(n=>n.props.children),list.map(t=>t.trackTitle));
@@ -29,4 +29,28 @@ test('Zero/one/five/nine selections render real nodes, all ordered pills, correc
 test('Sampler source and Worlds remain; console soundtrack precedes discovery',()=>{
  const page=fs.readFileSync('src/app/nexus/page.tsx','utf8');assert.match(page,/samplerOnly: true/);assert.match(page,/<PublicWorlds selectedOnly \/>/);
  const admin=fs.readFileSync('src/components/admin/EditorialPlacementControls.tsx','utf8');assert.ok(admin.indexOf('<div><p>Official soundtrack:')<admin.indexOf('<div><p>Realm discovery:'));
+});
+
+test('Uncapped ordered pills survive missing measurements and bounded orbit at 1/5/9/30/100',()=>{
+ for(const count of [1,5,9,30,100]){
+  const list=Array.from({length:count},(_,i)=>({...tracks[0],id:String(i),trackTitle:`Signal ${i+1}`}));
+  const {nodes,calls}=render('src/components/music/RealmResonance.tsx',list,list[0]);
+  const path=nodes.find(n=>n.props?.['aria-label']==='Ordered soundtrack songs');
+  const pills=walk(path).filter(n=>n.type==='button');assert.equal(pills.length,count);
+  assert.equal(nodes.filter(n=>n.props?.className?.startsWith('resonance-node ')).length,Math.min(count,8));
+  pills.at(-1).props.onClick();assert.equal(calls[0][0].id,String(count-1));assert.equal(calls[0][1].length,count);
+  assert.ok(nodes.some(n=>n.type==='details'&&!n.props.open));
+ }
+});
+test('Actual editorial console component orders both selection and stored soundtrack first',()=>{
+ const s=fs.readFileSync('src/components/admin/RealmSelections.tsx','utf8');
+ assert.ok(s.indexOf('Select official soundtrack')<s.indexOf('Discovery Realm'));
+ assert.ok(s.indexOf('Stored soundtrack placements')<s.indexOf('Stored discovery placements'));
+});
+test('Only known public Blob delivery requests anonymous CORS, before src assignment',()=>{
+ const {setPlayerMediaSource}=load('src/lib/playerMediaSource.ts');
+ const calls=[];const audio={set crossOrigin(v){calls.push(v)},removeAttribute:n=>calls.push(n),set src(v){calls.push(v)}};
+ setPlayerMediaSource(audio,'https://fixture.public.blob.vercel-storage.com/song.mp3');
+ assert.equal(calls[0],'anonymous');
+ for(const url of ['/song.wav','https://elsewhere.example/song.mp3','https://fixture.private.blob.vercel-storage.com/song.mp3']){calls.length=0;setPlayerMediaSource(audio,url);assert.deepEqual(calls,['crossorigin',url]);}
 });

@@ -1,5 +1,6 @@
 'use client';
 
+import { setPlayerMediaSource } from '@/lib/playerMediaSource';
 import React, {
     createContext,
     useCallback,
@@ -370,7 +371,7 @@ export function MusicPlayerProvider({
             try {
                 if (!isSameTrack) {
                     audio.pause();
-                    audio.src = track.trackUrl;
+                    setPlayerMediaSource(audio, track.trackUrl);
                     audio.currentTime = 0;
                     setCurrentTime(0);
                     setDuration(0);
@@ -700,7 +701,7 @@ export function MusicPlayerProvider({
             setCurrentTrack(resolvedCurrent);
             currentTrackRef.current = resolvedCurrent;
             if (audioRef.current) {
-                audioRef.current.src = resolvedCurrent.trackUrl;
+                setPlayerMediaSource(audioRef.current, resolvedCurrent.trackUrl);
                 audioRef.current.currentTime = 0;
             }
             setIsPlaying(false);

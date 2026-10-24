@@ -82,10 +82,12 @@ test('Actual shared-player actions replace stale track, audio and context on exp
  const start=source.slice(source.indexOf('    const startTrack = useCallback('),source.indexOf('    const setQueue = useCallback('));
  const play=source.slice(source.indexOf('    const playOrToggleTrack = useCallback('),source.indexOf('    const togglePlayPause = useCallback('));
  const old={id:'old-session',trackTitle:'Previous song',trackUrl:'/old'};
- const audio={paused:false,src:'/old',currentTime:12,pause(){this.paused=true},async play(){this.paused=false}};
+ const media={exports:{}};
+ vm.runInNewContext(ts.transpileModule(fs.readFileSync('src/lib/playerMediaSource.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText,{exports:media.exports,URL});
+ const audio={removeAttribute(){},paused:false,src:'/old',currentTime:12,pause(){this.paused=true},async play(){this.paused=false}};
  let selected=old,context=null;
  const refs={current:old};const out={};
- const env={exports:out,console,useCallback:fn=>fn,audioRef:{current:audio},currentTrackRef:refs,resolvePlayableTrack:t=>t,setCurrentTrack:t=>selected=t,setCurrentTime:()=>{},setDuration:()=>{},setIsPlaying:()=>{},markRecentlyPlayed:()=>{},replaceQueue:(_,options)=>context=options,ensureTrackQueue:()=>{},pushCurrentTrackToHistory:()=>{}};
+ const env={exports:out,console,setPlayerMediaSource:media.exports.setPlayerMediaSource,useCallback:fn=>fn,audioRef:{current:audio},currentTrackRef:refs,resolvePlayableTrack:t=>t,setCurrentTrack:t=>selected=t,setCurrentTime:()=>{},setDuration:()=>{},setIsPlaying:()=>{},markRecentlyPlayed:()=>{},replaceQueue:(_,options)=>context=options,ensureTrackQueue:()=>{},pushCurrentTrackToHistory:()=>{}};
  vm.runInNewContext(ts.transpileModule(start+play+'\nexports.play=playOrToggleTrack;',{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText,env);
  for(const [id,title,url,label] of [['canon','Not Enough','/canon','Canon entry'],['suggested','HardWay','/hardway','Realm guidance'],['orbit','Orbit song','/orbit','Realm flow']]){
   const track={id,trackTitle:title,trackUrl:url,artworkUrl:`/${id}.png`};await out.play(track,[track],{source:'realm',label});

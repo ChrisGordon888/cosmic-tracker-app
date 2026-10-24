@@ -6,7 +6,7 @@ import { publicWorldHref } from '@/lib/releaseSharing';
 import { orbitPositions } from '@/lib/orbitGeometry';
 import type { MusicTrack } from '@/context/MusicPlayerProvider';
 import { useMusicPlayer } from '@/hooks/useMusicPlayer';
-import { openResonanceAnalysis, measuredEnergy } from '@/lib/resonanceAnalysis';
+import { openResonanceAnalysis, measuredEnergy, analysisFailureMessage } from '@/lib/resonanceAnalysis';
 import './realmResonance.css';
 
 const time = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
@@ -28,6 +28,10 @@ export default function RealmResonance({ tracks, color, realmName, realmIcon, is
     const safePage = Math.min(page, pages - 1);
     const orbitTracks = visibleTracks.slice(safePage * 8, safePage * 8 + 8);
     const positions = orbitPositions(orbitTracks.length);
+    const selectedVisibleIndex = visibleTracks.findIndex(t => t.id === selected?.id);
+    useEffect(() => {
+        if (selectedVisibleIndex >= 0) setPage(Math.floor(selectedVisibleIndex / 8));
+    }, [selected?.id, selectedVisibleIndex]);
     const queue = tracks.filter(t => !isTrackLocked(t) && t.trackUrl);
     function choose(track: MusicTrack) {
         setChosen(track.id);
@@ -106,7 +110,7 @@ export default function RealmResonance({ tracks, color, realmName, realmIcon, is
             };
             setStatus('No measurable signal · silence or restricted capture');
             frame = requestAnimationFrame(draw);
-        }).catch(() => { if (!cancelled) setStatus('Live analysis unavailable in this browser or for this media. Playback is unchanged.'); });
+        }).catch(error => { if (!cancelled) setStatus(analysisFailureMessage(error)); });
         return () => { cancelled = true; cancelAnimationFrame(frame); tap?.close(); paint.clearRect(0, 0, 800, 800); };
     }, [enabled, reduced, active, isPlaying, currentTrack?.id, currentTrack?.trackUrl, getAudioElement, color]);
 
@@ -129,7 +133,7 @@ export default function RealmResonance({ tracks, color, realmName, realmIcon, is
             </div>
             <div className="resonance-selected">
                 <small>{locked?'Listening unavailable':'SELECTED SIGNAL'}</small>
-                <h3>{selected?.trackTitle ?? 'No matching signals'}</h3><p>{selected?.artist ?? 'Independent creator'}</p>
+                <h3 title={selected?.trackTitle}>{selected?.trackTitle ?? 'No matching signals'}</h3><p>{selected?.artist ?? 'Independent creator'}</p>
                 {selected?.releaseSlug&&<Link href={publicWorldHref(selected.releaseSlug,selected.releaseWorldId??undefined)}>Explore this World ↗</Link>}
             </div>
         </div>
@@ -145,11 +149,18 @@ export default function RealmResonance({ tracks, color, realmName, realmIcon, is
             </label>
             <div className="resonance-options"><button aria-pressed={enabled} disabled={reduced} onClick={() => setEnabled(value => !value)}>{enabled ? 'Turn live visuals off' : 'Enable live visuals'}</button><p role="status">{status}</p></div>
         </div>
+        <nav className="resonance-song-path" aria-label="Ordered soundtrack songs">
+            {tracks.map((track, index) => <button key={track.id} aria-pressed={selected?.id === track.id}
+                title={track.trackTitle} disabled={!track.trackUrl || isTrackLocked(track)} onClick={() => choose(track)}>
+                <span aria-hidden="true">{index + 1}</span> {track.trackTitle}
+            </button>)}
+        </nav>
+        <details className="resonance-search"><summary>Search soundtrack / browse orbit pages</summary>
         <div className="resonance-library">
             <label>Find a signal <input type="search" value={search} onChange={e=>{setSearch(e.target.value);setPage(0);}} placeholder="Song or creator" /></label>
             <nav aria-label="Soundtrack pages"><button disabled={safePage===0} onClick={()=>setPage(safePage-1)}>←</button><span>{safePage+1} / {pages}</span><button disabled={safePage>=pages-1} onClick={()=>setPage(safePage+1)}>→</button></nav>
             <div className="resonance-tracklist">{orbitTracks.map(track=><button key={track.id} aria-pressed={selected?.id===track.id} disabled={!track.trackUrl || isTrackLocked(track)} onClick={()=>choose(track)}><span>{track.trackTitle}</span><small>{track.artist}{isTrackLocked(track)?' · unavailable':''}</small></button>)}</div>
             {!orbitTracks.length&&<p>No songs match your search.</p>}
-        </div>
+        </div></details>
     </section>;
 }
