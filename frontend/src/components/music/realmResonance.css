@@ -81,3 +81,8 @@
 .resonance-selected {background:linear-gradient(transparent,color-mix(in srgb,var(--resonance),transparent 94%));}
 .resonance-console {background:linear-gradient(#10142112,#10142135);}
 .resonance-heading p {font-size:11px;}
+/* Quiet continuous surface; existing Realm scenery supplies the environment. */
+.realm-resonance {background:linear-gradient(180deg,#0b101b24,#0b101b40);box-shadow:none;border-color:color-mix(in srgb,var(--resonance),transparent 85%);}
+.resonance-selected {background:transparent;border-bottom-color:#ffffff08;}
+.resonance-console {background:#10142115;}
+.resonance-song-path,.resonance-search {background:transparent;}

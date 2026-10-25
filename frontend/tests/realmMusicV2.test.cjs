@@ -54,3 +54,10 @@ test('Only known public Blob delivery requests anonymous CORS, before src assign
  assert.equal(calls[0],'anonymous');
  for(const url of ['/song.wav','https://elsewhere.example/song.mp3','https://fixture.private.blob.vercel-storage.com/song.mp3']){calls.length=0;setPlayerMediaSource(audio,url);assert.deepEqual(calls,['crossorigin',url]);}
 });
+test('Visuals default on without starting playback; analysis waits for preferences',()=>{
+ const {nodes,calls}=render('src/components/music/RealmResonance.tsx',tracks,null);
+ const toggle=nodes.find(n=>n.type==='button'&&n.props.children==='Reduce visuals');
+ assert.equal(toggle.props['aria-pressed'],true);
+ assert.equal(nodes.find(n=>n.type==='orbit-stage').props.visualsEnabled,false);
+ assert.equal(calls.length,0);
+});

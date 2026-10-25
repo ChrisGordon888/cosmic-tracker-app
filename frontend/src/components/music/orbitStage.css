@@ -56,3 +56,31 @@
 .chamber-signature strong {font-size:14px;line-height:1.2;letter-spacing:0;}
 .chamber-signature small {display:none;}
 @media(max-width:600px){.chamber-heart>span{transform:translateY(-13px);font-size:24px;}.chamber-signature{top:calc(46% + 9px);width:94px;}.chamber-signature strong{font-size:11px;}}
+/* Floating field refinement: open lateral space, no enclosing globe silhouette. */
+.orbit-chamber {max-width:1120px;height:660px;}
+.chamber-vault,.chamber-uprights {display:none;}
+.chamber-orbit {opacity:.08;stroke-dasharray:12 5;}
+.chamber-orbit.outer {opacity:.035;stroke-dasharray:1 6;}
+.chamber-floor {left:6%;width:88%;top:78%;height:12%;border:0;background:radial-gradient(ellipse,color-mix(in srgb,var(--chamber-color),transparent 72%),transparent 68%);box-shadow:0 12px 32px color-mix(in srgb,var(--chamber-color),transparent 93%);}
+.chamber-floor i {border-color:color-mix(in srgb,var(--chamber-color),transparent 91%);}
+.chamber-floor i:nth-child(3) {background:color-mix(in srgb,var(--chamber-color),transparent 85%);}
+.chamber-aura {inset:-2% 0;opacity:calc(.3 + var(--chamber-energy)*.45);background:radial-gradient(ellipse at 50% 12%,color-mix(in srgb,var(--chamber-color),transparent 82%),transparent 52%),radial-gradient(ellipse at 50% 78%,color-mix(in srgb,var(--chamber-color),transparent 65%),transparent 50%);}
+.chamber-heart-fallback {background:radial-gradient(circle at 35% 28%,color-mix(in srgb,var(--chamber-color),white 32%),color-mix(in srgb,var(--chamber-color),#263044 40%) 52%,#192333 90%);box-shadow:0 0 40px color-mix(in srgb,var(--chamber-color),transparent 78%),inset -8px -10px 22px #0003;}
+.chamber-song-surface {box-shadow:inset -5px -6px 12px #0004,inset 1px 1px 4px #ffffff30,0 8px 18px #0004,0 0 18px color-mix(in srgb,var(--chamber-color),transparent 90%);}
+@media(max-width:600px){.orbit-chamber{height:490px;}.chamber-floor{top:80%;height:10%;}}
+/* V3.3 projection installation: palette-derived light, no extra canvas or blur stack. */
+.chamber-overhead {position:absolute;inset:0;pointer-events:none;overflow:hidden;opacity:calc(.55 + var(--chamber-energy)*.25);}
+.chamber-overhead i {position:absolute;top:-4%;left:15%;width:28%;height:72%;transform:rotate(-16deg);transform-origin:50% 0;background:linear-gradient(180deg,color-mix(in srgb,var(--chamber-color),transparent 65%),transparent 92%);clip-path:polygon(46% 0,54% 0,100% 100%,0 100%);mask-image:linear-gradient(90deg,transparent,#0008 30%,#000 50%,#0008 70%,transparent);}
+.chamber-overhead i:nth-child(2){left:36%;transform:none;opacity:.5;height:65%;}
+.chamber-overhead i:nth-child(3){left:57%;transform:rotate(16deg);}
+.chamber-projection {position:absolute;left:16%;right:16%;top:36%;height:48%;pointer-events:none;clip-path:polygon(35% 0,65% 0,100% 100%,0 100%);background:linear-gradient(0deg,color-mix(in srgb,var(--chamber-color),transparent 74%),transparent 90%);mask-image:radial-gradient(ellipse at 50% 100%,#000,transparent 72%);opacity:calc(.65 + var(--chamber-energy)*.3);}
+.chamber-floor {top:79%;height:13%;background:radial-gradient(ellipse,color-mix(in srgb,var(--chamber-color),transparent 60%),transparent 70%);}
+.chamber-floor i {border-color:color-mix(in srgb,var(--chamber-color),transparent 69%);border-top-color:color-mix(in srgb,var(--chamber-color),transparent 87%);}
+.chamber-floor i:nth-child(2){inset:25%;}.chamber-floor i:nth-child(3){inset:38%;filter:none;background:color-mix(in srgb,var(--chamber-color),transparent 82%);}
+.chamber-orbit {opacity:.13;stroke-dasharray:none;}.chamber-orbit.outer{opacity:.07;}
+.chamber-field {fill:none;stroke:currentColor;stroke-width:.09;opacity:.19;}.chamber-field.rear{opacity:.09;}
+.chamber-song.is-selected .chamber-song-surface {box-shadow:0 5px 20px color-mix(in srgb,var(--chamber-color),transparent 65%),0 10px 20px #0004;}
+@media(max-width:600px){.chamber-overhead i:nth-child(2){display:none;}.chamber-overhead{opacity:.4;}.chamber-field.rear{opacity:.05;}.chamber-floor{height:11%;}}
+/* Feather the beam boundaries rather than drawing hard-edged spotlight polygons. */
+.chamber-overhead i {clip-path:none;mask-image:radial-gradient(ellipse at 50% 0,#0009 0%,#0005 35%,transparent 72%);}
+.chamber-overhead {mask-image:linear-gradient(transparent,#000 14%,#000 85%,transparent);}

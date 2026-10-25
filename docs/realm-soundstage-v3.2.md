@@ -63,3 +63,57 @@ actual public Realm without changing selections or records. Nexus is unchanged.
 No backend, GraphQL, data, permissions, commerce, Nexus or deployment modifications.
 Stop for Christopher's artistic acceptance. Safe rollback is a revert of this isolated
 checkpoint; d3454dd remains the preceding visual checkpoint.
+
+## Open-field artistic refinement after a64f913
+The procedural heart now uses broad slow currents instead of narrow bright streaks;
+internal time rate is .065 rather than .16 and measured response is restrained.
+The stage maximum width grows from 760 to 1120px (mobile stays 490px high). Dome and
+upright enclosure surfaces are hidden; contours are faint, and the wider underlight
+has no opaque platform edge. Lower panel opacity is further reduced. No interaction,
+geometry, player, queue, capture, editorial or data code changes.
+
+Verification: 30 focused frontend tests, TypeScript, shader lint and diff check passed.
+Fixtures: 1/5/9/30/100, measured audio, hundredth-pill playback, drag suppression,
+Center, hold/release stability, 390px, reduced-motion simulation, CSS fallback and
+truthful unavailable-capture status. Backend tests were not repeated for shader/CSS.
+Read-only browser inspection of localhost:3001/realms/303 confirmed the actual Realm
+video shows through the soundstage and lower controls remain readable. No staging
+playback or records were changed; real-media audio acceptance was not repeated.
+Screenshots: /tmp/cosmic-field-five.png, /tmp/cosmic-field-mobile.png,
+/tmp/cosmic-field-staging.png and /tmp/cosmic-field-staging-controls.png.
+No production build rerun (historical Google Fonts fetch limitation remains).
+Physical-device performance, actual OS reduced motion and founder artistic acceptance
+remain manual. Changes are left uncommitted for review.
+
+## V3.3 — gravity and projection (uncommitted)
+Preserves the complete open-field refinement above. Depth now contributes a bounded
+z*2.5 percentage-point vertical offset: near objects settle lower, far objects rise.
+Default symmetry, rotation, hit targets and song identity remain unchanged. Selection
+adds only a restrained underside glow; no editorial weight or importance is inferred.
+
+CSS supplies three feathered palette-colored overhead shafts (two on narrow screens),
+an upward projection gradient and a broad translucent concentric light plane. Two
+quiet crossing ellipses read as environmental contours, not song-to-song relationships.
+No new canvas, dependency, full-screen blur, model, audio element or authority changes.
+
+Visuals default on after loading optional local preference cosmic.realm.visuals.
+No playback is started. Authored idle ambience is labeled separately from measured
+response, which uses the existing shared capture only while the Realm is playing.
+Reduce visuals closes analysis and freezes automatic stage response, and persists
+across reload. Restore visuals re-enables it. OS reduced motion takes precedence.
+Storage failure is harmless. Existing chamber motion control remains independent.
+
+Verification: 32 focused frontend tests passed, TypeScript and diff check passed;
+changed-scope lint has zero errors and the existing artwork img warning. Browser
+fixtures verify default-on/no autoplay, real measured tone response after Play,
+persisted reduction, 1/5/9/30/100 and ordered overflow, keyboard seek, mobile drag,
+390px layout, reduced-motion simulation, CSS fallback and unsupported capture.
+Actual localhost:3001/realms/303 was inspected read-only; no real playback, record,
+permission or placement changes. Prior capture/staging acceptance is not re-claimed.
+Screenshots: /tmp/cosmic-v33-five-live.png, cosmic-v33-1.png, cosmic-v33-9.png,
+cosmic-v33-mobile.png, cosmic-v33-fallback.png, cosmic-v33-staging.png.
+
+The retained 30fps ceiling and 256/384px heart are code limits, not GPU benchmarks.
+Physical touch, actual OS preference changes, hardware context recovery and founder
+artistic acceptance remain manual. Production build was not rerun; historical Google
+Fonts fetching limitation remains. No commit/push/merge/deployment in this pass.

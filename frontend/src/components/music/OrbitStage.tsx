@@ -8,14 +8,15 @@ import './orbitStage.css';
 export type ChamberMeasurement = { energy: number; high: number; bands?: number[] };
 type Props = {
     tracks: MusicTrack[]; selectedId?: string; playingId?: string;
-    realmName: string; realmIcon: string; color: string; reduced: boolean;
+    realmName: string; realmIcon: string; color: string; reduced: boolean; visualsEnabled?: boolean;
     measurement: RefObject<ChamberMeasurement>;
     onChoose: (track: MusicTrack) => void;
     isTrackLocked: (track: MusicTrack) => boolean;
 };
 /** Rendering only. No provider, capture, data fetching, queue, or audio ownership. */
-export default function OrbitStage({ tracks, selectedId, playingId, realmName, realmIcon, color, reduced, measurement, onChoose, isTrackLocked }: Props) {
+export default function OrbitStage({ tracks, selectedId, playingId, realmName, realmIcon, color, reduced, visualsEnabled = true, measurement, onChoose, isTrackLocked }: Props) {
     const visible = tracks.slice(0,8);
+    const staticVisuals = reduced || !visualsEnabled;
     const root = useRef<HTMLDivElement>(null), core = useRef<HTMLCanvasElement>(null);
     const nodes = useRef<(HTMLButtonElement | null)[]>([]), paths = useRef<(SVGPathElement | null)[]>([]);
     const settling = useRef({ pointer:false, focus:false });
@@ -35,8 +36,8 @@ export default function OrbitStage({ tracks, selectedId, playingId, realmName, r
     };
     const ribbons = useRef<(SVGPathElement | null)[]>([]);
     // Read changing selection without restarting the animation or recreating GPU resources.
-    const state = useRef({ ids: visible.map(t=>t.id), playingId, selectedId, measurement, reduced, motion });
-    useEffect(()=>{ state.current={ids:visible.map(t=>t.id),playingId,selectedId,measurement,reduced,motion}; });
+    const state = useRef({ ids: visible.map(t=>t.id), playingId, selectedId, measurement, reduced:staticVisuals, motion });
+    useEffect(()=>{ state.current={ids:visible.map(t=>t.id),playingId,selectedId,measurement,reduced:staticVisuals,motion}; });
     useEffect(() => {
         const element=root.current, canvas=core.current;
         if (!element || !canvas) return;
@@ -89,7 +90,7 @@ export default function OrbitStage({ tracks, selectedId, playingId, realmName, r
         return()=>{stopInput();window.removeEventListener('blur',stopInput);disposed=true;cancelAnimationFrame(frame);observer.disconnect();document.removeEventListener('visibilitychange',sync);canvas.removeEventListener('webglcontextlost',lost);canvas.removeEventListener('webglcontextrestored',restored);renderer?.dispose();};
     },[color]);
     const positions=chamberPositions(visible.length,phase.current);
-    return <div className="orbit-chamber" data-chamber-version="3.2" data-song-count={visible.length} ref={root} style={{color,'--chamber-color':color} as CSSProperties}
+    return <div className="orbit-chamber" data-chamber-version="3.3" data-song-count={visible.length} ref={root} style={{color,'--chamber-color':color} as CSSProperties}
         onPointerEnter={e=>{if(e.pointerType!=='touch')settling.current.pointer=true;}}
         onPointerLeave={()=>{settling.current.pointer=false;}}
         onPointerDown={e=>{
@@ -113,6 +114,8 @@ export default function OrbitStage({ tracks, selectedId, playingId, realmName, r
         onClickCapture={e=>{if(suppressClick.current){suppressClick.current=false;e.preventDefault();e.stopPropagation();}}}
         onFocusCapture={()=>{settling.current.focus=true;}}
         onBlurCapture={e=>{if(!e.currentTarget.contains(e.relatedTarget))settling.current.focus=false;}}>
+        <div className="chamber-overhead" aria-hidden="true"><i/><i/><i/></div>
+        <div className="chamber-projection" aria-hidden="true"/>
         <div className="chamber-aura" aria-hidden="true" />
         <svg className="chamber-spectral-field" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
             {Array.from({length:7},(_,i)=><path key={i} ref={el=>{ribbons.current[i]=el;}} d={spectralRibbon(i,0,0)} />)}
@@ -123,6 +126,8 @@ export default function OrbitStage({ tracks, selectedId, playingId, realmName, r
         <svg className="chamber-filaments" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
             <ellipse cx="50" cy="46" rx="33" ry="28" className="chamber-orbit" />
             <ellipse cx="50" cy="46" rx="38" ry="32" className="chamber-orbit outer" />
+            <ellipse cx="50" cy="49" rx="39" ry="14" transform="rotate(-14 50 49)" className="chamber-field rear" />
+            <ellipse cx="50" cy="49" rx="39" ry="14" transform="rotate(14 50 49)" className="chamber-field" />
             {visible.map((track,i)=><path key={track.id} ref={el=>{paths.current[i]=el;}} d={chamberConnection(positions[i].x,positions[i].y)} />)}
         </svg>
         <div className="chamber-heart" aria-hidden="true"><div className="chamber-heart-fallback"/><canvas ref={core}/><span>{realmIcon}</span></div>
@@ -146,7 +151,7 @@ export default function OrbitStage({ tracks, selectedId, playingId, realmName, r
                 onClick={()=>{if(!direction){directed.current=true;centerTarget.current=centeredAngle(phase.current);}else if(!heldMoved.current)rotate(direction);heldMoved.current=false;}}
             >{direction<0?'↶':direction>0?'↷':'Center'}</button>)}
         </div>
-        <button className="chamber-motion" disabled={reduced} aria-pressed={motion&&!reduced} onClick={()=>setMotion(v=>!v)}>{reduced?'Reduced motion':motion?'Pause chamber motion':'Resume chamber motion'}</button>
+        <button className="chamber-motion" disabled={staticVisuals} aria-pressed={motion&&!staticVisuals} onClick={()=>setMotion(v=>!v)}>{reduced?'Reduced motion':!visualsEnabled?'Visuals paused':motion?'Pause chamber motion':'Resume chamber motion'}</button>
         <span className="chamber-caption">Drag to turn · Center to restore · live response when enabled</span>
     </div>;
 }

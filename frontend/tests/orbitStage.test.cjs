@@ -52,3 +52,10 @@ test('Horizontal drag captures only after threshold, suppresses click, and verti
  root.onClickCapture({preventDefault(){blocked=true},stopPropagation(){}});assert.equal(blocked,true);
  blocked=false;root.onPointerDown(event(0,0));root.onPointerUp(event(0,0));root.onClickCapture({preventDefault(){blocked=true},stopPropagation(){}});assert.equal(blocked,false);
 });
+test('Gravity stays bounded and preserves default symmetry',()=>{
+ const front=geom.chamberPositions(5,0);
+ assert.ok(Math.abs(front[1].y-front[4].y)<1e-9);
+ for(let angle=0;angle<Math.PI*4;angle+=.1){
+  for(const p of geom.chamberPositions(8,angle))assert.ok(p.y>12&&p.y<80);
+ }
+});

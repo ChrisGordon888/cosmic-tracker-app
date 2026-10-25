@@ -12,7 +12,7 @@ export function chamberPositions(count: number, phase = 0) {
         const z = -ay*x*sn + ay*az*y*(1-c);
         const perspective = 1 / (1 - z*.1);
         const depth = (z+1)/2;
-        return { x:50+px*33*perspective, y:46+py*28*perspective,
+        return { x:50+px*33*perspective, y:46+py*28*perspective+z*2.5,
             depth, scale:.84+depth*.24 };
 
     });

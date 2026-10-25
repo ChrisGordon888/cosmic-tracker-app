@@ -42,10 +42,13 @@ export default function RealmResonance({ tracks, color, realmName, realmIcon, is
         if(next) choose(next);
     }
     const measurement = useRef<ChamberMeasurement>({ energy: 0, high: 0 });
-    const [enabled, setEnabled] = useState(false);
+    const [enabled, setEnabled] = useState(true);
+    const [preferencesReady, setPreferencesReady] = useState(false);
     const [reduced, setReduced] = useState(false);
-    const [status, setStatus] = useState('Visuals off');
+    const [status, setStatus] = useState('Authored ambience · play a song for measured response');
     useEffect(() => {
+        try { setEnabled(localStorage.getItem('cosmic.realm.visuals') !== 'off'); } catch { /* Storage is optional. */ }
+        setPreferencesReady(true);
         const preference = matchMedia('(prefers-reduced-motion: reduce)');
         const update = () => setReduced(preference.matches);
         update(); preference.addEventListener('change', update);
@@ -53,8 +56,8 @@ export default function RealmResonance({ tracks, color, realmName, realmIcon, is
     }, []);
     useEffect(() => {
         measurement.current = { energy: 0, high: 0 };
-        if (!enabled || reduced || !active || !isPlaying) {
-            setStatus(reduced ? 'Reduced motion · static atmosphere' : !enabled ? 'Visuals off' : active ? 'Paused · visuals still' : 'Choose a soundtrack song');
+        if (!preferencesReady || !enabled || reduced || !active || !isPlaying) {
+            setStatus(reduced ? 'Reduced motion · static atmosphere' : !enabled ? 'Visuals paused · playback unchanged' : active ? 'Playback paused · authored ambience only' : 'Authored ambience · play a song for measured response');
             return;
         }
         let cancelled = false, frame = 0;
@@ -87,7 +90,7 @@ export default function RealmResonance({ tracks, color, realmName, realmIcon, is
             frame = requestAnimationFrame(draw);
         }).catch(error => { if (!cancelled) setStatus(analysisFailureMessage(error)); });
         return () => { cancelled = true; cancelAnimationFrame(frame); tap?.close(); measurement.current = { energy: 0, high: 0 }; };
-    }, [enabled, reduced, active, isPlaying, currentTrack?.id, currentTrack?.trackUrl, getAudioElement, color]);
+    }, [preferencesReady, enabled, reduced, active, isPlaying, currentTrack?.id, currentTrack?.trackUrl, getAudioElement, color]);
 
 
     const locked = !selected || !selected.trackUrl || isTrackLocked(selected);
@@ -95,7 +98,7 @@ export default function RealmResonance({ tracks, color, realmName, realmIcon, is
         <div className="resonance-stage">
             <header className="resonance-heading"><small>OFFICIAL REALM SOUNDTRACK</small><p>{tracks.length} {tracks.length === 1 ? 'signal' : 'signals'}</p></header>
             <OrbitStage tracks={orbitTracks} selectedId={selected?.id} playingId={active && isPlaying ? currentTrack?.id : undefined}
-                realmName={realmName} realmIcon={realmIcon} color={color} reduced={reduced} measurement={measurement}
+                realmName={realmName} realmIcon={realmIcon} color={color} reduced={reduced} visualsEnabled={enabled && preferencesReady} measurement={measurement}
                 onChoose={choose} isTrackLocked={isTrackLocked} />
             <div className="resonance-selected">
                 <small>{locked?'Listening unavailable':'SELECTED SIGNAL'}</small>
@@ -113,7 +116,7 @@ export default function RealmResonance({ tracks, color, realmName, realmIcon, is
                 <input aria-label={`Seek in ${selected?.trackTitle??'selected song'}`} type="range" min={0} max={Math.max(1, player.duration)} step={0.1} value={active ? Math.min(player.currentTime, player.duration || 0) : 0} disabled={!active || !player.duration} onChange={event => player.seekTo(Number(event.target.value))} />
                 <span>{time(active ? player.currentTime : 0)} / {time(active ? player.duration : 0)}</span>
             </label>
-            <div className="resonance-options"><button aria-pressed={enabled} disabled={reduced} onClick={() => setEnabled(value => !value)}>{enabled ? 'Turn live visuals off' : 'Enable live visuals'}</button><p role="status">{status}</p></div>
+            <div className="resonance-options"><button aria-pressed={enabled} disabled={reduced} onClick={() => { const next=!enabled; setEnabled(next); try { localStorage.setItem('cosmic.realm.visuals',next?'on':'off'); } catch { /* Optional preference. */ } }}>{enabled ? 'Reduce visuals' : 'Restore visuals'}</button><p role="status">{status}</p></div>
         </div>
         <nav className="resonance-song-path" aria-label="Ordered soundtrack songs">
             {tracks.map((track, index) => <button key={track.id} aria-pressed={selected?.id === track.id}
