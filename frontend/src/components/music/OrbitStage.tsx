@@ -1,11 +1,11 @@
 'use client';
 import { useEffect, useRef, useState, type CSSProperties, type RefObject } from 'react';
 import type { MusicTrack } from '@/context/MusicPlayerProvider';
-import { chamberPositions, chamberConnection } from '@/lib/orbitStageGeometry';
+import { chamberPositions, chamberConnection, spectralRibbon, boundedAssemblyAngle } from '@/lib/orbitStageGeometry';
 import { createRealmHeart } from '@/lib/realmHeartRenderer';
 import './orbitStage.css';
 
-export type ChamberMeasurement = { energy: number; high: number };
+export type ChamberMeasurement = { energy: number; high: number; bands?: number[] };
 type Props = {
     tracks: MusicTrack[]; selectedId?: string; playingId?: string;
     realmName: string; realmIcon: string; color: string; reduced: boolean;
@@ -21,9 +21,11 @@ export default function OrbitStage({ tracks, selectedId, playingId, realmName, r
     const settling = useRef({ pointer:false, focus:false });
     const [motion, setMotion] = useState(true);
     const phase = useRef(0);
+    const turn = useRef(0);
+    const ribbons = useRef<(SVGPathElement | null)[]>([]);
     // Read changing selection without restarting the animation or recreating GPU resources.
-    const state = useRef({ ids: visible.map(t=>t.id), playingId, measurement, reduced, motion });
-    useEffect(()=>{ state.current={ids:visible.map(t=>t.id),playingId,measurement,reduced,motion}; });
+    const state = useRef({ ids: visible.map(t=>t.id), playingId, selectedId, measurement, reduced, motion });
+    useEffect(()=>{ state.current={ids:visible.map(t=>t.id),playingId,selectedId,measurement,reduced,motion}; });
     useEffect(() => {
         const element=root.current, canvas=core.current;
         if (!element || !canvas) return;
@@ -44,7 +46,8 @@ export default function OrbitStage({ tracks, selectedId, playingId, realmName, r
             const delta=Math.min((now-last)/1000,.05);last=now;
             const s=state.current;
             const moving=s.motion&&!s.reduced&&!settling.current.pointer&&!settling.current.focus;
-            if(moving){clock+=delta;phase.current+=delta*Math.PI*2/110;}
+            if(moving) clock+=delta;
+            phase.current=boundedAssemblyAngle(turn.current,clock);
             const energy=s.reduced?0:s.measurement.current.energy;
             const response = Math.min(1, energy + (s.reduced ? 0 : s.measurement.current.high * .15));
             if (clock !== drawnClock || response !== drawnEnergy) {
@@ -54,7 +57,13 @@ export default function OrbitStage({ tracks, selectedId, playingId, realmName, r
             positions.forEach((p,i)=>{
                 const node=nodes.current[i],path=paths.current[i];
                 if(node){node.style.left=`${p.x}%`;node.style.top=`${p.y}%`;node.style.zIndex=String(10+Math.round(p.depth*10));node.style.setProperty('--depth',String(p.scale));}
-                if(path){path.setAttribute('d',chamberConnection(p.x,p.y));const active=s.ids[i]===s.playingId;path.style.opacity=String(active?.5+energy*.5:.16);path.style.strokeWidth=String(active?.18+energy*.5:.11);}
+                if(path){const active=s.ids[i]===s.playingId; const selected=s.ids[i]===s.selectedId; path.setAttribute('d',chamberConnection(p.x,p.y,active?energy:0,clock));path.style.opacity=String(active?.5+energy*.5:selected?.36:.16);path.style.strokeWidth=String(active?.18+energy*.4:.11);}
+            });
+            ribbons.current.forEach((ribbon,i)=>{
+                if(!ribbon)return;
+                const band=s.reduced?0:(s.measurement.current.bands?.[i]??0);
+                ribbon.setAttribute('d',spectralRibbon(i,band,clock));
+                ribbon.style.opacity=String(energy>0?.03+band*.16:0);
             });
             element?.style.setProperty('--chamber-energy',String(energy));
         }
@@ -64,7 +73,7 @@ export default function OrbitStage({ tracks, selectedId, playingId, realmName, r
         return()=>{disposed=true;cancelAnimationFrame(frame);observer.disconnect();document.removeEventListener('visibilitychange',sync);canvas.removeEventListener('webglcontextlost',lost);canvas.removeEventListener('webglcontextrestored',restored);renderer?.dispose();};
     },[color]);
     const positions=chamberPositions(visible.length,phase.current);
-    return <div className="orbit-chamber" ref={root} style={{color,'--chamber-color':color} as CSSProperties}
+    return <div className="orbit-chamber" data-chamber-version="3.1" data-song-count={visible.length} ref={root} style={{color,'--chamber-color':color} as CSSProperties}
         onPointerEnter={e=>{if(e.pointerType!=='touch')settling.current.pointer=true;}}
         onPointerLeave={()=>{settling.current.pointer=false;}}
         onPointerDown={()=>{settling.current.pointer=true;}}
@@ -72,6 +81,11 @@ export default function OrbitStage({ tracks, selectedId, playingId, realmName, r
         onPointerCancel={()=>{settling.current.pointer=false;}}
         onFocusCapture={()=>{settling.current.focus=true;}}
         onBlurCapture={e=>{if(!e.currentTarget.contains(e.relatedTarget))settling.current.focus=false;}}>
+        <div className="chamber-aura" aria-hidden="true" />
+        <svg className="chamber-spectral-field" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+            {Array.from({length:7},(_,i)=><path key={i} ref={el=>{ribbons.current[i]=el;}} d={spectralRibbon(i,0,0)} />)}
+        </svg>
+        <div className="chamber-uprights" aria-hidden="true" />
         <div className="chamber-vault" aria-hidden="true" />
         <div className="chamber-floor" aria-hidden="true"><i/><i/><i/></div>
         <svg className="chamber-filaments" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
@@ -89,6 +103,11 @@ export default function OrbitStage({ tracks, selectedId, playingId, realmName, r
             <span className="chamber-song-surface">{track.artworkUrl?<img src={track.artworkUrl} alt=""/>:<span aria-hidden="true">♪</span>}</span>
             <span className="chamber-song-label">{track.trackTitle}</span>
         </button>)}
+        <div className="chamber-turn" role="group" aria-label="Assembly orientation">
+            <button aria-label="Turn assembly left" onClick={()=>{turn.current=Math.max(-.3,turn.current-.15);}}>↶</button>
+            <button aria-label="Center assembly" onClick={()=>{turn.current=0;}}>Center</button>
+            <button aria-label="Turn assembly right" onClick={()=>{turn.current=Math.min(.3,turn.current+.15);}}>↷</button>
+        </div>
         <button className="chamber-motion" disabled={reduced} aria-pressed={motion&&!reduced} onClick={()=>setMotion(v=>!v)}>{reduced?'Reduced motion':motion?'Pause chamber motion':'Resume chamber motion'}</button>
         <span className="chamber-caption">Authored atmosphere · audio response when enabled</span>
     </div>;

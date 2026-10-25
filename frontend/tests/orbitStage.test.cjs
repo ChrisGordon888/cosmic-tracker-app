@@ -7,7 +7,7 @@ test('Projected centers stay bounded, unique and attached to the center through 
 });
 test('Stage exposes only real songs, forwards selection, preserves disabled controls and static mode',()=>{
  const C=load('src/components/music/OrbitStage.tsx',{react:{...React,useEffect:()=>{},useRef:v=>({current:v}),useState:v=>[v,()=>{}]},'@/lib/orbitStageGeometry':geom,'@/lib/realmHeartRenderer':{}}).default;
- for(const count of [0,1,5,9,30,100]){const calls=[],tracks=Array.from({length:count},(_,i)=>({id:String(i),trackTitle:`Song ${i}`,trackUrl:i===1?'':'/tone.wav'}));const tree=walk(C({tracks,selectedId:'0',playingId:'0',realmName:'Fixture',realmIcon:'✦',color:'#fff',reduced:true,measurement:{current:{energy:0,high:0}},onChoose:t=>calls.push(t),isTrackLocked:()=>false}));const buttons=tree.filter(n=>n.type==='button'&&n.props.className.startsWith('chamber-song '));assert.equal(buttons.length,Math.min(count,8));if(count){assert.equal(buttons[0].props['aria-label'],'Pause Song 0');buttons[0].props.onClick();assert.equal(calls[0],tracks[0]);}if(count>1)assert.equal(buttons[1].props.disabled,true);assert.equal(tree.find(n=>n.props?.className==='chamber-motion').props.disabled,true);}
+ for(const count of [0,1,5,9,30,100]){const calls=[],tracks=Array.from({length:count},(_,i)=>({id:String(i),trackTitle:`Song ${i}`,trackUrl:i===1?'':'/tone.wav'}));const tree=walk(C({tracks,selectedId:'0',playingId:'0',realmName:'Fixture',realmIcon:'✦',color:'#fff',reduced:true,measurement:{current:{energy:0,high:0}},onChoose:t=>calls.push(t),isTrackLocked:()=>false}));const buttons=tree.filter(n=>n.type==='button'&&n.props.className?.startsWith('chamber-song '));assert.equal(buttons.length,Math.min(count,8));if(count){assert.equal(buttons[0].props['aria-label'],'Pause Song 0');buttons[0].props.onClick();assert.equal(calls[0],tracks[0]);}if(count>1)assert.equal(buttons[1].props.disabled,true);assert.equal(tree.find(n=>n.props?.className==='chamber-motion').props.disabled,true);}
 });
 test('GPU absence and shader failure return a CSS fallback and clean created resources',()=>{
  const {createRealmHeart}=load('src/lib/realmHeartRenderer.ts');assert.equal(createRealmHeart({getContext:()=>null},[1,0,0]),null);
@@ -25,4 +25,14 @@ test('Stage teardown cancels animation, disconnects observer and removes listene
  tree.find(n=>n.props?.className==='orbit-chamber').props.ref.current=root;
  tree.find(n=>n.type==='canvas').props.ref.current=canvas;
  effects[0]();const cleanup=effects[1]();assert.equal(root.dataset.renderer,'css');assert.equal(callbacks.size,3);cleanup();assert.equal(callbacks.size,0);assert.equal(disconnected,1);assert.ok(cancelled.includes(9));
+});
+
+test('Ceremonial orientation is bounded; measured paths retain anchored endpoints and quiet background',()=>{
+ assert.equal(geom.chamberPositions(1)[0].x,50);
+ for(const turn of [-100,0,100])for(const time of [0,28,80,1000])assert.ok(Math.abs(geom.boundedAssemblyAngle(turn,time))<=.36);
+ const line=geom.chamberConnection(87,48,.8,3).split(' ');
+ assert.deepEqual(line.slice(0,3),['M','50','48']);
+ assert.ok(Math.abs(Number(line.at(-2))-87)<1e-10);assert.ok(Math.abs(Number(line.at(-1))-48)<1e-10);
+ assert.equal(geom.spectralRibbon(3,0,0),geom.spectralRibbon(3,0,10));
+ assert.notEqual(geom.spectralRibbon(3,.8,0),geom.spectralRibbon(3,.8,10));
 });

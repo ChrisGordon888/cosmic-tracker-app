@@ -24,3 +24,18 @@
 .chamber-motes {position:absolute;inset:0;pointer-events:none;opacity:.4;}.chamber-motes i {position:absolute;left:29%;top:30%;width:2px;height:2px;background:#f5e6c7;box-shadow:0 0 7px currentColor;border-radius:50%;}.chamber-motes i:nth-child(2){left:68%;top:22%;}.chamber-motes i:nth-child(3){left:74%;top:67%;}.chamber-motes i:nth-child(4){left:25%;top:62%;}
 @media(max-width:600px){.orbit-chamber{height:470px;}.chamber-heart{width:156px;height:156px;}.chamber-heart>span{font-size:25px;}.chamber-signature{top:calc(48% + 55px);width:50%;}.chamber-signature strong{font-size:13px;}.chamber-signature small{font-size:6px;}.chamber-song{width:44px;height:44px;}.chamber-song-label{width:80px;font-size:9px;top:calc(100% + 10px);}.chamber-caption{display:none;}.chamber-motion{bottom:5px;font-size:9px;}.chamber-floor{top:76%;height:13%;}}
 @media(prefers-reduced-motion:reduce){.orbit-chamber *{animation:none!important;transition:none!important;}}
+/* V3.1: a standing installation inside one restrained measured light field. */
+.orbit-chamber { max-width:760px; margin-inline:auto; height:650px; background:transparent; }
+.chamber-vault { inset:3% 7% 8%; border-color:color-mix(in srgb,var(--chamber-color),transparent 86%); box-shadow:inset 0 -20px 50px #0004,inset 0 1px 0 #ffffff20,0 0 36px color-mix(in srgb,var(--chamber-color),transparent 95%); }
+.chamber-heart { width:250px;height:250px; }.chamber-signature { top:calc(48% + 87px); }
+.chamber-aura { position:absolute;inset:0;pointer-events:none;opacity:calc(.28 + var(--chamber-energy)*.5);background:radial-gradient(ellipse at 50% 43%,color-mix(in srgb,var(--chamber-color),transparent 65%),transparent 48%),radial-gradient(ellipse at 50% 78%,color-mix(in srgb,var(--chamber-color),transparent 60%),transparent 38%); }
+.chamber-spectral-field { position:absolute;inset:0;width:100%;height:100%;pointer-events:none;filter:blur(1.5px); }
+.chamber-spectral-field path { fill:none;stroke:currentColor;stroke-width:.35;opacity:0; }
+.chamber-uprights {position:absolute;inset:13% 10% 19%;border-left:1px solid #ffffff12;border-right:1px solid #ffffff12;border-radius:45%;pointer-events:none;box-shadow:inset 10px 0 30px color-mix(in srgb,var(--chamber-color),transparent 96%),inset -10px 0 30px color-mix(in srgb,var(--chamber-color),transparent 96%);}
+.chamber-song-surface {box-shadow:inset -7px -8px 14px #0007,inset 2px 2px 5px #ffffff55,0 8px 16px #0008,0 0 18px color-mix(in srgb,var(--chamber-color),transparent 80%);position:relative;}
+.chamber-song-surface::after {content:'';position:absolute;inset:0;border-radius:50%;background:linear-gradient(140deg,#fff3,transparent 40% 70%,#0006);pointer-events:none;}
+.orbit-chamber[data-song-count='1'] .chamber-song {width:72px;height:72px;}
+.chamber-turn {position:absolute;bottom:10px;left:18px;z-index:25;display:flex;gap:4px;}
+.chamber-turn button {min-width:44px;min-height:44px;padding:6px 10px;border-radius:22px;border:1px solid #ffffff25;background:#ffffff06;color:#e8e7ef;font-size:11px;cursor:pointer;}
+.chamber-motion {bottom:10px;background:#ffffff06;}.chamber-caption {bottom:64px;left:0;width:100%;text-align:center;font-size:8px;opacity:.65;}
+@media(max-width:600px){.orbit-chamber{height:490px;}.chamber-heart{width:172px;height:172px;}.chamber-signature{top:calc(48% + 61px);}.orbit-chamber[data-song-count='1'] .chamber-song{width:52px;height:52px;}.chamber-turn{left:10px;bottom:0;gap:2px;}.chamber-turn button{padding:5px;font-size:10px;}.chamber-motion{right:10px;bottom:0;font-size:9px;padding:6px 9px;}.chamber-caption{display:none;}}

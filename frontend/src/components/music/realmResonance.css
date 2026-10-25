@@ -68,3 +68,9 @@
 .resonance-heading { position:relative; top:auto; left:auto; padding:24px 28px 0; }
 .resonance-selected { position:relative; bottom:auto; left:auto; right:auto; padding:16px 24px 24px; }
 @media(max-width:600px){.resonance-stage{height:auto;min-height:0;}.resonance-heading{padding:20px 18px 0;}.resonance-selected{bottom:auto;padding:16px 18px 22px;}}
+/* One continuous glass envelope; lower controls no longer stack opaque black panels. */
+.realm-resonance { background:linear-gradient(150deg,#080e19e8,#0b111bdd),radial-gradient(ellipse at 50% 55%,var(--resonance),transparent 75%); }
+.resonance-stage {background:radial-gradient(ellipse at 50% 45%,color-mix(in srgb,var(--resonance),transparent 90%),transparent 75%);}
+.resonance-selected {background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--resonance),transparent 94%));border-bottom:1px solid #ffffff0c;}
+.resonance-console {background:linear-gradient(180deg,color-mix(in srgb,var(--resonance),transparent 94%),#ffffff02);}
+.resonance-song-path,.resonance-search {background:#ffffff02;}

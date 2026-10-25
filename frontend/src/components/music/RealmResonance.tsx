@@ -76,7 +76,9 @@ export default function RealmResonance({ tracks, color, realmName, realmIcon, is
                 connection.analyser.getByteFrequencyData(spectrum);
                 connection.analyser.getByteTimeDomainData(wave);
                 const energy = measuredEnergy(wave);
-                measurement.current = { energy: Math.min(1, energy * 3), high: spectrum[48] / 255 };
+                measurement.current = { energy: Math.min(1, energy * 3), high: spectrum[48] / 255, bands: Array.from({length:7},(_,i)=>{
+                    let sum=0;for(let bin=0;bin<8;bin++)sum+=spectrum[i*8+bin];return sum/(8*255);
+                }) };
                 const signal = energy > 0.0001;
                 if (signal !== audible) { audible = signal; setStatus(signal ? 'Live spectrum · measured audio' : 'No measurable signal · silence or restricted capture'); }
 
