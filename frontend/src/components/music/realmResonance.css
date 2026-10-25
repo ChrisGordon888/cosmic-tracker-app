@@ -62,3 +62,9 @@
 .resonance-search summary:focus-visible { outline:2px solid var(--resonance); outline-offset:-4px; }
 
 .resonance-selected h3 { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+
+/* V3 chamber owns its visual layout; metadata and transport remain in normal flow. */
+.resonance-stage { height:auto; min-height:0; overflow:visible; background:linear-gradient(#080c15,#060911); }
+.resonance-heading { position:relative; top:auto; left:auto; padding:24px 28px 0; }
+.resonance-selected { position:relative; bottom:auto; left:auto; right:auto; padding:16px 24px 24px; }
+@media(max-width:600px){.resonance-stage{height:auto;min-height:0;}.resonance-heading{padding:20px 18px 0;}.resonance-selected{bottom:auto;padding:16px 18px 22px;}}

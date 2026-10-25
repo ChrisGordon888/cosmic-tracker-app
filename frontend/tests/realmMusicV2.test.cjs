@@ -4,9 +4,9 @@ function load(file,mocks={}){const m={exports:{}};vm.runInNewContext(ts.transpil
 const geometry=load('src/lib/orbitGeometry.ts');
 test('One, two and eight song centers lie precisely on their declared concentric paths',()=>{for(const count of [1,2,8]){const points=geometry.orbitPositions(count);assert.equal(points.length,count);for(const p of points)assert.ok(Math.abs(Math.hypot(p.x-50,p.y-50)-p.radius)<.00001);assert.equal(new Set(points.map(p=>`${p.x},${p.y}`)).size,count);}});
 const tracks=Array.from({length:12},(_,i)=>({id:String(i),trackTitle:`Signal ${i+1}`,trackUrl:`/fiction-${i}.wav`,realmId:0}));
-function render(file,list=tracks,current=tracks[0]){const calls=[];const player={currentTrack:current,isPlaying:true,duration:60,currentTime:12,getAudioElement:()=>null,playOrToggleTrack:(...a)=>calls.push(a),seekTo:t=>calls.push(t)};const component=load(file,{'react':{...React,useState:v=>[v,()=>{}],useEffect:()=>{},useRef:()=>({current:null})},'next/link':{default:'a'},'@/lib/releaseSharing':{publicWorldHref:()=>'/world'},'@/lib/orbitGeometry':geometry,'@/lib/resonanceAnalysis':{},'@/hooks/useMusicPlayer':{useMusicPlayer:()=>player}}).default;
+function render(file,list=tracks,current=tracks[0]){const calls=[];const player={currentTrack:current,isPlaying:true,duration:60,currentTime:12,getAudioElement:()=>null,playOrToggleTrack:(...a)=>calls.push(a),seekTo:t=>calls.push(t)};const component=load(file,{'react':{...React,useState:v=>[v,()=>{}],useEffect:()=>{},useRef:()=>({current:null})},'next/link':{default:'a'},'@/lib/releaseSharing':{publicWorldHref:()=>'/world'},'@/lib/orbitGeometry':geometry,'./OrbitStage':{default:'orbit-stage'},'@/lib/resonanceAnalysis':{},'@/hooks/useMusicPlayer':{useMusicPlayer:()=>player}}).default;
 return {calls,nodes:walk(component({tracks:list,realmId:'0',realmName:'InterSiddhi',realmIcon:'✦',color:'#fff'}))};}
-test('Full Realm pages the visual nodes but audition keeps all twelve tracks in shared queue',()=>{const {nodes,calls}=render('src/components/music/RealmResonance.tsx');assert.equal(nodes.filter(n=>n.props?.className?.startsWith('resonance-node ')).length,8);nodes.find(n=>n.props?.['aria-label']==='Play Signal 2').props.onClick();assert.equal(calls[0][0].id,'1');assert.equal(calls[0][1].length,12);assert.equal(calls[0][2].source,'realm');nodes.find(n=>n.type==='input'&&n.props.type==='range').props.onChange({target:{value:'31'}});assert.equal(calls[1],31);});
+test('Full Realm pages the visual nodes but audition keeps all twelve tracks in shared queue',()=>{const {nodes,calls}=render('src/components/music/RealmResonance.tsx');const stage=nodes.find(n=>n.type==='orbit-stage');assert.equal(stage.props.tracks.length,8);stage.props.onChoose(stage.props.tracks[1]);assert.equal(calls[0][0].id,'1');assert.equal(calls[0][1].length,12);assert.equal(calls[0][2].source,'realm');nodes.find(n=>n.type==='input'&&n.props.type==='range').props.onChange({target:{value:'31'}});assert.equal(calls[1],31);});
 test('Sampler adapter preserves editorial sequence, shared state and progress',()=>{
  const Orbit=()=>null;const C=load('src/components/music/NexusRealmSampler.tsx',{'./RealmOrbitCard':{default:Orbit},'@/hooks/useMusicPlayer':{useMusicPlayer:()=>({currentTrack:tracks[8],isPlaying:true})}}).default;
  const list=[tracks[4],tracks[1],tracks[8]],n=C({tracks:list,realmId:'0',realmName:'InterSiddhi',realmIcon:'✦',color:'#fff',progress:40});
@@ -37,7 +37,7 @@ test('Uncapped ordered pills survive missing measurements and bounded orbit at 1
   const {nodes,calls}=render('src/components/music/RealmResonance.tsx',list,list[0]);
   const path=nodes.find(n=>n.props?.['aria-label']==='Ordered soundtrack songs');
   const pills=walk(path).filter(n=>n.type==='button');assert.equal(pills.length,count);
-  assert.equal(nodes.filter(n=>n.props?.className?.startsWith('resonance-node ')).length,Math.min(count,8));
+  assert.equal(nodes.find(n=>n.type==='orbit-stage').props.tracks.length,Math.min(count,8));
   pills.at(-1).props.onClick();assert.equal(calls[0][0].id,String(count-1));assert.equal(calls[0][1].length,count);
   assert.ok(nodes.some(n=>n.type==='details'&&!n.props.open));
  }

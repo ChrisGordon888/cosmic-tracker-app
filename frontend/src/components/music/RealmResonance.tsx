@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { publicWorldHref } from '@/lib/releaseSharing';
-import { orbitPositions } from '@/lib/orbitGeometry';
+import OrbitStage, { type ChamberMeasurement } from './OrbitStage';
 import type { MusicTrack } from '@/context/MusicPlayerProvider';
 import { useMusicPlayer } from '@/hooks/useMusicPlayer';
 import { openResonanceAnalysis, measuredEnergy, analysisFailureMessage } from '@/lib/resonanceAnalysis';
@@ -27,7 +27,6 @@ export default function RealmResonance({ tracks, color, realmName, realmIcon, is
     const pages = Math.max(1, Math.ceil(visibleTracks.length / 8));
     const safePage = Math.min(page, pages - 1);
     const orbitTracks = visibleTracks.slice(safePage * 8, safePage * 8 + 8);
-    const positions = orbitPositions(orbitTracks.length);
     const selectedVisibleIndex = visibleTracks.findIndex(t => t.id === selected?.id);
     useEffect(() => {
         if (selectedVisibleIndex >= 0) setPage(Math.floor(selectedVisibleIndex / 8));
@@ -42,11 +41,10 @@ export default function RealmResonance({ tracks, color, realmName, realmIcon, is
         const next = queue[(Math.max(0,index) + delta + queue.length) % queue.length];
         if(next) choose(next);
     }
-    const stage = useRef<HTMLDivElement>(null);
+    const measurement = useRef<ChamberMeasurement>({ energy: 0, high: 0 });
     const [enabled, setEnabled] = useState(false);
     const [reduced, setReduced] = useState(false);
     const [status, setStatus] = useState('Visuals off');
-    const canvas = useRef<HTMLCanvasElement>(null);
     useEffect(() => {
         const preference = matchMedia('(prefers-reduced-motion: reduce)');
         const update = () => setReduced(preference.matches);
@@ -54,11 +52,7 @@ export default function RealmResonance({ tracks, color, realmName, realmIcon, is
         return () => preference.removeEventListener('change', update);
     }, []);
     useEffect(() => {
-        const surface = canvas.current;
-        const paint = surface?.getContext('2d');
-        if (!surface || !paint) return;
-        paint.clearRect(0, 0, surface.width, surface.height);
-        stage.current?.style.setProperty("--energy", "0");
+        measurement.current = { energy: 0, high: 0 };
         if (!enabled || reduced || !active || !isPlaying) {
             setStatus(reduced ? 'Reduced motion · static atmosphere' : !enabled ? 'Visuals off' : active ? 'Paused · visuals still' : 'Choose a soundtrack song');
             return;
@@ -82,55 +76,25 @@ export default function RealmResonance({ tracks, color, realmName, realmIcon, is
                 connection.analyser.getByteFrequencyData(spectrum);
                 connection.analyser.getByteTimeDomainData(wave);
                 const energy = measuredEnergy(wave);
-                stage.current?.style.setProperty("--energy", String(Math.min(1,energy*3)));
+                measurement.current = { energy: Math.min(1, energy * 3), high: spectrum[48] / 255 };
                 const signal = energy > 0.0001;
                 if (signal !== audible) { audible = signal; setStatus(signal ? 'Live spectrum · measured audio' : 'No measurable signal · silence or restricted capture'); }
-                paint.clearRect(0, 0, 800, 800);
-                paint.strokeStyle = color; paint.fillStyle = color;
-                paint.globalAlpha = 0.2 + Math.min(energy, 0.5);
-                for (let ring = 0; ring < 3; ring++) {
-                    paint.beginPath(); paint.arc(400, 400, 245 + ring * 34 + energy * 12, 0, Math.PI * 2); paint.stroke();
-                }
-                for (let i = 0; i < 64; i++) {
-                    const level = spectrum[i * 2] / 255;
-                    const angle = i / 64 * Math.PI * 2;
-                    const x = 400 + Math.cos(angle) * 312, y = 400 + Math.sin(angle) * 312;
-                    paint.globalAlpha = 0.15 + level * 0.7;
-                    paint.beginPath(); paint.moveTo(x, y);
-                    paint.lineTo(x + Math.cos(angle) * level * 45, y + Math.sin(angle) * level * 45); paint.stroke();
-                    if (level > 0.25) { paint.beginPath(); paint.arc(x, y, 1 + level * 2, 0, Math.PI * 2); paint.fill(); }
-                }
-                paint.globalAlpha = 0.65;
-                paint.beginPath();
-                wave.forEach((sample, i) => {
-                    const x = 40 + i / (wave.length - 1) * 720, y = 400 + (sample - 128) * 0.8;
-                    if (i === 0) paint.moveTo(x, y); else paint.lineTo(x, y);
-                });
-                paint.stroke();
+
             };
             setStatus('No measurable signal · silence or restricted capture');
             frame = requestAnimationFrame(draw);
         }).catch(error => { if (!cancelled) setStatus(analysisFailureMessage(error)); });
-        return () => { cancelled = true; cancelAnimationFrame(frame); tap?.close(); paint.clearRect(0, 0, 800, 800); };
+        return () => { cancelled = true; cancelAnimationFrame(frame); tap?.close(); measurement.current = { energy: 0, high: 0 }; };
     }, [enabled, reduced, active, isPlaying, currentTrack?.id, currentTrack?.trackUrl, getAudioElement, color]);
 
 
     const locked = !selected || !selected.trackUrl || isTrackLocked(selected);
     return <section className="realm-resonance resonance-v2" style={{ '--resonance': color } as React.CSSProperties} aria-label={`${realmName} resonance player`}>
-        <div ref={stage} className="resonance-stage">
-            <div className="resonance-nebula" aria-hidden="true" />
+        <div className="resonance-stage">
             <header className="resonance-heading"><small>OFFICIAL REALM SOUNDTRACK</small><p>{tracks.length} {tracks.length === 1 ? 'signal' : 'signals'} · {realmName}</p></header>
-            <div className="resonance-plane">
-                <svg viewBox="0 0 100 100" className="resonance-paths" aria-hidden="true">
-                    {[23,31,39,45].map((radius,index)=><circle key={radius} cx="50" cy="50" r={radius} fill="none" stroke="currentColor" strokeWidth={index===2?'.16':'.08'} strokeDasharray={index===3?'1 3':undefined} />)}
-                </svg>
-                <canvas ref={canvas} width={800} height={800} aria-hidden="true" />
-                <div className="resonance-core"><span aria-hidden="true">{realmIcon}</span><strong>{realmName}</strong><small>{active && isPlaying ? 'RESONATING' : 'ENTER THROUGH SOUND'}</small></div>
-                {orbitTracks.map((track,index)=><button key={track.id} className={`resonance-node ${selected?.id===track.id?'is-selected':''}`} style={{left:`${positions[index].x}%`,top:`${positions[index].y}%`}} aria-label={`Play ${track.trackTitle}`} aria-pressed={selected?.id===track.id} disabled={!track.trackUrl || isTrackLocked(track)} onClick={()=>choose(track)}>
-                    {track.artworkUrl?<img src={track.artworkUrl} alt="" />:<span aria-hidden="true">✦</span>}
-                    <span className="resonance-node-label">{track.trackTitle}</span>
-                </button>)}
-            </div>
+            <OrbitStage tracks={orbitTracks} selectedId={selected?.id} playingId={active && isPlaying ? currentTrack?.id : undefined}
+                realmName={realmName} realmIcon={realmIcon} color={color} reduced={reduced} measurement={measurement}
+                onChoose={choose} isTrackLocked={isTrackLocked} />
             <div className="resonance-selected">
                 <small>{locked?'Listening unavailable':'SELECTED SIGNAL'}</small>
                 <h3 title={selected?.trackTitle}>{selected?.trackTitle ?? 'No matching signals'}</h3><p>{selected?.artist ?? 'Independent creator'}</p>

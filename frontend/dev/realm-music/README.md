@@ -29,3 +29,10 @@ No more than five sampler nodes or eight full-Realm nodes render. Verify keyboar
 focus/Enter, long titles, scrollable pills, 390px clearance. Editorial buttons must not
 write even when clicked in this harness. Authenticated editorial acceptance remains a
 separate staging check.
+
+## V3 chamber
+Optional `FIXTURE_PORT=4322` avoids disturbing an existing preview server. The fixture
+now includes original SVG artwork plus a missing-artwork song. `&nogl` disables only
+fixture WebGL creation to verify the CSS heart. No browser security settings change.
+The full stage now has a bounded DOM/SVG orbit and small WebGL core; sampler remains
+unchanged. See `docs/realm-soundstage-v3.md` at repository root for acceptance and limits.
