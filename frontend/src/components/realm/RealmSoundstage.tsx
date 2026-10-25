@@ -78,7 +78,7 @@ export default function RealmSoundstage({
 
     if (realmTracks.length === 0) {
         return (
-            <div className="glass-card p-4 md:p-6 mb-8">
+            <div className="realm-soundstage-shell mb-8">
                 <h2 className="text-2xl font-display mb-3">🎵 Realm Soundstage</h2>
                 <p className="text-secondary">{loading ? 'Listening for current signals…' : error ? 'Music could not be loaded. Try again shortly.' : 'Realm quiet. No official soundtrack selections here yet; this territory is still open. Explore its Worlds below, or follow the personal Realm path.'}</p>
             </div>
@@ -99,19 +99,8 @@ export default function RealmSoundstage({
     };
 
     return (
-        <div className="glass-card p-4 md:p-6 mb-8">
+        <div className="realm-soundstage-shell mb-8">
             <div className="mb-5">
-                <p className="text-xs uppercase tracking-[0.18em] text-white/60 mb-2">
-                    Realm Soundstage
-                </p>
-
-                <h2
-                    className="text-2xl md:text-3xl font-display mb-3"
-                    style={{ color: realmColor }}
-                >
-                    {realmName}
-                </h2>
-
                 {intro && <p className="text-secondary mb-3 max-w-3xl">{intro}</p>}
                 {supportText && <p className="text-sm text-muted max-w-3xl">{supportText}</p>}
             </div>

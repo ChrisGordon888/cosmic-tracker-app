@@ -74,3 +74,10 @@
 .resonance-selected {background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--resonance),transparent 94%));border-bottom:1px solid #ffffff0c;}
 .resonance-console {background:linear-gradient(180deg,color-mix(in srgb,var(--resonance),transparent 94%),#ffffff02);}
 .resonance-song-path,.resonance-search {background:#ffffff02;}
+/* Soundstage sits within the existing Realm atmosphere, not a nested glass card. */
+.realm-soundstage-shell {padding:12px 0;background:transparent;}
+.realm-soundstage-shell>div:first-child {padding-inline:12px;}
+.realm-resonance {background:linear-gradient(180deg,#0b101b45,#0b101b70);box-shadow:0 16px 50px #0002;}
+.resonance-selected {background:linear-gradient(transparent,color-mix(in srgb,var(--resonance),transparent 94%));}
+.resonance-console {background:linear-gradient(#10142112,#10142135);}
+.resonance-heading p {font-size:11px;}

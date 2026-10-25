@@ -93,7 +93,7 @@ export default function RealmResonance({ tracks, color, realmName, realmIcon, is
     const locked = !selected || !selected.trackUrl || isTrackLocked(selected);
     return <section className="realm-resonance resonance-v2" style={{ '--resonance': color } as React.CSSProperties} aria-label={`${realmName} resonance player`}>
         <div className="resonance-stage">
-            <header className="resonance-heading"><small>OFFICIAL REALM SOUNDTRACK</small><p>{tracks.length} {tracks.length === 1 ? 'signal' : 'signals'} · {realmName}</p></header>
+            <header className="resonance-heading"><small>OFFICIAL REALM SOUNDTRACK</small><p>{tracks.length} {tracks.length === 1 ? 'signal' : 'signals'}</p></header>
             <OrbitStage tracks={orbitTracks} selectedId={selected?.id} playingId={active && isPlaying ? currentTrack?.id : undefined}
                 realmName={realmName} realmIcon={realmIcon} color={color} reduced={reduced} measurement={measurement}
                 onChoose={choose} isTrackLocked={isTrackLocked} />

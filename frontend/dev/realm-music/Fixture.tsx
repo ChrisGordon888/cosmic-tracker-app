@@ -17,6 +17,6 @@ function Scene(){const p=useMusicPlayerContext();return <><nav style={{display:'
 {(mode==='sampler'?[0,1,2,3,4,5,9]:[1,5,9,30,100]).map(n=><a key={n} href={`/?mode=${mode}&count=${n}&realm=${realm.id}`}>{n} songs</a>)}
 {identities.map(r=><a key={r.id} href={`/?mode=${mode}&count=${count}&realm=${r.id}`}>{r.name}</a>)}
 <a href={`/mobile?mode=${mode}&count=${count}&realm=${realm.id}`}>390px preview</a></nav>
-{mode==='editorial'?<RealmSelections/>:mode==='sampler'?<div style={{maxWidth:500}}><NexusRealmSampler progress={40} tracks={tracks} realmId={String(realm.id)} realmName={realm.name} realmIcon={realm.icon} color={realm.color}/></div>:<RealmResonance tracks={tracks} color={realm.color} realmName={realm.name} realmIcon={realm.icon}/>}
+{mode==='editorial'?<RealmSelections/>:mode==='sampler'?<div style={{maxWidth:500}}><NexusRealmSampler progress={40} tracks={tracks} realmId={String(realm.id)} realmName={realm.name} realmIcon={realm.icon} color={realm.color}/></div>:<section className="realm-soundstage-shell" style={{background:`radial-gradient(ellipse at 20% 40%, ${realm.color}, transparent 70%),linear-gradient(130deg,#15243b,#523326)`}}><RealmResonance tracks={tracks} color={realm.color} realmName={realm.name} realmIcon={realm.icon}/></section>}
 <aside>Shared provider: {p.currentTrack?.trackTitle??'No song'} · {p.isPlaying?'Playing':'Paused'}</aside><MiniPlayer/></>}
 export default function Fixture(){return <MusicPlayerProvider><Scene/></MusicPlayerProvider>}
