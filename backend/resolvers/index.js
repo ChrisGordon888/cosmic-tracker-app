@@ -1,3 +1,4 @@
+const EDITORIAL_READ_ONLY = Symbol('editorial-read-only');
 const realmEditorial = require('../lib/realmEditorial');
 const { publicWorldFilter, projectTrackFilter, projectRealm } = require('../lib/publicProjects');
 const { curationUpdate } = require('../lib/publicCanon');
@@ -2162,6 +2163,63 @@ module.exports = {
                 .filter(Boolean);
         },
 
+        // Both assessment and anonymous verification reuse public filtering without scheduling writes.
+        publicEditorialDelivery: async (_, { realmId }) => {
+            if (realmId != null && !realmEditorial.REALMS.includes(realmId)) throw new Error('Choose a valid Realm.');
+            const read = args => module.exports.Query.getPublicNexusTracks(null, args, {}, EDITORIAL_READ_ONLY);
+            const [soundtrack, sampler, nexus, discovery, worlds, spotlight] = await Promise.all([
+                read({realmId}), read({realmId,samplerOnly:true}), read({realmId,nexusOnly:true}),
+                module.exports.Query.publicProjects(null,{discoveryOnly:true,realmId},{}),
+                module.exports.Query.publicProjects(null,{selectedOnly:true},{}), getPublicSpotlightTrack()
+            ]);
+            return { checkedAt: new Date().toISOString(), soundtrackIds: soundtrack.map(t=>String(t._id)),
+                samplerIds: sampler.map(t=>String(t._id)), nexusIds: nexus.map(t=>String(t._id)),
+                discoveryIds: discovery.map(p=>String(p.world._id)), worldIds: worlds.map(p=>String(p.world._id)),
+                spotlightId: spotlight ? String(spotlight._id) : null };
+        },
+        editorialStudioAssessment: async (_, { trackIds = [], worldIds = [], proposedRealmId }, { user }) => {
+            requireNexusReview(user);
+            if (worldIds.length) requireNexusEditorial(user);
+            if (trackIds.length + worldIds.length > 500) throw new Error('Assess at most 500 references at once.');
+            if (proposedRealmId != null && (!realmEditorial.REALMS.includes(proposedRealmId) || trackIds.length !== 1)) throw new Error('Choose one submission and a valid Realm.');
+            const config = await NexusEditorialConfig.findOne({key:'global'});
+            const caps = {canReview:canReviewNexus(user),canPublish:canPublishToNexus(user),canPlace:canManageNexusEditorial(user)};
+            const tracks = await ReleaseTrack.find({_id:{$in:trackIds},nexusReviewStatus:{$in:['in-review','needs-changes','approved','published']}});
+            const [publicMain, publicNexus] = await Promise.all([module.exports.Query.getPublicNexusTracks(null,{}, {},EDITORIAL_READ_ONLY),module.exports.Query.getPublicNexusTracks(null,{nexusOnly:true}, {},EDITORIAL_READ_ONLY)]);
+            const {assessEditorial} = require('../lib/editorialAssessment');
+            const results = [];
+            for (const id of trackIds) {
+                const stored = tracks.find(t=>String(t._id)===String(id));
+                const track = stored ? getNexusPublicationCandidate(stored, proposedRealmId == null ? {} : {realmId:proposedRealmId}) : null;
+                const world = track && await ReleaseWorld.findOne({_id:track.releaseWorldId,ownerId:track.ownerId});
+                let sourceProblem=null, publicationProblem=null;
+                if (track) {
+                    if (!world || world.visibility!=='public' || world.status==='archived') sourceProblem='Parent World is not publicly eligible.';
+                    else if (!await publicProjectCreator(world)) sourceProblem='Creator account or profile is not eligible for public discovery.';
+                    else if (!['public','listed'].includes(track.visibility)||track.status==='archived'||isProtectedTrack(track)) sourceProblem='Track is private, protected or archived.';
+                    try { validateNexusPublication(getNexusPublicationCandidate(track,{showInNexus:true}),world); }
+                    catch(error) { publicationProblem=error.message; }
+                }
+                // No unrelated private track metadata is returned for arbitrary IDs.
+                const assessment=await assessEditorial({track,world:track?world:null,known:id,capabilities:caps,sourceProblem,publicationProblem,
+                    anonymousPlayable:Boolean(track&&canAccessTrackAudio(track,null)&&(track.playbackStatus==='preview'?track.previewAudioUrl:track.audioUrl||track.previewAudioUrl)),
+                    publicSource:publicMain.some(t=>String(t._id)===String(id)),config});
+                results.push({...assessment,kind:'track',publicSoundtrack:publicMain.some(t=>String(t._id)===String(id)),publicNexus:publicNexus.some(t=>String(t._id)===String(id)),anonymousPlayable:Boolean(track&&canAccessTrackAudio(track,null)&&(track.playbackStatus==='preview'?track.previewAudioUrl:track.audioUrl||track.previewAudioUrl))});
+            }
+            for (const id of worldIds) {
+                const world=await ReleaseWorld.findOne({_id:id,visibility:'public',status:{$ne:'archived'}});
+                const sourceProblem=world && await publicProjectCreator(world) ? null : 'World, creator or profile is not publicly eligible.';
+                const assessment=await assessEditorial({world,known:id,capabilities:caps,sourceProblem,config});
+                results.push({...assessment,kind:'world'});
+            }
+            return results;
+        },
+        // Studio reads must never initialize or repair editorial configuration.
+        editorialStudioConfig: async (_, __, { user }) => {
+            requireNexusReview(user);
+            return NexusEditorialConfig.findOne({ key: "global" });
+        },
+
         nexusEditorialConfig: async (_, __, { user }) => {
             requireNexusReview(user);
             return await getOrCreateNexusEditorialConfig();
@@ -2250,9 +2308,9 @@ module.exports = {
             });
         },
 
-        getPublicNexusTracks: async (_, { realmId, nexusOnly = false, samplerOnly = false }) => {
+        getPublicNexusTracks: async (_, { realmId, nexusOnly = false, samplerOnly = false }, _context, executionMode) => {
             if (nexusOnly && samplerOnly) throw new Error("Choose one editorial source.");
-            await processDueScheduledReleaseWorlds();
+            if (executionMode !== EDITORIAL_READ_ONLY) await processDueScheduledReleaseWorlds();
 
             const publicWorlds = await ReleaseWorld.find({
                 visibility: "public", status: { $ne: "archived" },
@@ -4619,7 +4677,7 @@ module.exports = {
             requireNexusEditorial(user);
             const config=await getOrCreateNexusEditorialConfig();
             if ((config.samplerRevision||0)!==expectedRevision) throw new Error('Sampler changed. Reload before saving.');
-            const eligible=await module.exports.Query.getPublicNexusTracks(null,{realmId});
+            const eligible=await module.exports.Query.getPublicNexusTracks(null,{realmId},{},EDITORIAL_READ_ONLY);
             const playable=eligible.filter(t=>canAccessTrackAudio(t,null)&&Boolean(t.playbackStatus==='preview'?t.previewAudioUrl:t.audioUrl||t.previewAudioUrl));
             const ids=require('../lib/realmSampler').validateSampler(realmId,trackIds,playable);
             const samplers=(config.nexusRealmSamplers||[]).filter(s=>s.realmId!==realmId).map(s=>({realmId:s.realmId,trackIds:s.trackIds}));

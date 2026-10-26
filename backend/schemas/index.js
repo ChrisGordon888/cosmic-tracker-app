@@ -263,7 +263,13 @@ const typeDefs = gql`
   type PublicProject { creatorName: String! isSelected: Boolean! world: ReleaseWorld! tracks: [ReleaseTrack!]! realmId: Int }
   type RealmDiscoverySelection { realmId: Int! worldId: ID! }
   type RealmSoundtrackSelection { realmId: Int! worldId: ID! trackId: ID! }
+  type EditorialActionAssessment { name: String! allowed: Boolean! reasons: [String!]! }
+  type EditorialAssessment { id: ID! kind: String! publicSoundtrack: Boolean publicNexus: Boolean anonymousPlayable: Boolean actions: [EditorialActionAssessment!]! }
+  type PublicEditorialDelivery { checkedAt: String! soundtrackIds: [ID!]! samplerIds: [ID!]! nexusIds: [ID!]! discoveryIds: [ID!]! worldIds: [ID!]! spotlightId: ID }
+  type EditorialPlacementEvent { action: String destination: String sourceId: String selected: Boolean realmId: Int at: String }
+
   type NexusEditorialConfig {
+    placementHistory: [EditorialPlacementEvent!]
     nexusRealmSamplers: [NexusRealmOrderConfig!]!
     samplerRevision: Int
     soundtrackWithdrawnTrackIds: [ID!]
@@ -852,6 +858,9 @@ const typeDefs = gql`
     nexusReviewEvidence(trackId: ID!): [EditorialReviewEvidence!]!
     nexusReviewQueue(status: String): [NexusReviewItem!]!
     publicProjects(selectedOnly: Boolean = false, discoveryOnly: Boolean = false, realmId: Int, includeNonCanon: Boolean = false): [PublicProject!]!
+    editorialStudioAssessment(trackIds: [ID!]!, worldIds: [ID!]!, proposedRealmId: Int): [EditorialAssessment!]!
+    publicEditorialDelivery(realmId: Int): PublicEditorialDelivery!
+    editorialStudioConfig: NexusEditorialConfig
     nexusEditorialConfig: NexusEditorialConfig!
     nexusPublishedSignals(realmId: Int): [NexusReviewItem!]!
     getReleaseTracks(releaseWorldId: ID!): [ReleaseTrack!]!

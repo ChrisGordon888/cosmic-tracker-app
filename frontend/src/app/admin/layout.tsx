@@ -33,6 +33,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             <nav className="flex flex-wrap items-center gap-2 text-sm">
               <Link href="/admin" className={navClass(usersActive)}>Users</Link>
               <Link href="/creator" className={navClass(false)}>Creator OS</Link>
+              <Link href="/admin/editorial" className={navClass(pathname === "/admin/editorial")}>Editorial Studio</Link>
               <Link href="/admin/nexus" className={navClass(reviewActive)}>Nexus Review</Link>
               {canAccessOwnerTools && <Link href="/admin/nexus/editorial" className={navClass(editorialActive)}>Nexus Editorial</Link>}
             </nav>
