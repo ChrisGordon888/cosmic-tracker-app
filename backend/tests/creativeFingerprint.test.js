@@ -46,10 +46,12 @@ test('Inline and Library GraphQL documents validate against actual backend schem
   for(const match of source.matchAll(/gql\s*`([^`]+)`/g)) assert.deepEqual(validate(schema,parse(match[1])),[]);
  }
 });
+const NexusEditorialConfig=require('../models/NexusEditorialConfig');
 test('Real Realm update preserves owner guard and appends bounded calibration atomically',async()=>{
- const original=[Track.findOne,Track.findOneAndUpdate];let saved;
+ const original=[Track.findOne,Track.findOneAndUpdate,NexusEditorialConfig.findOne];let saved;
  const track={_id:'song',ownerId:user.id,title:'Fixture',slug:'fixture',releaseWorldId:null,realmId:null,creativeSignals:['defiant'],visibility:'private',catalogTreatment:'current',nexusReviewStatus:'draft'};
  try{
+  NexusEditorialConfig.findOne=async()=>null;
   Track.findOne=async q=>{assert.equal(q.ownerId,user.id);return track;};
   Track.findOneAndUpdate=async(q,update)=>{assert.equal(q.ownerId,user.id);saved=update;return {...track,...update};};
   await resolvers.Mutation.updateReleaseTrack(null,{id:'song',input:{realmId:303,creativeDecision:{action:'accepted',suggestedRealmId:303}}},{user});
@@ -59,5 +61,5 @@ test('Real Realm update preserves owner guard and appends bounded calibration at
   assert.equal(saved.$push.creativeDecisions.$each[0].action,'accepted');
   Track.findOne=async()=>null;
   await assert.rejects(resolvers.Mutation.updateReleaseTrack(null,{id:'song',input:{realmId:101,creativeDecision:{action:'manual'}}},{user}),/not found/);
- }finally{[Track.findOne,Track.findOneAndUpdate]=original;}
+ }finally{[Track.findOne,Track.findOneAndUpdate,NexusEditorialConfig.findOne]=original;}
 });

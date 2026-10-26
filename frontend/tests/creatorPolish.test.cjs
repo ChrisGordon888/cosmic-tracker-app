@@ -85,7 +85,7 @@ test('Rail has real links and correct active-page state, including profile edito
   assert.match(html, /href="\/creator\/library#catalog"[^>]*aria-current="page"/);
   assert.match(html, /href="\/creator\/onboarding\/profile"/);
   assert.equal((html.match(/aria-current="page"/g) || []).length, 1);
-  assert.equal((html.match(/<a /g) || []).length, 4);
+  assert.equal((html.match(/<a /g) || []).length, 5);
 });
 
 test('Tour identity is owner-scoped and Workshop V2 targets only real panels', () => {

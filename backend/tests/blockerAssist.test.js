@@ -76,7 +76,7 @@ test('Existing owner-scoped readiness evaluator verifies missing cover and real 
   for (const document of [workspaceDocument, readinessDocument]) assert.deepEqual(validate(schema, document), []);
   const owner = { id: 'creator', role: 'creator', creatorStatus: 'active' };
   const release = new ReleaseWorld({ ownerId: owner.id, creativeProfileId: '507f1f77bcf86cd799439011', title: 'Featured', slug: 'featured', isFeatured: true });
-  const track = new ReleaseTrack({ ownerId: owner.id, releaseWorldId: release._id, title: 'Demo', slug: 'demo' });
+  const track = new ReleaseTrack({ ownerId: owner.id, releaseWorldId: release._id, title: 'Demo', slug: 'demo', audioUrl: '/fictional-demo.mp3' });
   const original = [ReleaseWorld.findOne, CreativeProfile.findOne, ReleaseTrack.find, ReleaseAsset.findOne];
   let tracks = [track];
   let asset = null;

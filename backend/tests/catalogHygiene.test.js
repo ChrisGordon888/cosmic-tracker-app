@@ -20,12 +20,13 @@ test('Archive resolver is owner-scoped, guards references and preserves all chil
 });
 test('Audio identity is owner-only at GraphQL field resolution',()=>{const track={ownerId:user.id,audioContentHash:'a'.repeat(64),sourceFileName:'private song.wav',sourceFileSize:10};for(const key of ['audioContentHash','sourceFileName','sourceFileSize']){assert.equal(resolvers.ReleaseTrack[key](track,null,{user}),track[key]);assert.equal(resolvers.ReleaseTrack[key](track,null,{user:{id:'other'}}),null);assert.equal(resolvers.ReleaseTrack[key](track,null,{}),null);}});
 test('Replacing audio clears identity while metadata-only edits retain it',async()=>{
- const originals=[ReleaseTrack.findOne,ReleaseTrack.findOneAndUpdate];let update;
+ const originals=[ReleaseTrack.findOne,ReleaseTrack.findOneAndUpdate,NexusEditorialConfig.findOne];let update;
  const track={_id:'t',ownerId:user.id,releaseWorldId:null,title:'Song',slug:'song',audioUrl:'/old.wav',showInNexus:false,nexusReviewStatus:'draft',audioContentHash:'a'.repeat(64)};
  try{
+  NexusEditorialConfig.findOne=async()=>null;
   ReleaseTrack.findOne=async()=>track;
   ReleaseTrack.findOneAndUpdate=async(q,input)=>{assert.equal(q.ownerId,user.id);update=input;return {...track,...input};};
   await resolvers.Mutation.updateReleaseTrack(null,{id:'t',input:{bpm:120}},{user});assert.equal('audioContentHash' in update,false);
   await resolvers.Mutation.updateReleaseTrack(null,{id:'t',input:{audioUrl:'/new.wav'}},{user});assert.equal(update.audioContentHash,null);assert.equal(update.sourceFileName,null);assert.equal(update.sourceFileSize,null);
- }finally{[ReleaseTrack.findOne,ReleaseTrack.findOneAndUpdate]=originals;}
+ }finally{[ReleaseTrack.findOne,ReleaseTrack.findOneAndUpdate,NexusEditorialConfig.findOne]=originals;}
 });
