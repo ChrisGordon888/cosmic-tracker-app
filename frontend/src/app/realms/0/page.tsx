@@ -1,5 +1,6 @@
 'use client';
 
+import PublicRealmNavigation from '@/components/realm/PublicRealmNavigation';
 import { useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
@@ -192,6 +193,7 @@ export default function Realm0() {
 
                     <RealmGuidanceCard realmId={0} />
 
+                    <PublicRealmNavigation realmId={0}/>
                     <RealmSoundstage
                         realmId={REALM_ID}
                         realmName="InterSiddhi"

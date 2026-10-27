@@ -1,5 +1,7 @@
 'use client';
 
+import {saveRealmGuidance} from '@/lib/getStoredRealmGuidance';
+import {resolveRealmGuidance} from '@/lib/resolveRealmGuidance';
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { PUBLIC_PROJECTS } from '@/graphql/publicProjects';
@@ -16,10 +18,9 @@ import { REALM_ALIGNMENT_QUESTIONS } from '@/lib/realmAlignmentQuestions';
 import { REALM_RESULT_CONTENT } from '@/lib/realmResultContent';
 import { useQuery } from '@apollo/client';
 import { GET_PUBLIC_NEXUS_TRACKS } from '@/graphql/realms';
-import { mapReleaseTracksToMusicTracks, mergeMusicCatalogs, findRealmRecommendation } from '@/lib/publicMusicCatalog';
+import { mapReleaseTracksToMusicTracks } from '@/lib/publicMusicCatalog';
 import { getMusicAvailability } from '@/lib/musicAvailability';
 import { usePlatformAccess } from '@/context/PlatformAccessProvider';
-import { MUSIC_REGISTRY } from '@/lib/musicRegistry';
 import { useMusicPlayer } from '@/hooks/useMusicPlayer';
 
 type SelectedAnswers = Record<string, number>;
@@ -72,7 +73,7 @@ export default function FindYourRealmPage() {
     const { isAuthenticated } = usePlatformAccess();
     const { data: projectData } = useQuery(PUBLIC_PROJECTS, { fetchPolicy: 'network-only' });
     const { data: catalogData } = useQuery(GET_PUBLIC_NEXUS_TRACKS, { fetchPolicy: 'network-only' });
-    const catalog = useMemo(() => mergeMusicCatalogs(catalogData ? MUSIC_REGISTRY : [], mapReleaseTracksToMusicTracks(catalogData?.getPublicNexusTracks), catalogData?.unavailableRegistryTrackIds), [catalogData]);
+    const catalog = useMemo(() => mapReleaseTracksToMusicTracks(catalogData?.getPublicNexusTracks), [catalogData]);
     const currentQuestion = REALM_ALIGNMENT_QUESTIONS[currentQuestionIndex];
     const totalQuestions = REALM_ALIGNMENT_QUESTIONS.length;
 
@@ -95,8 +96,8 @@ export default function FindYourRealmPage() {
     const suggestedTrack = useMemo(() => {
         if (recommendedRealmId === null || !modeContent) return null;
 
-        return findRealmRecommendation(catalog, MUSIC_REGISTRY, recommendedRealmId, modeContent.recommendedTrack);
-    }, [recommendedRealmId, modeContent, catalog]);
+        return resolveRealmGuidance(catalog, recommendedRealmId, modeContent.recommendedTrack,undefined,isAuthenticated);
+    }, [recommendedRealmId, modeContent, catalog,isAuthenticated]);
     const listenerPath = recommendedRealmId===null ? null : listenerRealmPath(recommendedRealmId,catalog,projectData?.publicProjects||[],isAuthenticated,suggestedTrack?.id);
     const suggestedAvailability = suggestedTrack ? getMusicAvailability(suggestedTrack, { isCreatorView: false, isSignedIn: isAuthenticated }) : null;
 
@@ -109,20 +110,8 @@ export default function FindYourRealmPage() {
         recommendedTrack: string,
         reflectionPrompt: string
     ) => {
-        try {
-            window.localStorage.setItem(
-                'cosmic:lastRealmAlignment',
-                JSON.stringify({
-                    realmId,
-                    mode,
-                    recommendedTrack,
-                    reflectionPrompt,
-                    savedAt: new Date().toISOString(),
-                })
-            );
-        } catch (error) {
-            console.warn('Failed to save realm alignment:', error);
-        }
+        const current=resolveRealmGuidance(catalog,realmId,recommendedTrack,undefined,isAuthenticated);
+        saveRealmGuidance({realmId,mode,recommendedTrack,reflectionPrompt,recommendedTrackId:current?.id});
     };
 
     const handleSelectOption = (optionIndex: number) => {
@@ -353,7 +342,7 @@ export default function FindYourRealmPage() {
                                     >
                                         {suggestedTrack?.trackTitle ?? (listenerPath?.state==='project'?'Explore a current World':listenerPath?.state==='quiet'?'Realm quiet':'Explore Realm music')}
                                     </h3>
-                                    <p className="text-secondary text-sm">{suggestedTrack ? modeContent.whyMusicFits : 'Only currently eligible music is offered here. Your Realm result remains meaningful even when its soundtrack is quiet.'}</p>
+                                    <p className="text-secondary text-sm">{suggestedTrack ? 'A currently playable song from this Realm. Listen and decide whether it meets you where you are.' : 'Only currently eligible music is offered here. Your Realm result remains meaningful even when its soundtrack is quiet.'}</p>
                                 </div>
 
                                 <div className="quest-card">

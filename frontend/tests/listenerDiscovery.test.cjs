@@ -100,7 +100,7 @@ test('Profile offers a return to the account-persisted Realm without inventing s
  const html=renderPage('app/profile/page.tsx',{GetMe:{me:{name:'Fixture Listener',currentRealm:101,unlockedRealms:[303,101],completedTrials:[],visitedLocations:[],musicStats:{tracksListened:[]}}}},true);
  assert.match(html,/href="\/realms\/101"/);assert.match(html,/Continue in your Realm/);
 });
-test('Realm result renders immediate music for public tracks and an explicit sign-in action for gated tracks',()=>{
+test('Realm result plays eligible music and keeps Realm exploration open when music is gated',()=>{
  const {MUSIC_REGISTRY}=load('lib/musicRegistry.ts');
  const {REALM_RESULT_CONTENT}=load('lib/realmResultContent.ts');
  const title=REALM_RESULT_CONTENT[303].modeVariants['move-through'].recommendedTrack;
@@ -111,7 +111,7 @@ test('Realm result renders immediate music for public tracks and an explicit sig
  const publicHtml=renderPage('app/find-your-realm/page.tsx',{GetPublicNexusTracks:{getPublicNexusTracks:[track]}},false,states);
  assert.ok(publicHtml.includes(`Play ${track.title}`));assert.match(publicHtml,/href="\/realms\/303"/);
  const gatedHtml=renderPage('app/find-your-realm/page.tsx',{GetPublicNexusTracks:{getPublicNexusTracks:[{...track,accessTier:'signup',audioUrl:null}]}},false,states);
- assert.match(gatedHtml,/Sign in to listen/);assert.ok(!gatedHtml.includes(`Play ${track.title}`));
+ assert.match(gatedHtml,/Explore Realm/);assert.match(gatedHtml,/href="\/realms\/303"/);assert.ok(!gatedHtml.includes(`Play ${track.title}`));
 });
 test('A creator following another artist’s public world gets public listening without creator tools',()=>{
  const html=renderPage('app/releases/[slug]/page.tsx',{

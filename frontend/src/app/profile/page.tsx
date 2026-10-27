@@ -332,7 +332,7 @@ export default function ProfilePage() {
                             </h2>
                         </div>
                         <p className="text-sm text-secondary">
-                            {unlockedRealms.length} of 6 realms unlocked
+                            {unlockedRealms.length} of 6 optional progression paths unlocked · all Realm music is open to explore
                         </p>
                     </div>
 
@@ -372,7 +372,7 @@ export default function ProfilePage() {
                                                 {meta.name}
                                             </p>
                                             <p className="text-xs text-muted">
-                                                {unlocked ? `${progress.done} / 3 trials` : 'Locked'}
+                                                {unlocked ? `${progress.done} / 3 trials` : 'Progression not yet unlocked'}
                                             </p>
                                         </div>
 
@@ -397,12 +397,11 @@ export default function ProfilePage() {
 
                                             <div className="flex justify-between text-xs text-muted mt-2">
                                                 <span>{progress.percent}% complete</span>
-                                                <Link href={`/realms/${realmId}`} className="text-glow hover:opacity-80">
-                                                    Enter →
-                                                </Link>
+
                                             </div>
                                         </>
                                     )}
+                                    <Link href={`/realms/${realmId}`} className="text-glow hover:opacity-80">Explore Realm music →</Link>
                                 </div>
                             );
                         })}

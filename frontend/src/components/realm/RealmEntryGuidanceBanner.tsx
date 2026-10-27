@@ -1,23 +1,20 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useQuery } from '@apollo/client';
 import { useMusicPlayer } from '@/hooks/useMusicPlayer';
 import { REALM_RESULT_CONTENT } from '@/lib/realmResultContent';
 import { GET_PUBLIC_NEXUS_TRACKS } from '@/graphql/realms';
 import {
   mapReleaseTracksToMusicTracks,
-  findRealmRecommendation,
   mergeMusicCatalogs,
   getRuntimeTracksForRealm,
   type PublicNexusReleaseTrack,
 } from '@/lib/publicMusicCatalog';
 import { getMusicAvailability } from '@/lib/musicAvailability';
 import { usePlatformAccess } from '@/context/PlatformAccessProvider';
-import {
-  getStoredRealmGuidance,
-  type StoredRealmGuidance,
-} from '@/lib/getStoredRealmGuidance';
+import {useRealmGuidance} from '@/hooks/useRealmGuidance';
+import {resolveRealmGuidance} from '@/lib/resolveRealmGuidance';
 import type { RealmId } from '@/lib/realmStateMap';
 
 interface RealmEntryGuidanceBannerProps {
@@ -39,7 +36,8 @@ export default function RealmEntryGuidanceBanner({
   realmName,
   realmColor,
 }: RealmEntryGuidanceBannerProps) {
-  const [storedGuidance, setStoredGuidance] = useState<StoredRealmGuidance | null>(null);
+  const savedGuidance=useRealmGuidance();
+  const storedGuidance=savedGuidance?.realmId===realmId?savedGuidance:null;
   const { playOrToggleTrack, currentTrack, isPlaying } = useMusicPlayer();
   const { isAuthenticated } = usePlatformAccess();
   const isSignedInForMusic = isAuthenticated;
@@ -49,11 +47,6 @@ export default function RealmEntryGuidanceBanner({
     fetchPolicy: 'network-only',
   });
 
-
-  useEffect(() => {
-    const guidance = getStoredRealmGuidance();
-    setStoredGuidance(guidance?.realmId === realmId ? guidance : null);
-  }, [realmId]);
 
   const modeContent = useMemo(() => {
     if (!storedGuidance) return null;
@@ -85,9 +78,9 @@ export default function RealmEntryGuidanceBanner({
 
   const suggestedTrack = useMemo(() => {
     if (!recommendedTrackTitle) return null;
-    const match = findRealmRecommendation(realmTracks, [], realmId, recommendedTrackTitle);
+    const match = resolveRealmGuidance(realmTracks, realmId, recommendedTrackTitle,storedGuidance?.recommendedTrackId,isSignedInForMusic);
     return realmTracks.find(track => track.id === match?.id) ?? null;
-  }, [recommendedTrackTitle, realmTracks, realmId]);
+  }, [recommendedTrackTitle, realmTracks, realmId,storedGuidance,isSignedInForMusic]);
 
   const playableRealmQueue = useMemo(
     () => realmTracks.filter((track) => track.availability.isPlayable && Boolean(track.trackUrl)),

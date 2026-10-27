@@ -1,5 +1,6 @@
 'use client';
 
+import PublicRealmNavigation from '@/components/realm/PublicRealmNavigation';
 import { useEffect, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
@@ -316,7 +317,8 @@ export default function Realm303() {
                     <RealmGuidanceCard realmId={303} />
 
                     <div id="music-section">
-                        <RealmSoundstage
+                        <PublicRealmNavigation realmId={303}/>
+                    <RealmSoundstage
                             realmId={REALM_ID}
                             realmName="Fractured Frontier"
                             realmIcon="∴"
@@ -379,7 +381,7 @@ export default function Realm303() {
                                     <div className="text-2xl font-display text-glow">
                                         {isVeilUnlocked ? 'Unlocked' : 'Locked'}
                                     </div>
-                                    <div className="text-xs text-muted">Next Realm</div>
+                                    <div className="text-xs text-muted">Next progression path</div>
                                 </div>
                             </div>
                         </div>
@@ -883,15 +885,9 @@ export default function Realm303() {
                             <button className="btn-secondary">← Back to Nexus</button>
                         </Link>
 
-                        {isVeilUnlocked ? (
-                            <Link href={`/realms/${NEXT_REALM_ID}`}>
+                        <Link href={`/realms/${NEXT_REALM_ID}`}>
                                 <button className="btn-primary">The Veil →</button>
                             </Link>
-                        ) : (
-                            <div className="realm-next-locked">
-                                Next Realm: ◐ The Veil Locked
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>

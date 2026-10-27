@@ -1,5 +1,6 @@
 'use client';
 
+import PublicRealmNavigation from '@/components/realm/PublicRealmNavigation';
 import { useRef, useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
@@ -277,6 +278,7 @@ export default function Realm55() {
 
                     <RealmGuidanceCard realmId={55} />
 
+                    <PublicRealmNavigation realmId={55}/>
                     <RealmSoundstage
                         realmId={REALM_ID}
                         realmName="Skybound City"
@@ -336,7 +338,7 @@ export default function Realm55() {
                                     <div className="text-2xl font-display text-glow">
                                         {isAstralBazaarUnlocked ? 'Unlocked' : 'Locked'}
                                     </div>
-                                    <div className="text-xs text-muted">Next Realm</div>
+                                    <div className="text-xs text-muted">Next progression path</div>
                                 </div>
                             </div>
                         </div>
@@ -724,15 +726,9 @@ export default function Realm55() {
                             <button className="btn-secondary">Back to Nexus</button>
                         </Link>
 
-                        {isAstralBazaarUnlocked ? (
-                            <Link href={`/realms/${NEXT_REALM_ID}`}>
+                        <Link href={`/realms/${NEXT_REALM_ID}`}>
                                 <button className="btn-primary">Astral Bazaar →</button>
                             </Link>
-                        ) : (
-                            <div className="realm-next-locked">
-                                Next Realm: ◇ Astral Bazaar Locked
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>

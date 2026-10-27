@@ -1,5 +1,8 @@
 'use client';
 
+import {useRealmGuidance} from '@/hooks/useRealmGuidance';
+import {resolveRealmGuidance} from '@/lib/resolveRealmGuidance';
+import {orderedPlayableRelease} from '@/lib/publicRealmNavigation';
 import { publicWorldHref } from '@/lib/releaseSharing';
 import PublicAtmosphere from '@/components/public/PublicAtmosphere';
 
@@ -23,20 +26,12 @@ import { REALM_RESULT_CONTENT } from '@/lib/realmResultContent';
 import { getRealmTheme } from '@/lib/realmTheme';
 import {
     mapReleaseTracksToMusicTracks,
-    findRealmRecommendation,
     type PublicNexusReleaseTrack,
 } from '@/lib/publicMusicCatalog';
 import NexusRealmSampler from '@/components/music/NexusRealmSampler';
 import '@/styles/realmShared.css';
 import '@/styles/nexus.css';
 
-interface StoredRealmGuidance {
-    realmId: RealmId;
-    mode: ExperienceMode;
-    recommendedTrack: string;
-    reflectionPrompt: string;
-    savedAt?: string;
-}
 
 const FEATURED_RELEASE_WORLD_FIELDS = gql`
     fragment FeaturedReleaseWorldFields on ReleaseWorld {
@@ -446,7 +441,7 @@ export default function CosmicNexusHub() {
     const { data: session, status } = useSession();
     const [moonPhase, setMoonPhase] = useState<any>(null);
     const [realmAlignment, setRealmAlignment] = useState<any>(null);
-    const [storedGuidance, setStoredGuidance] = useState<StoredRealmGuidance | null>(null);
+    const storedGuidance = useRealmGuidance();
 
     const [showReleaseDetails, setShowReleaseDetails] = useState(false);
 
@@ -481,6 +476,9 @@ export default function CosmicNexusHub() {
         }
     );
 
+    const fullSoundtrack = useQuery(GET_PUBLIC_NEXUS_TRACKS, {fetchPolicy:'cache-and-network'});
+    const guidanceCatalog = useMemo(()=>fullSoundtrack.error ? [] : mapReleaseTracksToMusicTracks(fullSoundtrack.data?.getPublicNexusTracks),[fullSoundtrack.data, fullSoundtrack.error]);
+    const fullCount = fullSoundtrack.error || !fullSoundtrack.data ? 'Unavailable' : guidanceCatalog.length;
     const [logDailyLogin] = useMutation(LOG_DAILY_LOGIN);
 
     useEffect(() => {
@@ -498,20 +496,6 @@ export default function CosmicNexusHub() {
         setRealmAlignment(alignment);
     }, []);
 
-    useEffect(() => {
-        try {
-            const raw = window.localStorage.getItem('cosmic:lastRealmAlignment');
-            if (!raw) return;
-
-            const parsed = JSON.parse(raw) as StoredRealmGuidance;
-
-            if (parsed?.realmId !== undefined) {
-                setStoredGuidance(parsed);
-            }
-        } catch (error) {
-            console.warn('Failed to load stored realm guidance:', error);
-        }
-    }, []);
 
     const isSignedIn = !!session;
     const user = userData?.me;
@@ -522,7 +506,6 @@ export default function CosmicNexusHub() {
     const safeXpToNext = Math.max(xpToNext, 1);
     const xpPercent = Math.min((userXP / safeXpToNext) * 100, 100);
     const currentStreak = user?.streaks?.currentStreak ?? 0;
-    const unlockedRealms: number[] = user?.unlockedRealms ?? [303];
     const completedSiddhis = user?.completedTrials?.filter((t: any) => t.isComplete).length ?? 0;
 
     const currentRealmName = (() => {
@@ -547,7 +530,7 @@ export default function CosmicNexusHub() {
     const isFeaturedReleaseTracksLoading = publicFeaturedReleaseTracksLoading;
 
     const featuredReleaseTrackCount = featuredReleaseTracks?.length ?? 0;
-    const featuredReleasePrimaryTrack = (publicFeaturedSignalData?.getPublicFeaturedSignal ?? null) as NexusFeaturedReleaseTrack | null;
+    const featuredReleasePrimaryTrack = orderedPlayableRelease(featuredReleaseTracks??[], t=>Boolean(getFeaturedTrackPlaybackUrl(t,isSignedInForMusic)))[0]??null;
 
     const featuredReleasePrimaryPlayerId = featuredReleasePrimaryTrack
         ? `release-${featuredReleasePrimaryTrack.id}`
@@ -561,8 +544,7 @@ export default function CosmicNexusHub() {
         const selectedTrackUrl = getFeaturedTrackPlaybackUrl(track, isSignedInForMusic);
         if (!selectedTrackUrl) return;
 
-        const flowTracks = (featuredReleaseTracks ?? [])
-            .filter((releaseTrack) => Boolean(getFeaturedTrackPlaybackUrl(releaseTrack, isSignedInForMusic)))
+        const flowTracks = orderedPlayableRelease(featuredReleaseTracks ?? [], releaseTrack => Boolean(getFeaturedTrackPlaybackUrl(releaseTrack, isSignedInForMusic)))
             .map((releaseTrack) => toPlayerTrack(releaseTrack, creatorFeaturedRelease, isSignedInForMusic));
 
         void playOrToggleTrack(toPlayerTrack(track, creatorFeaturedRelease, isSignedInForMusic), flowTracks, {
@@ -611,7 +593,6 @@ export default function CosmicNexusHub() {
         return Math.floor((completed / 3) * 100);
     };
 
-    const isRealmUnlocked = (realmId: number): boolean => unlockedRealms.includes(realmId);
 
     const isTrackCatalogVisible = (track: any) => {
         if (!track) return false;
@@ -681,7 +662,7 @@ export default function CosmicNexusHub() {
 
         return {
             ...realm,
-            status: isRealmUnlocked(realmId) ? 'unlocked' : 'locked',
+            status: 'unlocked',
             progress: getRealmProgress(realmId),
             tracks: nexusVisibleTracks.filter((track) => track.realmId === realmId),
         };
@@ -709,8 +690,8 @@ export default function CosmicNexusHub() {
     const guidanceTrack = useMemo(() => {
         if (guidanceRealmId === null || !guidanceModeContent) return null;
 
-        return findRealmRecommendation(runtimeMusicCatalog, [], guidanceRealmId, guidanceModeContent.recommendedTrack);
-    }, [guidanceRealmId, guidanceModeContent, runtimeMusicCatalog]);
+        return resolveRealmGuidance(guidanceCatalog, guidanceRealmId, storedGuidance?.recommendedTrack || guidanceModeContent.recommendedTrack, storedGuidance?.recommendedTrackId,isSignedInForMusic);
+    }, [guidanceRealmId, guidanceModeContent, guidanceCatalog,storedGuidance,isSignedInForMusic]);
 
     const guidanceTrackLocked = guidanceTrack ? isTrackLocked(guidanceTrack) : false;
     const guidanceRealmTint = getRealmTint(guidanceRealmId);
@@ -816,11 +797,7 @@ export default function CosmicNexusHub() {
                             Discover songs and creator worlds. Start with the music.
                         </p>
                         <div className="public-actions nexus-listen-entry">
-                            {flagshipTrack && !flagshipTrackLocked && (
-                                <button type="button" className="public-action public-action-primary" onClick={() => tryPlayTrack(flagshipTrack)}>
-                                    {flagshipIsCurrent && isPlaying ? 'Pause' : 'Play'} {flagshipTrack.trackTitle}
-                                </button>
-                            )}
+                            {creatorFeaturedPortalHref && <a href="#current-release" className="public-action public-action-primary">Explore the featured World</a>}
                             {nexusPlayableFlowTracks.length > 0 && <button type="button" className="public-link" onClick={() => tryPlayTrack(nexusPlayableFlowTracks[Math.floor(Math.random() * nexusPlayableFlowTracks.length)])}>Shuffle playable music</button>}
                             <a href="#realm-soundtracks" className="public-link">Explore the soundtracks →</a>
                         </div>
@@ -930,8 +907,8 @@ export default function CosmicNexusHub() {
                                             : isFeaturedReleasePrimaryPlaying
                                                 ? 'Pause'
                                                 : featuredReleasePrimaryTrack
-                                                    ? `${getFeaturedTrackAction(featuredReleasePrimaryTrack, isSignedInForMusic).label} ${featuredReleasePrimaryTrack.title}`
-                                                    : 'Coming Soon'}
+                                                    ? (creatorFeaturedRelease.releaseType==='ep'?'LISTEN TO EP':'LISTEN TO RELEASE')
+                                                    : 'No playable tracks yet'}
                                     </button>
 
                                     <Link
@@ -1073,7 +1050,7 @@ export default function CosmicNexusHub() {
                                             Current Realm: <span className="text-primary">{currentRealmName}</span>
                                         </p>
                                         <p className="text-xs text-muted mt-1">
-                                            {nexusVisibleTracks.length} public tracks • {memberCatalogCount} member-gated signals
+                                            {fullCount} official soundtrack tracks • {catalogError||!publicNexusTrackData?'Unavailable':nexusVisibleTracks.length} Nexus sampler tracks
                                         </p>
                                     </div>
                                 </div>
@@ -1116,7 +1093,7 @@ export default function CosmicNexusHub() {
                                 </p>
                                 <h2 className="text-2xl font-display mb-2">Go deeper in the Nexus</h2>
                                 <p className="text-sm text-secondary mb-4 leading-relaxed">
-                                    {nexusVisibleTracks.length} public signals across six Realms. Playable now counts only what you can hear. Sign in to save Realm progress{memberCatalogCount > 0 ? " and listen to available member music" : ""}.
+                                    {fullCount} official soundtrack tracks across six Realms; {nexusVisibleTracks.length} curated sampler tracks. Playable now counts only what you can hear. Sign in to save Realm progress{memberCatalogCount > 0 ? " and listen to available member music" : ""}.
                                 </p>
 
                                 <div className="grid grid-cols-2 gap-2 mb-4">
@@ -1125,7 +1102,7 @@ export default function CosmicNexusHub() {
                                             {nexusVisibleTracks.length}
                                         </p>
                                         <p className="text-[10px] uppercase tracking-[0.14em] text-muted mt-1">
-                                            Public signals
+                                            Sampler tracks
                                         </p>
                                     </div>
 
@@ -1143,7 +1120,7 @@ export default function CosmicNexusHub() {
                                             {memberCatalogCount}
                                         </p>
                                         <p className="text-[10px] uppercase tracking-[0.14em] text-muted mt-1">
-                                            Member-gated signals
+                                            Sampler tracks requiring sign-in
                                         </p>
                                     </div>
 
@@ -1242,12 +1219,12 @@ export default function CosmicNexusHub() {
                                                         disabled={guidanceTrackLocked}
                                                         title={guidanceTrackLocked ? getTrackLockLabel(guidanceTrack) ?? 'Track locked' : 'Play recommended track'}
                                                     >
-                                                        {guidanceTrack?.trackTitle || 'No current standalone recommendation'}
+                                                        {guidanceTrack?.trackTitle || 'Explore current Realm music'}
                                                         <span aria-hidden="true">↗</span>
                                                     </button>
                                                 ) : (
                                                     <p className="text-sm text-secondary">
-                                                        No current standalone recommendation
+                                                        Explore current Realm music
                                                     </p>
                                                 )}
                                             </div>
@@ -1535,7 +1512,7 @@ export default function CosmicNexusHub() {
                                                     : 'Coming Soon'
                                                 : flagshipIsCurrent && isPlaying
                                                     ? 'Pause Signal'
-                                                    : 'Play Signal'}
+                                                    : `Play ${flagshipTrack.trackTitle}`}
                                         </button>
                                     )}
 

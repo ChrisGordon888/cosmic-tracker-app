@@ -10,6 +10,6 @@ export function listenerRealmPath(realmId:number,catalog:RuntimeMusicTrack[],pro
  const project=projects.find(p=>p.realmId===realmId&&p.tracks.some(t=>getMusicAvailability(t,{isCreatorView:false,isSignedIn:signedIn,releaseVisibility:'public'}).isPlayable));
  if(project)return {href:publicWorldHref(project.world.slug, project.world.id),label:'Explore World',state:'project'};
  const memberProject=projects.find(p=>p.realmId===realmId&&p.tracks.some(t=>t.accessTier==='signup'));
- if(!signedIn&&(candidates.some(t=>t.accessTier==='signup'||t.visibility==='signup')||memberProject))return {href:`/auth?callbackUrl=${encodeURIComponent(memberProject?publicWorldHref(memberProject.world.slug, memberProject.world.id):destination)}`,label:'Sign in for member music',state:'member'};
+ if(!signedIn&&(candidates.some(t=>t.accessTier==='signup'||t.visibility==='signup')||memberProject))return {href:destination,label:'Explore Realm · some music requires sign-in',state:'member'};
  return {href:destination,label:'Explore Realm · no current playable signal',state:'quiet'};
 }
