@@ -31,3 +31,52 @@ test('missing/live keys fail closed; expired uncertain attempts cannot create a 
 test('provider errors preserve durable approval and are retryable',async()=>{const f=fixture();await approved(f);const broken=createService({Opportunity:f.Opportunity,env:f.env,transport:async()=>({ok:false,json:async()=>({})})});await assert.rejects(()=>broken.checkout(id));assert.equal(f.record.engagement.approval,'approved');assert.equal(f.record.engagement.sessionId,undefined);await f.service.checkout(id);assert.equal(f.record.engagement.sessionId,'cs_test_fixture');});
 test('out-of-order concurrent reconciliation cannot overwrite a newer snapshot',async()=>{const f=fixture();await approved(f);await f.service.checkout(id);const stale=structuredClone(f.session);let release;const slow=createService({Opportunity:f.Opportunity,env:f.env,transport:async()=>{await new Promise(r=>release=r);return{ok:true,json:async()=>stale}}});const pending=slow.reconcile(id);await new Promise(r=>setImmediate(r));f.paid();await f.service.reconcile(id);release();await assert.rejects(()=>pending);assert.equal(f.record.engagement.paymentStatus,'paid');});
 test('a webhook arriving before session persistence asks Stripe to retry',async()=>{const f=fixture();await approved(f);await assert.rejects(()=>f.service.webhook(...signed({livemode:false,type:'checkout.session.completed',data:{object:{id:'cs_test_pending',metadata:{engagementId:id}}}})),error=>error.status===503);});
+test('signed malformed Checkout payload cannot query an unlinked engagement',async()=>{const f=fixture();await approved(f);for(const object of [{},{id:'cs_live_other'}])await assert.rejects(()=>f.service.webhook(...signed({livemode:false,type:'checkout.session.completed',data:{object}})),e=>e.status===400);assert.equal(f.calls.length,0);});
+test('wrong currency and metadata fail verified reconciliation even after signed delivery',async()=>{for(const [key,value] of [['currency','eur'],['metadata',{engagementId:'wrong'}],['id','cs_test_wrong']]){const f=fixture();await approved(f);await f.service.checkout(id);f.paid();f.session[key]=value;await assert.rejects(()=>f.service.webhook(...signed({livemode:false,type:'checkout.session.completed',data:{object:{id:'cs_test_fixture'}}})) ,e=>e.status===409);assert.equal(f.record.engagement.paymentStatus,'unpaid');}});
+test('expired, failed and delayed events re-read current state without fulfillment',async()=>{const f=fixture();await approved(f);await f.service.checkout(id);f.session.status='expired';await f.service.webhook(...signed({livemode:false,type:'checkout.session.expired',data:{object:{id:'cs_test_fixture'}}}));assert.equal(f.record.engagement.paymentStatus,'expired');f.paid();await f.service.webhook(...signed({livemode:false,type:'checkout.session.async_payment_failed',data:{object:{id:'cs_test_fixture'}}}));assert.equal(f.record.engagement.paymentStatus,'paid');assert.equal(f.record.engagement.delivery,'not-started');});
+test('failed matched delivery is retryable without duplicate fulfillment',async()=>{const f=fixture();await approved(f);await f.service.checkout(id);f.paid();const event=signed({livemode:false,type:'checkout.session.completed',data:{object:{id:'cs_test_fixture'}}});const broken=createService({Opportunity:f.Opportunity,env:f.env,transport:async()=>{throw Error('fixture transport unavailable');}});await assert.rejects(()=>broken.webhook(...event));assert.equal(f.record.engagement.paymentStatus,'unpaid');await f.service.webhook(...event);await f.service.webhook(...event);assert.equal(f.record.engagement.paymentStatus,'paid');assert.equal(f.record.engagement.delivery,'not-started');});
+test('signed malformed JSON and absent operator fail closed before lookup',async()=>{
+ const raw=Buffer.from('{broken'),t=Math.floor(Date.now()/1000);
+ const header=`t=${t},v1=${crypto.createHmac('sha256','whsec_fixture').update(`${t}.`).update(raw).digest('hex')}`;
+ assert.throws(()=>signature(raw,header,'whsec_fixture'),e=>e.status===400);
+ const f=fixture();await assert.rejects(()=>f.service.webhook(...signed(null)),e=>e.status===400);
+ f.env.SERVICES_OPERATOR_ID='';await assert.rejects(()=>f.service.webhook(...signed({livemode:false})),e=>e.status===503);
+ assert.equal(f.calls.length,0);
+});
+
+function liveFixture() {
+ const f=fixture();
+ Object.assign(f.env,{SERVICES_PAYMENT_MODE:'live',SERVICES_LIVE_ENABLED:'true',SERVICES_ENVIRONMENT_ID:'production-fixture',MONGODB_URI:'mongodb://localhost/live_fixture',SERVICES_LIVE_DATABASE_NAME:'live_fixture',SERVICES_TEST_DATABASE_NAME:'sandbox_fixture',STRIPE_LIVE_ACCOUNT_ID:'acct_fixture',STRIPE_LIVE_SECRET_KEY:'sk_live_fixture',STRIPE_LIVE_WEBHOOK_SECRET:'whsec_live_fixture'});
+ f.Opportunity.db={name:'live_fixture'};
+ f.session.id='cs_live_fixture';f.session.livemode=true;
+ let account='acct_fixture';
+ const service=createService({Opportunity:f.Opportunity,env:f.env,transport:async(url,options)=>{f.calls.push({url,options});return{ok:true,json:async()=>url.endsWith('/account')?{id:account}:structuredClone(f.session)};}});
+ return {...f,service,get record(){return f.record;},get session(){return f.session;},paid:f.paid,setAccount:x=>account=x};
+}
+test('live requires explicit activation, distinct database and actual connection identity',async()=>{
+ for(const mutate of [f=>delete f.env.SERVICES_LIVE_ENABLED,f=>f.env.SERVICES_TEST_DATABASE_NAME='live_fixture',f=>f.Opportunity.db.name='sandbox_fixture',f=>delete f.env.STRIPE_LIVE_ACCOUNT_ID]) {
+  const f=liveFixture();mutate(f);await assert.rejects(()=>f.service.intake(inquiry));assert.equal(f.record,null);assert.equal(f.calls.length,0);
+ }
+});
+test('live account and immutable environment binding protect checkout; legacy stays test',async()=>{
+ const f=liveFixture();await approved(f);assert.equal(f.record.engagement.paymentMode,'live');
+ f.setAccount('acct_wrong');await assert.rejects(()=>f.service.checkout(id));assert.equal(f.record.engagement.sessionId,undefined);
+ f.setAccount('acct_fixture');f.env.SERVICES_ENVIRONMENT_ID='different';await assert.rejects(()=>f.service.get(id));
+ const legacy=fixture();await approved(legacy);delete legacy.record.engagement.paymentMode;await legacy.service.get(id);
+ Object.assign(legacy.env,f.env);legacy.Opportunity.db={name:'live_fixture'};await assert.rejects(()=>legacy.service.get(id));
+});
+test('live signed matched replay reconciles provider evidence without duplicate fulfillment',async()=>{
+ const f=liveFixture();await approved(f);await f.service.checkout(id);f.paid();
+ const event={type:'checkout.session.completed',livemode:true,data:{object:{id:'cs_live_fixture'}}};
+ await assert.rejects(()=>f.service.webhook(...signed(event)));
+ await assert.rejects(()=>f.service.webhook(...signed({...event,livemode:false},'whsec_live_fixture')));
+ for(let n=0;n<2;n++)await f.service.webhook(...signed(event,'whsec_live_fixture'));
+ assert.equal(f.record.engagement.paymentStatus,'paid');assert.equal(f.record.engagement.delivery,'not-started');
+ const posts=f.calls.filter(c=>c.options.method==='POST');assert.equal(posts.length,1);
+ assert.equal(posts[0].options.headers['Idempotency-Key'],`cosmic-service-live-production-fixture-${id}`);
+ f.session.currency='eur';await assert.rejects(()=>f.service.reconcile(id));
+});
+test('disabled mode cannot create checkout or accept webhook',async()=>{
+ const f=fixture();f.env.SERVICES_PAYMENT_MODE='disabled';await approved(f);
+ await assert.rejects(()=>f.service.checkout(id));await assert.rejects(()=>f.service.webhook(...signed({livemode:false})));assert.equal(f.calls.length,0);
+});

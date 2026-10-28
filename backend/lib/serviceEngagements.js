@@ -1,3 +1,4 @@
+const { paymentMode } = require('./servicePaymentMode');
 const crypto = require('node:crypto');
 const offers = ['not-sure', 'creative-direction-session', 'song-project-development-pack', 'music-daw-workflow-lesson', 'artist-world-audit'];
 function fail(message, status = 400) { throw Object.assign(new Error(message), { status }); }
@@ -16,15 +17,28 @@ function signature(raw, header, secret, now = Date.now()) {
   if (!timestamp || !/^\d+$/.test(timestamp) || Math.abs(now / 1000 - Number(timestamp)) > 300) fail('Invalid webhook signature.', 400);
   const expected = crypto.createHmac('sha256', secret).update(`${timestamp}.`).update(raw).digest('hex');
   if (!parts.some(p => p.startsWith('v1=') && /^[a-f0-9]{64}$/.test(p.slice(3)) && crypto.timingSafeEqual(Buffer.from(p.slice(3), 'hex'), Buffer.from(expected, 'hex')))) fail('Invalid webhook signature.', 400);
-  return JSON.parse(raw.toString('utf8'));
+  try { return JSON.parse(raw.toString('utf8')); } catch { fail('Invalid webhook payload.', 400); }
 }
 function createService({ Opportunity, env = process.env, transport = fetch }) {
   const owner = () => env.SERVICES_OPERATOR_ID;
+  function config() {
+    try { const c = paymentMode(env); if (c.live && Opportunity.db?.name !== c.database) throw Error(); return c; } catch { fail('Payment environment is not configured.', 503); }
+  }
+  function binding(record) {
+    const c = config(), e = record.engagement;
+    if ((e.paymentMode || 'test') !== c.mode || (c.live && (e.paymentAccount !== c.account || e.paymentEnvironment !== c.environment))) fail('Payment environment mismatch.', 409);
+    return c;
+  }
   async function stripe(path, body, key) {
-    // Deliberately test-only until a separate live-readiness acceptance.
-    if (!/^sk_test_/.test(env.STRIPE_SECRET_KEY || '')) fail('Stripe test mode is not configured; live keys are disabled.', 503);
+    const c = config();
+    if (!c.enabled || !(c.live ? /^sk_live_/ : /^sk_test_/).test(c.key || '')) fail('Stripe payment mode is not configured.', 503);
+    if (c.live) {
+      const check = await transport('https://api.stripe.com/v1/account', { headers: { Authorization: `Bearer ${c.key}` }, signal: AbortSignal.timeout(12000) });
+      const account = await check.json();
+      if (!check.ok || account.id !== c.account) fail('Stripe account mismatch.', 503);
+    }
     const response = await transport(`https://api.stripe.com/v1/${path}`, {
-      method: body ? 'POST' : 'GET', headers: { Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`, 'Stripe-Version': '2025-03-31.basil', ...(body ? { 'Content-Type': 'application/x-www-form-urlencoded', 'Idempotency-Key': key } : {}) },
+      method: body ? 'POST' : 'GET', headers: { Authorization: `Bearer ${c.key}`, 'Stripe-Version': '2025-03-31.basil', ...(body ? { 'Content-Type': 'application/x-www-form-urlencoded', 'Idempotency-Key': key } : {}) },
       ...(body ? { body: new URLSearchParams(body).toString() } : {}), signal: AbortSignal.timeout(12000),
     });
     const result = await response.json();
@@ -35,10 +49,12 @@ function createService({ Opportunity, env = process.env, transport = fetch }) {
     if (!/^[a-f\d]{24}$/i.test(id)) fail('Engagement not found.', 404);
     const record = await Opportunity.findOne({ _id: id, ownerId: owner(), 'engagement.inquiryId': { $exists: true } });
     if (!record) fail('Engagement not found.', 404);
+    binding(record);
     return record;
   }
   async function intake(input) {
     if (!owner()) fail('Commercial operations are not configured.', 503);
+    const c = config();
     const inquiryId = text(input.inquiryId, 36);
     if (!/^[a-f\d]{8}(-[a-f\d]{4}){3}-[a-f\d]{12}$/i.test(inquiryId)) fail('Invalid inquiry reference.');
     const name = text(input.name, 150), email = text(input.email, 254).toLowerCase(), offer = text(input.offer, 80);
@@ -49,16 +65,18 @@ function createService({ Opportunity, env = process.env, transport = fetch }) {
     let record;
     try { record = await Opportunity.findOneAndUpdate(query, { $setOnInsert: {
       ownerId: owner(), title: `${name} · ${offer}`.slice(0, 160), desiredOutcome: 'Agree a useful creative engagement', context: context.slice(0, 5000), nextAction: 'Review inquiry and reply with fit, scope and timing',
-      engagement: { inquiryId, fingerprint, name, email, offer, context, links, timeline, approval: 'inquiry', paymentStatus: 'not-requested', scheduling: 'not-arranged', delivery: 'not-started', notification: 'pending', revision: 0 },
+      engagement: { paymentMode: c.mode, paymentAccount: c.account, paymentEnvironment: c.environment, inquiryId, fingerprint, name, email, offer, context, links, timeline, approval: 'inquiry', paymentStatus: 'not-requested', scheduling: 'not-arranged', delivery: 'not-started', notification: 'pending', revision: 0 },
     } }, { upsert: true, new: true, runValidators: true }); }
     catch (error) { if (error.code !== 11000) throw error; record = await Opportunity.findOne(query); }
+    binding(record);
     if (record.engagement.fingerprint !== fingerprint) fail('This inquiry reference already has different details. Start a new inquiry.', 409);
     return record;
   }
   async function approve(id, input) {
+    await get(id);
     const scope = text(input.scope, 3000), agreement = text(input.agreement, 1000);
     if (!Number.isSafeInteger(input.amountCents) || input.amountCents < 50 || input.amountCents > 1000000) fail('Enter the agreed USD amount in cents (50–1000000).');
-    const record = await Opportunity.findOneAndUpdate({ _id: id, ownerId: owner(), 'engagement.approval': 'inquiry' }, { $set: { 'engagement.approval': 'approved', 'engagement.scope': scope, 'engagement.agreement': agreement, 'engagement.amountCents': input.amountCents, 'engagement.approvedAt': new Date(), nextAction: 'Create and share the approved test payment link' } }, { new: true, runValidators: true });
+    const record = await Opportunity.findOneAndUpdate({ _id: id, ownerId: owner(), 'engagement.approval': 'inquiry' }, { $set: { 'engagement.approval': 'approved', 'engagement.scope': scope, 'engagement.agreement': agreement, 'engagement.amountCents': input.amountCents, 'engagement.approvedAt': new Date(), nextAction: 'Create and share the approved payment link' } }, { new: true, runValidators: true });
     if (!record) fail('Approval already recorded or engagement unavailable. Approved quotes are locked.', 409);
     return record;
   }
@@ -66,9 +84,10 @@ function createService({ Opportunity, env = process.env, transport = fetch }) {
     let record = await get(id), e = record.engagement;
     if (e.approval !== 'approved') fail('Record the client scope agreement before payment.');
     if (e.sessionId) return reconcile(id);
-    if (!/^sk_test_/.test(env.STRIPE_SECRET_KEY || '')) fail('Stripe test mode is not configured; live keys are disabled.', 503);
+    const c = binding(record);
+    if (!c.enabled || !(c.live ? /^sk_live_/ : /^sk_test_/).test(c.key || '')) fail('Stripe payment mode is not configured.', 503);
     const origin = new URL(env.SERVICES_PUBLIC_URL || '');
-    if (origin.protocol !== 'https:' && !['localhost', '127.0.0.1'].includes(origin.hostname)) fail('Configure a secure Services public URL.', 503);
+    if (origin.protocol !== 'https:' && (c.live || !['localhost', '127.0.0.1'].includes(origin.hostname))) fail('Configure a secure Services public URL.', 503);
     if (!e.attemptAt) record = await Opportunity.findOneAndUpdate({ _id: id, ownerId: owner(), 'engagement.attemptAt': null }, { $set: { 'engagement.attemptAt': new Date() } }, { new: true }) || await get(id);
     e = record.engagement;
     // Never recreate a potentially charged session after Stripe's idempotency retention window.
@@ -80,16 +99,17 @@ function createService({ Opportunity, env = process.env, transport = fetch }) {
       'line_items[0][price_data][product_data][name]': 'COSMIC creative service',
       'line_items[0][price_data][product_data][description]': e.scope, 'line_items[0][quantity]': '1',
       success_url: new URL('/services/payment-return', origin).href, cancel_url: new URL('/services', origin).href,
-    }, `cosmic-service-${id}`);
-    if (session.livemode !== false || !/^cs_test_/.test(session.id) || !session.url?.startsWith('https://checkout.stripe.com/')) fail('Unexpected Stripe session.', 502);
+    }, c.live ? `cosmic-service-live-${c.environment}-${id}` : `cosmic-service-${id}`);
+    if (session.livemode !== c.live || !(c.live ? /^cs_live_/ : /^cs_test_/).test(session.id) || !session.url?.startsWith('https://checkout.stripe.com/')) fail('Unexpected Stripe session.', 502);
     await Opportunity.updateOne({ _id: id, ownerId: owner(), 'engagement.sessionId': null }, { $set: { 'engagement.sessionId': session.id, 'engagement.checkoutUrl': session.url, 'engagement.paymentStatus': 'unpaid' } });
     return reconcile(id);
   }
   async function reconcile(id) {
     const record = await get(id), e = record.engagement;
+    const c = binding(record);
     if (!e.sessionId) fail('No payment session is linked.');
     const s = await stripe(`checkout/sessions/${encodeURIComponent(e.sessionId)}?expand[]=payment_intent.latest_charge`);
-    if (s.id !== e.sessionId || s.livemode !== false || s.client_reference_id !== id || s.metadata?.engagementId !== id || s.currency !== 'usd' || s.amount_total !== e.amountCents) fail('Stripe reference or quote mismatch; manual review required.', 409);
+    if (s.id !== e.sessionId || s.livemode !== c.live || s.client_reference_id !== id || s.metadata?.engagementId !== id || s.currency !== 'usd' || s.amount_total !== e.amountCents) fail('Stripe reference or quote mismatch; manual review required.', 409);
     const pi = s.payment_intent, charge = pi?.latest_charge;
     let status = s.status === 'expired' ? 'expired' : 'unpaid';
     if (s.payment_status === 'paid') {
@@ -110,12 +130,17 @@ function createService({ Opportunity, env = process.env, transport = fetch }) {
     return Opportunity.findOneAndUpdate({ _id: id, ownerId: owner() }, { $set: { nextAction: text(input.nextAction, 500), 'engagement.scheduling': input.scheduling, 'engagement.delivery': input.delivery, 'engagement.followUpNote': text(input.note || '', 2000, false) } }, { new: true, runValidators: true });
   }
   async function webhook(raw, header) {
-    const event = signature(raw, header, env.STRIPE_WEBHOOK_SECRET);
-    if (event.livemode !== false) fail('Live events are disabled.');
+    if (!owner()) fail('Commercial operations are not configured.', 503);
+    const c = config();
+    if (!c.enabled) fail("Payments are disabled.", 503);
+    const event = signature(raw, header, c.webhook);
+    if (!event || typeof event !== 'object') fail('Invalid webhook payload.', 400);
+    if (event.livemode !== c.live) fail('Wrong payment environment.');
     const object = event.data?.object;
     let record;
     if (['checkout.session.completed', 'checkout.session.async_payment_succeeded', 'checkout.session.async_payment_failed', 'checkout.session.expired'].includes(event.type)) {
-      record = await Opportunity.findOne({ ownerId: owner(), 'engagement.sessionId': object?.id });
+      if (typeof object?.id !== 'string' || !(c.live ? /^cs_live_/ : /^cs_test_/).test(object.id)) fail('Invalid Checkout reference.', 400);
+      record = await Opportunity.findOne({ ownerId: owner(), 'engagement.sessionId': object.id });
       // A webhook may arrive between session creation and local persistence: ask Stripe to retry.
       if (!record && object?.metadata?.engagementId) fail('Session persistence pending; retry.', 503);
     } else if (['charge.refunded', 'charge.dispute.created', 'charge.dispute.closed'].includes(event.type)) {

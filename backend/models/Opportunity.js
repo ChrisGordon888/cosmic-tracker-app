@@ -2,6 +2,8 @@ const mongoose = require("mongoose");
 
 const OpportunitySchema = new mongoose.Schema({
     engagement: { type: new mongoose.Schema({
+        paymentMode: { type: String, enum: ["test", "live", "disabled"], immutable: true },
+        paymentAccount: { type: String, immutable: true }, paymentEnvironment: { type: String, immutable: true },
         inquiryId: String, fingerprint: String, name: String, email: String, offer: String,
         context: String, links: String, timeline: String, notification: String,
         approval: String, scope: String, agreement: String, amountCents: Number, approvedAt: Date,

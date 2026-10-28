@@ -4,6 +4,7 @@ const crypto = require('node:crypto');
 const Opportunity = require('../models/Opportunity');
 const User = require('../models/User');
 const { createService, authorize } = require('../lib/serviceEngagements');
+const { paymentMode } = require('../lib/servicePaymentMode');
 const service = createService({ Opportunity });
 const router = express.Router();
 const wrap = fn => async (req, res) => {
@@ -30,7 +31,9 @@ router.use(wrap(async (req, res) => {
   if (req.method === 'GET' && req.path === '/') {
     let schedulingUrl = null;
     try { const url = new URL(process.env.SERVICES_SCHEDULING_URL); if (url.protocol === 'https:') schedulingUrl = url.href; } catch { /* optional */ }
-    return res.json({ records: await Opportunity.find({ ownerId: process.env.SERVICES_OPERATOR_ID, 'engagement.inquiryId': { $exists: true } }).sort({ createdAt: -1 }).limit(100), testMode: true, stripeConfigured: /^sk_test_/.test(process.env.STRIPE_SECRET_KEY || ''), schedulingUrl });
+    const mode = paymentMode(process.env);
+    const scope = mode.live ? { 'engagement.paymentMode': 'live', 'engagement.paymentAccount': mode.account, 'engagement.paymentEnvironment': mode.environment } : { $or: [{ 'engagement.paymentMode': mode.mode }, ...(mode.mode === 'test' ? [{ 'engagement.paymentMode': { $exists: false } }] : [])] };
+    return res.json({ records: await Opportunity.find({ ...scope, ownerId: process.env.SERVICES_OPERATOR_ID, 'engagement.inquiryId': { $exists: true } }).sort({ createdAt: -1 }).limit(100), paymentMode: mode.mode, testMode: !mode.live, stripeConfigured: mode.enabled && (mode.live ? /^sk_live_/ : /^sk_test_/).test(mode.key || ''), schedulingUrl });
   }
   const match = /^\/([a-f\d]{24})\/(approve|checkout|reconcile|follow-up)$/.exec(req.path);
   if (req.method !== 'POST' || !match) return res.status(404).json({ error: 'Unknown engagement action.' });
