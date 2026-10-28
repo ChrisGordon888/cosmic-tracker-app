@@ -957,6 +957,7 @@ const typeDefs = gql`
     logDailyLogin: XPGainResponse!
 
     # Publishing
+    publishDueScheduledReleaseWorld(releaseWorldId: ID!): ReleaseWorld!
     publishReleaseWorld(
       releaseWorldId: ID!
     ): ReleaseWorld!

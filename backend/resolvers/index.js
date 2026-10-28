@@ -902,42 +902,6 @@ async function applyDroppedReleaseState(releaseWorld, userId) {
     };
 }
 
-async function processDueScheduledReleaseWorlds() {
-    const dueReleases = await ReleaseWorld.find({
-        status: "scheduled",
-        visibility: "private",
-        fullDropDate: {
-            $ne: null,
-            $lte: new Date(),
-        },
-    }).sort({ fullDropDate: 1 });
-
-    for (const releaseWorld of dueReleases) {
-        try {
-            const readiness =
-                await evaluateReleasePublishingReadiness(
-                    releaseWorld,
-                    releaseWorld.ownerId
-                );
-
-            if (!readiness.ready) continue;
-
-            await applyPublishedReleaseState(
-                releaseWorld,
-                releaseWorld.ownerId
-            );
-        } catch (error) {
-            console.warn("[scheduledPublishing] Publication failed", {
-                releaseWorldId: String(releaseWorld._id),
-                message:
-                    error instanceof Error
-                        ? error.message
-                        : String(error),
-            });
-        }
-    }
-}
-
 async function getOwnedReleaseWorld(releaseWorldId, userId) {
     return await ReleaseWorld.findOne({
         _id: releaseWorldId,
@@ -2084,12 +2048,10 @@ module.exports = {
         },
 
         getPublicFeaturedReleaseWorld: async () => {
-            await processDueScheduledReleaseWorlds();
             return await getPublicFeaturedReleaseWorld();
         },
 
         getPublicReleaseWorldBySlug: async (_, { slug, worldId }) => {
-            await processDueScheduledReleaseWorlds();
 
             const query = {
                 slug: normalizeSlug(slug),
@@ -2310,7 +2272,6 @@ module.exports = {
 
         getPublicNexusTracks: async (_, { realmId, nexusOnly = false, samplerOnly = false }, _context, executionMode) => {
             if (nexusOnly && samplerOnly) throw new Error("Choose one editorial source.");
-            if (executionMode !== EDITORIAL_READ_ONLY) await processDueScheduledReleaseWorlds();
 
             const publicWorlds = await ReleaseWorld.find({
                 visibility: "public", status: { $ne: "archived" },
@@ -2368,7 +2329,6 @@ module.exports = {
         },
 
         getPublicFeaturedSignal: async () => {
-            await processDueScheduledReleaseWorlds();
             return await getPublicSpotlightTrack();
         },
 
@@ -3372,6 +3332,19 @@ module.exports = {
             await syncReleaseAssetTargets(artwork, user.id);
 
             return artwork;
+        },
+
+        publishDueScheduledReleaseWorld: async (_, { releaseWorldId }, { user }) => {
+            requireCreator(user);
+            const world = await getOwnedReleaseWorld(releaseWorldId, user.id);
+            if (!world) throw new Error("Release world not found.");
+            const dueAt = world.fullDropDate && new Date(world.fullDropDate).getTime();
+            if (world.status !== "scheduled" || world.visibility !== "private" ||
+                !Number.isFinite(dueAt) || dueAt > Date.now()) {
+                throw new Error("This World is not due for scheduled publication.");
+            }
+            // Reuse the explicit owner-authorized readiness and publication operation.
+            return module.exports.Mutation.publishReleaseWorld(null, { releaseWorldId }, { user });
         },
 
         publishReleaseWorld: async (

@@ -31,7 +31,17 @@ test('Scheduled World validates, publishes only the page, preserves private chil
   assert.equal(world.status,'scheduled');await world.validate();
   await r.Mutation.cancelScheduledReleaseWorld(null,{releaseWorldId:world.id},{user});assert.equal(world.status,'draft');
   await r.Mutation.scheduleReleaseWorld(null,{releaseWorldId:world.id,publishAt:new Date(Date.now()+60000).toISOString()},{user});
+  await assert.rejects(r.Mutation.publishDueScheduledReleaseWorld(null,{releaseWorldId:world.id},{user}),/not due/);
   world.fullDropDate=new Date(Date.now()-1000);
+  const scheduledDate = world.fullDropDate.getTime();
+  assert.equal(await r.Query.getPublicReleaseWorldBySlug(null,{slug:'fixture'}),null);
+  assert.equal(world.status,'scheduled');assert.equal(world.visibility,'private');
+  for (const actor of [null,{...user,creatorStatus:'invited'},{...user,id:'other'}]) {
+   await assert.rejects(r.Mutation.publishDueScheduledReleaseWorld(null,{releaseWorldId:world.id},{user:actor}));
+  }
+  await r.Mutation.publishDueScheduledReleaseWorld(null,{releaseWorldId:world.id},{user});
+  assert.equal(world.fullDropDate.getTime(),scheduledDate);
+  await assert.rejects(r.Mutation.publishDueScheduledReleaseWorld(null,{releaseWorldId:world.id},{user}),/not due/);
   assert.equal(await r.Query.getPublicReleaseWorldBySlug(null,{slug:'fixture'}),world);
   assert.equal(world.status,'active');assert.equal(world.visibility,'public');
   assert.equal(child.visibility,'private');assert.equal(child.isPublic,false);assert.equal(child.realmId,0);
@@ -74,4 +84,10 @@ test('Archived World cannot be published or implicitly restored', async () => {
   await assert.rejects(r.Mutation.publishReleaseWorld(null,{releaseWorldId:world.id},{user}),/Restore/);
   assert.equal(writes,0);assert.equal(world.status,'archived');assert.equal(world.visibility,'private');
  }finally{methods.forEach(([m,k],i)=>m[k]=originals[i]);}
+});
+
+test('all four public music reads are separated from scheduled publication', () => {
+ for (const name of ['getPublicFeaturedReleaseWorld','getPublicReleaseWorldBySlug','getPublicNexusTracks','getPublicFeaturedSignal']) {
+  assert.doesNotMatch(r.Query[name].toString(), /processDueScheduledReleaseWorlds|applyPublishedReleaseState|publishDueScheduledReleaseWorld|\.save\(/, name);
+ }
 });
