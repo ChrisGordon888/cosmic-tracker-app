@@ -5,3 +5,11 @@ export function filterEngagements(records:EngagementRecord[],search:string,statu
  return records.filter(r=>{const e=r.engagement;const matches=!q||[r.title,e.name,e.email,e.inquiryId,e.context].some(x=>x?.toLowerCase().includes(q));
  return matches&&(status==='all'||status==='inquiry'&&e.approval==='inquiry'||status==='payment'&&e.approval==='approved'&&e.paymentStatus!=='paid'||status==='paid'&&e.paymentStatus==='paid'||status==='delivery'&&e.paymentStatus==='paid'&&e.delivery!=='delivered');});
 }
+export function engagementNextAction(e:Engagement, now=Date.now()) {
+ if(e.approval!=='approved') return 'Awaiting agreement';
+ if(e.paymentStatus!=='paid'||!e.checkedAt) return 'Awaiting verified payment';
+ if(e.delivery==='delivered') return 'Completed';
+ if(e.delivery==='in-progress') return 'Awaiting delivery';
+ if(e.scheduling==='confirmed'&&e.sessionAt) return new Date(e.sessionAt).getTime()>now?'Session scheduled':'Awaiting delivery';
+ return 'Ready to schedule';
+}
