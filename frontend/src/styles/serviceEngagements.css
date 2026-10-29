@@ -11,3 +11,8 @@
 .service-engagements button:disabled { opacity: .6; cursor: wait; }
 .service-engagements :focus-visible { outline: 2px solid #bad1ff; outline-offset: 3px; }
 .service-engagements summary { cursor: pointer; margin: .8rem 0; }
+.engagement-metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(145px,1fr)); gap:12px; }
+.engagement-metrics article { padding:16px; border:1px solid #596170; border-radius:12px; }
+.engagement-metrics strong { display:block; font-size:1.8rem; }
+.engagement-filters,.booking-fields { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr)); gap:14px; margin:20px 0; min-width:0; }
+.booking-fields { border:0; padding:0; }

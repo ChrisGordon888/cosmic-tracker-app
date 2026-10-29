@@ -5,6 +5,7 @@ const Opportunity = require('../models/Opportunity');
 const User = require('../models/User');
 const { createService, authorize } = require('../lib/serviceEngagements');
 const { paymentMode } = require('../lib/servicePaymentMode');
+const { summarize } = require('../lib/commercialOperations');
 const service = createService({ Opportunity });
 const router = express.Router();
 const wrap = fn => async (req, res) => {
@@ -28,17 +29,20 @@ router.use(wrap(async (req, res) => {
   let user;
   try { const decoded = jwt.verify(token, process.env.NEXTAUTH_SECRET); user = await User.findOne({ email: decoded.email }); } catch { return res.status(401).json({ error: 'Sign in required.' }); }
   authorize(user, process.env.SERVICES_OPERATOR_ID);
-  if (req.method === 'GET' && req.path === '/') {
+  if (req.method === 'GET' && ['/', '/summary'].includes(req.path)) {
     let schedulingUrl = null;
     try { const url = new URL(process.env.SERVICES_SCHEDULING_URL); if (url.protocol === 'https:') schedulingUrl = url.href; } catch { /* optional */ }
     const mode = paymentMode(process.env);
     const scope = mode.live ? { 'engagement.paymentMode': 'live', 'engagement.paymentAccount': mode.account, 'engagement.paymentEnvironment': mode.environment } : { $or: [{ 'engagement.paymentMode': mode.mode }, ...(mode.mode === 'test' ? [{ 'engagement.paymentMode': { $exists: false } }] : [])] };
-    return res.json({ records: await Opportunity.find({ ...scope, ownerId: process.env.SERVICES_OPERATOR_ID, 'engagement.inquiryId': { $exists: true } }).sort({ createdAt: -1 }).limit(100), paymentMode: mode.mode, testMode: !mode.live, stripeConfigured: mode.enabled && (mode.live ? /^sk_live_/ : /^sk_test_/).test(mode.key || ''), schedulingUrl });
+    const query = { ...scope, ownerId: process.env.SERVICES_OPERATOR_ID, 'engagement.inquiryId': { $exists: true } };
+    const summary = summarize(await Opportunity.find(query).select('engagement.approval engagement.paymentStatus engagement.checkedAt engagement.scheduling engagement.sessionAt engagement.delivery engagement.notification engagement.paymentMode engagement.paymentAccount engagement.paymentEnvironment engagement.amountCents').lean());
+    if (req.path === '/summary') return res.json({ attention: summary.attention });
+    return res.json({ summary, records: await Opportunity.find(query).sort({ createdAt: -1 }).limit(100), paymentMode: mode.mode, testMode: !mode.live, stripeConfigured: mode.enabled && (mode.live ? /^sk_live_/ : /^sk_test_/).test(mode.key || ''), schedulingUrl });
   }
-  const match = /^\/([a-f\d]{24})\/(approve|checkout|reconcile|follow-up)$/.exec(req.path);
+  const match = /^\/([a-f\d]{24})\/(approve|checkout|reconcile|follow-up|booking)$/.exec(req.path);
   if (req.method !== 'POST' || !match) return res.status(404).json({ error: 'Unknown engagement action.' });
   await service.get(match[1]);
-  const method = { approve: 'approve', checkout: 'checkout', reconcile: 'reconcile', 'follow-up': 'followUp' }[match[2]];
+  const method = { approve: 'approve', checkout: 'checkout', reconcile: 'reconcile', 'follow-up': 'followUp', booking: 'recordBooking' }[match[2]];
   res.json(await service[method](match[1], req.body));
 }));
 module.exports = router;

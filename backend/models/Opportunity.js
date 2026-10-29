@@ -9,6 +9,7 @@ const OpportunitySchema = new mongoose.Schema({
         approval: String, scope: String, agreement: String, amountCents: Number, approvedAt: Date,
         attemptAt: { type: Date, default: null }, sessionId: { type: String, default: null }, checkoutUrl: String,
         revision: { type: Number, default: 0 }, paymentStatus: String, paymentIntentId: String, invoiceId: String, checkedAt: { type: Date, default: null },
+        sessionKind: String, sessionAt: Date, sessionTimeZone: String, bookingReference: String, meetingUrl: String,
         scheduling: String, delivery: String, followUpNote: String,
     }, { _id: false }), default: undefined },
     ownerId: { type: String, required: true, index: true },

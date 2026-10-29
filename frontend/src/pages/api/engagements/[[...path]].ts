@@ -8,7 +8,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const session = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
   if (typeof session?.accessToken !== 'string') return res.status(401).json({ error: 'Sign in required.' });
   const path = Array.isArray(req.query.path) ? req.query.path.join('/') : '';
-  if (path && !/^[a-f\d]{24}\/(approve|checkout|reconcile|follow-up)$/.test(path)) return res.status(404).json({ error: 'Unknown action.' });
+  if (path && !(req.method === 'GET' && path === 'summary') && !/^[a-f\d]{24}\/(approve|checkout|reconcile|follow-up|booking)$/.test(path)) return res.status(404).json({ error: 'Unknown action.' });
   const base = process.env.SERVICES_BACKEND_URL;
   if (!base) return res.status(503).json({ error: 'Commercial operations are not configured.' });
   try {

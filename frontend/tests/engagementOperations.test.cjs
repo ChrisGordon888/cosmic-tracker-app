@@ -1,0 +1,4 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('fs'),vm=require('vm'),ts=require('typescript');
+const m={exports:{}};vm.runInNewContext(ts.transpileModule(fs.readFileSync('src/lib/engagementOperations.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText,{exports:m.exports});
+const rows=[{title:'Song world',engagement:{name:'Fictional Artist',email:'fixture@example.test',inquiryId:'one',approval:'inquiry',paymentStatus:'not-requested'}},{title:'Session',engagement:{name:'Other',approval:'approved',paymentStatus:'paid',delivery:'not-started'}}];
+test('recent inquiry search and lifecycle filters preserve input and do not invent unread',()=>{assert.equal(m.exports.filterEngagements(rows,'artist','inquiry').length,1);assert.equal(m.exports.filterEngagements(rows,'','delivery').length,1);assert.equal(m.exports.filterEngagements(rows,'missing','all').length,0);assert.equal(rows.length,2);});

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { gql, useMutation, useQuery } from '@apollo/client';
 import { useSession } from 'next-auth/react';
 import '@/styles/creator.css';
+import EngagementNavigation from '@/components/creator/EngagementNavigation';
 import OpportunitySection from '@/components/creator/OpportunitySection';
 import BlockerAssist from '@/components/creator/BlockerAssist';
 import CreatorHomeTour from '@/components/creator/CreatorHomeTour';
@@ -509,7 +510,7 @@ export default function CreatorDashboardPage() {
                 <CreatorHomeTour ready={!loading} projectSlug={activeProject?.slug} />
 
                 <BlockerAssist featuredSelection={activeProfile?.featuredReleaseWorldId ?? projects.find((project) => project.isFeatured)?.id ?? null} />
-                <Link href="/creator/engagements">Service engagements (operator access) →</Link>
+                <EngagementNavigation />
             <OpportunitySection releases={projects} />
 
                 <section className="creator-console-topline" aria-label="Creator stats">

@@ -1,4 +1,5 @@
 const { paymentMode } = require('./servicePaymentMode');
+const { booking } = require('./commercialOperations');
 const crypto = require('node:crypto');
 const offers = ['not-sure', 'creative-direction-session', 'song-project-development-pack', 'music-daw-workflow-lesson', 'artist-world-audit'];
 function fail(message, status = 400) { throw Object.assign(new Error(message), { status }); }
@@ -122,12 +123,21 @@ function createService({ Opportunity, env = process.env, transport = fetch }) {
     if (!update.matchedCount) fail('Another reconciliation completed; refresh and retry.', 409);
     return get(id);
   }
+  async function recordBooking(id, input) {
+    if (input.sessionAt === undefined) fail('Provide the session time or explicitly clear it.');
+    if (!['discovery','paid-session'].includes(input.sessionKind)) fail('Choose discovery or paid session.');
+    const record = input.sessionKind === 'paid-session' && input.scheduling === 'confirmed' ? await reconcile(id) : await get(id);
+    if (input.sessionKind === 'paid-session' && (record.engagement.approval !== 'approved' || (input.scheduling === 'confirmed' && record.engagement.paymentStatus !== 'paid'))) fail('Approve scope and verify payment before confirming a paid session.');
+    let details; try { details = booking(input, record.engagement); } catch (error) { fail(error.message); }
+    return Opportunity.findOneAndUpdate({ _id:id, ownerId:owner() }, { $set:{...details, 'engagement.sessionKind':input.sessionKind, 'engagement.scheduling':input.scheduling} }, {new:true,runValidators:true});
+  }
   async function followUp(id, input) {
     const record = input.delivery && input.delivery !== 'not-started' ? await reconcile(id) : await get(id);
     if (record.engagement.approval !== 'approved') fail('Approve the scope first.');
-    if (!['not-arranged', 'invited', 'confirmed'].includes(input.scheduling) || !['not-started', 'in-progress', 'delivered'].includes(input.delivery)) fail('Invalid follow-up state.');
+    if (!['not-arranged', 'invited', 'confirmed', 'cancelled', 'rescheduling'].includes(input.scheduling) || !['not-started', 'in-progress', 'delivered'].includes(input.delivery)) fail('Invalid follow-up state.');
     if (input.delivery !== 'not-started' && record.engagement.paymentStatus !== 'paid') fail('Verify payment before recording delivery work.');
-    return Opportunity.findOneAndUpdate({ _id: id, ownerId: owner() }, { $set: { nextAction: text(input.nextAction, 500), 'engagement.scheduling': input.scheduling, 'engagement.delivery': input.delivery, 'engagement.followUpNote': text(input.note || '', 2000, false) } }, { new: true, runValidators: true });
+    if (input.scheduling !== record.engagement.scheduling) fail('Use booking controls to change session status.');
+    return Opportunity.findOneAndUpdate({ _id: id, ownerId: owner() }, { $set: { nextAction: text(input.nextAction, 500), 'engagement.delivery': input.delivery, 'engagement.followUpNote': text(input.note || '', 2000, false) } }, { new: true, runValidators: true });
   }
   async function webhook(raw, header) {
     if (!owner()) fail('Commercial operations are not configured.', 503);
@@ -151,6 +161,6 @@ function createService({ Opportunity, env = process.env, transport = fetch }) {
     // No fulfillment side effects: repeated/out-of-order events re-read current Stripe state.
     return { received: true };
   }
-  return { intake, approve, checkout, reconcile, followUp, webhook, get };
+  return { intake, approve, checkout, reconcile, followUp, recordBooking, webhook, get };
 }
 module.exports = { createService, authorize, signature };
