@@ -5,6 +5,7 @@ const Opportunity = require('../models/Opportunity');
 const User = require('../models/User');
 const { createService, authorize } = require('../lib/serviceEngagements');
 const { paymentMode } = require('../lib/servicePaymentMode');
+const { hostedBookings, scheduleSession } = require('../lib/hostedBookings');
 const { summarize } = require('../lib/commercialOperations');
 const service = createService({ Opportunity });
 const router = express.Router();
@@ -37,11 +38,13 @@ router.use(wrap(async (req, res) => {
     const query = { ...scope, ownerId: process.env.SERVICES_OPERATOR_ID, 'engagement.inquiryId': { $exists: true } };
     const summary = summarize(await Opportunity.find(query).select('engagement.approval engagement.paymentStatus engagement.checkedAt engagement.scheduling engagement.sessionAt engagement.delivery engagement.notification engagement.paymentMode engagement.paymentAccount engagement.paymentEnvironment engagement.amountCents').lean());
     if (req.path === '/summary') return res.json({ attention: summary.attention });
-    return res.json({ summary, records: await Opportunity.find(query).sort({ createdAt: -1 }).limit(100), paymentMode: mode.mode, testMode: !mode.live, stripeConfigured: mode.enabled && (mode.live ? /^sk_live_/ : /^sk_test_/).test(mode.key || ''), schedulingUrl });
+    const upcoming = await Opportunity.find({...query, 'engagement.scheduling':'confirmed', 'engagement.sessionAt':{$gt:new Date()}}).sort({'engagement.sessionAt':1}).limit(20).select('title engagement.name engagement.sessionAt engagement.sessionTimeZone engagement.sessionKind');
+    return res.json({ upcoming, bookingUrls:hostedBookings(), summary, records: await Opportunity.find(query).sort({ createdAt: -1 }).limit(100), paymentMode: mode.mode, testMode: !mode.live, stripeConfigured: mode.enabled && (mode.live ? /^sk_live_/ : /^sk_test_/).test(mode.key || ''), schedulingUrl });
   }
-  const match = /^\/([a-f\d]{24})\/(approve|checkout|reconcile|follow-up|booking)$/.exec(req.path);
+  const match = /^\/([a-f\d]{24})\/(approve|checkout|reconcile|follow-up|booking|schedule)$/.exec(req.path);
   if (req.method !== 'POST' || !match) return res.status(404).json({ error: 'Unknown engagement action.' });
   await service.get(match[1]);
+  if(match[2]==='schedule') return res.json(await scheduleSession(service,match[1],req.body.sessionKind));
   const method = { approve: 'approve', checkout: 'checkout', reconcile: 'reconcile', 'follow-up': 'followUp', booking: 'recordBooking' }[match[2]];
   res.json(await service[method](match[1], req.body));
 }));
