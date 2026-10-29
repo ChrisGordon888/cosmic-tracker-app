@@ -16,7 +16,7 @@ test('Read-only evidence is submission, owner, World and published-text scoped; 
  const config={realmSoundtracks:[{trackId:'t',worldId:'w',realmId:0}],realmAnchors:[],realmOrders:[]};
  try{
  T.findById=async()=>track;W.findOne=async q=>eligible&&q.ownerId===owner?world:null;U.exists=async()=>({_id:owner});P.findOne=async()=>({artistName:'Fixture'});C.findOne=async()=>config;
- B.find=q=>{assert.deepEqual(q,{ownerId:owner,releaseWorldId:'w',isPublic:true,assetId:null,connectedTrackSlug:{$in:['','song']}});return{select:fields=>{assert.equal(fields,'title body meta kind');return{sort:async()=>[{title:'Creator-published process'}]}}}};
+ B.find=q=>{assert.deepEqual(q,{ownerId:owner,releaseWorldId:'w',isPublic:true,assetId:null,connectedTrackSlug:{$in:['','song']}});return{select:fields=>{assert.equal(fields,'title body meta kind eyebrow href connectedTrackSlug isPublic consentFingerprint consentRecordedAt');return{sort:async()=>[{title:'Creator-published fragment',isPublic:true,eyebrow:'Story'}]}}}};
  assert.equal((await r.Query.nexusReviewEvidence(null,{trackId:'t'},{user:admin})).length,1);
  await assert.rejects(r.Query.nexusReviewEvidence(null,{trackId:'t'},{user:{id:'other',role:'creator'}}));
  for(const query of ['getReleaseTracks','getReleaseAssets'])await assert.rejects(r.Query[query](null,{releaseWorldId:'w'},{user:{id:'bbbbbbbbbbbbbbbbbbbbbbbb',role:'creator',creatorStatus:'active'}}),/not found/);

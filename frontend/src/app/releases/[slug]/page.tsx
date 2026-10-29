@@ -1,4 +1,5 @@
 'use client';
+import { publicWorldHref } from '@/lib/releaseSharing';
 
 import Link from 'next/link';
 import ReleaseShareButton from '@/components/public/ReleaseShareButton';
@@ -82,6 +83,7 @@ const PUBLIC_BOARD_ARTIFACT_FIELDS = gql`
     meta
     href
     connectedTrackSlug
+    consentConfirmed
     isPublic
     pageSection
     pageOrder
@@ -685,7 +687,7 @@ function ReleasePageContent() {
                 )}
             </section>
 
-            <WorldProof key={world.id} items={publicArtifacts} />
+            <WorldProof key={world.id} items={publicArtifacts} worldHref={publicWorldHref(world.slug,world.id)} />
 
             {publicArtifacts.filter(item => !isWorldProof(item)).length > 0 && (
                 <section className="release-world-board-section">

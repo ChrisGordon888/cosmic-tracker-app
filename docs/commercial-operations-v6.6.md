@@ -39,3 +39,6 @@ Use fictional records to test modes, status filters, denied operator endpoints, 
 3. Record a future free discovery appointment before approval. Paid confirmation without verified payment must fail. After sandbox payment reconciliation, confirm paid session with UTC input and correct display zone/provider time. Refresh; cancel/reschedule and confirm active time clears. Repeated saves update one appointment; provider remains responsible for availability/conflicts across different engagements.
 4. Verify next-action/delivery edits cannot change booking details. No provider configured must not imply an invitation or confirmation was sent.
 5. Retain separate approval gates for production deployment, provider setup/customer messages and live billing activation.
+
+## V6.7 continuation
+See [bookings-collaborations-v6.7.md](bookings-collaborations-v6.7.md) for local-time entry replacing UTC-entry UX, hosted booking actions, lifecycle labels, consented World credits and current acceptance limits. Historical V6.6 results above remain unchanged.

@@ -1,3 +1,4 @@
+const collaborationConsent = require('../lib/collaborationConsent');
 const EDITORIAL_READ_ONLY = Symbol('editorial-read-only');
 const realmEditorial = require('../lib/realmEditorial');
 const { publicWorldFilter, projectTrackFilter, projectRealm } = require('../lib/publicProjects');
@@ -2076,8 +2077,9 @@ module.exports = {
             if (!track || !['in-review','needs-changes','approved','published'].includes(track.nexusReviewStatus)) throw new Error('Submission not found.');
             await requireEditorialSource(track, false);
             // Only creator-published text/process fragments, never private board or attachment URLs.
-            return BoardArtifact.find({ownerId:track.ownerId,releaseWorldId:track.releaseWorldId,isPublic:true,assetId:null,connectedTrackSlug:{$in:['',track.slug]}})
-                .select('title body meta kind').sort({pageOrder:1,createdAt:1});
+            const evidence = await BoardArtifact.find({ownerId:track.ownerId,releaseWorldId:track.releaseWorldId,isPublic:true,assetId:null,connectedTrackSlug:{$in:['',track.slug]}})
+                .select('title body meta kind eyebrow href connectedTrackSlug isPublic consentFingerprint consentRecordedAt').sort({pageOrder:1,createdAt:1});
+            return evidence.filter(collaborationConsent.publicArtifact);
         },
         nexusReviewQueue: async (_, { status }, { user }) => {
             requireNexusReview(user);
@@ -2412,7 +2414,7 @@ module.exports = {
             }
 
             const protectedTracks = await ReleaseTrack.find({ ownerId: releaseWorld.ownerId, releaseWorldId, catalogTreatment: { $in: ['vault', 'test'] } }).select('slug');
-            return await BoardArtifact.find({
+            const artifacts = await BoardArtifact.find({
                 connectedTrackSlug: { $nin: protectedTracks.map(track => track.slug).filter(Boolean) },
                 ownerId: releaseWorld.ownerId,
                 releaseWorldId,
@@ -2422,6 +2424,7 @@ module.exports = {
                 pageOrder: 1,
                 createdAt: 1,
             });
+            return artifacts.filter(collaborationConsent.publicArtifact);
         },
     },
 
@@ -5141,6 +5144,11 @@ module.exports = {
                 throw new Error("Release world not found.");
             }
 
+            const previousArtifacts = await BoardArtifact.find({ownerId:user.id,releaseWorldId});
+            const previousById = new Map(previousArtifacts.map(a=>[String(a._id),a]));
+            // Validate all publication consent before the existing replacement operation.
+            const permissions = artifacts.map(a=>collaborationConsent.consentForSave(a,previousById.get(String(a.id))));
+
             await BoardArtifact.deleteMany({
                 ownerId: user.id,
                 releaseWorldId,
@@ -5153,7 +5161,8 @@ module.exports = {
             }
 
             const docs = await BoardArtifact.insertMany(
-                artifacts.map((artifact) => ({
+                artifacts.map((artifact, index) => ({
+                    ...permissions[index],
                     ownerId: user.id,
                     releaseWorldId,
                     kind: artifact.kind,
@@ -5194,6 +5203,8 @@ module.exports = {
             return docs;
         },
     },
+
+    BoardArtifact: { consentConfirmed: parent => collaborationConsent.consented(parent) },
 
     PracticeQuest: {
         ritual: async (parent, _, { user }) => {

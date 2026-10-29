@@ -384,8 +384,10 @@ export default function StudioBoardWorkspace({
                                 </label>
                                 {['Credit','Process'].includes(selectedArtifact.eyebrow || '') && <>
                                     <p className="signal-board-field-note">Only publish names and material you have permission to share. Unlisted videos are not private storage. Save the Studio Board after editing; hidden cards stay private.</p>
+                                    <label><input type="checkbox" checked={Boolean(selectedArtifact.consentConfirmed)} onChange={event=>updateArtifact(selectedArtifact.id,{consentConfirmed:event.target.checked,confirmConsent:event.target.checked,withdrawConsent:!event.target.checked,...(!event.target.checked?{isPublic:false}:{})})}/> I have permission to publish this exact name, role, context and linked material.</label>
+                                    <p className="signal-board-field-note">Changing identifying content requires permission again. Uncheck and save to withdraw publication. Attribution does not grant editing access, copyright ownership or revenue rights.</p>
                                     <label>Name / title<input maxLength={160} value={selectedArtifact.title} onChange={event=>updateArtifact(selectedArtifact.id,{title:event.target.value})}/></label>
-                                    <label>Role / credit<input maxLength={200} value={selectedArtifact.meta || ''} onChange={event=>updateArtifact(selectedArtifact.id,{meta:event.target.value})}/></label>
+                                    <label>Role / credit (artist, producer, songwriter, engineer…)<input maxLength={200} value={selectedArtifact.meta || ''} onChange={event=>updateArtifact(selectedArtifact.id,{meta:event.target.value})}/></label>
                                     <label>Short context<textarea maxLength={2000} value={selectedArtifact.body || ''} onChange={event=>updateArtifact(selectedArtifact.id,{body:event.target.value})}/></label>
                                     <label>HTTPS profile or approved video link<input type="url" value={selectedArtifact.href || ''} onChange={event=>updateArtifact(selectedArtifact.id,{href:event.target.value})}/></label>
                                 </>}
@@ -394,6 +396,7 @@ export default function StudioBoardWorkspace({
                                     Publish to Portal
                                     <button
                                         type="button"
+                                        disabled={['credit','process'].includes((selectedArtifact.eyebrow||'').trim().toLowerCase()) && !selectedArtifact.consentConfirmed}
                                         className={selectedArtifact.isPublic ? "is-active" : ""}
                                         onClick={() =>
                                             updateArtifact(selectedArtifact.id, {

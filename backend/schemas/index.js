@@ -492,6 +492,7 @@ const typeDefs = gql`
   }
 
   type BoardArtifact {
+    consentConfirmed: Boolean!
     id: ID!
     ownerId: String!
     releaseWorldId: ID!
@@ -723,6 +724,8 @@ const typeDefs = gql`
   }
 
   input BoardArtifactInput {
+    confirmConsent: Boolean
+    withdrawConsent: Boolean
     id: ID
     kind: String!
     eyebrow: String

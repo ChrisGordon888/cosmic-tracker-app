@@ -191,6 +191,9 @@ export interface PortalSettings {
 }
 
 export interface BoardArtifact {
+    consentConfirmed?: boolean;
+    confirmConsent?: boolean;
+    withdrawConsent?: boolean;
     id: string;
     kind: ArtifactKind;
     eyebrow: string;
@@ -218,6 +221,7 @@ export interface StoredBoardState {
 }
 
 export interface MongoBoardArtifact {
+    consentConfirmed?: boolean;
     id: string;
     kind: ArtifactKind;
     eyebrow?: string | null;

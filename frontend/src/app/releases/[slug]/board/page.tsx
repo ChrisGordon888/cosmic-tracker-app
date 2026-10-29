@@ -68,6 +68,7 @@ const GET_BOARD_ARTIFACTS = gql`
       isGenerated
       isUserCreated
       isPublic
+      consentConfirmed
       pageSection
       pageOrder
     }
@@ -101,6 +102,7 @@ const SAVE_BOARD_ARTIFACTS = gql`
       isGenerated
       isUserCreated
       isPublic
+      consentConfirmed
       pageSection
       pageOrder
     }
@@ -962,6 +964,7 @@ function mapMongoArtifact(artifact: MongoBoardArtifact): BoardArtifact {
         isGenerated: artifact.isGenerated,
         isUserCreated: artifact.isUserCreated,
         isPublic: artifact.isPublic,
+        consentConfirmed: artifact.consentConfirmed ?? false,
         pageSection: artifact.pageSection ?? "story",
         pageOrder: artifact.pageOrder ?? 1,
     };
@@ -986,6 +989,8 @@ function mapArtifactToInput(artifact: BoardArtifact) {
         isGenerated: artifact.isGenerated ?? false,
         isUserCreated: artifact.isUserCreated ?? true,
         isPublic: artifact.isPublic ?? false,
+        confirmConsent: artifact.confirmConsent ?? false,
+        withdrawConsent: artifact.withdrawConsent ?? false,
         pageSection: artifact.pageSection ?? "story",
         pageOrder: artifact.pageOrder ?? 1,
     };
@@ -2256,7 +2261,8 @@ export default function DynamicReleaseSignalBoardPage() {
     function updateArtifact(id: string, updates: Partial<BoardArtifact>) {
         setArtifacts((current) =>
             current.map((artifact) =>
-                artifact.id === id ? { ...artifact, ...updates } : artifact,
+                artifact.id === id ? { ...artifact, ...updates,
+                    ...(['eyebrow','title','body','meta','href','connectedTrackSlug'].some(key=>key in updates && updates[key as keyof BoardArtifact]!==artifact[key as keyof BoardArtifact]) && ['credit','process'].includes(String(updates.eyebrow??artifact.eyebrow).toLowerCase()) ? {consentConfirmed:false,confirmConsent:false,withdrawConsent:true,isPublic:false} : {}) } : artifact,
             ),
         );
         setSaveMessage("Unsaved changes. Save to Cloud when ready.");

@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 import { useState } from 'react';
 import { publicWorldProof, proofLink, youtubeEmbed, type WorldProofItem } from '@/lib/worldProof';
 import '@/styles/worldProof.css';
@@ -12,11 +13,13 @@ function ProofCard({ item }: { item: WorldProofItem }) {
     {href && <a href={href} target="_blank" rel="noopener noreferrer">{embed ? 'Watch on YouTube' : 'Visit profile or reference'} ↗</a>}
   </article>;
 }
-export default function WorldProof({ items }: { items: WorldProofItem[] }) {
+export default function WorldProof({ items, worldHref }: { items: WorldProofItem[]; worldHref?: string }) {
   const published = publicWorldProof(items);
-  if (!published.length) return null;
+  if (!published.length && !worldHref) return null;
   return <section className="world-proof release-world-story-section" aria-label="People and process">
-    <div className="release-world-section-heading"><p className="release-world-label">People & process</p><h2>Behind the work.</h2><p>Credits and creative context selected by this World’s creator.</p></div>
+    <div className="release-world-section-heading"><p className="release-world-label">People & process</p><h2>Behind the work.</h2><p>Contributor roles and creative context published with permission recorded by this World’s creator. Credits do not establish ownership or grant project access.</p></div>
+    {!published.length && <p>No approved contributor credits or process references have been published.</p>}
     <div className="world-proof-grid">{published.map(item=><ProofCard key={item.id} item={item}/>)}</div>
+    {worldHref && <p><Link href={`/services/inquire?offer=song-project-development-pack&intent=question&world=${encodeURIComponent(worldHref)}`}>Work together with COSMIC →</Link><small>Discuss a creative project with Christopher. This does not contact or imply availability of the credited contributors.</small></p>}
   </section>;
 }

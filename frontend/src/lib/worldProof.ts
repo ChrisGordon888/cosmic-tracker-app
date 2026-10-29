@@ -1,10 +1,10 @@
 import type { WorldFragmentData } from './worldExperience';
-export type WorldProofItem = WorldFragmentData & { meta?: string | null; pageOrder?: number | null };
+export type WorldProofItem = WorldFragmentData & { meta?: string | null; pageOrder?: number | null; consentConfirmed?: boolean | null };
 export function isWorldProof(item: WorldProofItem) {
   return ['credit', 'process'].includes((item.eyebrow || '').trim().toLowerCase());
 }
 export function publicWorldProof(items: WorldProofItem[]) {
-  return items.filter(item => item.isPublic && isWorldProof(item)).sort((a,b)=>(a.pageOrder??1)-(b.pageOrder??1));
+  return items.filter(item => item.isPublic && item.consentConfirmed === true && isWorldProof(item)).sort((a,b)=>(a.pageOrder??1)-(b.pageOrder??1));
 }
 export function proofLink(value?: string | null) {
   try { const url = new URL(value || ''); return url.protocol === 'https:' && !url.username && !url.password ? url.href : undefined; } catch { return undefined; }

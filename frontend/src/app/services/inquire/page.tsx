@@ -40,7 +40,10 @@ function InquiryForm() {
     const [links, setLinks] = useState("");
     const [timeline, setTimeline] = useState("");
     const [contactPreference, setContactPreference] = useState(CONTACT_OPTIONS[0]);
-    const [message, setMessage] = useState("");
+    const [message, setMessage] = useState(() => {
+        const world=searchParams?.get('world')||'';
+        return /^\/releases\/[^/?#]+(?:\?world=[a-f\d]{24})?$/.test(world)&&world.length<300 ? `I'd like to discuss a collaboration inspired by this public World: ${world}\n\n` : '';
+    });
 
     const selectedOffer = useMemo(
         () => OFFER_OPTIONS.find((option) => option.slug === offer) || OFFER_OPTIONS[0],

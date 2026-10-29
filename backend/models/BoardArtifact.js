@@ -59,6 +59,10 @@ const BoardArtifactSchema = new mongoose.Schema(
     isGenerated: { type: Boolean, default: false },
     isUserCreated: { type: Boolean, default: true },
 
+    // Private owner-recorded permission, bound to the exact identifying content.
+    consentFingerprint: { type: String, default: "" },
+    consentRecordedAt: { type: Date, default: null },
+
     // Release page publishing bridge
     isPublic: { type: Boolean, default: false, index: true },
 
