@@ -95,6 +95,7 @@ async function startServer() {
     }
 
     app.use("/services", require("./routes/services"));
+    app.use("/commerce", require("./routes/commerce"));
 
     const server = new ApolloServer({
         typeDefs,

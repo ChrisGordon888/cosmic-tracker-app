@@ -510,7 +510,7 @@ export default function CreatorDashboardPage() {
                 <CreatorHomeTour ready={!loading} projectSlug={activeProject?.slug} />
 
                 <BlockerAssist featuredSelection={activeProfile?.featuredReleaseWorldId ?? projects.find((project) => project.isFeatured)?.id ?? null} />
-                <EngagementNavigation />
+                <EngagementNavigation /><Link href="/creator/marketplace">Marketplace · catalog & providers →</Link>
             <OpportunitySection releases={projects} />
 
                 <section className="creator-console-topline" aria-label="Creator stats">
