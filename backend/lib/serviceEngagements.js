@@ -61,12 +61,14 @@ function createService({ Opportunity, env = process.env, transport = fetch }) {
     const name = text(input.name, 150), email = text(input.email, 254).toLowerCase(), offer = text(input.offer, 80);
     if (!offers.includes(offer) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) fail('Invalid inquiry.');
     const context = text(input.message, 6000), links = text(input.links || '', 3000, false), timeline = text(input.timeline || '', 300, false);
+    const commerceOffer=input.commerceOffer ? text(input.commerceOffer,80) : undefined;
+    if(commerceOffer&&!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(commerceOffer))fail('Invalid offering reference.');
     const fingerprint = crypto.createHash('sha256').update(JSON.stringify({ name, email, offer, context, links, timeline })).digest('hex');
     const query = { ownerId: owner(), 'engagement.inquiryId': inquiryId };
     let record;
     try { record = await Opportunity.findOneAndUpdate(query, { $setOnInsert: {
       ownerId: owner(), title: `${name} · ${offer}`.slice(0, 160), desiredOutcome: 'Agree a useful creative engagement', context: context.slice(0, 5000), nextAction: 'Review inquiry and reply with fit, scope and timing',
-      engagement: { paymentMode: c.mode, paymentAccount: c.account, paymentEnvironment: c.environment, inquiryId, fingerprint, name, email, offer, context, links, timeline, approval: 'inquiry', paymentStatus: 'not-requested', scheduling: 'not-arranged', delivery: 'not-started', notification: 'pending', revision: 0 },
+      engagement: { ...(commerceOffer?{commerceOffer}:{}), paymentMode: c.mode, paymentAccount: c.account, paymentEnvironment: c.environment, inquiryId, fingerprint, name, email, offer, context, links, timeline, approval: 'inquiry', paymentStatus: 'not-requested', scheduling: 'not-arranged', delivery: 'not-started', notification: 'pending', revision: 0 },
     } }, { upsert: true, new: true, runValidators: true }); }
     catch (error) { if (error.code !== 11000) throw error; record = await Opportunity.findOne(query); }
     binding(record);

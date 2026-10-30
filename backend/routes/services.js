@@ -19,6 +19,7 @@ router.post('/intake', wrap(async (req, res) => {
   const secret = process.env.SERVICES_INTAKE_SECRET;
   const given = String(req.headers['x-services-key'] || '');
   if (!secret || secret.length < 32 || given.length !== secret.length || !crypto.timingSafeEqual(Buffer.from(given), Buffer.from(secret))) return res.status(403).json({ error: 'Server intake authorization required.' });
+  if(req.body.commerceOffer){const rows=await require('./commerce').publicRows(String(req.body.commerceOffer));const listing=rows.find(o=>['cosmic_service','calcom'].includes(o.provider)&&new URL(o.href,'https://cosmic.example').searchParams.get('offer')===req.body.offer);if(!listing)delete req.body.commerceOffer;}
   await Opportunity.init(); // Require the unique inquiry/session indexes before accepting durable intake.
   const record = await service.intake(req.body);
   if (req.body.notification === 'accepted') await Opportunity.updateOne({ _id: record._id }, { $set: { 'engagement.notification': 'accepted' } });

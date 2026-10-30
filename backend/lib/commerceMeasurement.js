@@ -1,0 +1,3 @@
+const {fail}=require('./commerceCatalog');
+function eventInput(input,offer){if(input.consent!==true)fail('Optional measurement consent is required.');if(!/^[a-f\d]{8}-[a-f\d]{4}-4[a-f\d]{3}-[89ab][a-f\d]{3}-[a-f\d]{12}$/i.test(input.eventId||''))fail('Invalid event reference.');if(!['visit','cta'].includes(input.kind))fail('Unsupported event.');return {eventId:input.eventId,slug:offer.slug,kind:input.kind==='visit'?'visit':offer.provider==='affiliate_external'?'affiliate-outbound':offer.provider==='beatstars'?'beatstars-outbound':'cta',campaign:offer.campaigns?.includes(input.campaign)?input.campaign:'direct'};}
+module.exports={eventInput};

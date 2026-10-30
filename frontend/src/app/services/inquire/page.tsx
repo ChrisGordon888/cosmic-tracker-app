@@ -73,7 +73,8 @@ function InquiryForm() {
         event.preventDefault();if(inFlight.current||receipt)return;
         inFlight.current=true;setSending(true);setFeedback('');
         try {
-            const payload=JSON.stringify({name,email,offer,intent,message,links,timeline,contactPreference,website});
+            const commerceOffer=searchParams?.get('commerce')||'';
+            const payload=JSON.stringify({name,email,offer,intent,message,links,timeline,contactPreference,website,...(/^[a-z0-9-]{1,80}$/.test(commerceOffer)?{commerceOffer}:{})});
             if(attempt.current?.payload!==payload)attempt.current={payload,id:crypto.randomUUID()};
             const response=await fetch('/api/services-inquiry',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...JSON.parse(payload),inquiryId:attempt.current.id})});
             const result=await response.json();

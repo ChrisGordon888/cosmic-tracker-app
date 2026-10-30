@@ -11,7 +11,8 @@ export function validateInquiry(value:unknown){
  if(!offers.includes(offer))throw new Error('Choose an available service.');
  const inquiryId=field('inquiryId',36)||randomUUID();
  if(!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(inquiryId))throw new Error('Invalid inquiry reference. Reload the form.');
- return {inquiryId,name,email,offer,message,intent:field('intent',80),links:field('links',3000),timeline:field('timeline',300),contactPreference:field('contactPreference',150)};
+ const commerceOffer=field('commerceOffer',80);if(commerceOffer&&!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(commerceOffer))throw new Error('Invalid offering reference.');
+ return {...(commerceOffer?{commerceOffer}:{}),inquiryId,name,email,offer,message,intent:field('intent',80),links:field('links',3000),timeline:field('timeline',300),contactPreference:field('contactPreference',150)};
 }
 export async function sendInquiry(data:ReturnType<typeof validateInquiry>,config:{key?:string;to?:string;from?:string},transport:typeof fetch=fetch){
  if(!config.key||!config.to||!config.from)return {ok:false,status:503,message:'Inquiry not sent. Email service is not configured yet. Your entries are still here.'};
