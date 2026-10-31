@@ -18,10 +18,9 @@ records, payments, notifications or editorial placements were created by this pa
 
 Public reads omit drafts and offerings whose provider is disabled or whose
 delivery configuration is no longer eligible. Missing infrastructure and API
-failures display errors rather than fabricated zero counts. Incomplete drafts
-can be saved; preview requires complete delivery fields and reports missing
-configuration until supplied. Preview can display a disabled provider without
-enabling it publicly. Slug edits change the public URL; there is no redirect history.
+failures display errors rather than fabricated zero counts. Incomplete drafts can be saved and previewed. Private previews render available
+content and missing publication requirements, with all commerce actions disabled.
+Disabled providers remain disabled; public delivery validation is unchanged. Slug edits change the public URL; there is no redirect history.
 
 ## Configuration and owner setup
 
@@ -194,3 +193,65 @@ limitations remain separate from commerce launch readiness.
 - `frontend/src/styles/commerce.css`
 - `frontend/tests/commercePresentation.test.cjs`
 - `docs/commerce-v1.md`
+
+
+## Offering Studio usability pass — October 31, 2026
+
+Uncommitted follow-up to `588ad41`; no records migrated or published.
+
+- Offering Studio replaces raw field ordering with invitation, customer next step,
+  structured content and save/review sections. Provider configuration is advanced.
+- COSMIC service selection uses the existing `SERVICE_OFFERS` identifiers and
+  constructs canonical inquiry destinations. Existing records and provider defaults
+  are retained; choosing a different type deliberately clears its destination.
+- Live unsaved preview and saved private preview render incomplete drafts with
+  placeholders and requirements. Preview never starts payments, inquiry or embeds.
+  Server publication eligibility remains authoritative; local readiness is guidance.
+- Existing included/evidence/FAQ strings survive unchanged. Optional benefits,
+  question/answer pairs and supporting image arrays extend the same offering model.
+  Public presentation uses responsive artwork, a clear primary action, deliverables,
+  supporting images and accessible FAQ disclosures. External scripts are not accepted.
+- Artwork uses existing `/api/upload` Blob client flow through `commerce-images/`.
+  Existing creator authorization plus current backend Marketplace operator authority
+  are required. Images only (JPEG/PNG/WebP/GIF), 20 MB maximum, random suffix and
+  no overwrite. Select previously saved catalog artwork or upload an approved image.
+  Uploading disables editing/saving to prevent a late response overwriting edits.
+  Uploaded artwork is PUBLIC by URL even when the offering is a private draft.
+  Removing artwork from an offering does not delete the Blob. Abandoned uploads
+  require operator storage cleanup; no automatic Blob deletion was introduced.
+- No changes to Stripe, attribution rules, payment gates or editorial systems.
+
+Verification: eight backend commerce tests; seven frontend presentation/upload
+checks (including genuine SDK token issuance with fixture sessions) passed.
+TypeScript, backend syntax and diff checks passed. Changed-source lint had zero
+errors and three plain-image warnings. One normal Next production build passed
+in an isolated source copy sharing installed dependencies, without modifying the
+running staging build. No dependencies or environment configuration were changed.
+
+Browser access to Chrome was not approved. Therefore the genuine saved Creative
+Development draft, actual Blob upload and populated responsive editor are NOT
+claimed browser-accepted. The running staging processes were left untouched and
+must load this source before the following walkthrough (a `next start` process
+will otherwise continue serving the earlier build).
+
+Manual acceptance after staging restart/build:
+1. Sign in normally, open `/creator/marketplace`, Edit the existing Creative
+   Development draft. Confirm its saved title, description and provider survive.
+2. With artwork still missing, verify the unsaved preview shows content, an artwork
+   placeholder and readiness guidance. Open saved Private preview: it must render
+   the incomplete record, not a blank/error-only page. No preview CTA is active.
+3. Choose the Creative-development pilot from the service selector; verify the
+   displayed identifier is `creative-direction-session`, with no URL assembly.
+4. Upload a disposable approved promotional image against staging-configured Blob,
+   inspect its preview, add a benefit/deliverable/question and supporting caption.
+   Save draft and refresh. Confirm persistence and anonymous public URL remains 404.
+   Do not publish the genuine offering without reviewing its exact content.
+5. Inspect desktop and 390px: preview stacks, controls are keyboard reachable, FAQ
+   toggles work, captions are readable and there is no horizontal page overflow.
+6. Verify non-operator upload rejection. Only use a disposable staging draft for
+   public publication/unpublication acceptance and external destination checks.
+
+Changed files for this follow-up: backend commerceCatalog, CommerceOffering,
+commerce routes and catalog tests; frontend Marketplace page/private preview,
+OfferPresentation, new OfferingEditor and ArtworkPicker, commerce types/styles,
+creatorUpload policy and upload/presentation tests; this handoff.

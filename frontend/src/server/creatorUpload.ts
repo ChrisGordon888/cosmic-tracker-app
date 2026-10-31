@@ -8,6 +8,7 @@ const image=['image/jpeg','image/png','image/webp','image/gif'];
 const audio=['audio/mpeg','audio/mp3','audio/wav','audio/x-wav','audio/mp4','audio/aac','audio/flac'];
 const extensions:Record<string,string[]>={jpg:['image/jpeg'],jpeg:['image/jpeg'],png:['image/png'],webp:['image/webp'],gif:['image/gif'],mp3:['audio/mpeg','audio/mp3'],wav:['audio/wav','audio/x-wav'],m4a:['audio/mp4'],aac:['audio/aac'],flac:['audio/flac'],mp4:['video/mp4'],pdf:['application/pdf']};
 const folders:Record<string,{types:string[];bytes:number;segments:number}>={
+ 'commerce-images':{types:image,bytes:20*1024*1024,segments:2},
  'catalog-audio':{types:audio,bytes:100*1024*1024,segments:2},
  'release-audio':{types:audio,bytes:100*1024*1024,segments:3},
  'release-covers':{types:image,bytes:20*1024*1024,segments:3},
@@ -36,5 +37,12 @@ export async function authorizeCreatorUpload(request:NextRequest, pathname?:stri
  const onboardingArtwork=user?.role==='creator'&&user.creatorStatus==='invited'&&typeof pathname==='string'&&/^release-covers\/onboarding\/[^/]+$/.test(pathname);
  if(onboardingArtwork)uploadConstraints(pathname!);
  if(!user?.id||user.creatorStatus==='suspended'||!(['admin','owner'].includes(user.role??'')||(user.role==='creator'&&user.creatorStatus==='active')||onboardingArtwork))throw new UploadPolicyError(403,'Active creator access is required to upload.');
+ if(pathname?.startsWith('commerce-images/')){
+  const base=process.env.SERVICES_BACKEND_URL;
+  if(!base)throw new UploadPolicyError(503,'Marketplace uploads are not configured.');
+  let response:Response;
+  try{response=await fetch(`${base.replace(/\/$/,'')}/commerce/operator`,{headers:{Authorization:`Bearer ${session.accessToken}`},cache:'no-store',signal:AbortSignal.timeout(8000)});}catch{throw new UploadPolicyError(503,'Marketplace upload permissions could not be verified.');}
+  if(!response.ok)throw new UploadPolicyError(response.status===401||response.status===403?403:503,'Marketplace operator access is required.');
+ }
  return user.id;
 }
