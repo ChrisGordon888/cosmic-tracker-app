@@ -3,19 +3,40 @@ const O=require('../models/CommerceOffering'),P=require('../models/CommerceProvi
 const {authorize}=require('../lib/serviceEngagements'),c=require('../lib/commerceCatalog');
 const Event=require('../models/CommerceEvent'),Opportunity=require('../models/Opportunity');
 const {eventInput}=require('../lib/commerceMeasurement');
+const Media=require('../models/CommerceMedia'),media=require('../lib/commerceMedia'),mediaLinks=require('../lib/commerceMediaLinks');
 const router=express.Router();router.use(express.json({limit:'32kb'}));
 const wrap=fn=>async(req,res,next)=>{res.set('Cache-Control','no-store');try{await fn(req,res,next);}catch(e){res.status(e.code===11000?409:e.status||503).json({error:e.code===11000?'Slug/configuration already exists. Refresh and retry.':e.status?e.message:'Commerce unavailable. Retry safely.'});}};
 const owner=()=>{if(!process.env.SERVICES_OPERATOR_ID)c.fail('Commerce is not configured.',503);return process.env.SERVICES_OPERATOR_ID;};
 async function publicRows(slug){const ownerId=owner();const [rows,providers]=await Promise.all([O.find({ownerId,status:'published',...(slug?{slug}:{})}).sort({featured:1,title:1}).lean(),P.find({ownerId,enabled:true}).lean()]);return rows.flatMap(o=>{try{return[c.publicOffering(o,providers.find(p=>p.type===o.provider))];}catch{return[];}});}
+router.get('/media/public',wrap(async(req,res)=>{
+ const ownerId=owner();const [rows,available,offers]=await Promise.all([Media.find({ownerId,status:'published'}).sort({order:1,createdAt:-1}).lean(),mediaLinks.candidates(ownerId),publicRows()]);
+ res.json({items:rows.map(row=>media.presentation(row,mediaLinks.links(row,available,offers)))});
+}));
 router.get('/public',wrap(async(req,res)=>res.json({offerings:await publicRows()})));
 router.get('/public/:slug',wrap(async(req,res)=>{const [offer]=await publicRows(req.params.slug);if(!offer)c.fail('Offering unavailable.',404);res.json(offer);}));
 // Aggregate only consented events. Coarse process-local cap, no visitor/IP identifiers stored.
 let eventWindow=0,eventCount=0;
 router.post('/events',wrap(async(req,res)=>{const now=Date.now();if(now-eventWindow>60000){eventWindow=now;eventCount=0;}if(++eventCount>300)c.fail('Measurement temporarily limited.',429);if(typeof req.body.slug!=='string'||!/^[a-z0-9-]{1,80}$/.test(req.body.slug))c.fail('Invalid offering reference.');const [offer]=await publicRows(req.body.slug);if(!offer)c.fail('Offering unavailable.',404);const input=eventInput(req.body,offer);await Event.init();await Event.updateOne({ownerId:owner(),eventId:input.eventId},{$setOnInsert:{...input,ownerId:owner(),createdAt:new Date()}},{upsert:true});res.json({recorded:true});}));
 router.use(wrap(async(req,res,next)=>{let user;try{const token=String(req.headers.authorization||'').replace(/^Bearer /,'');const decoded=jwt.verify(token,process.env.NEXTAUTH_SECRET);user=await User.findOne({email:decoded.email});}catch{c.fail('Sign in required.',401);}authorize(user,owner());req.commerceOwner=owner();next();}));
+router.get('/media/operator',wrap(async(req,res)=>{
+ const [items,available,offers]=await Promise.all([Media.find({ownerId:req.commerceOwner}).sort({order:1,createdAt:-1}).lean(),mediaLinks.candidates(req.commerceOwner),publicRows()]);
+ res.json({items,...available,offers:offers.map(o=>({slug:o.slug,title:o.title}))});
+}));
+router.post('/media/save',wrap(async(req,res)=>{
+ const value=media.input(req.body),ownerId=req.commerceOwner;
+ if(req.body.id){if(!/^[a-f\d]{24}$/.test(req.body.id)||!Number.isInteger(req.body.revision))c.fail('Invalid media revision.');
+ const row=await Media.findOneAndUpdate({_id:req.body.id,ownerId,revision:req.body.revision},{$set:value,$inc:{revision:1}},{new:true,runValidators:true});if(!row)c.fail('Media changed or unavailable. Reload before saving.',409);return res.json(row);}
+ await Media.init();res.json(await Media.create({...value,ownerId}));
+}));
 router.get('/operator',wrap(async(req,res)=>{const ownerId=req.commerceOwner;res.json({types:c.TYPES,categories:c.CATEGORIES,offerings:await O.find({ownerId}).sort({updatedAt:-1}).lean(),providers:await P.find({ownerId}).lean()});}));
 router.get('/report',wrap(async(req,res)=>{const ownerId=req.commerceOwner;const since=new Date(Date.now()-90*86400000);const activity=await Event.aggregate([{$match:{ownerId,createdAt:{$gte:since}}},{$group:{_id:{slug:'$slug',kind:'$kind',campaign:'$campaign'},count:{$sum:1}}}]);const inquiries=await Opportunity.aggregate([{$match:{ownerId,createdAt:{$gte:since},'engagement.commerceOffer':{$type:'string'}}},{$group:{_id:{slug:'$engagement.commerceOffer',mode:{$ifNull:['$engagement.paymentMode','test']}},count:{$sum:1}}}]);res.json({days:90,activity,inquiries,externalSales:null,nativeProductPurchases:null});}));
-router.post('/offerings',wrap(async(req,res)=>{const input=c.offeringInput(req.body),ownerId=req.commerceOwner;const provider=await P.findOne({ownerId,type:input.provider}).lean();if(input.destination)c.destination(input.provider,input.destination,provider?.allowedHosts||[]);if(input.status==='published')c.delivery(input,provider);if(req.body.id){if(!/^[a-f\d]{24}$/.test(req.body.id)||!Number.isInteger(req.body.revision))c.fail('Invalid offering revision.');const row=await O.findOneAndUpdate({_id:req.body.id,ownerId,revision:req.body.revision},{$set:input,$inc:{revision:1}},{new:true,runValidators:true});if(!row)c.fail('Offering changed or unavailable. Reload before saving.',409);return res.json(row);}res.json(await O.create({...input,ownerId}));}));
+router.post('/originals/vocal-studio',wrap(async(req,res)=>{
+ const template=require('../lib/vocalStudioDraft');await O.init();
+ const existing=await O.findOne({ownerId:req.commerceOwner,slug:template.slug}).lean();
+ if(existing)return res.json(existing);
+ res.json(await O.create({...template,ownerId:req.commerceOwner}));
+}));
+router.post('/offerings',wrap(async(req,res)=>{const input=c.offeringInput(req.body),ownerId=req.commerceOwner;const existing=req.body.id&&/^[a-f\d]{24}$/.test(req.body.id)?await O.findOne({_id:req.body.id,ownerId}).lean():null;if(existing?.privateReview)input.privateReview=true;const provider=await P.findOne({ownerId,type:input.provider}).lean();if(input.destination)c.destination(input.provider,input.destination,provider?.allowedHosts||[]);if(input.status==='published')c.delivery(input,provider);if(req.body.id){if(!/^[a-f\d]{24}$/.test(req.body.id)||!Number.isInteger(req.body.revision))c.fail('Invalid offering revision.');const row=await O.findOneAndUpdate({_id:req.body.id,ownerId,revision:req.body.revision},{$set:input,$inc:{revision:1}},{new:true,runValidators:true});if(!row)c.fail('Offering changed or unavailable. Reload before saving.',409);return res.json(row);}res.json(await O.create({...input,ownerId}));}));
 router.post('/providers',wrap(async(req,res)=>{const input=c.providerInput(req.body),ownerId=req.commerceOwner;const current=await P.findOne({ownerId,type:input.type}).lean();if(!current)return res.json(await P.create({...input,ownerId}));if(req.body.revision!==current.revision)c.fail('Provider changed. Reload before saving.',409);const row=await P.findOneAndUpdate({_id:current._id,ownerId,revision:current.revision},{$set:input,$inc:{revision:1}},{new:true});if(!row)c.fail('Provider changed. Reload before saving.',409);res.json(row);}));
 router.get('/preview/:id',wrap(async(req,res)=>{if(!/^[a-f\d]{24}$/.test(req.params.id))c.fail('Offering not found.',404);const o=await O.findOne({_id:req.params.id,ownerId:req.commerceOwner}).lean();if(!o)c.fail('Offering not found.',404);const p=await P.findOne({ownerId:req.commerceOwner,type:o.provider}).lean();res.json(c.previewOffering(o,p));}));
 module.exports=router;
