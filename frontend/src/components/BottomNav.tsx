@@ -9,7 +9,7 @@ import { publicDestinations, isPublicJourney, isPublicWorld } from "@/lib/public
 
 type BottomNavItem = { href: string; icon: string; label: string };
 
-const publicItems: BottomNavItem[] = publicDestinations;
+const publicItems: BottomNavItem[] = publicDestinations.filter(i=>["/nexus","/media","/shop","/services"].includes(i.href));
 
 const memberItems: BottomNavItem[] = [
     { href: "/nexus", icon: "🎵", label: "Nexus" },
@@ -60,7 +60,7 @@ export default function BottomNav() {
             ? memberItems
             : publicItems;
 
-    if (isPublicWorld(pathname)) return null;
+    if (isPublicWorld(pathname) || pathname === "/creator" || pathname?.startsWith("/creator/")) return null;
 
     return (
         <nav className={`bottom-nav ${navItems === publicItems ? "bottom-nav-public" : ""}`} aria-label="Primary mobile navigation">

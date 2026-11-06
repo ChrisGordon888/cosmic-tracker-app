@@ -1,6 +1,7 @@
 "use client";
 
 import CreatorAccessGate from "@/components/creator/CreatorAccessGate";
+import CommercialAccess from "@/components/creator/CommercialAccess";
 import CreatorRail from "@/components/creator/CreatorRail";
 import "@/styles/creatorNavigation.css";
 
@@ -10,7 +11,7 @@ export default function CreatorLayout({
     children: React.ReactNode;
 }) {
     return (
-        <CreatorAccessGate>
+        <CreatorAccessGate><CommercialAccess>
             <div className="border-b border-white/10 bg-[#090D17]/75 px-4 py-3 backdrop-blur-xl">
                 <div className="mx-auto max-w-7xl">
                     <p className="text-[10px] uppercase tracking-[0.2em] text-[#DCBA5C]/80">
@@ -26,6 +27,6 @@ export default function CreatorLayout({
                 <CreatorRail />
                 <div className="creator-workspace-content">{children}</div>
             </div>
-        </CreatorAccessGate>
+        </CommercialAccess></CreatorAccessGate>
     );
 }

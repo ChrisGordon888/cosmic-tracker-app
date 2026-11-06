@@ -15,3 +15,12 @@ export function creatorHomeTourKey(ownerId: string) {
 export function activeCreatorProjects<T extends { status: string }>(projects: T[]): T[] {
   return projects.filter(project => project.status !== 'archived');
 }
+
+export const creatorSections = [
+ {label:'Overview',items:[{label:'Creator Home',href:'/creator',mark:'⌂'}]},
+ {label:'Create & Publish',items:[{label:'Library',href:'/creator/library',mark:'♫'},{label:'Projects',href:'/creator/projects',mark:'▤'},{label:'Media Studio',href:'/creator/media',mark:'▷',operator:true}]},
+ {label:'Business',items:[{label:'Marketplace',href:'/creator/marketplace',mark:'◇',operator:true},{label:'Engagements',href:'/creator/engagements',mark:'↗',operator:true}]},
+ {label:'Workspace',items:[{label:'Intelligence',href:'/creator/intelligence',mark:'✦'},{label:'Profile',href:'/creator/onboarding/profile',mark:'○'}]},
+];
+export function visibleCreatorSections(operator:boolean){return creatorSections.map(s=>({...s,items:s.items.filter(i=>!('operator' in i&&i.operator)||operator)})).filter(s=>s.items.length);}
+export function creatorRouteActive(path:string|null,href:string){return href==='/creator'?path===href:path===href||!!path?.startsWith(href+'/');}

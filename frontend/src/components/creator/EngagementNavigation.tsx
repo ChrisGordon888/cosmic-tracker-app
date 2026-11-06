@@ -1,8 +1,4 @@
 'use client';
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
-export default function EngagementNavigation() {
-  const [attention,setAttention] = useState<number|null>(null);
-  useEffect(()=>{const controller=new AbortController();fetch('/api/engagements/summary',{signal:controller.signal,cache:'no-store'}).then(async r=>{if(r.ok){const d=await r.json();if(Number.isSafeInteger(d.attention))setAttention(d.attention);}}).catch(()=>{});return()=>controller.abort();},[]);
-  return <nav aria-label="Commercial operations"><Link href="/creator/engagements">Engagements →{attention!==null&&<span> · {attention} action required</span>}</Link></nav>;
-}
+import {useCommercialAccess} from './CommercialAccess';
+export default function EngagementNavigation(){const {allowed,attention}=useCommercialAccess();if(!allowed)return null;return <section className="creator-business-entry"><div><h2>Publish & operate</h2><p>{attention===null?'Your authorized publishing and business tools.':`${attention} engagement${attention===1?'':'s'} requiring action.`}</p></div><nav aria-label="Publishing and business shortcuts"><Link href="/creator/media">Media Studio →</Link><Link href="/creator/marketplace">Marketplace →</Link><Link href="/creator/engagements">Engagements →</Link></nav></section>;}

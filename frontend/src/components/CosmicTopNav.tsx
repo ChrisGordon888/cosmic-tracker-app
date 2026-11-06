@@ -99,7 +99,7 @@ export default function CosmicTopNav({ title }: { title?: string }) {
                     )}
                 </div>
 
-                {publicSurface && !worldSurface && <nav className="public-nav-links" aria-label="Public navigation">{publicDestinations.slice(1).map(item => <Link key={item.href} href={item.href} aria-current={isRouteActive(pathname, item.href) ? 'page' : undefined}>{item.label}</Link>)}</nav>}
+                {publicSurface && !worldSurface && <nav className="public-nav-links" aria-label="Public navigation">{publicDestinations.filter(i=>["/nexus","/media","/shop","/services"].includes(i.href)).map(item => <Link key={item.href} href={item.href} aria-current={isRouteActive(pathname, item.href) ? 'page' : undefined}>{item.label}</Link>)}</nav>}
 
                 {title && <h1 className="hidden text-sm font-medium tracking-[0.14em] text-white/70 sm:block">{title}</h1>}
 
@@ -110,7 +110,7 @@ export default function CosmicTopNav({ title }: { title?: string }) {
                             <span className="hidden sm:inline">Sign Out</span><span className="sm:hidden">Out</span>
                         </button>
                     )}
-                    <Link href="/profile" aria-label="Open profile" className="grid h-11 w-11 place-items-center rounded-full border border-white/15 bg-white/[0.03] text-white/75 transition hover:border-white/30 hover:text-white">
+                    <Link href={isAuthenticated?"/profile":"/auth"} aria-label={isAuthenticated?"Open profile":"Sign in to COSMIC"} className="grid h-11 w-11 place-items-center rounded-full border border-white/15 bg-white/[0.03] text-white/75 transition hover:border-white/30 hover:text-white">
                         <UserCircleIcon className="h-7 w-7" />
                     </Link>
                 </div>
