@@ -9,7 +9,7 @@ import EngagementNavigation from '@/components/creator/EngagementNavigation';
 import OpportunitySection from '@/components/creator/OpportunitySection';
 import BlockerAssist from '@/components/creator/BlockerAssist';
 import CreatorHomeTour from '@/components/creator/CreatorHomeTour';
-import { activeCreatorProjects, CREATOR_LINKS } from '@/lib/creatorNavigation';
+import { activeCreatorProjects, creatorWorkshopAction, CREATOR_LINKS } from '@/lib/creatorNavigation';
 
 const CREATOR_HOME_QUERY = gql`
   query CreatorHome {
@@ -295,65 +295,33 @@ export default function CreatorDashboardPage() {
         .slice(0, 6);
     const activeProject = recentProjects[0] ?? null;
 
-    const commandLinks = activeProject
-        ? [
-            {
-                label: 'Add Music',
-                href: CREATOR_LINKS.capture,
-                meta: 'Capture songs',
-                priority: 'primary',
-            },
-            {
-                label: 'Creator Library',
-                href: CREATOR_LINKS.catalog,
-                meta: `${catalogTracks.length} tracks`,
-                priority: 'secondary',
-            },
-            {
-                label: 'Open Workshop',
-                href: `/releases/${activeProject.slug}/board`,
-                meta: 'Develop project',
-                priority: 'secondary',
-            },
-            {
-                label: 'All Projects',
-                href: '/creator/projects',
-                meta: 'Singles · EPs · Albums',
-                priority: 'secondary',
-            },
-            {
-                label: 'Nexus',
-                href: '/nexus',
-                meta: 'Curated discovery',
-                priority: 'secondary',
-            },
-        ]
-        : [
-            {
-                label: 'Add Music',
-                href: CREATOR_LINKS.capture,
-                meta: 'Capture songs',
-                priority: 'primary',
-            },
-            {
-                label: 'Creator Library',
-                href: CREATOR_LINKS.catalog,
-                meta: `${catalogTracks.length} tracks`,
-                priority: 'secondary',
-            },
-            {
-                label: 'All Projects',
-                href: '/creator/projects',
-                meta: 'Single · EP · Album',
-                priority: 'secondary',
-            },
-            {
-                label: 'Nexus',
-                href: '/nexus',
-                meta: 'Curated discovery',
-                priority: 'secondary',
-            },
-        ];
+    const commandLinks = [
+        {
+            label: 'Add Music',
+            href: CREATOR_LINKS.capture,
+            meta: 'Capture songs',
+            priority: 'primary',
+        },
+        {
+            label: 'Creator Library',
+            href: CREATOR_LINKS.catalog,
+            meta: `${catalogTracks.length} tracks`,
+            priority: 'secondary',
+        },
+        creatorWorkshopAction(activeProject),
+        {
+            label: 'All Projects',
+            href: '/creator/projects',
+            meta: 'Singles · EPs · Albums',
+            priority: 'secondary',
+        },
+        {
+            label: 'Nexus',
+            href: '/nexus',
+            meta: 'Curated discovery',
+            priority: 'secondary',
+        },
+    ];
 
     async function handleSetFeatured(project: ReleaseWorld) {
         if (!project.id || project.status === 'archived') return;
