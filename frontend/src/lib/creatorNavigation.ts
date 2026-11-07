@@ -25,12 +25,16 @@ export const creatorSections = [
 export function visibleCreatorSections(operator:boolean){return creatorSections.map(s=>({...s,items:s.items.filter(i=>!('operator' in i&&i.operator)||operator)})).filter(s=>s.items.length);}
 export function creatorRouteActive(path:string|null,href:string){return href==='/creator'?path===href:path===href||!!path?.startsWith(href+'/');}
 
+export function hasWorkshopProject(project: { id?: string | null; slug?: string | null; status?: string | null } | null | undefined) {
+  return Boolean(project?.id && project.slug?.trim() && project.status !== 'archived');
+}
+
 /** Receives the current project from the owner-scoped Creator Home query. */
 export function creatorWorkshopAction(project: { id: string; slug: string; status: string } | null) {
-  const ready = Boolean(project?.id && project.slug.trim() && project.status !== 'archived');
+  const ready = hasWorkshopProject(project);
   return {
-    label: 'Open Workshop',
-    href: ready ? `/releases/${encodeURIComponent(project!.slug)}/board` : CREATOR_LINKS.projects,
+    label: ready ? 'Open Workshop' : 'Choose or create a project',
+    href: ready ? `/releases/${encodeURIComponent(project!.slug.trim())}/board` : CREATOR_LINKS.projects,
     meta: ready ? 'Develop project' : 'Choose or create a project',
     priority: 'secondary',
   };

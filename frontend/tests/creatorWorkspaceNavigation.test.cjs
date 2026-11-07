@@ -14,6 +14,6 @@ test('Workshop action preserves the existing project route regardless of publica
 test('Workshop remains discoverable without a usable current project',()=>{
  for(const project of [null,{id:'id',slug:'',status:'draft'},{id:'',slug:'world',status:'draft'},{id:'id',slug:'world',status:'archived'}]){
   const result=m.exports.creatorWorkshopAction(project);
-  assert.equal(result.href,'/creator/projects');assert.equal(result.label,'Open Workshop');assert.equal(result.meta,'Choose or create a project');
+  assert.equal(result.href,'/creator/projects');assert.equal(result.label,'Choose or create a project');assert.equal(result.meta,'Choose or create a project');
  }
 });

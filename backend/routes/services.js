@@ -28,8 +28,12 @@ router.post('/intake', wrap(async (req, res) => {
 router.use(wrap(async (req, res) => {
   // Authenticate independently of client IDs; never create users from this endpoint.
   const token = String(req.headers.authorization || '').replace(/^Bearer /, '');
-  let user;
-  try { const decoded = jwt.verify(token, process.env.NEXTAUTH_SECRET); user = await User.findOne({ email: decoded.email }); } catch { return res.status(401).json({ error: 'Sign in required.' }); }
+  if (!token) return res.status(401).json({ error: 'Sign in required.' });
+  if (!process.env.NEXTAUTH_SECRET || !process.env.SERVICES_OPERATOR_ID) return res.status(503).json({ error: 'Commercial operations are not configured.' });
+  let decoded;
+  try { decoded = jwt.verify(token, process.env.NEXTAUTH_SECRET); } catch { return res.status(401).json({ error: 'Sign in required.' }); }
+  // A failed database read is an availability error, not invalid authentication.
+  const user = await User.findOne({ email: decoded.email });
   authorize(user, process.env.SERVICES_OPERATOR_ID);
   if (req.method === 'GET' && ['/', '/summary'].includes(req.path)) {
     let schedulingUrl = null;

@@ -9,7 +9,7 @@ import EngagementNavigation from '@/components/creator/EngagementNavigation';
 import OpportunitySection from '@/components/creator/OpportunitySection';
 import BlockerAssist from '@/components/creator/BlockerAssist';
 import CreatorHomeTour from '@/components/creator/CreatorHomeTour';
-import { activeCreatorProjects, creatorWorkshopAction, CREATOR_LINKS } from '@/lib/creatorNavigation';
+import { activeCreatorProjects, hasWorkshopProject, creatorWorkshopAction, CREATOR_LINKS } from '@/lib/creatorNavigation';
 
 const CREATOR_HOME_QUERY = gql`
   query CreatorHome {
@@ -286,14 +286,14 @@ export default function CreatorDashboardPage() {
 
     const activeProfile = profiles[0] ?? null;
     const featuredProject = getFeaturedProject(projects, activeProfile);
-    const recentProjects = [...activeProjects]
+    const sortedProjects = [...activeProjects]
         .sort((a, b) => {
             const aTime = Math.max(getTimestamp(a.lastOpenedAt), getTimestamp(a.updatedAt));
             const bTime = Math.max(getTimestamp(b.lastOpenedAt), getTimestamp(b.updatedAt));
             return bTime - aTime;
-        })
-        .slice(0, 6);
-    const activeProject = recentProjects[0] ?? null;
+        });
+    const recentProjects = sortedProjects.slice(0, 6);
+    const activeProject = sortedProjects.find(hasWorkshopProject) ?? null;
 
     const commandLinks = [
         {
@@ -382,6 +382,11 @@ export default function CreatorDashboardPage() {
         );
     }
 
+    // A pending catalog is not an empty catalog: do not offer a false fallback.
+    if (loading && !data) {
+        return <main className="creator-console-shell"><section className="creator-console" role="status" aria-live="polite"><h1>Creator OS</h1><p>Loading your projects and Workshop…</p></section></main>;
+    }
+
     if (error) {
         return (
             <main className="creator-console-shell">
@@ -424,7 +429,7 @@ export default function CreatorDashboardPage() {
                             {commandLinks.map((link) => (
                                 <Link
                                     data-creator-tour={link.href === CREATOR_LINKS.capture ? "add-music" : undefined}
-                                    key={link.href}
+                                    key={link.label}
                                     href={link.href}
                                     className={link.priority === 'primary' ? 'is-primary' : undefined}
                                 >
